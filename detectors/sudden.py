@@ -1,61 +1,287 @@
 """
 Sudden drift detector: detects abrupt change in prediction error distribution
-by comparing two adjacent windows (reference vs current).
+using HDDM-W, EDDM, and ADWIN ensemble methods.
 """
 
 import numpy as np
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List, Dict
+from collections import deque
+
+
+class HDDM_W:
+    """Hoeffding Drift Detection Method - W (Weighted window)."""
+    
+    def __init__(self, min_samples: int = 30, delta: float = 0.002, lambda_: float = 0.95):
+        self.min_samples = min_samples
+        self.delta = delta
+        self.lambda_ = lambda_
+        self._errors: deque = deque()
+        self._p0 = 0.0  # old distribution estimate
+        self._p1 = 0.0  # new distribution estimate
+        self._count = 0
+        self._change_detected = False
+        
+    def update(self, error: float) -> None:
+        """error should be binary (0 or 1) or converted from continuous."""
+        self._count += 1
+        self._errors.append(error)
+        
+        # Update estimates with decay - newer samples weighted more
+        decayed_error = error if len(self._errors) <= self.min_samples else error
+        
+        # Split into two windows with bias towards recent
+        if len(self._errors) > self.min_samples:
+            split = len(self._errors) // 2
+            old_errors = list(self._errors)[: split]
+            new_errors = list(self._errors)[split :]
+            
+            self._p0 = np.mean(old_errors) if old_errors else 0.0
+            self._p1 = np.mean(new_errors) if new_errors else 0.0
+        
+    def detect(self) -> bool:
+        """Returns True if sudden drift detected."""
+        if len(self._errors) < self.min_samples * 2:
+            return False
+        
+        # Hoeffding bound
+        m = (1.0 / len(list(self._errors)))
+        epsilon = np.sqrt((1.0 / (2 * m)) * np.log(2 / self.delta))
+        
+        return abs(self._p0 - self._p1) >= epsilon
+    
+    def reset(self) -> None:
+        self._errors.clear()
+        self._p0 = 0.0
+        self._p1 = 0.0
+        self._count = 0
+        self._change_detected = False
+
+
+class EDDM:
+    """Early Drift Detection Method."""
+    
+    def __init__(self, min_samples: int = 30, warning_level: float = 0.95, drift_level: float = 0.90):
+        self.min_samples = min_samples
+        self.warning_level = warning_level
+        self.drift_level = drift_level
+        self._errors: deque = deque()
+        self._error_distances: deque = deque()  # distances between consecutive errors
+        self._error_count = 0
+        self._distance_sum = 0
+        self._distance_count = 0
+        
+    def update(self, error: float) -> None:
+        """error should be binary (0 or 1)."""
+        self._errors.append(error)
+        
+        if error == 1:  # prediction error occurred
+            self._error_count += 1
+            
+            # Distance to previous error
+            if len(self._error_distances) > 0:
+                distance = len(self._errors) - sum(self._error_distances) - 1
+            else:
+                distance = len(self._errors)
+                
+            self._error_distances.append(distance)
+            self._distance_sum += distance
+            self._distance_count += 1
+    
+    def detect(self) -> Tuple[bool, bool]:
+        """Returns (drift_detected, warning_detected)."""
+        if self._distance_count < self.min_samples:
+            return False, False
+        
+        # Average distance between errors (should be large in normal, small in drift)
+        avg_distance = self._distance_sum / max(self._distance_count, 1)
+        
+        # Standard deviation of distances
+        if len(self._error_distances) > 1:
+            distances = list(self._error_distances)
+            std_distance = np.std(distances)
+        else:
+            std_distance = 0.0
+        
+        # Drift when distance decreases (errors closer together)
+        if std_distance > 0:
+            p_current = avg_distance
+            p_mean = np.mean(list(self._error_distances))
+            
+            warning = p_current < self.warning_level * p_mean
+            drift = p_current < self.drift_level * p_mean
+            
+            return drift, warning
+        
+        return False, False
+    
+    def reset(self) -> None:
+        self._errors.clear()
+        self._error_distances.clear()
+        self._error_count = 0
+        self._distance_sum = 0
+        self._distance_count = 0
+
+
+class ADWIN:
+    """Adaptive Windowing (ADWIN) for sudden drift detection."""
+    
+    def __init__(self, delta: float = 0.002, max_buckets: int = 5):
+        self.delta = delta
+        self.max_buckets = max_buckets
+        self._buckets: List[Tuple[int, float, float]] = []  # (count, sum, sum_sq)
+        self._total_count = 0
+        self._total_sum = 0.0
+        self._total_sq = 0.0
+        
+    def update(self, value: float) -> bool:
+        """Add value and detect sudden drift. Returns True if drift detected."""
+        drift_detected = False
+        
+        self._total_count += 1
+        self._total_sum += value
+        self._total_sq += value ** 2
+        
+        # Add to first bucket
+        if self._buckets:
+            count, s, sq = self._buckets[0]
+            self._buckets[0] = (count + 1, s + value, sq + value ** 2)
+        else:
+            self._buckets.append((1, value, value ** 2))
+        
+        # Merge buckets if needed
+        if len(self._buckets) > self.max_buckets:
+            self._merge_buckets()
+        
+        # Check for drift - more aggressive for sudden detection
+        if self._total_count > 10:
+            drift_detected = self._detect_change()
+            
+        return drift_detected
+    
+    def _merge_buckets(self) -> None:
+        """Merge oldest buckets."""
+        if len(self._buckets) > self.max_buckets:
+            c0, s0, sq0 = self._buckets.pop(0)
+            c1, s1, sq1 = self._buckets.pop(0)
+            self._buckets.insert(0, (c0 + c1, s0 + s1, sq0 + sq1))
+    
+    def _detect_change(self) -> bool:
+        """Detect if distribution changed suddenly."""
+        if len(self._buckets) < 2:
+            return False
+        
+        # Compare tail buckets for sudden changes
+        c0, s0, sq0 = self._buckets[0]
+        c1, s1, sq1 = self._buckets[-1]
+        
+        if c0 == 0 or c1 == 0:
+            return False
+        
+        mean0 = s0 / c0
+        mean1 = s1 / c1
+        
+        # Variance estimators
+        var0 = max((sq0 / c0) - (mean0 ** 2), 0)
+        var1 = max((sq1 / c1) - (mean1 ** 2), 0)
+        
+        # Hoeffding bound
+        m = (1.0 / c0 + 1.0 / c1)
+        epsilon = np.sqrt((1.0 / (2 * m)) * np.log(2 / self.delta))
+        
+        # More sensitive threshold for sudden detection
+        return abs(mean0 - mean1) >= epsilon * 0.5
+    
+    def reset(self) -> None:
+        self._buckets.clear()
+        self._total_count = 0
+        self._total_sum = 0.0
+        self._total_sq = 0.0
 
 
 class SuddenDriftDetector:
     """
-    Detects sudden drift when the recent window of errors differs significantly
-    from the reference window (e.g. mean shift or variance change).
+    Composite sudden drift detector combining:
+    - HDDM-W (Hoeffding Drift Detection Method - W)
+    - EDDM (Early Drift Detection Method)
+    - ADWIN (Adaptive Windowing)
+    
+    Detects abrupt changes in error distribution.
     """
 
     def __init__(
         self,
         window_size: int = 50,
-        threshold: float = 2.0,
         min_samples: int = 20,
+        ensemble_strategy: str = "majority",
     ):
+        """
+        Args:
+            window_size: Size of comparison windows
+            min_samples: Minimum samples before detection
+            ensemble_strategy: How to combine detector outputs
+                - "majority": drift if majority agree
+                - "any": drift if any detector signals
+                - "all": drift if all detectors signal
+        """
         self.window_size = window_size
-        self.threshold = threshold  # effect size or z-score threshold
         self.min_samples = min_samples
-        self._buffer: list[float] = []
+        self.ensemble_strategy = ensemble_strategy
+        
+        self.hddm_w = HDDM_W(min_samples=min_samples)
+        self.eddm = EDDM(min_samples=min_samples)
+        self.adwin = ADWIN()
+        
+        self._buffer: deque = deque(maxlen=2 * window_size)
 
     def update(self, error: float) -> None:
+        """Update all detectors with new error value."""
         self._buffer.append(error)
-        if len(self._buffer) > 2 * self.window_size:
-            self._buffer.pop(0)
+        
+        # Convert continuous error to binary for HDDM-W and EDDM
+        # Use threshold of mean error
+        mean_error = np.mean(list(self._buffer)) if self._buffer else 0
+        binary_error = 1 if error > mean_error else 0
+        
+        self.hddm_w.update(binary_error)
+        self.eddm.update(binary_error)
+        self.adwin.update(error)
 
-    def detect(self) -> Tuple[bool, Optional[int]]:
+    def detect(self) -> Tuple[bool, Dict[str, bool]]:
         """
-        Returns (drift_detected, drift_timestamp).
-        drift_timestamp is the index of the current (latest) sample when drift is detected.
+        Detect sudden drift using ensemble of methods.
+        
+        Returns:
+            (drift_detected, detector_results)
         """
-        n = len(self._buffer)
-        if n < 2 * self.min_samples or n < self.window_size * 2:
-            return False, None
-
-        ref = np.array(self._buffer[-2 * self.window_size : -self.window_size], dtype=np.float64)
-        cur = np.array(self._buffer[-self.window_size :], dtype=np.float64)
-
-        if len(ref) < self.min_samples or len(cur) < self.min_samples:
-            return False, None
-
-        m_ref, m_cur = np.mean(ref), np.mean(cur)
-        s_ref = np.std(ref)
-        s_cur = np.std(cur)
-        pooled_std = np.sqrt((s_ref**2 + s_cur**2) / 2) + 1e-10
-        effect = abs(m_cur - m_ref) / pooled_std
-
-        if effect >= self.threshold:
-            return True, n - 1  # drift at current position
-        return False, None
+        # Get individual detector results
+        hddm_w_drift = self.hddm_w.detect()
+        eddm_drift, _ = self.eddm.detect()
+        adwin_drift = self.adwin._detect_change() if len(self.adwin._buckets) >= 2 else False
+        
+        results = {
+            "HDDM-W": hddm_w_drift,
+            "EDDM": eddm_drift,
+            "ADWIN": adwin_drift,
+        }
+        
+        # Ensemble decision
+        if self.ensemble_strategy == "majority":
+            votes = sum(results.values())
+            drift_detected = votes >= 2
+        elif self.ensemble_strategy == "any":
+            drift_detected = any(results.values())
+        elif self.ensemble_strategy == "all":
+            drift_detected = all(results.values())
+        else:
+            drift_detected = False
+        
+        return drift_detected, results
 
     def get_errors(self) -> np.ndarray:
-        return np.array(self._buffer, dtype=np.float64)
+        return np.array(list(self._buffer), dtype=np.float64)
 
     def reset(self) -> None:
         self._buffer.clear()
+        self.hddm_w.reset()
+        self.eddm.reset()
+        self.adwin.reset()
