@@ -28,16 +28,28 @@ drift/
 ├── pipeline.py            # ConceptDriftPipeline, run_pipeline_demo
 ├── evaluation.py          # evaluate_detectors, evaluate_drift_type_classifier
 ├── main.py                # Run demo + evaluation
-├── example_usage.py       # Minimal recurring-detector usage
+├── example_usage.py        # Minimal recurring-detector usage
 └── requirements.txt
 ```
 
 ## Setup
 
-```bash
-cd drift
-pip install -r requirements.txt
-```
+1. Clone the repository and go to the project directory:
+   ```bash
+   git clone https://github.com/Diteaphr/drift_detect.git
+   cd drift_detect
+   ```
+
+2. (Optional) Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate   # macOS/Linux
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## Run full pipeline
 
