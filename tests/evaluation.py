@@ -6,7 +6,7 @@ using stored detections and (optionally) ground-truth drift labels.
 import numpy as np
 from typing import List, Optional, Tuple
 
-from config import DriftDetection, DriftType
+from src.config import DriftDetection, DriftType
 
 
 def evaluate_detectors(

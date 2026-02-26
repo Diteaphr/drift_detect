@@ -6,13 +6,17 @@ Main concept drift pipeline: data stream → preprocessing → sudden/gradual de
 import numpy as np
 from typing import Iterator, List, Optional, Tuple
 
-from config import DriftDetection, DriftType, PipelineConfig
-from preprocessing import StreamBuffer, compute_prediction_errors, smooth_errors
-from detectors import SuddenDriftDetector, GradualDriftDetector
-from recurring_drift_detector import ConceptMemory, detect_recurring_drift, build_signature
-from drift_type_classifier import classify_drift_type
-from model_pool import ModelPool
-from prediction_model import PredictionModel
+from .config import DriftDetection, DriftType, PipelineConfig
+from .preprocessing import StreamBuffer, compute_prediction_errors, smooth_errors
+from detectors import (
+    SuddenDriftDetector,
+    GradualDriftDetector,
+    ConceptMemory,
+    detect_recurring_drift,
+)
+from .drift_type_classifier import classify_drift_type
+from .model_pool import ModelPool
+from .prediction_model import PredictionModel
 
 
 class ConceptDriftPipeline:
@@ -26,13 +30,10 @@ class ConceptDriftPipeline:
         self.buffer = StreamBuffer(max_len=3000)
         self.sudden_detector = SuddenDriftDetector(
             window_size=self.config.sudden_window_size,
-            threshold=self.config.sudden_threshold,
+            min_samples=20,
+            ensemble_strategy="majority",
         )
-        self.gradual_detector = GradualDriftDetector(
-            window_size=self.config.gradual_window_size,
-            delta=self.config.gradual_delta,
-            lambda_=self.config.gradual_lambda,
-        )
+        self.gradual_detector = GradualDriftDetector(ensemble_strategy="majority")
         self.concept_memory = ConceptMemory(recurrence_threshold=self.config.recurrence_threshold)
         self.model_pool = ModelPool(in_memory=True)
         self.prediction_model = PredictionModel(model_type=self.config.model_type)
@@ -92,16 +93,18 @@ class ConceptDriftPipeline:
         new_detections: List[DriftDetection] = []
         drift_occurred = False
 
-        sudden, sudden_ts = self.sudden_detector.detect()
+        sudden_result = self.sudden_detector.detect()
+        sudden = sudden_result[0] if isinstance(sudden_result, tuple) else sudden_result
         if sudden:
             drift_occurred = True
-            self._handle_drift(errors, index, sudden_ts, "sudden", new_detections)
+            self._handle_drift(errors, index, 0, "sudden", new_detections)
             return y_pred, new_detections, True
 
-        gradual, gradual_ts = self.gradual_detector.detect()
+        gradual_result = self.gradual_detector.detect()
+        gradual = gradual_result[0] if isinstance(gradual_result, tuple) else gradual_result
         if gradual:
             drift_occurred = True
-            self._handle_drift(errors, index, gradual_ts, "gradual", new_detections)
+            self._handle_drift(errors, index, 0, "gradual", new_detections)
             return y_pred, new_detections, True
 
         # No drift: maybe incremental adaptation when batch size reached

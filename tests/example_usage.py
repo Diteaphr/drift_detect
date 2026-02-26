@@ -5,7 +5,7 @@ Assume sudden/gradual detector has just fired at index t with prediction_errors 
 """
 
 import numpy as np
-from recurring_drift_detector import ConceptMemory, detect_recurring_drift
+from detectors import ConceptMemory, detect_recurring_drift
 
 # Simulated stream of prediction errors (e.g. from your model)
 np.random.seed(42)

@@ -9,9 +9,9 @@ from pathlib import Path
 # Ensure project root is on path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from config import PipelineConfig
-from pipeline import ConceptDriftPipeline, run_pipeline_demo
-from evaluation import evaluate_detectors, evaluate_drift_type_classifier, prediction_metrics
+from src.config import PipelineConfig
+from src.pipeline import ConceptDriftPipeline, run_pipeline_demo
+from tests.evaluation import evaluate_detectors, evaluate_drift_type_classifier, prediction_metrics
 
 
 def main():
