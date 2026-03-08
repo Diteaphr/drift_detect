@@ -1,0 +1,17 @@
+=== Concept Drift Pipeline Demo ===
+
+Running pipeline on synthetic stream (10000 samples) with river ConceptDrift dataset...
+
+--- Drift detector evaluation ---
+Detections: 0
+By type: {'sudden': 0, 'gradual': 0, 'recurring': 0}
+Precision: 0.000, Recall: 0.000, F1: 0.000
+
+--- Drift type classifier evaluation ---
+Classified (non-recurring): 0 (sudden: 0, gradual: 0)
+
+--- Prediction metrics ---
+MAE (over stream): 0.0520
+Rolling MAE (last window): 0.0300
+
+Done.

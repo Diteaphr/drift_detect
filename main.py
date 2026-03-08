@@ -18,15 +18,19 @@ def main():
     print("=== Concept Drift Pipeline Demo ===\n")
 
     # 1) Run pipeline on synthetic stream with known drift points
-    n_samples = 800
-    drift_at = [200, 400, 600]  # ground truth for evaluation
-    print("Running pipeline on synthetic stream (drifts at t=200, 400, 600)...")
-    pipeline, y_true, y_pred = run_pipeline_demo(n_samples=n_samples, drift_at=drift_at, seed=42)
+    n_samples = 10000  # Larger sample size for multiple drifts
+    # Ground truth drift points
+    drift_at = [2000, 4000, 6000, 8000]  
+    
+    # Try to use river dataset, fallback to manual if not available
+    use_river_dataset = True
+    print(f"Running pipeline on synthetic stream ({n_samples} samples) with river ConceptDrift dataset...")
+    pipeline, y_true, y_pred = run_pipeline_demo(n_samples=n_samples, drift_at=drift_at, seed=42, use_river=use_river_dataset)
 
     # 2) Offline evaluation: drift detectors
     print("\n--- Drift detector evaluation ---")
     detections = pipeline.detections
-    eval_det = evaluate_detectors(detections, ground_truth_drift_times=drift_at, tolerance=60)
+    eval_det = evaluate_detectors(detections, ground_truth_drift_times=drift_at, tolerance=300) # Give room to detect
     print(f"Detections: {eval_det['n_detections']}")
     print(f"By type: {eval_det['by_type']}")
     if eval_det.get("precision") is not None:

@@ -34,7 +34,7 @@ class PipelineConfig:
     gradual_delta: float = 0.01
     gradual_lambda: float = 0.99  # Page-Hinkley
     # Recurring
-    recurrence_threshold: float = 0.5
+    recurrence_threshold: float = 0.2  # Lowered to reduce false positive recurrences
     concept_memory_add_if_new: bool = True
     # Batch / adaptation
     update_batch_size: int = 100
