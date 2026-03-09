@@ -32,9 +32,9 @@ def main():
     config = PipelineConfig(
         sudden_window_size=50,
         gradual_window_size=100,
-        update_batch_size=250, # Needs to be large enough to not mask drift instantly
+        update_batch_size=1500,
         recurrence_threshold=0.15,
-        model_type="linear" # Using Linear (Logistic / SGD) as base model
+        model_type="linear" # Switch back to linear since SEA is linearly separable
     )
     pipeline = ConceptDriftPipeline(config=config)
     

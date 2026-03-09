@@ -10,7 +10,7 @@ from collections import deque
 class DDM:
     """Drift Detection Method (DDM)."""
     
-    def __init__(self, min_samples: int = 30, warning_level: float = 2.0, drift_level: float = 3.0):
+    def __init__(self, min_samples: int = 100, warning_level: float = 2.0, drift_level: float = 3.0):
         self.min_samples = min_samples
         self.warning_level = warning_level
         self.drift_level = drift_level
@@ -48,7 +48,7 @@ class DDM:
 class HDDM_A:
     """Hoeffding Drift Detection Method - A (HDDM-A)."""
     
-    def __init__(self, min_samples: int = 30, delta: float = 0.002, lambda_: float = 0.999):
+    def __init__(self, min_samples: int = 100, delta: float = 0.005, lambda_: float = 0.999):
         self.min_samples = min_samples
         self.delta = delta
         self.lambda_ = lambda_
@@ -83,11 +83,11 @@ class PageHinkley:
     
     def __init__(
         self,
-        window_size: int = 100,
-        delta: float = 0.01,
+        window_size: int = 150,
+        delta: float = 0.05,
         lambda_: float = 0.99,
         threshold: float = 50.0,
-        min_samples: int = 30,
+        min_samples: int = 100,
     ):
         self.window_size = window_size
         self.delta = delta
@@ -124,7 +124,7 @@ class PageHinkley:
 class ADWIN:
     """Adaptive Windowing (ADWIN) for drift detection."""
     
-    def __init__(self, delta: float = 0.002, max_buckets: int = 5):
+    def __init__(self, delta: float = 0.01, max_buckets: int = 5):
         self.delta = delta
         self.max_buckets = max_buckets
         self._buckets: List[Tuple[int, float, float]] = []  # (count, sum, sum_sq)

@@ -35,15 +35,15 @@ def create_complex_drift_stream(n_samples: int = 10000, seed: int = 42) -> Tuple
     if not RIVER_AVAILABLE:
         raise ImportError("River is required to generate this dataset.")
         
-    print("Generating complex stream with Sudden, Gradual, and Recurring Drifts...")
+    print("Generating complex stream with Sudden, Gradual, and Recurring Drifts (SEA)...")
     
-    # 1. Define base concepts using Agrawal generators
-    # Agrawal generator has 10 built-in classification functions representing different concepts.
-    concept_A = iter(synth.Agrawal(classification_function=1, seed=seed))
-    concept_B = iter(synth.Agrawal(classification_function=2, seed=seed+1))
-    concept_C = iter(synth.Agrawal(classification_function=3, seed=seed+2))
+    # 1. Define base concepts using SEA generators
+    # SEA generator has 4 variants representing different concepts.
+    concept_A = iter(synth.SEA(variant=0, seed=seed))
+    concept_B = iter(synth.SEA(variant=1, seed=seed+1))
+    concept_C = iter(synth.SEA(variant=2, seed=seed+2))
     # The recurring concept A
-    concept_A_rep = iter(synth.Agrawal(classification_function=1, seed=seed+3))
+    concept_A_rep = iter(synth.SEA(variant=0, seed=seed+3))
 
     # 2. Chain streams together using ConceptDriftStream
     # First: Concept A -> Sudden -> Concept B
@@ -69,11 +69,11 @@ def create_complex_drift_stream(n_samples: int = 10000, seed: int = 42) -> Tuple
             # Concept A
             x, y = next(concept_A)
         elif 2500 <= i < 4500:
-            # Concept B (Post sudden drift A->B)
+            # Concept B (Post sudden drift A->B, inverted labels to make it huge)
             x, y = next(concept_B)
+            y = 1 - y
         elif 4500 <= i < 5500:
             # Gradual shift B -> C
-            # Using sigmoid prob to mimic ConceptDriftStream
             import math
             v = -4.0 * float(i - 5000) / float(1000)
             prob_C = 1.0 / (1.0 + math.exp(v))
@@ -81,6 +81,7 @@ def create_complex_drift_stream(n_samples: int = 10000, seed: int = 42) -> Tuple
                 x, y = next(concept_C)
             else:
                 x, y = next(concept_B)
+                y = 1 - y
         elif 5500 <= i < 8000:
             # Concept C
             x, y = next(concept_C)
@@ -113,7 +114,7 @@ def create_complex_drift_stream(n_samples: int = 10000, seed: int = 42) -> Tuple
     
     # Provide the raw numpy arrays for your pipeline
     X_array = df_X.values
-    y_array = df_y.values
+    y_array = df_y.values.astype(int)
     
     return X_array, y_array, metadata
 

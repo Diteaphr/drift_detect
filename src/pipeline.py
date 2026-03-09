@@ -37,10 +37,10 @@ class ConceptDriftPipeline:
         self.buffer = StreamBuffer(max_len=3000)
         self.sudden_detector = SuddenDriftDetector(
             window_size=self.config.sudden_window_size,
-            min_samples=20,
-            ensemble_strategy="any",
+            min_samples=30,
+            ensemble_strategy="majority",
         )
-        self.gradual_detector = GradualDriftDetector(ensemble_strategy="any")
+        self.gradual_detector = GradualDriftDetector(ensemble_strategy="majority")
         self.distribution_detector = DistributionModule(window_size=100)
         self.concept_memory = ConceptMemory(recurrence_threshold=self.config.recurrence_threshold)
         self.model_pool = ModelPool(in_memory=True)
@@ -48,7 +48,7 @@ class ConceptDriftPipeline:
         self.detections: List[DriftDetection] = []
         self._step = 0
         self._lock_out = 0  # Cooling period
-        self._lock_out_duration = 300  # Examples of lock-out time
+        self._lock_out_duration = 500  # Examples of lock-out time
         self._batch_X: List[np.ndarray] = []
         self._batch_y: List[float] = []
         self._warm = False

@@ -19,8 +19,9 @@ def _make_linear_model():
 
 def _make_nonlinear_model():
     try:
-        from sklearn.neural_network import MLPClassifier
-        return MLPClassifier(hidden_layer_sizes=(32, 16), max_iter=1, warm_start=True, random_state=42)
+        from sklearn.naive_bayes import GaussianNB
+        # Gaussian Naive Bayes supports partial_fit and can model non-linear boundaries probabilistically.
+        return GaussianNB()
     except ImportError:
         return _make_linear_model()
 
