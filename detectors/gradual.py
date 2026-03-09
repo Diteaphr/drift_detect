@@ -225,7 +225,7 @@ class GradualDriftDetector:
         self._errors.append(error)
         
         # Convert error to binary for DDM (e.g., 1 if error > threshold else 0)
-        binary_error = 1 if error > np.mean(list(self._errors)) else 0
+        binary_error = 1 if error > 0.5 else 0
         
         self.ddm.update(binary_error)
         self.hddm_a.update(error)

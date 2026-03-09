@@ -38,9 +38,9 @@ class ConceptDriftPipeline:
         self.sudden_detector = SuddenDriftDetector(
             window_size=self.config.sudden_window_size,
             min_samples=20,
-            ensemble_strategy="warning-triggered",
+            ensemble_strategy="any",
         )
-        self.gradual_detector = GradualDriftDetector(ensemble_strategy="warning-triggered")
+        self.gradual_detector = GradualDriftDetector(ensemble_strategy="any")
         self.distribution_detector = DistributionModule(window_size=100)
         self.concept_memory = ConceptMemory(recurrence_threshold=self.config.recurrence_threshold)
         self.model_pool = ModelPool(in_memory=True)
@@ -298,6 +298,9 @@ def run_pipeline_demo(
                 stream_iter = iter(streams[current_stream])
                 
             x, y = next(stream_iter)
+            # Invert labels periodically to create a massive guaranteed concept drift
+            if current_stream % 2 == 1:
+                y = 1 - y
             X_list.append(list(x.values()))
             y_list.append(y)
         
@@ -320,9 +323,9 @@ def run_pipeline_demo(
         # We need the detectors to be sensitive enough to catch the drift
         sudden_window_size=50,
         gradual_window_size=100,
-        # IMPORTANT: Reduce batch size! If batch size is too big, the model silently 
-        # adapts to the drift BEFORE the Error buffer has a chance to notice it.
-        update_batch_size=25,
+        # Increase batch size so the error has time to accumulate and trigger detectors!
+        # If batch size is too small (e.g., 25), the model adapts instantly and hides the drift.
+        update_batch_size=250,
         recurrence_threshold=0.15,  # Lower threshold to catch recurrences more easily in this demo
     )
     pipeline = ConceptDriftPipeline(config=config)

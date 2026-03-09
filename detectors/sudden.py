@@ -238,9 +238,9 @@ class SuddenDriftDetector:
         self._buffer.append(error)
         
         # Convert continuous error to binary for HDDM-W and EDDM
-        # Use threshold of mean error
-        mean_error = np.mean(list(self._buffer)) if self._buffer else 0
-        binary_error = 1 if error > mean_error else 0
+        # If the problem is classification, error is already 0.0 or 1.0
+        # For general regression, thresholding at 0.5 works if errors are normalized
+        binary_error = 1 if error > 0.5 else 0
         
         self.hddm_w.update(binary_error)
         self.eddm.update(binary_error)
