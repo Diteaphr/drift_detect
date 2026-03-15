@@ -1,4 +1,8 @@
-"""Model pool: save and retrieve models for adaptation (e.g. on recurring drift)."""
+"""Model pool: save and retrieve models for adaptation (e.g. on recurring drift).
+
+Supports both sklearn model objects (original) and BaseModel instances
+(advanced models from the IM concept-drift library).
+"""
 
 import pickle
 import numpy as np
@@ -9,7 +13,10 @@ from typing import Any, Dict, List, Optional
 class ModelPool:
     """
     Stores trained models by id (e.g. concept id or timestamp).
-    Supports save, retrieve, and list.
+    Supports save, retrieve, list, and find_nearest for recurring drift.
+
+    For BaseModel instances, uses their native ``save()`` / ``load()`` methods
+    when persisting to disk.  In-memory storage works for any object type.
     """
 
     def __init__(self, in_memory: bool = True, cache_dir: Optional[Path] = None):
@@ -24,8 +31,11 @@ class ModelPool:
             self._models[model_id] = model
         if self.cache_dir:
             path = self.cache_dir / f"{model_id}.pkl"
-            with open(path, "wb") as f:
-                pickle.dump(model, f)
+            if _is_base_model(model):
+                model.save(path)
+            else:
+                with open(path, "wb") as f:
+                    pickle.dump(model, f)
 
     def retrieve(self, model_id: str) -> Optional[Any]:
         if self.in_memory and model_id in self._models:
@@ -45,11 +55,32 @@ class ModelPool:
         return []
 
     def remove(self, model_id: str) -> bool:
+        removed = False
         if self.in_memory and model_id in self._models:
             del self._models[model_id]
+            removed = True
         if self.cache_dir:
             path = self.cache_dir / f"{model_id}.pkl"
             if path.exists():
                 path.unlink()
-                return True
+                removed = True
+        return removed
+
+    def has(self, model_id: str) -> bool:
+        if self.in_memory:
+            return model_id in self._models
+        if self.cache_dir:
+            return (self.cache_dir / f"{model_id}.pkl").exists()
+        return False
+
+    def __len__(self) -> int:
+        return len(self.list_ids())
+
+
+def _is_base_model(obj: Any) -> bool:
+    """Check if *obj* is a BaseModel instance without importing it at module level."""
+    try:
+        from .models.base_model import BaseModel
+        return isinstance(obj, BaseModel)
+    except ImportError:
         return False

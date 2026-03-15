@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 
 class DriftType(str, Enum):
@@ -23,22 +23,41 @@ class DriftDetection:
 
 @dataclass
 class PipelineConfig:
-    """Config for the full pipeline."""
+    """Config for the full pipeline.
+
+    model_type : str
+        Which prediction model to use.
+
+        Original (sklearn-based):
+            ``"linear"`` — SGDClassifier
+            ``"nonlinear"`` — GaussianNB
+
+        Advanced (BaseModel-based, via model_adapter):
+            ``"elastic"`` — ElasticNet (River online logistic regression)
+            ``"rf"``      — Adaptive Random Forest (River ARF)
+            ``"xgb"``     — XGBoost (buffer-based incremental)
+            ``"gru"``     — GRU (PyTorch sliding-window online)
+
+    model_kwargs : dict
+        Extra keyword arguments forwarded to the model constructor.
+        Only used for advanced model types.
+    """
     # Preprocessing
     preprocess_window: int = 20
     # Sudden detector
     sudden_window_size: int = 50
-    sudden_threshold: float = 2.0  # e.g. z-score or effect size threshold
+    sudden_threshold: float = 2.0
     # Gradual detector
     gradual_window_size: int = 100
     gradual_delta: float = 0.01
-    gradual_lambda: float = 0.99  # Page-Hinkley
+    gradual_lambda: float = 0.99
     # Recurring
-    recurrence_threshold: float = 0.2  # Lowered to reduce false positive recurrences
+    recurrence_threshold: float = 0.2
     concept_memory_add_if_new: bool = True
     # Batch / adaptation
     update_batch_size: int = 100
     # Model
-    model_type: str = "linear"  # "linear" | "nonlinear"
+    model_type: str = "linear"
+    model_kwargs: Dict[str, Any] = field(default_factory=dict)
     # Evaluation
     eval_window: int = 200
