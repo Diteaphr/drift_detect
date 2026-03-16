@@ -59,6 +59,8 @@ def create_complex_drift_stream(n_samples: int = 10000, seed: int = 42) -> Tuple
     X_list = []
     y_list = []
     
+    np.random.seed(seed)
+    
     # IMPORTANT FIX: river's ConceptDriftStream nested too deeply can cause OverflowError 
     # due to inner exponentials stacking on bounds. 
     # We resolve this by generating segments manually and merging them, exactly simulating the behavior.

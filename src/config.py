@@ -19,7 +19,7 @@ class DriftDetection:
     drift_type: DriftType
     detector_source: str  # "sudden" | "gradual" (which detector fired first)
     raw_drift: bool = True  # True if sudden/gradual fired; False if only recurring/classifier
-
+    details: dict = field(default_factory=dict)
 
 @dataclass
 class PipelineConfig:

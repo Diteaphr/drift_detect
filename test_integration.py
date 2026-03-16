@@ -61,7 +61,11 @@ def run_one(name, model_type, model_kwargs, X, y):
 
     detections_summary = []
     for d in pipeline.detections:
-        detections_summary.append(f"t={d.timestamp} ({d.drift_type.value})")
+        details_str = ", ".join(f"{k}={v}" for k, v in getattr(d, 'details', {}).items())
+        if details_str:
+            detections_summary.append(f"t={d.timestamp} ({details_str})")
+        else:
+            detections_summary.append(f"t={d.timestamp}")
 
     return {
         "name": name,
@@ -90,11 +94,6 @@ def plot_advanced_models(results, y_true, rolling_window=100):
         "rf":      "#4CAF50",
         "xgb":     "#FF9800",
         "gru":     "#9C27B0",
-    }
-    drift_styles = {
-        DriftType.SUDDEN:    {"color": "#E53935", "marker": "v", "label": "Sudden"},
-        DriftType.GRADUAL:   {"color": "#FB8C00", "marker": "s", "label": "Gradual"},
-        DriftType.RECURRING: {"color": "#43A047", "marker": "D", "label": "Recurring"},
     }
 
     fig, axes = plt.subplots(4, 1, figsize=(16, 14), sharex=True)
@@ -130,14 +129,12 @@ def plot_advanced_models(results, y_true, rolling_window=100):
         ax.axvline(x=8000, color="#43A047", linestyle="--", linewidth=0.9, alpha=0.7)
 
         # --- Detection markers ---
-        plotted_types = set()
+        plotted_detection = False
         for d in r["detections_raw"]:
-            dt = d.drift_type
-            style = drift_styles.get(dt, {"color": "gray", "marker": "o", "label": dt.value})
-            lbl = f"Detected: {style['label']}" if dt not in plotted_types else None
-            plotted_types.add(dt)
+            lbl = "Drift Detected" if not plotted_detection else None
+            plotted_detection = True
             acc_at = rolling_acc[d.timestamp] if d.timestamp < len(rolling_acc) and not np.isnan(rolling_acc[d.timestamp]) else 0.5
-            ax.plot(d.timestamp, acc_at, marker=style["marker"], color=style["color"],
+            ax.plot(d.timestamp, acc_at, marker="X", color="red",
                     markersize=10, markeredgecolor="black", markeredgewidth=0.8,
                     zorder=5, label=lbl)
 

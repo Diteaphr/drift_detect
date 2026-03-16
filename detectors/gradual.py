@@ -19,6 +19,8 @@ class DDM:
         self._total_samples = 0
         self._p = 0.0
         self._p_std = 0.0
+        self._p_min = float('inf')
+        self._p_std_min = float('inf')
         
     def update(self, error: float) -> None:
         self._total_samples += 1
@@ -27,15 +29,21 @@ class DDM:
         self._p_std = np.sqrt(self._p * (1 - self._p) / self._total_samples)
         self._errors.append(error)
         
+        # Update minimums
+        if self._total_samples >= self.min_samples:
+            if self._p + self._p_std < self._p_min + self._p_std_min:
+                self._p_min = self._p
+                self._p_std_min = self._p_std
+        
     def detect(self) -> Tuple[bool, bool]:
         """Returns (drift_detected, warning_detected)."""
         if self._total_samples < self.min_samples:
             return False, False
         
-        warning = self._p + self.warning_level * self._p_std
-        drift = self._p + self.drift_level * self._p_std
+        warning = (self._p + self._p_std) > (self._p_min + self.warning_level * self._p_std_min)
+        drift = (self._p + self._p_std) > (self._p_min + self.drift_level * self._p_std_min)
         
-        return drift >= 0.5, warning >= 0.5
+        return drift, warning
     
     def reset(self) -> None:
         self._errors.clear()
@@ -43,6 +51,8 @@ class DDM:
         self._total_samples = 0
         self._p = 0.0
         self._p_std = 0.0
+        self._p_min = float('inf')
+        self._p_std_min = float('inf')
 
 
 class HDDM_A:
@@ -86,7 +96,7 @@ class PageHinkley:
         window_size: int = 150,
         delta: float = 0.05,
         lambda_: float = 0.99,
-        threshold: float = 50.0,
+        threshold: float = 15.0,
         min_samples: int = 100,
     ):
         self.window_size = window_size
@@ -219,6 +229,7 @@ class GradualDriftDetector:
         self.page_hinkley = PageHinkley()
         self.adwin = ADWIN()
         self._errors: deque = deque(maxlen=1000)
+        self._adwin_drift = False
         
     def update(self, error: float) -> None:
         """Update all detectors with new error value."""
@@ -230,7 +241,7 @@ class GradualDriftDetector:
         self.ddm.update(binary_error)
         self.hddm_a.update(error)
         self.page_hinkley.update(error)
-        self.adwin.update(error)
+        self._adwin_drift = self.adwin.update(error)
         
     def detect(self) -> Tuple[bool, Dict[str, bool]]:
         """
@@ -242,9 +253,7 @@ class GradualDriftDetector:
         ddm_drift, _ = self.ddm.detect()
         hddm_drift = self.hddm_a.detect()
         ph_drift = self.page_hinkley.detect()
-        adwin_drift = self.adwin.update(
-            np.mean(list(self._errors)) if self._errors else 0
-        )
+        adwin_drift = self._adwin_drift
         
         results = {
             "DDM": ddm_drift,

@@ -187,22 +187,41 @@ class ConceptDriftPipeline:
         drift_occurred = False
 
         if data_drift_warning:
-            if hasattr(self.sudden_detector, "_in_warning_zone"):
-                self.sudden_detector._in_warning_zone = True
+            if hasattr(self.sudden_detector, "ensemble_strategy"):
+                self.sudden_detector.ensemble_strategy = "any"
+            if hasattr(self.gradual_detector, "ensemble_strategy"):
+                self.gradual_detector.ensemble_strategy = "any"
+        else:
+            if hasattr(self.sudden_detector, "ensemble_strategy"):
+                self.sudden_detector.ensemble_strategy = "majority"
+            if hasattr(self.gradual_detector, "ensemble_strategy"):
+                self.gradual_detector.ensemble_strategy = "majority"
 
         sudden_result = self.sudden_detector.detect()
-        sudden = sudden_result[0] if isinstance(sudden_result, tuple) else sudden_result
+        if isinstance(sudden_result, tuple):
+            sudden, sudden_details = sudden_result
+        else:
+            sudden, sudden_details = sudden_result, {}
+
         if sudden:
+            sudden_details["data_drift_warning"] = data_drift_warning
+            sudden_details["strategy"] = getattr(self.sudden_detector, "ensemble_strategy", "unknown")
             drift_occurred = True
-            self._handle_drift(errors, index, 0, "sudden", new_detections)
+            self._handle_drift(errors, index, 0, "sudden", new_detections, sudden_details)
             self._lock_out = self._lock_out_duration
             return y_pred, new_detections, True
 
         gradual_result = self.gradual_detector.detect()
-        gradual = gradual_result[0] if isinstance(gradual_result, tuple) else gradual_result
+        if isinstance(gradual_result, tuple):
+            gradual, gradual_details = gradual_result
+        else:
+            gradual, gradual_details = gradual_result, {}
+
         if gradual:
+            gradual_details["data_drift_warning"] = data_drift_warning
+            gradual_details["strategy"] = getattr(self.gradual_detector, "ensemble_strategy", "unknown")
             drift_occurred = True
-            self._handle_drift(errors, index, 0, "gradual", new_detections)
+            self._handle_drift(errors, index, 0, "gradual", new_detections, gradual_details)
             self._lock_out = self._lock_out_duration
             return y_pred, new_detections, True
 
@@ -227,7 +246,10 @@ class ConceptDriftPipeline:
         detector_ts: int,
         detector_source: str,
         out_detections: List[DriftDetection],
+        detector_details: dict = None,
     ) -> None:
+        if detector_details is None:
+            detector_details = {}
         drift_alert_timestamp = current_index
         errors_flat = self.buffer.get_errors()
         err_idx = len(errors_flat) - 1
@@ -247,6 +269,7 @@ class ConceptDriftPipeline:
                 drift_type=DriftType.RECURRING,
                 detector_source=detector_source,
                 raw_drift=True,
+                details=detector_details
             ))
             self.detections.append(out_detections[-1])
 
@@ -277,6 +300,7 @@ class ConceptDriftPipeline:
                 drift_type=classified,
                 detector_source=detector_source,
                 raw_drift=True,
+                details=detector_details
             ))
             self.detections.append(out_detections[-1])
 
