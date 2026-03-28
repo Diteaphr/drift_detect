@@ -8,8 +8,10 @@ Supports two model backends:
 """
 
 import logging
+from collections import deque
+
 import numpy as np
-from typing import Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from .config import DriftDetection, DriftType, PipelineConfig
 from .preprocessing import StreamBuffer, compute_prediction_errors, smooth_errors
@@ -20,7 +22,7 @@ from detectors import (
     ConceptMemory,
     detect_recurring_drift,
 )
-from .drift_type_classifier import classify_drift_type
+from .drift_type_classifier_dtc_rf import classify_drift_type
 from .model_pool import ModelPool
 from .prediction_model import PredictionModel
 from .model_adapter import BaseModelAdapter, is_advanced_model_type
@@ -55,7 +57,15 @@ class ConceptDriftPipeline:
         )
         self.gradual_detector = GradualDriftDetector(ensemble_strategy="majority")
         self.distribution_detector = DistributionModule(window_size=100)
-        self.concept_memory = ConceptMemory(recurrence_threshold=self.config.recurrence_threshold)
+        self.concept_memory = ConceptMemory(
+            significance=self.config.recurring_stat_alpha,
+            k_neighbors=self.config.recurring_k_neighbors,
+            max_buffer_size=self.config.recurring_max_buffer_size,
+            n_permutations=self.config.recurring_n_permutations,
+            window_before=self.config.recurring_window_before,
+            window_after=self.config.recurring_window_after,
+            random_seed=self.config.recurring_random_seed,
+        )
         self.model_pool = ModelPool(in_memory=True)
         self.detections: List[DriftDetection] = []
         self._step = 0
@@ -65,6 +75,12 @@ class ConceptDriftPipeline:
         self._batch_y: List[float] = []
         self._warm = False
         self._concept_counter = 0
+
+        # Post-alert FIFO for RCD-like recurring test (collect after drift alarm)
+        self._collecting_post_alert_fifo: bool = False
+        self._post_alert_fifo_x: Optional[deque] = None
+        self._post_alert_fifo_err: Optional[deque] = None
+        self._pending_drift: Optional[Dict[str, Any]] = None
 
         # --- Model backend selection ---
         self._use_advanced = is_advanced_model_type(self.config.model_type)
@@ -129,7 +145,7 @@ class ConceptDriftPipeline:
                 self.prediction_model.data_buffer.append(
                     (BaseModel._to_dict(x_.ravel()), y_true, index)
                 )
-                self.buffer.append(y_true, y_pred, index)
+                self.buffer.append(y_true, y_pred, index, x=x_.ravel())
                 self._cold_start_count = getattr(self, '_cold_start_count', 0) + 1
                 if self._cold_start_count >= self.config.update_batch_size:
                     self._warm = True
@@ -152,7 +168,7 @@ class ConceptDriftPipeline:
         else:
             y_pred = float(self.prediction_model.predict(x_)[0])
 
-        self.buffer.append(y_true, y_pred, index)
+        self.buffer.append(y_true, y_pred, index, x=x_.ravel())
         errors = self.buffer.get_errors()
         err = float(np.abs(y_true - y_pred))
 
@@ -164,6 +180,25 @@ class ConceptDriftPipeline:
             self.prediction_model.data_buffer.append(
                 (BaseModel._to_dict(x_.ravel()), y_true, index)
             )
+
+        new_detections: List[DriftDetection] = []
+
+        # ---- Post-alert FIFO: collect samples after drift alarm (RCD-like) ----
+        if self._collecting_post_alert_fifo and self._post_alert_fifo_err is not None:
+            self._post_alert_fifo_err.append(err)
+            self._post_alert_fifo_x.append(np.asarray(x_.ravel(), dtype=np.float64).copy())
+            n_fifo = len(self._post_alert_fifo_err)
+            cap = self.config.recurring_max_buffer_size
+            need = self.config.recurring_fifo_min_samples
+            if n_fifo >= need or n_fifo >= cap:
+                self._finalize_post_alert_drift(new_detections)
+            elif self._lock_out == 0 and n_fifo >= self.concept_memory.k_neighbors + 1:
+                # Lockout ended before min samples: finalize with what we have
+                self._finalize_post_alert_drift(new_detections)
+            elif self._lock_out == 0 and n_fifo > 0:
+                self._finalize_post_alert_drift(new_detections)
+            if new_detections:
+                return y_pred, new_detections, True
 
         # ---- Lock-out period: update model but skip detectors ----
         if self._lock_out > 0:
@@ -183,7 +218,6 @@ class ConceptDriftPipeline:
         self.sudden_detector.update(err)
         self.gradual_detector.update(err)
 
-        new_detections: List[DriftDetection] = []
         drift_occurred = False
 
         if data_drift_warning:
@@ -207,8 +241,14 @@ class ConceptDriftPipeline:
             sudden_details["data_drift_warning"] = data_drift_warning
             sudden_details["strategy"] = getattr(self.sudden_detector, "ensemble_strategy", "unknown")
             drift_occurred = True
-            self._handle_drift(errors, index, 0, "sudden", new_detections, sudden_details)
-            self._lock_out = self._lock_out_duration
+            if self.config.recurring_use_post_alert_fifo:
+                self._start_post_alert_fifo_collection(
+                    index, "sudden", sudden_details, x_.ravel(), err
+                )
+                self._lock_out = self._lock_out_duration
+            else:
+                self._handle_drift(errors, index, 0, "sudden", new_detections, sudden_details)
+                self._lock_out = self._lock_out_duration
             return y_pred, new_detections, True
 
         gradual_result = self.gradual_detector.detect()
@@ -221,8 +261,14 @@ class ConceptDriftPipeline:
             gradual_details["data_drift_warning"] = data_drift_warning
             gradual_details["strategy"] = getattr(self.gradual_detector, "ensemble_strategy", "unknown")
             drift_occurred = True
-            self._handle_drift(errors, index, 0, "gradual", new_detections, gradual_details)
-            self._lock_out = self._lock_out_duration
+            if self.config.recurring_use_post_alert_fifo:
+                self._start_post_alert_fifo_collection(
+                    index, "gradual", gradual_details, x_.ravel(), err
+                )
+                self._lock_out = self._lock_out_duration
+            else:
+                self._handle_drift(errors, index, 0, "gradual", new_detections, gradual_details)
+                self._lock_out = self._lock_out_duration
             return y_pred, new_detections, True
 
         # ---- No drift: incremental adaptation ----
@@ -237,6 +283,67 @@ class ConceptDriftPipeline:
         return y_pred, new_detections, False
 
     # ------------------------------------------------------------------
+    # Post-alert FIFO (RCD-like sample collection)
+    # ------------------------------------------------------------------
+    def _start_post_alert_fifo_collection(
+        self,
+        alert_index: int,
+        detector_source: str,
+        detector_details: dict,
+        x: np.ndarray,
+        err: float,
+    ) -> None:
+        cap = self.config.recurring_max_buffer_size
+        self._post_alert_fifo_x = deque(maxlen=cap)
+        self._post_alert_fifo_err = deque(maxlen=cap)
+        self._post_alert_fifo_x.append(np.asarray(x, dtype=np.float64).ravel().copy())
+        self._post_alert_fifo_err.append(float(err))
+        self._collecting_post_alert_fifo = True
+        self._pending_drift = {
+            "alert_index": int(alert_index),
+            "source": detector_source,
+            "details": dict(detector_details),
+        }
+        logger.info(
+            "Drift alarm at t=%d (%s); collecting post-alert FIFO (min=%d, cap=%d)",
+            alert_index,
+            detector_source,
+            self.config.recurring_fifo_min_samples,
+            cap,
+        )
+
+    def _finalize_post_alert_drift(self, out_detections: List[DriftDetection]) -> None:
+        if not self._collecting_post_alert_fifo or self._pending_drift is None:
+            return
+        if not self._post_alert_fifo_x or not self._post_alert_fifo_err:
+            self._collecting_post_alert_fifo = False
+            self._post_alert_fifo_x = None
+            self._post_alert_fifo_err = None
+            self._pending_drift = None
+            return
+
+        Xw = np.stack(list(self._post_alert_fifo_x), axis=0)
+        ew = np.array(list(self._post_alert_fifo_err), dtype=np.float64)
+        pending = self._pending_drift
+        self._collecting_post_alert_fifo = False
+        self._post_alert_fifo_x = None
+        self._post_alert_fifo_err = None
+        self._pending_drift = None
+
+        errors_flat = self.buffer.get_errors()
+        self._handle_drift(
+            errors_flat,
+            pending["alert_index"],
+            0,
+            pending["source"],
+            out_detections,
+            pending["details"],
+            post_alert_X=Xw,
+            post_alert_errors=ew,
+        )
+        self._lock_out = 0
+
+    # ------------------------------------------------------------------
     # Drift handling
     # ------------------------------------------------------------------
     def _handle_drift(
@@ -247,6 +354,8 @@ class ConceptDriftPipeline:
         detector_source: str,
         out_detections: List[DriftDetection],
         detector_details: dict = None,
+        post_alert_X: Optional[np.ndarray] = None,
+        post_alert_errors: Optional[np.ndarray] = None,
     ) -> None:
         if detector_details is None:
             detector_details = {}
@@ -254,14 +363,31 @@ class ConceptDriftPipeline:
         errors_flat = self.buffer.get_errors()
         err_idx = len(errors_flat) - 1
 
-        # --- Recurring drift check ---
-        recurring = detect_recurring_drift(
-            errors_flat,
-            err_idx,
-            self.concept_memory,
-            add_if_new=self.config.concept_memory_add_if_new,
-            recurrence_threshold=self.config.recurrence_threshold,
-        )
+        # --- Recurring drift check (RCD-style kNN mixing) ---
+        if post_alert_errors is not None or post_alert_X is not None:
+            recurring = detect_recurring_drift(
+                errors_flat,
+                drift_alert_timestamp,
+                self.concept_memory,
+                add_if_new=self.config.concept_memory_add_if_new,
+                recurrence_threshold=self.config.recurrence_threshold,
+                post_alert_X=post_alert_X,
+                post_alert_errors=post_alert_errors,
+            )
+        else:
+            X_window = self.buffer.get_feature_window(
+                err_idx,
+                self.concept_memory.window_before,
+                self.concept_memory.window_after,
+            )
+            recurring = detect_recurring_drift(
+                errors_flat,
+                err_idx,
+                self.concept_memory,
+                add_if_new=self.config.concept_memory_add_if_new,
+                recurrence_threshold=self.config.recurrence_threshold,
+                X_window=X_window,
+            )
 
         if recurring:
             out_detections.append(DriftDetection(
@@ -293,7 +419,7 @@ class ConceptDriftPipeline:
                     drift_alert_timestamp,
                 )
         else:
-            # --- Classify as sudden or gradual ---
+            # --- Classify as sudden / gradual / incremental ---
             classified = classify_drift_type(errors_flat, err_idx)
             out_detections.append(DriftDetection(
                 timestamp=drift_alert_timestamp,
@@ -316,7 +442,10 @@ class ConceptDriftPipeline:
             # --- Apply drift-type-specific strategy ---
             if classified == DriftType.SUDDEN:
                 self._handle_sudden_reset(drift_alert_timestamp)
+            elif classified == DriftType.GRADUAL:
+                self._handle_gradual_reset(drift_alert_timestamp)
             else:
+                # Incremental: keep continuity and adapt conservatively (same handler as gradual for now)
                 self._handle_gradual_reset(drift_alert_timestamp)
 
         # Reset detectors

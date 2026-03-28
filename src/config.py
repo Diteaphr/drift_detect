@@ -9,6 +9,7 @@ class DriftType(str, Enum):
     NONE = "none"
     SUDDEN = "sudden"
     GRADUAL = "gradual"
+    INCREMENTAL = "incremental"
     RECURRING = "recurring"
 
 
@@ -51,8 +52,20 @@ class PipelineConfig:
     gradual_window_size: int = 100
     gradual_delta: float = 0.01
     gradual_lambda: float = 0.99
-    # Recurring
-    recurrence_threshold: float = 0.2
+    # Recurring (RCD-style statistical test; Gonçalves & Barros 2013)
+    recurring_stat_alpha: float = 0.01  # recurring if p-value > alpha (paper best: s = 0.01)
+    recurring_k_neighbors: int = 5
+    recurring_max_buffer_size: int = 400
+    recurring_n_permutations: int = 199
+    # Paper-like: FIFO of instances after drift alert (cap = recurring_max_buffer_size).
+    recurring_use_post_alert_fifo: bool = True
+    recurring_fifo_min_samples: int = 100  # run test once this many post-alert points collected (or cap hit)
+    # Legacy slice around alert (used if recurring_use_post_alert_fifo is False, or for X_stream eval fallback)
+    recurring_window_before: int = 50
+    recurring_window_after: int = 10
+    recurring_random_seed: int = 42
+    # If set, overrides recurring_stat_alpha for each detect_recurring_drift call only.
+    recurrence_threshold: Optional[float] = None
     concept_memory_add_if_new: bool = True
     # Batch / adaptation
     update_batch_size: int = 100
