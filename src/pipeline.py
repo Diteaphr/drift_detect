@@ -16,8 +16,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 from .config import DriftDetection, DriftType, PipelineConfig
 from .preprocessing import StreamBuffer, compute_prediction_errors, smooth_errors
 from detectors import (
-    SuddenDriftDetector,
-    GradualDriftDetector,
+    UnifiedDriftDetector,
     DistributionModule,
     ConceptMemory,
     detect_recurring_drift,
@@ -50,12 +49,10 @@ class ConceptDriftPipeline:
     def __init__(self, config: Optional[PipelineConfig] = None):
         self.config = config or PipelineConfig()
         self.buffer = StreamBuffer(max_len=3000)
-        self.sudden_detector = SuddenDriftDetector(
-            window_size=self.config.sudden_window_size,
+        self.drift_detector = UnifiedDriftDetector(
             min_samples=30,
             ensemble_strategy="majority",
         )
-        self.gradual_detector = GradualDriftDetector(ensemble_strategy="majority")
         self.distribution_detector = DistributionModule(window_size=100)
         self.concept_memory = ConceptMemory(
             significance=self.config.recurring_stat_alpha,
@@ -215,59 +212,34 @@ class ConceptDriftPipeline:
         self.distribution_detector.update(x_)
         data_drift_warning = self.distribution_detector.detect()
 
-        self.sudden_detector.update(err)
-        self.gradual_detector.update(err)
+        self.drift_detector.update(err)
 
         drift_occurred = False
 
         if data_drift_warning:
-            if hasattr(self.sudden_detector, "ensemble_strategy"):
-                self.sudden_detector.ensemble_strategy = "any"
-            if hasattr(self.gradual_detector, "ensemble_strategy"):
-                self.gradual_detector.ensemble_strategy = "any"
+            if hasattr(self.drift_detector, "ensemble_strategy"):
+                self.drift_detector.ensemble_strategy = "any"
         else:
-            if hasattr(self.sudden_detector, "ensemble_strategy"):
-                self.sudden_detector.ensemble_strategy = "majority"
-            if hasattr(self.gradual_detector, "ensemble_strategy"):
-                self.gradual_detector.ensemble_strategy = "majority"
+            if hasattr(self.drift_detector, "ensemble_strategy"):
+                self.drift_detector.ensemble_strategy = "majority"
 
-        sudden_result = self.sudden_detector.detect()
-        if isinstance(sudden_result, tuple):
-            sudden, sudden_details = sudden_result
+        drift_result = self.drift_detector.detect()
+        if isinstance(drift_result, tuple):
+            drift_detected, drift_details = drift_result
         else:
-            sudden, sudden_details = sudden_result, {}
+            drift_detected, drift_details = drift_result, {}
 
-        if sudden:
-            sudden_details["data_drift_warning"] = data_drift_warning
-            sudden_details["strategy"] = getattr(self.sudden_detector, "ensemble_strategy", "unknown")
+        if drift_detected:
+            drift_details["data_drift_warning"] = data_drift_warning
+            drift_details["strategy"] = getattr(self.drift_detector, "ensemble_strategy", "unknown")
             drift_occurred = True
             if self.config.recurring_use_post_alert_fifo:
                 self._start_post_alert_fifo_collection(
-                    index, "sudden", sudden_details, x_.ravel(), err
+                    index, "unified", drift_details, x_.ravel(), err
                 )
                 self._lock_out = self._lock_out_duration
             else:
-                self._handle_drift(errors, index, 0, "sudden", new_detections, sudden_details)
-                self._lock_out = self._lock_out_duration
-            return y_pred, new_detections, True
-
-        gradual_result = self.gradual_detector.detect()
-        if isinstance(gradual_result, tuple):
-            gradual, gradual_details = gradual_result
-        else:
-            gradual, gradual_details = gradual_result, {}
-
-        if gradual:
-            gradual_details["data_drift_warning"] = data_drift_warning
-            gradual_details["strategy"] = getattr(self.gradual_detector, "ensemble_strategy", "unknown")
-            drift_occurred = True
-            if self.config.recurring_use_post_alert_fifo:
-                self._start_post_alert_fifo_collection(
-                    index, "gradual", gradual_details, x_.ravel(), err
-                )
-                self._lock_out = self._lock_out_duration
-            else:
-                self._handle_drift(errors, index, 0, "gradual", new_detections, gradual_details)
+                self._handle_drift(errors, index, 0, "unified", new_detections, drift_details)
                 self._lock_out = self._lock_out_duration
             return y_pred, new_detections, True
 
@@ -449,8 +421,7 @@ class ConceptDriftPipeline:
                 self._handle_gradual_reset(drift_alert_timestamp)
 
         # Reset detectors
-        self.sudden_detector.reset()
-        self.gradual_detector.reset()
+        self.drift_detector.reset()
         self.distribution_detector.reset()
 
         self._batch_X.clear()

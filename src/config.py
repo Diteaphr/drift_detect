@@ -18,7 +18,7 @@ class DriftDetection:
     """Single drift detection event."""
     timestamp: int
     drift_type: DriftType
-    detector_source: str  # "sudden" | "gradual" (which detector fired first)
+    detector_source: str  # e.g., "unified" (or naming the detector that fired)
     raw_drift: bool = True  # True if sudden/gradual fired; False if only recurring/classifier
     details: dict = field(default_factory=dict)
 

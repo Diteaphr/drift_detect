@@ -1,8 +1,10 @@
 """
-Run the full concept drift pipeline: synthetic stream → detectors → model adaptation → evaluation.
+Run the full concept drift pipeline: syntetic stream → detectors → model adaptation → evaluation.
 """
 
 import numpy as np
+import pandas as pd
+import ast
 import sys
 from pathlib import Path
 
@@ -12,21 +14,47 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from src.config import PipelineConfig
 from src.pipeline import ConceptDriftPipeline
 from tests.evaluation import evaluate_detectors, evaluate_drift_type_classifier, prediction_metrics
-from generate_drift_dataset import create_complex_drift_stream
+
+
+def load_dataset(csv_path: str, drift_times_path: str):
+    """Load dataset and ground truth drift times."""
+    print(f"Loading dataset from {csv_path}...")
+    df = pd.read_csv(csv_path)
+    X = df.drop(columns=['y']).values
+    y = df['y'].values
+
+    print(f"Loading ground truth drift times from {drift_times_path}...")
+    with open(drift_times_path, 'r') as f:
+        content = f.read().strip()
+        # Parse the nested list format [[start, end], [start, end]]
+        drift_intervals = ast.literal_eval(content)
+        # For evaluation, we typically use the midpoint or start of the drift interval
+        drift_times = [int((interval[0] + interval[1]) / 2) for interval in drift_intervals]
+
+    return X, y, drift_times
 
 def main():
-    print("=== Concept Drift Pipeline Demo (Complex Dataset) ===\n")
+    print("=== Concept Drift Pipeline Demo (Real Dataset) ===\n")
 
-    # 1) Generate the complex stream with multiple drift types
-    n_samples = 10000
-    print(f"Generating synthetic stream ({n_samples} samples) with Agrawal Sudden, Gradual, and Recurring drifts...")
-    X_true, y_true, df_meta = create_complex_drift_stream(n_samples=n_samples, seed=42)
+    # 1) Load the stream
+    data_dir = Path("data/sudden_drift")
+    dataset_name = "recurring_sudden_sea100k_g00"
     
-    # Ground truth drift points based on our generator setup
-    # Sudden at 2500, Gradual center at 5000, Recurring Sudden at 8000
-    drift_at_all = [2500, 5000, 8000]
-    drift_at_sudden = [2500, 8000]
-    drift_at_gradual = [5000]
+    csv_path = data_dir / f"{dataset_name}.csv"
+    drift_times_path = data_dir / f"{dataset_name}_drift_times.txt"
+    
+    if not csv_path.exists() or not drift_times_path.exists():
+        print(f"Error: Could not find {csv_path} or {drift_times_path}")
+        return
+
+    X_true, y_true, drift_at_all = load_dataset(str(csv_path), str(drift_times_path))
+    n_samples = len(y_true)
+    print(f"Dataset loaded: {n_samples} samples. Ground truth drifts at: {drift_at_all}")
+    
+    # We don't have separate ground truths for sudden vs gradual in this generic loader
+    # but we can pass all of them to sudden for evaluation purposes if we assume they are sudden
+    drift_at_sudden = drift_at_all
+    drift_at_gradual = []
 
     # 2) Initialize and run Pipeline
     config = PipelineConfig(

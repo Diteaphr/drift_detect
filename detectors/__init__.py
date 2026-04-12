@@ -1,5 +1,6 @@
 from .sudden import SuddenDriftDetector
 from .gradual import GradualDriftDetector
+from .unified import UnifiedDriftDetector
 from .distribution import DistributionModule
 from .recurring_drift_detector import (
     ConceptMemory,
@@ -12,6 +13,7 @@ from .recurring_drift_detector import (
 __all__ = [
     "SuddenDriftDetector",
     "GradualDriftDetector",
+    "UnifiedDriftDetector",
     "DistributionModule",
     "ConceptMemory",
     "ConceptMemoryHybrid",
