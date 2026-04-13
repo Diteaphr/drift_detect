@@ -12,18 +12,18 @@ class UnifiedDriftDetector:
     結合原本 Sudden 與 Gradual 分開的偵測方法，共同進行投票。
     共 6 種不同方法，ADWIN 只取一個。
     """
-    def __init__(self, ensemble_strategy: str = "majority", min_samples: int = 30):
-        self.ensemble_strategy = ensemble_strategy
+    def __init__(self, min_samples: int = 30, atom_kwargs: Dict[str, Dict] = None):
         self.min_samples = min_samples
+        atom_kwargs = atom_kwargs or {}
         
         # 初始化 6 種不同的基礎偵測器
-        self.hddm_w = HDDM_W(min_samples=min_samples)
-        self.eddm = EDDM(min_samples=min_samples)
-        self.ddm = DDM()
-        self.hddm_a = HDDM_A()
-        self.page_hinkley = PageHinkley()
+        self.hddm_w = HDDM_W(min_samples=min_samples, **atom_kwargs.get("hddm_w", {}))
+        self.eddm = EDDM(min_samples=min_samples, **atom_kwargs.get("eddm", {}))
+        self.ddm = DDM(**atom_kwargs.get("ddm", {}))
+        self.hddm_a = HDDM_A(**atom_kwargs.get("hddm_a", {}))
+        self.page_hinkley = PageHinkley(**atom_kwargs.get("page_hinkley", {}))
         # 這裡使用 gradual 裡面的標準 ADWIN
-        self.adwin = ADWIN()
+        self.adwin = ADWIN(**atom_kwargs.get("adwin", {}))
         
         # 為了事後分析 (drift_type_classifier) 我們要保留過去的 error 記錄
         self._buffer: deque = deque(maxlen=2000)
@@ -43,10 +43,8 @@ class UnifiedDriftDetector:
         self.page_hinkley.update(error)
         self._adwin_drift = self.adwin.update(error)
 
-    def detect(self) -> Tuple[bool, Dict[str, bool]]:
-        """
-        執行 Ensemble 投票並回傳結果與個別細節
-        """
+    def detect(self) -> Dict[str, bool]:
+        """执行並回傳所有子演算法的各自偵測結果。"""
         hddm_w_drift = self.hddm_w.detect()
         eddm_drift, _ = self.eddm.detect()
         ddm_drift, _ = self.ddm.detect()
@@ -63,19 +61,7 @@ class UnifiedDriftDetector:
             "ADWIN": adwin_drift,
         }
         
-        # Ensemble decision (原實作策略)
-        if self.ensemble_strategy == "majority":
-            votes = sum(results.values())
-            # 總共 6 個演算法，我們預設 3 票(含)以上過半即偵測到飄移
-            drift_detected = votes >= 3
-        elif self.ensemble_strategy == "any":
-            drift_detected = any(results.values())
-        elif self.ensemble_strategy == "all":
-            drift_detected = all(results.values())
-        else:
-            drift_detected = False
-            
-        return drift_detected, results
+        return results
 
     def get_errors(self) -> np.ndarray:
         return np.array(list(self._buffer), dtype=np.float64)

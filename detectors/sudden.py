@@ -43,9 +43,10 @@ class HDDM_W:
         if len(self._errors) < self.min_samples * 2:
             return False
         
-        # Hoeffding bound
-        m = (1.0 / len(list(self._errors)))
-        epsilon = np.sqrt((1.0 / (2 * m)) * np.log(2 / self.delta))
+        # Hoeffding bound correctly computed for comparing two means (N/2 elements each)
+        n = len(self._errors)
+        m_harmonic = (n / 2.0 * n / 2.0) / n if n > 0 else 1.0  # Harmonic mean of split windows which is N/4
+        epsilon = np.sqrt((1.0 / (2 * m_harmonic)) * np.log(2 / self.delta))
         
         return abs(self._p0 - self._p1) >= epsilon
     

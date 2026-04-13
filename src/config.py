@@ -45,13 +45,10 @@ class PipelineConfig:
     """
     # Preprocessing
     preprocess_window: int = 20
-    # Sudden detector
-    sudden_window_size: int = 50
-    sudden_threshold: float = 2.0
-    # Gradual detector
-    gradual_window_size: int = 100
-    gradual_delta: float = 0.01
-    gradual_lambda: float = 0.99
+    # Meta/Unified detector settings
+    meta_ks_window_size: int = 100
+    atom_min_samples: int = 30
+    atom_kwargs: Dict[str, Any] = field(default_factory=dict)  # For future extensibility of atom detectors
     # Recurring (RCD-style statistical test; Gonçalves & Barros 2013)
     recurring_stat_alpha: float = 0.01  # recurring if p-value > alpha (paper best: s = 0.01)
     recurring_k_neighbors: int = 5
@@ -69,6 +66,8 @@ class PipelineConfig:
     concept_memory_add_if_new: bool = True
     # Batch / adaptation
     update_batch_size: int = 100
+    # Meta Detector
+    meta_detector_type: str = "two_stage"  # "two_stage", "dynamic_weighted", "statistical_fusion"
     # Model
     model_type: str = "linear"
     model_kwargs: Dict[str, Any] = field(default_factory=dict)

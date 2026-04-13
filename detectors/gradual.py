@@ -93,42 +93,40 @@ class PageHinkley:
     
     def __init__(
         self,
-        window_size: int = 150,
         delta: float = 0.05,
-        lambda_: float = 0.99,
         threshold: float = 15.0,
-        min_samples: int = 100,
+        min_samples: int = 30,     # 改小一點比較容易觸發
     ):
-        self.window_size = window_size
         self.delta = delta
-        self.lambda_ = lambda_
         self.threshold = threshold
         self.min_samples = min_samples
-        self._errors: deque = deque(maxlen=window_size)
-        self._m = 0.0  # running mean (exponential)
-        self._ph = 0.0  # Page-Hinkley statistic
-        self._min_ph = 0.0
+        self._n = 0
+        self._sum = 0.0
+        self._ph = 0.0             # Page-Hinkley statistic
+        self._max_ph = 0.0         # 應紀錄當前最高值(或是用累加差異，這裡我們實作累積正偏差)
         
     def update(self, error: float) -> None:
-        self._errors.append(error)
-        # Exponential moving average for reference level
-        self._m = self.lambda_ * self._m + (1 - self.lambda_) * error
-        # Cumulative deviation
-        self._ph = self._ph + (error - self._m - self.delta)
-        self._min_ph = min(self._min_ph, self._ph)
+        self._n += 1
+        self._sum += error
+        mean = self._sum / self._n  # 取純平均作為堅固的錨點
         
+        # Cumulative deviation (累積正向差異。當錯誤高出平均值+delta時發難)
+        self._ph = self._ph + (error - mean - self.delta)
+        
+        # 若 ph 掉落回 0 以下，代表沒事，重新累計
+        if self._ph < 0:
+            self._ph = 0.0
+
     def detect(self) -> bool:
         """Returns True if drift detected."""
-        if len(self._errors) < self.min_samples:
+        if self._n < self.min_samples:
             return False
-        # Drift when PH - min_PH exceeds threshold
-        return self._ph - self._min_ph >= self.threshold
+        return self._ph >= self.threshold
     
     def reset(self) -> None:
-        self._errors.clear()
-        self._m = 0.0
+        self._n = 0
+        self._sum = 0.0
         self._ph = 0.0
-        self._min_ph = 0.0
 
 
 class ADWIN:
@@ -193,9 +191,11 @@ class ADWIN:
         var0 = (sq0 / c0) - (mean0 ** 2) if sq0 >= 0 else 0
         var1 = (sq1 / c1) - (mean1 ** 2) if sq1 >= 0 else 0
         
-        # Hoeffding bound
-        m = (1.0 / c0 + 1.0 / c1)
-        epsilon = np.sqrt((1.0 / (2 * m)) * np.log(2 / self.delta))
+        # ADWIN correct Hoeffding bound for binary/bounded variables:
+        # m = 1 / (1/N0 + 1/N1) 
+        # epsilon = sqrt( (1 / (2*m)) * ln(4/delta) )
+        m_harmonic = 1.0 / ((1.0 / c0) + (1.0 / c1))
+        epsilon = np.sqrt((1.0 / (2 * m_harmonic)) * np.log(4 / self.delta))
         
         return abs(mean0 - mean1) >= epsilon
     

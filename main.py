@@ -37,8 +37,8 @@ def main():
     print("=== Concept Drift Pipeline Demo (Real Dataset) ===\n")
 
     # 1) Load the stream
-    data_dir = Path("data/sudden_drift")
-    dataset_name = "recurring_sudden_sea100k_g00"
+    data_dir = Path("data/gradual_drift")
+    dataset_name = "recurring_gradual_sea100k_g03"
     
     csv_path = data_dir / f"{dataset_name}.csv"
     drift_times_path = data_dir / f"{dataset_name}_drift_times.txt"
@@ -58,11 +58,13 @@ def main():
 
     # 2) Initialize and run Pipeline
     config = PipelineConfig(
-        sudden_window_size=50,
-        gradual_window_size=100,
+        meta_ks_window_size=100,
+        atom_min_samples=30,
         update_batch_size=1500,
         recurrence_threshold=0.15,
-        model_type="linear" # Switch back to linear since SEA is linearly separable
+        model_type="rf", # 改用 Random Forest 來捕捉更細微的分佈變化
+        meta_detector_type="dynamic_weighted"  # <--- 加上這一行！
+
     )
     pipeline = ConceptDriftPipeline(config=config)
     
@@ -81,7 +83,34 @@ def main():
         #     print(f"  [!] Pipeline Alert -> Drift at t={d.timestamp}: {d.drift_type.value} (triggered by: {d.detector_source})")
 
     for d in pipeline.detections:
-        print(f"  [!] Pipeline Alert -> Drift at t={d.timestamp}: {d.drift_type.value} (triggered by: {d.detector_source})")
+        source = d.detector_source
+        
+        # 解析 meta 機制的策略
+        dets_info = ""
+        if source == "meta_detector" and d.details:
+            
+            strategy = d.details.get("meta_info", {}).get("strategy_used", "?").upper()
+            
+            # 取得哪幾個內部演算法投下贊成票
+            ensemble_res = d.details.get("ensemble_results", {})
+            acting_voters = [det for det, triggered in ensemble_res.items() if triggered]
+            votes_str = ", ".join(acting_voters) if acting_voters else "None"
+            
+            # --- 取得多重代理訊號狀態 (Multi-Indicators) ---
+            proxy_info = d.details.get("proxy_indicators", {})
+            any_warn = "YES" if proxy_info.get("any_warning") else "NO"
+            
+            # 解析個別指標狀態 (對應 pipeline 中注入的 0, 1, 2 順序)
+            indicator_details = proxy_info.get("details", {})
+            ks_warn = "ON" if indicator_details.get("indicator_0", {}).get("warning") else "OFF"
+            err_warn = "ON" if indicator_details.get("indicator_1", {}).get("warning") else "OFF"
+            uncert_warn = "ON" if indicator_details.get("indicator_2", {}).get("warning") else "OFF"
+            
+            indicators_str = f"KS:{ks_warn}, ErrTrend:{err_warn}, Uncert:{uncert_warn}"
+            
+            dets_info = f" | Strategy: {strategy} | ProxyAlarm: {any_warn} ({indicators_str}) | Voters: [{votes_str}]"
+            
+        print(f"  [!] Meta Alert -> at t={d.timestamp}{dets_info}")
 
     # 3) Offline evaluation: drift detectors
     print("\n--- Drift detector evaluation ---")

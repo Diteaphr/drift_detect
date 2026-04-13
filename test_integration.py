@@ -31,7 +31,7 @@ MODEL_CONFIGS = [
     ("Elastic Net",        "elastic",   {}),
     ("Random Forest (ARF)","rf",        {"n_models": 10, "seed": 42}),
     ("XGBoost",            "xgb",       {"buffer_size": 50, "num_boost_round": 20}),
-    ("GRU",                "gru",       {"input_size": 3, "hidden_size": 32, "window_size": 10}),
+    # ("GRU",                "gru",       {"input_size": 3, "hidden_size": 32, "window_size": 10}),
 ]
 
 ADVANCED_CONFIGS = [c for c in MODEL_CONFIGS if c[1] in ("elastic", "rf", "xgb", "gru")]
@@ -41,8 +41,8 @@ def run_one(name, model_type, model_kwargs, X, y):
     config = PipelineConfig(
         model_type=model_type,
         model_kwargs=model_kwargs,
-        sudden_window_size=50,
-        gradual_window_size=100,
+        meta_ks_window_size=100,
+        atom_min_samples=30,
         update_batch_size=1500,
         recurrence_threshold=0.15,
     )

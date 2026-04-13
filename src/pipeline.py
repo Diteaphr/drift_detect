@@ -16,8 +16,6 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 from .config import DriftDetection, DriftType, PipelineConfig
 from .preprocessing import StreamBuffer, compute_prediction_errors, smooth_errors
 from detectors import (
-    UnifiedDriftDetector,
-    DistributionModule,
     ConceptMemory,
     detect_recurring_drift,
 )
@@ -31,6 +29,9 @@ try:
     RIVER_AVAILABLE = True
 except ImportError:
     RIVER_AVAILABLE = False
+
+from detectors.meta import TwoStageVotingDetector, DynamicWeightedVotingDetector, StatisticalFusionDetector
+from detectors.meta.indicators import KSDistributionIndicator, ErrorRateTrendIndicator, UncertaintyProxyIndicator
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +50,24 @@ class ConceptDriftPipeline:
     def __init__(self, config: Optional[PipelineConfig] = None):
         self.config = config or PipelineConfig()
         self.buffer = StreamBuffer(max_len=3000)
-        self.drift_detector = UnifiedDriftDetector(
-            min_samples=30,
-            ensemble_strategy="majority",
-        )
-        self.distribution_detector = DistributionModule(window_size=100)
+
+        # 準備多重代理訊號 (Multi-Indicators) 給支援的 Meta-detectors
+        # 這裡組合了資料分布、短期錯誤率趨勢、以及模型不確定性 的多個代理指標
+        my_indicators = [
+            KSDistributionIndicator(window_size=self.config.meta_ks_window_size),
+            ErrorRateTrendIndicator(short_window=50, long_window=250, threshold=0.15),
+            UncertaintyProxyIndicator(window_size=100, variance_threshold=0.25)
+        ]
+
+        if self.config.meta_detector_type == "two_stage":
+            self.meta_detector = TwoStageVotingDetector(self.config, custom_indicators=my_indicators)
+        elif self.config.meta_detector_type == "dynamic_weighted":
+            self.meta_detector = DynamicWeightedVotingDetector(self.config, custom_indicators=my_indicators)
+        elif self.config.meta_detector_type == "statistical_fusion":
+            self.meta_detector = StatisticalFusionDetector(self.config)
+        else:
+            raise ValueError(f"Unknown meta_detector_type: {self.config.meta_detector_type}")
+
         self.concept_memory = ConceptMemory(
             significance=self.config.recurring_stat_alpha,
             k_neighbors=self.config.recurring_k_neighbors,
@@ -67,7 +81,7 @@ class ConceptDriftPipeline:
         self.detections: List[DriftDetection] = []
         self._step = 0
         self._lock_out = 0
-        self._lock_out_duration = 500
+        self._lock_out_duration = 100
         self._batch_X: List[np.ndarray] = []
         self._batch_y: List[float] = []
         self._warm = False
@@ -208,38 +222,23 @@ class ConceptDriftPipeline:
                     self._batch_y.clear()
             return y_pred, [], False
 
-        # ---- Update detectors ----
-        self.distribution_detector.update(x_)
-        data_drift_warning = self.distribution_detector.detect()
+        # ---- Update Meta-Detector ----
+        is_drift, drift_time, sub_detector_stats = self.meta_detector.update_and_detect(
+            x=x_.ravel(),
+            y_true=y_true,
+            y_pred=y_pred,
+            err=err,
+            t=index
+        )
 
-        self.drift_detector.update(err)
-
-        drift_occurred = False
-
-        if data_drift_warning:
-            if hasattr(self.drift_detector, "ensemble_strategy"):
-                self.drift_detector.ensemble_strategy = "any"
-        else:
-            if hasattr(self.drift_detector, "ensemble_strategy"):
-                self.drift_detector.ensemble_strategy = "majority"
-
-        drift_result = self.drift_detector.detect()
-        if isinstance(drift_result, tuple):
-            drift_detected, drift_details = drift_result
-        else:
-            drift_detected, drift_details = drift_result, {}
-
-        if drift_detected:
-            drift_details["data_drift_warning"] = data_drift_warning
-            drift_details["strategy"] = getattr(self.drift_detector, "ensemble_strategy", "unknown")
-            drift_occurred = True
+        if is_drift:
             if self.config.recurring_use_post_alert_fifo:
                 self._start_post_alert_fifo_collection(
-                    index, "unified", drift_details, x_.ravel(), err
+                    drift_time, "meta_detector", sub_detector_stats, x_.ravel(), err
                 )
                 self._lock_out = self._lock_out_duration
             else:
-                self._handle_drift(errors, index, 0, "unified", new_detections, drift_details)
+                self._handle_drift(errors, drift_time, 0, "meta_detector", new_detections, sub_detector_stats)
                 self._lock_out = self._lock_out_duration
             return y_pred, new_detections, True
 
@@ -421,8 +420,7 @@ class ConceptDriftPipeline:
                 self._handle_gradual_reset(drift_alert_timestamp)
 
         # Reset detectors
-        self.drift_detector.reset()
-        self.distribution_detector.reset()
+        self.meta_detector.reset()
 
         self._batch_X.clear()
         self._batch_y.clear()
@@ -594,8 +592,8 @@ def run_pipeline_demo(
         X = t.reshape(-1, 1)
 
     config = PipelineConfig(
-        sudden_window_size=50,
-        gradual_window_size=100,
+        meta_ks_window_size=100,
+        atom_min_samples=30,
         update_batch_size=250,
         recurrence_threshold=0.15,
     )

@@ -6,6 +6,7 @@ Uses Kolmogorov-Smirnov (K-S) test.
 
 import numpy as np
 from collections import deque
+from typing import Tuple, Dict, Any
 try:
     from scipy.stats import ks_2samp
     SCIPY_AVAILABLE = True
@@ -43,14 +44,15 @@ class DistributionModule:
         if len(self._buffer) == 2 * self.window_size:
             self._is_ready = True
 
-    def detect(self) -> bool:
+    def detect(self) -> Tuple[bool, dict]:
         """
         Detect if P(X) has changed using two-sample K-S test.
         Returns:
-            True if distribution change is statistically significant.
+            (drift_detected_bool, stats_dict)
+            stats_dict contains feature-level K-S statistics.
         """
         if not self._is_ready or not SCIPY_AVAILABLE:
-            return False
+            return False, {}
             
         data = np.array(self._buffer)
         ref_data = data[:self.window_size]
@@ -58,17 +60,18 @@ class DistributionModule:
         
         # Check each feature independently
         drift_detected = False
+        stats_dict = {}
         for i in range(self.n_features):
             # K-S test on feature i
             stat, p_value = ks_2samp(ref_data[:, i], curr_data[:, i])
+            stats_dict[f"feat_{i}"] = {"stat": float(stat), "p_value": float(p_value)}
             
             # If any feature's distribution drifted significantly
             if p_value < self.p_value_threshold:
                 # print(f"  [DistributionModule] Warning! Feat {i} shifted. K-S p_value: {p_value:.4f}")
                 drift_detected = True
-                break
                 
-        return drift_detected
+        return drift_detected, stats_dict
 
     def reset(self) -> None:
         """Clear buffer (usually called after a drift is confirmed)."""
