@@ -3,6 +3,7 @@ from .elastic_net import ElasticNetModel
 from .random_forest import RandomForestModel
 from .xgboost_model import XGBoostModel
 from .gru_model import GRUModel
+from .hoeffding_tree import HoeffdingTreeModel
 
 __all__ = [
     "BaseModel",
@@ -10,5 +11,6 @@ __all__ = [
     "RandomForestModel",
     "XGBoostModel",
     "GRUModel",
+    "HoeffdingTreeModel",
 ]
 
