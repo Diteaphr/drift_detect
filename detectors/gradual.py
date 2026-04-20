@@ -14,7 +14,7 @@ class DDM:
         self.min_samples = min_samples
         self.warning_level = warning_level
         self.drift_level = drift_level
-        self._errors: deque = deque()
+        self._errors: deque = deque(maxlen=2000)
         self._error_count = 0
         self._total_samples = 0
         self._p = 0.0
@@ -62,7 +62,7 @@ class HDDM_A:
         self.min_samples = min_samples
         self.delta = delta
         self.lambda_ = lambda_
-        self._errors: deque = deque()
+        self._errors: deque = deque(maxlen=2000)
         self._p_short = 0.0  # short window mean
         self._p_long = 0.0   # long window mean
         self._count = 0

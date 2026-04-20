@@ -28,6 +28,8 @@ class DistributionModule:
         """
         self.window_size = window_size
         self.p_value_threshold = p_value_threshold
+        self.test_interval = 50  # Only perform K-S test every 50 steps
+        self._step_count = 0     # Counter to track steps
         # Buffer holds 2 * window_size: first half is reference, second half is recent
         self._buffer = deque(maxlen=2 * window_size)
         self._is_ready = False
@@ -35,6 +37,7 @@ class DistributionModule:
 
     def update(self, x: np.ndarray) -> None:
         """Update buffer with new feature vector X."""
+        self._step_count += 1
         x_flat = np.asarray(x).ravel()
         if self.n_features == 0:
             self.n_features = len(x_flat)
@@ -52,6 +55,10 @@ class DistributionModule:
             stats_dict contains feature-level K-S statistics.
         """
         if not self._is_ready or not SCIPY_AVAILABLE:
+            return False, {}
+            
+        # Optimization: Only run heavy KS test periodically
+        if self._step_count % self.test_interval != 0:
             return False, {}
             
         data = np.array(self._buffer)
@@ -77,3 +84,4 @@ class DistributionModule:
         """Clear buffer (usually called after a drift is confirmed)."""
         self._buffer.clear()
         self._is_ready = False
+        self._step_count = 0

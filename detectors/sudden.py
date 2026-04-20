@@ -15,7 +15,7 @@ class HDDM_W:
         self.min_samples = min_samples
         self.delta = delta
         self.lambda_ = lambda_
-        self._errors: deque = deque()
+        self._errors: deque = deque(maxlen=2000)
         self._p0 = 0.0  # old distribution estimate
         self._p1 = 0.0  # new distribution estimate
         self._count = 0
@@ -65,8 +65,8 @@ class EDDM:
         self.min_samples = min_samples
         self.warning_level = warning_level
         self.drift_level = drift_level
-        self._errors: deque = deque()
-        self._error_distances: deque = deque()  # distances between consecutive errors
+        self._errors: deque = deque(maxlen=2000)
+        self._error_distances: deque = deque(maxlen=2000)  # distances between consecutive errors
         self._error_count = 0
         self._distance_sum = 0
         self._distance_count = 0

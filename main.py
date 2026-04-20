@@ -31,14 +31,14 @@ def load_dataset(csv_path: str, drift_times_path: str):
         # For evaluation, we typically use the midpoint or start of the drift interval
         drift_times = [int((interval[0] + interval[1]) / 2) for interval in drift_intervals]
 
-    return X, y, drift_times
+    return X, y, drift_times, drift_intervals
 
 def main():
     print("=== Concept Drift Pipeline Demo (Real Dataset) ===\n")
 
     # 1) Load the stream
-    data_dir = Path("data/gradual_drift")
-    dataset_name = "recurring_gradual_sea100k_g03"
+    data_dir = Path("data/sudden_drift")
+    dataset_name = "recurring_sudden_sea100k_g03"
     
     csv_path = data_dir / f"{dataset_name}.csv"
     drift_times_path = data_dir / f"{dataset_name}_drift_times.txt"
@@ -47,7 +47,7 @@ def main():
         print(f"Error: Could not find {csv_path} or {drift_times_path}")
         return
 
-    X_true, y_true, drift_at_all = load_dataset(str(csv_path), str(drift_times_path))
+    X_true, y_true, drift_at_all, drift_intervals = load_dataset(str(csv_path), str(drift_times_path))
     n_samples = len(y_true)
     print(f"Dataset loaded: {n_samples} samples. Ground truth drifts at: {drift_at_all}")
     
@@ -63,8 +63,8 @@ def main():
         update_batch_size=1500,
         recurrence_threshold=0.15,
         model_type="rf", # 改用 Random Forest 來捕捉更細微的分佈變化
-        meta_detector_type="dynamic_weighted"  # <--- 加上這一行！
-
+        meta_detector_type="dynamic_weighted",  # 可以選擇 dynamic_weighted, two_stage, statistical_fusion
+        atom_kwargs={ "adwin": { "delta": 0.002 } } # kwargs for ADWIN
     )
     pipeline = ConceptDriftPipeline(config=config)
     
@@ -141,6 +141,15 @@ def main():
     print(f"MAE (over stream): {m['mae']:.4f}")
     if m["rolling_mae"]:
         print(f"Rolling MAE (last window): {m['rolling_mae'][-1]:.4f}")
+
+    # 6) Plot weight history
+    print("\n--- Plotting Meta Detector Weight History ---")
+    if hasattr(pipeline.meta_detector, 'plot_weight_history'):
+        pipeline.meta_detector.plot_weight_history(
+            title="Atom Detectors Weight Variation Over 100k Steps",
+            true_drift_intervals=drift_intervals,
+            save_path="dynamic_weights_history_plot.html"
+        )
 
     print("\nDone.")
 

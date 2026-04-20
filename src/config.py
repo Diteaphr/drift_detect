@@ -67,7 +67,7 @@ class PipelineConfig:
     # Batch / adaptation
     update_batch_size: int = 100
     # Meta Detector
-    meta_detector_type: str = "two_stage"  # "two_stage", "dynamic_weighted", "statistical_fusion"
+    meta_detector_type: str = "dynamic_weighted"  # "two_stage", "dynamic_weighted", "statistical_fusion"
     # Model
     model_type: str = "linear"
     model_kwargs: Dict[str, Any] = field(default_factory=dict)

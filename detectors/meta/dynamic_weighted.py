@@ -39,6 +39,15 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
             "hddm_w": 1.0, "eddm": 1.0, "ddm": 1.0, 
             "hddm_a": 1.0, "page_hinkley": 1.0, "adwin": 1.0
         }
+        self.weight_history_log = {k: [] for k in self.weights}
+
+        # Gating Strategy 參數
+        from collections import deque
+        self.stride = 50
+        self.err_window = deque(maxlen=100)
+        self.error_buffer = []  # 用來暫存要餵給 Atom Detectors 的 error
+        self.last_proxy_warning = False
+        self.last_indicator_stats = {}
 
     def _map_detector_names(self, drift_details: Dict[str, bool]) -> Dict[str, bool]:
         mapping = {
@@ -128,9 +137,20 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
             }
         }
         
-        # 5. Global Drift 發生後，可選擇重置所有權重
+        # 5. Global Drift 發生後，印出當下的權重狀態並重置所有權重
         if global_drift:
+            print(f"\n{'='*50}")
+            print(f"🚨 [Dynamic DWM] Global Drift Detected at step t={t}!")
+            print("📊 Current Atom Detector Weights Before Reset:")
+            for det_name, weight in self.weights.items():
+                print(f"   - {det_name:<15}: {weight:.4f}")
+            print(f"📈 Score Ratio: {current_score:.4f} (Threshold: {self.threshold})")
+            print(f"{'='*50}\n")
             self._reset_weights()
+
+        # 紀錄當下時間點的權重
+        for k in self.weights:
+            self.weight_history_log[k].append(self.weights[k])
 
         return global_drift, t, sub_detector_stats
 
@@ -143,3 +163,65 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
         for idx in self.indicators:
             idx.reset()
         self._reset_weights()
+        # 移除 `self.weight_history_log = ...` 避免在偵測到 drift 重置時，把前面紀錄的歷史圖表洗掉
+
+    def plot_weight_history(self, title: str = "Atom Detectors Weight History", 
+                            true_drift_intervals: List[Tuple[int, int]] = None, 
+                            save_path: str = None):
+        """
+        繪製 0 - n 步驟內各 Atom Detector 權重變化的歷史折線圖，
+        並可用紅色區塊標示真實 Drift 的發生區間 (true_drift_intervals=[(start, end), ...])。
+        這裡改用 Plotly 繪製，支援互動且更清楚檢視重疊的線條。
+        """
+        try:
+            import plotly.graph_objects as go
+        except ImportError:
+            print("Plotly is not installed. Please run: pip install plotly")
+            return
+
+        if not hasattr(self, 'weight_history_log') or not list(self.weight_history_log.values())[0]:
+            print("No weight history to plot.")
+            return
+
+        fig = go.Figure()
+        steps = list(range(len(list(self.weight_history_log.values())[0])))
+        
+        # 繪製六個 Atom Detector 的權重折線
+        for det_name, history in self.weight_history_log.items():
+            fig.add_trace(go.Scatter(
+                x=steps, 
+                y=history, 
+                mode='lines', 
+                name=det_name, 
+                opacity=0.8,
+                line=dict(width=2)
+            ))
+            
+        # 標示真實 Drift 的區間
+        if true_drift_intervals:
+            for i, (start, end) in enumerate(true_drift_intervals):
+                fig.add_vrect(
+                    x0=start, x1=end, 
+                    fillcolor="red", 
+                    opacity=0.2, 
+                    layer="below", 
+                    line_width=0,
+                )
+                
+        fig.update_layout(
+            title=title,
+            xaxis_title="Time Step (t)",
+            yaxis_title="Weight",
+            yaxis=dict(range=[-0.05, 1.1]),
+            hovermode="x unified",
+            template="plotly_white"
+        )
+        
+        if save_path:
+            # 如果存成 HTML，保有互動性
+            if not save_path.endswith('.html'):
+                save_path = save_path.rsplit('.', 1)[0] + '.html'
+            fig.write_html(save_path)
+            print(f"✅ Weight history plot saved as interactive HTML to {save_path}")
+        else:
+            fig.show()
