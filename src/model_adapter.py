@@ -29,6 +29,7 @@ from .models import (
     RandomForestModel,
     XGBoostModel,
     GRUModel,
+    HoeffdingTreeModel,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,9 @@ _MODEL_REGISTRY: Dict[str, Tuple[Type[BaseModel], Dict[str, Any]]] = {
     "rf":      (RandomForestModel, {"n_models": 10, "seed": 42}),
     "xgb":     (XGBoostModel, {"buffer_size": 50, "num_boost_round": 50}),
     "gru":     (GRUModel, {"input_size": 4, "hidden_size": 32, "window_size": 10}),
+    # Plain Hoeffding Tree (no internal drift handling) — for ECPF-style
+    # external concept-management experiments.
+    "ht":      (HoeffdingTreeModel, {"grace_period": 200, "leaf_prediction": "nba"}),
 }
 
 ADVANCED_MODEL_TYPES = set(_MODEL_REGISTRY.keys())

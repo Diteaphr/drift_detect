@@ -35,9 +35,11 @@ class PipelineConfig:
 
         Advanced (BaseModel-based, via model_adapter):
             ``"elastic"`` — ElasticNet (River online logistic regression)
-            ``"rf"``      — Adaptive Random Forest (River ARF)
+            ``"rf"``      — Adaptive Random Forest (River ARF, self-adaptive)
             ``"xgb"``     — XGBoost (buffer-based incremental)
             ``"gru"``     — GRU (PyTorch sliding-window online)
+            ``"ht"``      — Plain Hoeffding Tree (River, no internal drift
+                            handling — for ECPF-style external frameworks)
 
     model_kwargs : dict
         Extra keyword arguments forwarded to the model constructor.
