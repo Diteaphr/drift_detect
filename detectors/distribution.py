@@ -28,7 +28,7 @@ class DistributionModule:
         """
         self.window_size = window_size
         self.p_value_threshold = p_value_threshold
-        self.test_interval = 50  # Only perform K-S test every 50 steps
+        self.test_interval = 200  # Only perform K-S test every 200 steps
         self._step_count = 0     # Counter to track steps
         # Buffer holds 2 * window_size: first half is reference, second half is recent
         self._buffer = deque(maxlen=2 * window_size)

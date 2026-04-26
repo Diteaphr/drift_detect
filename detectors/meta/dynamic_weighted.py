@@ -11,14 +11,18 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
     使用 Unsupervised Indicators 的結果作為「代理標準答案」來懲罰或獎勵 Atom Detectors。
     """
 
-    def __init__(self, config=None, custom_indicators: List[BaseIndicator] = None):
+    def __init__(self, config=None, custom_indicators: List[BaseIndicator] = None, selected_detectors: List[str] = None):
         self.config = config
         
         ks_window_size = config.meta_ks_window_size if config else 100
         atom_min_samples = config.atom_min_samples if config else 30
         atom_kwargs = config.atom_kwargs if config else {}
         
-        self.drift_detector = UnifiedDriftDetector(min_samples=atom_min_samples, atom_kwargs=atom_kwargs)
+        self.drift_detector = UnifiedDriftDetector(
+            min_samples=atom_min_samples, 
+            atom_kwargs=atom_kwargs,
+            selected_detectors=selected_detectors
+        )
         
         # 模組化第一步：將指標提取器抽象為 List，方便未來擴充 (Uncertainty, Disentanglement)
         if custom_indicators is not None:
@@ -31,30 +35,23 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
         # 定義權重調整參數
         self.beta = 0.6         # 懲罰降權係數 (預測與 KS Test 不合)
         self.reward = 1.1      # 獎勵升權係數 (預測與 KS Test 一致且正確報警)
-        self.threshold = 0.25    # 觸發 Global Drift 的加權門檻 (調降至 0.3 讓被冷落的演算法也能發揮作用)
+        self.threshold = 0.15    # 觸發 Global Drift 的加權門檻 (調降讓被冷落的演算法也能發揮作用)
         self.min_weight = 0.1
         self.max_weight = 1.0   # 權重上限
         
-        self.weights = {
-            "hddm_w": 1.0, "eddm": 1.0, "ddm": 1.0, 
-            "hddm_a": 1.0, "page_hinkley": 1.0, "adwin": 1.0
-        }
+        # 根據 selected_detectors 初始化 weights
+        detector_names = selected_detectors if selected_detectors is not None else ["hddm_w", "eddm", "ddm", "hddm_a", "page_hinkley", "adwin"]
+        self.weights = {name.lower(): 1.0 for name in detector_names}
         self.weight_history_log = {k: [] for k in self.weights}
 
-        # Gating Strategy 參數
-        from collections import deque
-        self.stride = 50
-        self.err_window = deque(maxlen=100)
-        self.error_buffer = []  # 用來暫存要餵給 Atom Detectors 的 error
+        # Gating Strategy 參數 (部分移除不用的)
         self.last_proxy_warning = False
         self.last_indicator_stats = {}
+        self.first_proxy_warning_t = None
 
     def _map_detector_names(self, drift_details: Dict[str, bool]) -> Dict[str, bool]:
-        mapping = {
-            "HDDM-W": "hddm_w", "EDDM": "eddm", "DDM": "ddm",
-            "HDDM-A": "hddm_a", "PageHinkley": "page_hinkley", "ADWIN": "adwin"
-        }
-        return {mapping.get(k, k.lower()): v for k, v in drift_details.items()}
+        # 不再需要固定 mapping，UnifiedDriftDetector 現在回傳小寫的 detector name
+        return {k.lower(): v for k, v in drift_details.items()}
 
     def update_and_detect(
         self,
@@ -74,19 +71,31 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
             if flag:
                 any_proxy_warning = True
             all_indicator_stats[f"indicator_{idx}"] = {"warning": flag, "stats": stats}
+            
+        if any_proxy_warning and self.first_proxy_warning_t is None:
+            self.first_proxy_warning_t = t
         
         # 1.5 讓 Atom Detectors 動態調整敏感度 (備戰狀態 vs 和平狀態)
         if any_proxy_warning:
             # KS響了，逼迫所有人戴上放大鏡
-            # 刻意調高 DDM 的容忍度 (從 2.0 提升到 3.5)，因為模型表現太好導致它太容易大驚小怪
-            self.drift_detector.ddm.drift_level = 4.5
-            self.drift_detector.page_hinkley.threshold = 5.0
-            self.drift_detector.adwin.delta = 0.8
+            if "ddm" in self.drift_detector.detectors:
+                self.drift_detector.detectors["ddm"].drift_level = 3.5 
+            if "page_hinkley" in self.drift_detector.detectors:
+                self.drift_detector.detectors["page_hinkley"].threshold = 5.0
+            if "adwin" in self.drift_detector.detectors:
+                self.drift_detector.detectors["adwin"].delta = 0.1
+            if "ecdd" in self.drift_detector.detectors:
+                self.drift_detector.detectors["ecdd"].drift_level = 2.0
         else:
             # 恢復理智 (預設值)
-            self.drift_detector.ddm.drift_level = 5.5 # 和平時更嚴苛
-            self.drift_detector.page_hinkley.threshold = 15.0
-            self.drift_detector.adwin.delta = 0.01
+            if "ddm" in self.drift_detector.detectors:
+                self.drift_detector.detectors["ddm"].drift_level = 5.0
+            if "page_hinkley" in self.drift_detector.detectors:
+                self.drift_detector.detectors["page_hinkley"].threshold = 15.0
+            if "adwin" in self.drift_detector.detectors:
+                self.drift_detector.detectors["adwin"].delta = 0.01
+            if "ecdd" in self.drift_detector.detectors:
+                self.drift_detector.detectors["ecdd"].drift_level = 3.0
 
         # 2. 獲取 Atom Detectors 的投票結果
         self.drift_detector.update(err)
@@ -94,28 +103,22 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
         mapped_drifts = self._map_detector_names(raw_drifts)
         
         # 3. 寬鬆版 DWM 權重調整 (做法 C)
-        # 只有在「有人舉手」的敏感時刻才檢討權重，平時不隨便扣分
-        if any(mapped_drifts.values()): 
-            for name, predicted_drift in mapped_drifts.items():
-                if predicted_drift == True:
-                    if any_proxy_warning == False:
-                        # 亂報警 (預測有，但訊號沒變)：懲罰
-                        self.weights[name] = max(self.weights[name] * self.beta, self.min_weight)
-                    else:
-                        # 準確報警 (預測有，且任一代理訊號也變了)：獎勵
-                        self.weights[name] = min(self.weights[name] * self.reward, self.max_weight)
+        for name, predicted_drift in mapped_drifts.items():
+            if predicted_drift == True:
+                if any_proxy_warning == False:
+                    # 亂報警 (預測有，但訊號沒變)：懲罰
+                    self.weights[name] = max(self.weights[name] * self.beta, self.min_weight)
                 else:
-                    # 當下沒舉手的人：
-                    if any_proxy_warning == True:
-                        # 漏報：稍微扣點分警告就好 (懲罰係數 0.9)
-                        self.weights[name] = max(self.weights[name] * 0.9, self.min_weight)
-                    else:
-                        # 安全過關：緩慢恢復
-                        self.weights[name] = min(self.weights[name] * 1.05, self.max_weight)
-        else:
-            # 大家都沒舉手，權重緩慢回血
-            for name in self.weights:
-                self.weights[name] = min(self.weights[name] * 1.01, self.max_weight)
+                    # 準確報警 (預測有，且任一代理訊號也變了)：獎勵
+                    self.weights[name] = min(self.weights[name] * self.reward, self.max_weight)
+            else:
+                # 當下沒舉手的人：
+                if any_proxy_warning == True:
+                    # 漏報：稍微扣點分警告就好 (懲罰係數 0.9)
+                    self.weights[name] = max(self.weights[name] * 0.9, self.min_weight)
+                else:
+                    # 安全過關：緩慢恢復
+                    self.weights[name] = min(self.weights[name] * 1.01, self.max_weight)
 
         # 4. 計算加權總分，決定最終是否觸發 Global Drift
         total_weight = sum(self.weights.values())
@@ -127,6 +130,7 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
         sub_detector_stats = {
             "proxy_indicators": {
                 "any_warning": any_proxy_warning,
+                "first_warning_t": self.first_proxy_warning_t,
                 "details": all_indicator_stats
             },
             "ensemble_results": raw_drifts,
@@ -159,6 +163,7 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
             self.weights[k] = self.max_weight
 
     def reset(self) -> None:
+        self.first_proxy_warning_t = None
         self.drift_detector.reset()
         for idx in self.indicators:
             idx.reset()

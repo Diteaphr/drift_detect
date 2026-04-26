@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import ast
 import sys
+import argparse
 from pathlib import Path
 
 # Ensure project root is on path
@@ -34,7 +35,21 @@ def load_dataset(csv_path: str, drift_times_path: str):
     return X, y, drift_times, drift_intervals
 
 def main():
-    print("=== Concept Drift Pipeline Demo (Real Dataset) ===\n")
+    parser = argparse.ArgumentParser(description="Concept Drift Pipeline Demo")
+    parser.add_argument("meta_detector", nargs="?", default="tsv", 
+                        choices=["tsv", "dwm", "statistical"],
+                        help="Meta detector to use: tsv (Two Stage Voting), dwm (Dynamic Weighted), or statistical")
+    args = parser.parse_args()
+
+    meta_map = {
+        "tsv": "two_stage",
+        "dwm": "dynamic_weighted",
+        "statistical": "statistical_fusion"
+    }
+    selected_meta_type = meta_map[args.meta_detector]
+
+    print(f"=== Concept Drift Pipeline Demo (Real Dataset) ===")
+    print(f"=== Using Meta Detector: {selected_meta_type} ===\n")
 
     # 1) Load the stream
     data_dir = Path("data/sudden_drift")
@@ -60,11 +75,19 @@ def main():
     config = PipelineConfig(
         meta_ks_window_size=100,
         atom_min_samples=30,
-        update_batch_size=1500,
+        update_batch_size=500,
         recurrence_threshold=0.15,
-        model_type="rf", # 改用 Random Forest 來捕捉更細微的分佈變化
-        meta_detector_type="dynamic_weighted",  # 可以選擇 dynamic_weighted, two_stage, statistical_fusion
-        atom_kwargs={ "adwin": { "delta": 0.002 } } # kwargs for ADWIN
+        model_type="ht",
+        meta_detector_type=selected_meta_type,  # 透過命令列參數動態選擇
+        selected_detectors=["ddm", "hddm_a", "page_hinkley"], # 只使用部分 Atom Detectors 以觀察效果
+        # selected_detectors=["hddm_w", "eddm", "ddm", "hddm_a", "page_hinkley", "adwin"], # 使用全部預設的 6 種方法
+        # selected_detectors=["ddm", "page_hinkley"], # 只使用兩種方法以觀察效果
+        atom_kwargs={
+            "adwin": { "delta": 0.01 },
+            "ddm": { "drift_level": 3.0 },
+            "page_hinkley": { "threshold": 15.0 },
+            "ecdd": { "warning_level": 2.0, "drift_level": 3.0 }
+        }
     )
     pipeline = ConceptDriftPipeline(config=config)
     
@@ -99,6 +122,13 @@ def main():
             # --- 取得多重代理訊號狀態 (Multi-Indicators) ---
             proxy_info = d.details.get("proxy_indicators", {})
             any_warn = "YES" if proxy_info.get("any_warning") else "NO"
+            first_warn_t = proxy_info.get("first_warning_t")
+            
+            # 計算 Latency
+            latency_str = ""
+            if any_warn == "YES" and first_warn_t is not None:
+                latency = d.timestamp - first_warn_t
+                latency_str = f" | ProxyStart: t={first_warn_t} (Latency to Meta: {latency})"
             
             # 解析個別指標狀態 (對應 pipeline 中注入的 0, 1, 2 順序)
             indicator_details = proxy_info.get("details", {})
@@ -108,7 +138,7 @@ def main():
             
             indicators_str = f"KS:{ks_warn}, ErrTrend:{err_warn}, Uncert:{uncert_warn}"
             
-            dets_info = f" | Strategy: {strategy} | ProxyAlarm: {any_warn} ({indicators_str}) | Voters: [{votes_str}]"
+            dets_info = f" | Strategy: {strategy} | ProxyAlarm: {any_warn} ({indicators_str}){latency_str} | Voters: [{votes_str}]"
             
         print(f"  [!] Meta Alert -> at t={d.timestamp}{dets_info}")
 
@@ -141,15 +171,6 @@ def main():
     print(f"MAE (over stream): {m['mae']:.4f}")
     if m["rolling_mae"]:
         print(f"Rolling MAE (last window): {m['rolling_mae'][-1]:.4f}")
-
-    # 6) Plot weight history
-    print("\n--- Plotting Meta Detector Weight History ---")
-    if hasattr(pipeline.meta_detector, 'plot_weight_history'):
-        pipeline.meta_detector.plot_weight_history(
-            title="Atom Detectors Weight Variation Over 100k Steps",
-            true_drift_intervals=drift_intervals,
-            save_path="dynamic_weights_history_plot.html"
-        )
 
     print("\nDone.")
 

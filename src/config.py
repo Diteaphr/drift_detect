@@ -51,6 +51,7 @@ class PipelineConfig:
     meta_ks_window_size: int = 100
     atom_min_samples: int = 30
     atom_kwargs: Dict[str, Any] = field(default_factory=dict)  # For future extensibility of atom detectors
+    selected_detectors: Optional[list] = None  # To specify which atom detectors to include
     # Recurring (RCD-style statistical test; Gonçalves & Barros 2013)
     recurring_stat_alpha: float = 0.01  # recurring if p-value > alpha (paper best: s = 0.01)
     recurring_k_neighbors: int = 5

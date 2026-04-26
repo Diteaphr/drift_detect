@@ -48,8 +48,13 @@ class StreamBuffer:
         self._errors.append(err)
         self._indices.append(index)
         if x is not None:
-            xv = np.asarray(x, dtype=np.float64).ravel()
-            self._xs.append(xv.copy())
+            if isinstance(x, np.ndarray):
+                xv = x
+            else:
+                xv = np.asarray(x, dtype=np.float64)
+            if xv.ndim != 1:
+                xv = xv.ravel()
+            self._xs.append(xv.copy() if not isinstance(x, np.ndarray) or xv.base is not None else xv)
         else:
             self._xs.append(None)
         if len(self._errors) > self.max_len:

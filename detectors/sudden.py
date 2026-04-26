@@ -15,7 +15,7 @@ class HDDM_W:
         self.min_samples = min_samples
         self.delta = delta
         self.lambda_ = lambda_
-        self._errors: deque = deque(maxlen=2000)
+        self._errors: deque = deque()
         self._p0 = 0.0  # old distribution estimate
         self._p1 = 0.0  # new distribution estimate
         self._count = 0

@@ -10,13 +10,13 @@ class StatisticalFusionDetector(BaseMetaDetector):
     single confident drift indication.
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, custom_indicators=None, selected_detectors=None):
         self.config = config
         
         ks_window_size = config.meta_ks_window_size if config else 100
         atom_min_samples = config.atom_min_samples if config else 30
         
-        # E.g., self.drift_detector = UnifiedDriftDetector(min_samples=atom_min_samples)
+        # E.g., self.drift_detector = UnifiedDriftDetector(min_samples=atom_min_samples, selected_detectors=selected_detectors)
         #       self.fusion_model = BayesianNetworkFusion()
         
     def update_and_detect(

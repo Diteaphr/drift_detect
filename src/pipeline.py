@@ -60,11 +60,23 @@ class ConceptDriftPipeline:
         ]
 
         if self.config.meta_detector_type == "two_stage":
-            self.meta_detector = TwoStageVotingDetector(self.config, custom_indicators=my_indicators)
+            self.meta_detector = TwoStageVotingDetector(
+                self.config, 
+                custom_indicators=my_indicators,
+                selected_detectors=self.config.selected_detectors
+            )
         elif self.config.meta_detector_type == "dynamic_weighted":
-            self.meta_detector = DynamicWeightedVotingDetector(self.config, custom_indicators=my_indicators)
+            self.meta_detector = DynamicWeightedVotingDetector(
+                self.config, 
+                custom_indicators=my_indicators,
+                selected_detectors=self.config.selected_detectors
+            )
         elif self.config.meta_detector_type == "statistical_fusion":
-            self.meta_detector = StatisticalFusionDetector(self.config)
+            self.meta_detector = StatisticalFusionDetector(
+                self.config,
+                custom_indicators=my_indicators,
+                selected_detectors=self.config.selected_detectors
+            )
         else:
             raise ValueError(f"Unknown meta_detector_type: {self.config.meta_detector_type}")
 
@@ -137,11 +149,17 @@ class ConceptDriftPipeline:
         if self._lock_out > 0:
             self._lock_out -= 1
 
-        x_ = np.asarray(x)
+        if isinstance(x, np.ndarray):
+            x_ = x
+        else:
+            x_ = np.asarray(x)
+            
         if x_.ndim == 0:
             x_ = x_.reshape(1)
-        if x_.ndim == 1:
+        elif x_.ndim == 1:
             x_ = x_.reshape(1, -1)
+
+        x_flat = x_.ravel()
 
         # ---- Not yet warmed up ----
         if not self._warm:
@@ -151,19 +169,19 @@ class ConceptDriftPipeline:
                 # FIRST, then learn_one — true test-then-train from sample 1.
                 # The lock-out period shields detectors from the initial noise.
                 y_pred = float(self.prediction_model.predict_one(x_))
-                self.prediction_model.learn_one(x_.ravel(), y_true)
+                self.prediction_model.learn_one(x_flat, y_true)
                 from .models.base_model import BaseModel
                 self.prediction_model.data_buffer.append(
-                    (BaseModel._to_dict(x_.ravel()), y_true, index)
+                    (BaseModel._to_dict(x_flat), y_true, index)
                 )
-                self.buffer.append(y_true, y_pred, index, x=x_.ravel())
+                self.buffer.append(y_true, y_pred, index, x=x_flat)
                 self._cold_start_count = getattr(self, '_cold_start_count', 0) + 1
                 if self._cold_start_count >= self.config.update_batch_size:
                     self._warm = True
                     self._cold_start_count = 0
                 return y_pred, [], False
             else:
-                self._batch_X.append(x_.ravel())
+                self._batch_X.append(x_flat)
                 self._batch_y.append(y_true)
                 if len(self._batch_y) >= self.config.update_batch_size:
                     X_b = np.array(self._batch_X)
@@ -179,17 +197,17 @@ class ConceptDriftPipeline:
         else:
             y_pred = float(self.prediction_model.predict(x_)[0])
 
-        self.buffer.append(y_true, y_pred, index, x=x_.ravel())
+        self.buffer.append(y_true, y_pred, index, x=x_flat)
         errors = self.buffer.get_errors()
         err = float(np.abs(y_true - y_pred))
 
         # ---- Online update for advanced models (true streaming) ----
         if self._use_advanced:
-            self.prediction_model.learn_one(x_.ravel(), y_true)
+            self.prediction_model.learn_one(x_flat, y_true)
             # Also track in adapter's rolling buffer for post-drift retraining
             from .models.base_model import BaseModel
             self.prediction_model.data_buffer.append(
-                (BaseModel._to_dict(x_.ravel()), y_true, index)
+                (BaseModel._to_dict(x_flat), y_true, index)
             )
 
         new_detections: List[DriftDetection] = []
@@ -197,7 +215,7 @@ class ConceptDriftPipeline:
         # ---- Post-alert FIFO: collect samples after drift alarm (RCD-like) ----
         if self._collecting_post_alert_fifo and self._post_alert_fifo_err is not None:
             self._post_alert_fifo_err.append(err)
-            self._post_alert_fifo_x.append(np.asarray(x_.ravel(), dtype=np.float64).copy())
+            self._post_alert_fifo_x.append(x_flat.astype(np.float64).copy())
             n_fifo = len(self._post_alert_fifo_err)
             cap = self.config.recurring_max_buffer_size
             need = self.config.recurring_fifo_min_samples
@@ -214,7 +232,7 @@ class ConceptDriftPipeline:
         # ---- Lock-out period: update model but skip detectors ----
         if self._lock_out > 0:
             if not self._use_advanced:
-                self._batch_X.append(x_.ravel())
+                self._batch_X.append(x_flat)
                 self._batch_y.append(y_true)
                 if len(self._batch_y) >= self.config.update_batch_size:
                     self._incremental_adapt()
@@ -224,7 +242,7 @@ class ConceptDriftPipeline:
 
         # ---- Update Meta-Detector ----
         is_drift, drift_time, sub_detector_stats = self.meta_detector.update_and_detect(
-            x=x_.ravel(),
+            x=x_flat,
             y_true=y_true,
             y_pred=y_pred,
             err=err,
@@ -234,7 +252,7 @@ class ConceptDriftPipeline:
         if is_drift:
             if self.config.recurring_use_post_alert_fifo:
                 self._start_post_alert_fifo_collection(
-                    drift_time, "meta_detector", sub_detector_stats, x_.ravel(), err
+                    drift_time, "meta_detector", sub_detector_stats, x_flat, err
                 )
                 self._lock_out = self._lock_out_duration
             else:
@@ -244,7 +262,7 @@ class ConceptDriftPipeline:
 
         # ---- No drift: incremental adaptation ----
         if not self._use_advanced:
-            self._batch_X.append(x_.ravel())
+            self._batch_X.append(x_flat)
             self._batch_y.append(y_true)
             if len(self._batch_y) >= self.config.update_batch_size:
                 self._incremental_adapt()

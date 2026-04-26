@@ -1,33 +1,61 @@
 import numpy as np
-from typing import Optional, Tuple, List, Dict
+from typing import Optional, Tuple, List, Dict, Type, Any
 from collections import deque
 
-# 匯入 sudden 與 gradual 中的基礎偵測器
+# 匯入 sudden, gradual, sudden_fast 中的基礎偵測器
 from .sudden import HDDM_W, EDDM
 from .gradual import DDM, HDDM_A, PageHinkley, ADWIN
+from .sudden_fast import ECDD, STEPD
+
+# 建立 Atom Detector 註冊表
+ATOM_DETECTORS: Dict[str, Type] = {
+    "hddm_w": HDDM_W,
+    "eddm": EDDM,
+    "ddm": DDM,
+    "hddm_a": HDDM_A,
+    "page_hinkley": PageHinkley,
+    "adwin": ADWIN,
+    "ecdd": ECDD,
+    "stepd": STEPD,
+}
 
 class UnifiedDriftDetector:
     """
-    統一的概念飄移偵測器 (Unified Drift Detector)
-    結合原本 Sudden 與 Gradual 分開的偵測方法，共同進行投票。
-    共 6 種不同方法，ADWIN 只取一個。
+    統一的概念飄移偵測器 (Unified Drift Detector) 作為 Atom Detector 函式庫
+    允許 Meta Detector 動態選擇需要的 Atom Detectors 進行實例化與管理。
     """
-    def __init__(self, min_samples: int = 30, atom_kwargs: Dict[str, Dict] = None):
+    def __init__(
+        self, 
+        min_samples: int = 30, 
+        atom_kwargs: Dict[str, Dict] = None,
+        selected_detectors: List[str] = None
+    ):
         self.min_samples = min_samples
-        atom_kwargs = atom_kwargs or {}
+        self.atom_kwargs = atom_kwargs or {}
         
-        # 初始化 6 種不同的基礎偵測器
-        self.hddm_w = HDDM_W(min_samples=min_samples, **atom_kwargs.get("hddm_w", {}))
-        self.eddm = EDDM(min_samples=min_samples, **atom_kwargs.get("eddm", {}))
-        self.ddm = DDM(**atom_kwargs.get("ddm", {}))
-        self.hddm_a = HDDM_A(**atom_kwargs.get("hddm_a", {}))
-        self.page_hinkley = PageHinkley(**atom_kwargs.get("page_hinkley", {}))
-        # 這裡使用 gradual 裡面的標準 ADWIN
-        self.adwin = ADWIN(**atom_kwargs.get("adwin", {}))
-        
+        # 預設使用原有的 6 種方法以保持向下相容性
+        if selected_detectors is None:
+            selected_detectors = ["hddm_w", "eddm", "ddm", "hddm_a", "page_hinkley", "adwin"]
+            
+        self.detectors: Dict[str, Any] = {}
+        for name in selected_detectors:
+            name_lower = name.lower()
+            if name_lower in ATOM_DETECTORS:
+                kwargs = self.atom_kwargs.get(name_lower, {})
+                
+                # 特殊處理需要 min_samples 的演算法
+                if name_lower in ["hddm_w", "eddm"] and "min_samples" not in kwargs:
+                    kwargs["min_samples"] = min_samples
+                    
+                self.detectors[name_lower] = ATOM_DETECTORS[name_lower](**kwargs)
+            else:
+                raise ValueError(f"Unknown atom detector: {name}")
+                
         # 為了事後分析 (drift_type_classifier) 我們要保留過去的 error 記錄
         self._buffer: deque = deque(maxlen=2000)
-        self._adwin_drift = False
+        
+        # 紀錄那些回傳 Tuple 格式 (drift, warning) 的演算法
+        self._returns_tuple = ["eddm", "ddm", "ecdd", "stepd"]
 
     def update(self, error: float) -> None:
         """更新所有偵測器的 error"""
@@ -36,31 +64,33 @@ class UnifiedDriftDetector:
         # 部分演算法需要 binary error
         binary_error = 1 if error > 0.5 else 0
         
-        self.hddm_w.update(binary_error)
-        self.eddm.update(binary_error)
-        self.ddm.update(binary_error)
-        self.hddm_a.update(error)
-        self.page_hinkley.update(error)
-        self._adwin_drift = self.adwin.update(error)
+        for name, detector in self.detectors.items():
+            if name in ["hddm_w", "eddm", "ddm", "ecdd", "stepd"]:
+                if name in ["ecdd", "stepd"]:
+                    detector.update(float(binary_error))
+                else:
+                    detector.update(binary_error)
+            else:
+                # ADWIN 的 update 會直接回傳是否 drift
+                if name == "adwin":
+                    detector._last_drift = detector.update(error)
+                else:
+                    detector.update(error)
 
     def detect(self) -> Dict[str, bool]:
         """执行並回傳所有子演算法的各自偵測結果。"""
-        hddm_w_drift = self.hddm_w.detect()
-        eddm_drift, _ = self.eddm.detect()
-        ddm_drift, _ = self.ddm.detect()
-        hddm_a_drift = self.hddm_a.detect()
-        ph_drift = self.page_hinkley.detect()
-        adwin_drift = self._adwin_drift
+        results = {}
         
-        results = {
-            "HDDM-W": hddm_w_drift,
-            "EDDM": eddm_drift,
-            "DDM": ddm_drift,
-            "HDDM-A": hddm_a_drift,
-            "PageHinkley": ph_drift,
-            "ADWIN": adwin_drift,
-        }
-        
+        for name, detector in self.detectors.items():
+            if name == "adwin":
+                drift = getattr(detector, "_last_drift", False)
+            elif name in self._returns_tuple:
+                drift, _ = detector.detect()
+            else:
+                drift = detector.detect()
+                
+            results[name] = drift
+            
         return results
 
     def get_errors(self) -> np.ndarray:
@@ -68,9 +98,7 @@ class UnifiedDriftDetector:
 
     def reset(self) -> None:
         self._buffer.clear()
-        self.hddm_w.reset()
-        self.eddm.reset()
-        self.ddm.reset()
-        self.hddm_a.reset()
-        self.page_hinkley.reset()
-        self.adwin.reset()
+        for name, detector in self.detectors.items():
+            detector.reset()
+            if name == "adwin":
+                detector._last_drift = False

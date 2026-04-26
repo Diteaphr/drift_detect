@@ -1,4 +1,5 @@
 from .sudden import SuddenDriftDetector
+from .sudden_fast import ECDD, STEPD
 from .gradual import GradualDriftDetector
 from .unified import UnifiedDriftDetector
 from .distribution import DistributionModule
@@ -12,6 +13,8 @@ from .recurring_drift_detector import (
 
 __all__ = [
     "SuddenDriftDetector",
+    "ECDD",
+    "STEPD",
     "GradualDriftDetector",
     "UnifiedDriftDetector",
     "DistributionModule",

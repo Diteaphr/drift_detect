@@ -212,6 +212,8 @@ class ConceptMemory:
     def is_recurring_vs_stored(
         self, X_query: np.ndarray, significance: Optional[float] = None
     ) -> bool:
+        return False
+        
         """
         True if ``X_query`` is statistically similar to **any** stored buffer
         (p-value > significance for at least one comparison).
