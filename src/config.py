@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 
 class DriftType(str, Enum):
@@ -72,7 +72,33 @@ class PipelineConfig:
     # Meta Detector
     meta_detector_type: str = "dynamic_weighted"  # "two_stage", "dynamic_weighted", "statistical_fusion"
     # Model
-    model_type: str = "linear"
+    model_type: str = "ht"
     model_kwargs: Dict[str, Any] = field(default_factory=dict)
     # Evaluation
     eval_window: int = 200
+    # --- Enhanced Concept Profiling Framework (ECPF), Anderson et al. (TKDE) ---
+    use_ecpf: bool = True
+    # Signal mode:
+    # - "oracle_60": warning at true drift T, confirm drift after 60 samples.
+    # - "meta_retro_60": when detector fires at T, use previous 60 as warning buffer.
+    # - "detector": warning/drift from standalone ECPF detector (src/ecpf_detector.py).
+    ecpf_signal_mode: str = "oracle_60"
+    ecpf_oracle_true_drift_times: Optional[List[int]] = None
+    ecpf_warning_length: int = 60
+    ecpf_similarity_margin: float = 0.95  # m
+    ecpf_fade_points: int = 15  # f
+    ecpf_fade_enabled: bool = True
+    ecpf_model_check_freq: int = 1
+    # Standalone detector used when ecpf_signal_mode == "detector".
+    ecpf_detector_type: str = "ddm"
+    ecpf_detector_min_instances: int = 30
+    ecpf_ddm_warning_level: float = 2.0
+    ecpf_ddm_drift_level: float = 3.0
+    # Hard cap on ECPF expert snapshots in the model pool.
+    ecpf_max_pool_size: int = 10
+    # Detector params requested from paper's setup (stored for parity with experiments;
+    # oracle_60 does not consume them directly yet).
+    detector_delta: float = 0.05
+    detector_epsilon: float = 0.01
+    detector_alpha: float = 0.8
+    detector_delta_w: float = 0.1
