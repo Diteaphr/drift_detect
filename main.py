@@ -13,7 +13,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from src.config import PipelineConfig
 from src.pipeline import ConceptDriftPipeline
-from tests.evaluation import evaluate_detectors, evaluate_drift_type_classifier, prediction_metrics
+from tests.evaluation import (
+    correct_detection_from_detections,
+    evaluate_detectors,
+    evaluate_drift_type_classifier,
+    prediction_metrics,
+)
 
 
 def load_dataset(csv_path: str, drift_times_path: str):
@@ -122,6 +127,13 @@ def main():
     print(f"By type: {eval_det['by_type']}")
     if eval_det.get("precision") is not None:
         print(f"Precision: {eval_det['precision']:.3f}, Recall: {eval_det['recall']:.3f}, F1: {eval_det['f1']:.3f}")
+
+    cd = correct_detection_from_detections(detections, drift_intervals)
+    score_str = f"{cd.score_percent:.1f}%" if cd.score_percent is not None else "n/a"
+    print(
+        f"Correct detection: TP={cd.tp}, FP={cd.fp}, N={cd.n_intervals}, "
+        f"score={score_str} ((TP-FP)/N×100, floored at 0%)"
+    )
 
     # 4) Offline evaluation: drift type classifier (sudden vs gradual)
     print("\n--- Drift type classifier evaluation ---")

@@ -4,9 +4,10 @@ using stored detections and (optionally) ground-truth drift labels.
 """
 
 import numpy as np
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple, Union
 
 from src.config import DriftDetection, DriftType
+from src.metrics import CorrectDetectionResult, compute_correct_detection
 
 
 def evaluate_detectors(
@@ -58,6 +59,18 @@ def evaluate_detectors(
     else:
         out["f1"] = 0.0
     return out
+
+
+def correct_detection_from_detections(
+    detections: List[DriftDetection],
+    ground_truth_drift_intervals: Sequence[Union[Tuple[int, int], List[int]]],
+) -> CorrectDetectionResult:
+    """
+    Compute Correct Detection metrics using one timestamp per DriftDetection (in order
+    of appearance). Delegates to :func:`src.metrics.correct_detection.compute_correct_detection`.
+    """
+    times = [d.timestamp for d in detections]
+    return compute_correct_detection(times, ground_truth_drift_intervals)
 
 
 def evaluate_drift_type_classifier(

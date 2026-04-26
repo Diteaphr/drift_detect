@@ -64,6 +64,8 @@ python main.py
 
 This runs a synthetic stream with drifts at t=200, 400, 600, runs all detectors and the classifier, then prints detector and classifier evaluation plus prediction MAE.
 
+To **only record alert timestamps** for several CSV streams (no ground truth), from the project root: `python scripts/collect_alert_times.py --csv path/to/data.csv --out alerts.json` (see script docstring for `--glob` and optional `--config-json`).
+
 ## Use recurring detector only
 
 See `tests/example_usage.py`: pass prediction errors, drift alert timestamp, and a `ConceptMemory` instance; get back `recurring: bool`. Run from project root: `python -m tests.example_usage` or `python tests/example_usage.py` (with project root on `PYTHONPATH`).
