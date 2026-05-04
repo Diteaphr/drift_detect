@@ -28,6 +28,7 @@ from detectors import (
 )
 from .ecpf import ECPFMetaLearner, load_drift_times_file
 from .ecpf_detector import ECPFWarningDriftDetector
+from .uq_warning_detector import UQWarningDetector
 from .drift_type_classifier_dtc_rf import classify_drift_type
 from .model_pool import ModelPool
 from .prediction_model import PredictionModel
@@ -147,6 +148,24 @@ class ConceptDriftPipeline:
                 delta=self.config.detector_delta,
                 delta_w=self.config.detector_delta_w,
             )
+
+        # UQ Warning Layer: UQ-only warning + error-based drift confirmation
+        self._uq_warning_detector: Optional[UQWarningDetector] = None
+        self._uq_drift_detector: Optional[ECPFWarningDriftDetector] = None
+        if self.config.use_ecpf and self.config.ecpf_signal_mode == "uq_warning":
+            self._uq_warning_detector = UQWarningDetector(
+                uq_mode=self.config.ecpf_uq_mode,
+                delta=self.config.ecpf_uq_delta,
+                grace_period=self.config.ecpf_uq_grace_period,
+                smoothing_alpha=self.config.ecpf_uq_smoothing_alpha,
+            )
+            # Second layer: error-based ADWIN for drift confirmation only
+            self._uq_drift_detector = ECPFWarningDriftDetector(
+                min_num_instances=self.config.ecpf_detector_min_instances,
+                delta=self.config.detector_delta,
+                delta_w=self.config.detector_delta_w,
+            )
+            self._uq_warning_timeout = self.config.ecpf_uq_warning_timeout
 
         # Post-alert FIFO for RCD-like recurring test (collect after drift alarm)
         self._collecting_post_alert_fifo: bool = False
@@ -318,6 +337,85 @@ class ConceptDriftPipeline:
                     self._ecpf_warning_active = False
                     self._ecpf_warning_start_idx = None
                     self._ecpf_buffer = []
+                    self.meta_detector.reset()
+                    self._batch_X.clear()
+                    self._batch_y.clear()
+                    self.buffer = StreamBuffer(
+                        max_len=self.buffer.max_len if hasattr(self.buffer, "max_len") else 3000
+                    )
+                    return y_pred, new_detections, True
+
+                if self._ecpf_warning_active:
+                    return y_pred, [], False
+
+            elif self.config.ecpf_signal_mode == "uq_warning" and self._uq_warning_detector is not None:
+                # --- Dual-layer: UQ warning (layer 1) + error-based drift (layer 2) ---
+
+                # Layer 1: UQ-based early warning from forest ensemble disagreement
+                proba_matrix = self.prediction_model.predict_proba_matrix(x_)
+                uq_warning = self._uq_warning_detector.update(proba_matrix)
+
+                # Layer 2: error-based ADWIN for drift confirmation only
+                err01 = 1.0 if int(round(float(y_pred))) != int(round(float(y_true))) else 0.0
+                _err_warning, is_drift = self._uq_drift_detector.update(err01)
+
+                # --- UQ-only warning trigger ---
+                # Only UQ-ADWIN can start buffer collection. Error ADWIN is kept
+                # solely as the drift confirmation layer, so event buffers are
+                # attributable to UQ warnings.
+                if uq_warning and not self._ecpf_warning_active:
+                    self._ecpf_warning_active = True
+                    self._ecpf_warning_start_idx = int(index)
+                    self._ecpf_buffer = []
+                    logger.info(
+                        "ECPF UQ warning: started at t=%d (src=uq, uq_smoothed=%.4f, mode=%s)",
+                        index,
+                        self._uq_warning_detector.last_uq_smoothed,
+                        self._uq_warning_detector.uq_mode,
+                    )
+
+                # --- Warning timeout: cancel false alarm ---
+                if self._ecpf_warning_active and self._ecpf_warning_start_idx is not None:
+                    warning_age = index - self._ecpf_warning_start_idx
+                    if warning_age >= self._uq_warning_timeout:
+                        logger.info(
+                            "ECPF UQ warning: TIMEOUT at t=%d (age=%d > %d), "
+                            "cancelling false alarm, discarding %d buffer samples",
+                            index, warning_age, self._uq_warning_timeout,
+                            len(self._ecpf_buffer),
+                        )
+                        self._ecpf_warning_active = False
+                        self._ecpf_warning_start_idx = None
+                        self._ecpf_buffer = []
+                        # Reset UQ detector so it re-adapts to current concept
+                        self._uq_warning_detector.reset()
+                        # Do NOT reset error-based detector (it may be tracking a real change)
+
+                # Collect buffer while warning is active
+                if self._ecpf_warning_active:
+                    self._ecpf_buffer.append(
+                        (np.asarray(x_.ravel(), dtype=np.float64).copy(), float(y_true))
+                    )
+
+                # --- Drift confirmation ---
+                if is_drift and self._ecpf_warning_active and self._ecpf_buffer:
+                    self._handle_ecpf_drift(
+                        self._ecpf_buffer[:],
+                        int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
+                        "ecpf_uq_warning",
+                        new_detections,
+                        {
+                            "ecpf_protocol": "uq_warning_then_error_drift",
+                            "uq_mode": self.config.ecpf_uq_mode,
+                            **self._uq_warning_detector.stats,
+                            **self._uq_drift_detector.stats,
+                        },
+                    )
+                    self._ecpf_warning_active = False
+                    self._ecpf_warning_start_idx = None
+                    self._ecpf_buffer = []
+                    self._uq_warning_detector.reset()
+                    self._uq_drift_detector.reset()
                     self.meta_detector.reset()
                     self._batch_X.clear()
                     self._batch_y.clear()

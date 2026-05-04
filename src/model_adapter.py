@@ -30,6 +30,7 @@ from .models import (
     XGBoostModel,
     GRUModel,
     HoeffdingTreeModel,
+    HoeffdingForestModel,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,9 @@ _MODEL_REGISTRY: Dict[str, Tuple[Type[BaseModel], Dict[str, Any]]] = {
     # Plain Hoeffding Tree (no internal drift handling) — for ECPF-style
     # external concept-management experiments.
     "ht":      (HoeffdingTreeModel, {"grace_period": 200, "leaf_prediction": "nba"}),
+    # Hoeffding Forest — ensemble of plain HTs with online bagging.
+    # Provides per-tree predict_proba_matrix() for UQ-based drift warning.
+    "hf":      (HoeffdingForestModel, {"n_trees": 5, "lambda_poisson": 6.0, "seed": 42}),
 }
 
 ADVANCED_MODEL_TYPES = set(_MODEL_REGISTRY.keys())
@@ -140,6 +144,17 @@ class BaseModelAdapter:
     def predict_one(self, x: np.ndarray) -> Any:
         x_dict = BaseModel._to_dict(x)
         return self._base_model.predict_one(x_dict)
+
+    def predict_proba_matrix(self, x: np.ndarray) -> list:
+        """Per-tree probability dicts (only for HoeffdingForestModel).
+
+        Returns an empty list if the underlying model does not support
+        ``predict_proba_matrix``.
+        """
+        x_dict = BaseModel._to_dict(x)
+        if hasattr(self._base_model, "predict_proba_matrix"):
+            return self._base_model.predict_proba_matrix(x_dict)
+        return []
 
     def learn_one(self, x: np.ndarray, y: Any) -> None:
         x_dict = BaseModel._to_dict(x)
