@@ -102,3 +102,15 @@ class PipelineConfig:
     detector_epsilon: float = 0.01
     detector_alpha: float = 0.8
     detector_delta_w: float = 0.1
+    # --- UQ Warning Layer (Hoeffding Forest uncertainty-based early warning) ---
+    # UQ scalar extraction mode: "mi_like" | "vote_disagreement" | "predictive_entropy"
+    ecpf_uq_mode: str = "mi_like"
+    # ADWIN delta for the UQ stream (smaller = more sensitive, triggers earlier)
+    ecpf_uq_delta: float = 0.01
+    # ADWIN grace period (warmup) for UQ stream
+    ecpf_uq_grace_period: int = 50
+    # EMA smoothing alpha for UQ scalar (smaller = heavier smoothing; 1.0 = no smoothing)
+    ecpf_uq_smoothing_alpha: float = 0.1
+    # Warning timeout: max steps to keep warning active without drift confirmation.
+    # If exceeded, the warning is cancelled as a false alarm and buffer is discarded.
+    ecpf_uq_warning_timeout: int = 1000
