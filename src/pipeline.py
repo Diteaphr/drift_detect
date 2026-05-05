@@ -42,6 +42,8 @@ except ImportError:
     RIVER_AVAILABLE = False
 
 from detectors.meta import TwoStageVotingDetector, DynamicWeightedVotingDetector, StatisticalFusionDetector
+from detectors.meta_ecpf.dynamic_weighted import DynamicWeightedVotingECPFDetector
+from detectors.meta_ecpf.hierarchical_parallel import HierarchicalParallelECPFDetector
 from detectors.meta.indicators import KSDistributionIndicator, ErrorRateTrendIndicator, UncertaintyProxyIndicator
 
 logger = logging.getLogger(__name__)
@@ -70,7 +72,19 @@ class ConceptDriftPipeline:
             UncertaintyProxyIndicator(window_size=100, variance_threshold=0.25)
         ]
 
-        if self.config.meta_detector_type == "two_stage":
+        if self.config.ecpf_signal_mode == "meta_ecpf_dwm":
+            self.meta_detector = DynamicWeightedVotingECPFDetector(
+                self.config,
+                uq_mode=self.config.ecpf_uq_mode or "mi_like",
+                selected_detectors=self.config.selected_detectors
+            )
+        elif self.config.ecpf_signal_mode == "meta_ecpf_hier_parallel":
+            self.meta_detector = HierarchicalParallelECPFDetector(
+                self.config,
+                uq_mode=self.config.ecpf_uq_mode or "mi_like",
+                selected_detectors=self.config.selected_detectors
+            )
+        elif self.config.meta_detector_type == "two_stage":
             self.meta_detector = TwoStageVotingDetector(
                 self.config, 
                 custom_indicators=my_indicators,
@@ -78,6 +92,12 @@ class ConceptDriftPipeline:
             )
         elif self.config.meta_detector_type == "dynamic_weighted":
             self.meta_detector = DynamicWeightedVotingDetector(
+                self.config, 
+                custom_indicators=my_indicators,
+                selected_detectors=self.config.selected_detectors
+            )
+        elif self.config.meta_detector_type == "dynamic_weighted_ecpf":
+            self.meta_detector = DynamicWeightedVotingECPFDetector(
                 self.config, 
                 custom_indicators=my_indicators,
                 selected_detectors=self.config.selected_detectors
@@ -299,7 +319,7 @@ class ConceptDriftPipeline:
                         )
                         self._ecpf_warning_active = False
                         self._ecpf_warning_start_idx = None
-                        self.meta_detector.reset()
+                        self.meta_detector.notify_drift()
                         self._batch_X.clear()
                         self._batch_y.clear()
                         self.buffer = StreamBuffer(
@@ -337,7 +357,7 @@ class ConceptDriftPipeline:
                     self._ecpf_warning_active = False
                     self._ecpf_warning_start_idx = None
                     self._ecpf_buffer = []
-                    self.meta_detector.reset()
+                    self.meta_detector.notify_drift()
                     self._batch_X.clear()
                     self._batch_y.clear()
                     self.buffer = StreamBuffer(
@@ -347,6 +367,79 @@ class ConceptDriftPipeline:
 
                 if self._ecpf_warning_active:
                     return y_pred, [], False
+            elif self.config.ecpf_signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hier_parallel"} and self.meta_detector is not None:
+                # Update meta detector continuously
+                proba_matrix = None
+                if hasattr(self.prediction_model, 'predict_proba_matrix'):
+                    try:
+                        proba_matrix = self.prediction_model.predict_proba_matrix(x_)
+                    except Exception:
+                        pass
+                
+                is_drift, drift_time, sub_stats = self.meta_detector.update_and_detect(
+                    x=x_flat,
+                    y_true=y_true,
+                    y_pred=y_pred,
+                    err=err,
+                    t=index,
+                    proba_matrix=proba_matrix,
+                )
+
+                proxy_stats = sub_stats.get("proxy_indicators", {})
+                uq_warning = proxy_stats.get("any_warning", False)
+
+                # Warning
+                if uq_warning and not self._ecpf_warning_active:
+                    self._ecpf_warning_active = True
+                    self._ecpf_warning_start_idx = int(index)
+                    self._ecpf_buffer = []
+
+                if self._ecpf_warning_active:
+                    self._ecpf_buffer.append(
+                        (np.asarray(x_.ravel(), dtype=np.float64).copy(), float(y_true))
+                    )
+
+                # Drift confirmation
+                if is_drift and self._ecpf_warning_active and self._ecpf_buffer:
+                    event_details = {
+                        "ecpf_protocol": "dwm_proxy_warning_then_voting_drift",
+                        "uq_mode": self.config.ecpf_uq_mode,
+                        **sub_stats,
+                    }
+                    for indicator_detail in proxy_stats.get("details", {}).values():
+                        stats = indicator_detail.get("stats", {})
+                        if "uq_raw" in stats:
+                            event_details.update(stats)
+                    self._handle_ecpf_drift(
+                        self._ecpf_buffer[:],
+                        int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
+                        self.config.ecpf_signal_mode,
+                        new_detections,
+                        event_details,
+                    )
+                    self._ecpf_warning_active = False
+                    self._ecpf_warning_start_idx = None
+                    self._ecpf_buffer = []
+                    self.meta_detector.notify_drift()
+                    self._batch_X.clear()
+                    self._batch_y.clear()
+                    self.buffer = StreamBuffer(
+                        max_len=self.buffer.max_len if hasattr(self.buffer, "max_len") else 3000
+                    )
+                    return y_pred, new_detections, True
+
+                if (
+                    self._ecpf_warning_active
+                    and not proxy_stats.get("warning_active", uq_warning)
+                    and not is_drift
+                ):
+                    self._ecpf_warning_active = False
+                    self._ecpf_warning_start_idx = None
+                    self._ecpf_buffer = []
+
+                if self._ecpf_warning_active:
+                    return y_pred, [], False
+
 
             elif self.config.ecpf_signal_mode == "uq_warning" and self._uq_warning_detector is not None:
                 # --- Dual-layer: UQ warning (layer 1) + error-based drift (layer 2) ---
@@ -416,7 +509,7 @@ class ConceptDriftPipeline:
                     self._ecpf_buffer = []
                     self._uq_warning_detector.reset()
                     self._uq_drift_detector.reset()
-                    self.meta_detector.reset()
+                    self.meta_detector.notify_drift()
                     self._batch_X.clear()
                     self._batch_y.clear()
                     self.buffer = StreamBuffer(
@@ -467,7 +560,14 @@ class ConceptDriftPipeline:
             return y_pred, [], False
 
         # ---- Update Meta-Detector (oracle ECPF ignores meta drift; uses ground-truth schedule) ----
-        if self.config.use_ecpf and self.config.ecpf_signal_mode in {"oracle_60", "detector"}:
+        proba_matrix = None
+        if hasattr(self.prediction_model, 'predict_proba_matrix'):
+            try:
+                proba_matrix = self.prediction_model.predict_proba_matrix(x_)
+            except Exception:
+                pass
+
+        if self.config.use_ecpf and self.config.ecpf_signal_mode in {"oracle_60", "detector", "meta_ecpf_dwm", "meta_ecpf_hier_parallel"}:
             is_drift, drift_time, sub_detector_stats = False, index, {}
         else:
             is_drift, drift_time, sub_detector_stats = self.meta_detector.update_and_detect(
@@ -475,7 +575,7 @@ class ConceptDriftPipeline:
                 y_true=y_true,
                 y_pred=y_pred,
                 err=err,
-                t=index,
+                t=index, proba_matrix=proba_matrix,
             )
 
         if is_drift and self.config.use_ecpf and self.config.ecpf_signal_mode == "meta_retro_60":
@@ -495,7 +595,7 @@ class ConceptDriftPipeline:
                     len(buf),
                     L,
                 )
-            self.meta_detector.reset()
+            self.meta_detector.notify_drift()
             self._batch_X.clear()
             self._batch_y.clear()
             self.buffer = StreamBuffer(
@@ -727,8 +827,8 @@ class ConceptDriftPipeline:
                 # Incremental: keep continuity and adapt conservatively (same handler as gradual for now)
                 self._handle_gradual_reset(drift_alert_timestamp)
 
-        # Reset detectors
-        self.meta_detector.reset()
+        # Notify meta-detector of confirmed drift (do not force full reset)
+        self.meta_detector.notify_drift()
 
         self._batch_X.clear()
         self._batch_y.clear()

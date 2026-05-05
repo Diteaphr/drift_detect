@@ -33,6 +33,7 @@ This document explains:
 - Main ECPF signal modes:
   - `oracle_60`: warning at true drift `T`, drift handled after 60 samples,
   - `detector`: warning/drift from standalone `adwin_dual`.
+  - `meta_ecpf_dwm`: proxy warning from UQ / KS-style indicators, then atom-detector voting via the DWM variant in `detectors/meta/dynamic_weighted.py`.
 
 ### Data loading helpers
 - Recurring stream loader in `src/pipeline.py`:
@@ -70,6 +71,16 @@ python run_ecpf_recurring.py \
   --detector-type adwin_dual
 ```
 
+Compare against the DWM-style proxy-warning path:
+
+```bash
+python run_ecpf_recurring.py \
+  --csv data/recurring_drift/recurring_sud_sea100k_g00.csv \
+  --warm-start 200 \
+  --signal-mode meta_ecpf_dwm \
+  --uq-mode mi_like
+```
+
 Optional oracle baseline:
 
 ```bash
@@ -84,6 +95,15 @@ python run_ecpf_recurring.py \
 ```bash
 python run_ecpf_recurring_batch.py \
   --signal-mode detector \
+  --print-events
+```
+
+DWM-style batch comparison:
+
+```bash
+python run_ecpf_recurring_batch.py \
+  --signal-mode meta_ecpf_dwm \
+  --uq-mode mi_like \
   --print-events
 ```
 
@@ -130,6 +150,11 @@ Example:
   - `cur`: current leader before switch,
   - `best`: best reusable model from pool,
   - `new`: freshly trained model on warning buffer.
+
+For `meta_ecpf_dwm`, the event row also includes:
+- `ecpf_protocol`: `dwm_proxy_warning_then_voting_drift`.
+- `uq_mode`: which UQ proxy was used (`mi_like`, `vote_disagreement`, or `predictive_entropy`).
+- `uq_raw` / `uq_smoothed`: the warning signal before and after smoothing.
 
 ## 6) Metric Notes
 

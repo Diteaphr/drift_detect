@@ -31,9 +31,15 @@ def main() -> None:
     parser.add_argument("--warm-start", type=int, default=200, help="Warm-start sample count.")
     parser.add_argument(
         "--signal-mode",
-        choices=["oracle_60", "detector"],
+        choices=["oracle_60", "detector", "meta_ecpf_dwm", "meta_ecpf_hier_parallel"],
         default="oracle_60",
         help="ECPF warning/drift signal source.",
+    )
+    parser.add_argument(
+        "--uq-mode",
+        choices=["mi_like", "vote_disagreement", "predictive_entropy"],
+        default="mi_like",
+        help="UQ proxy mode used by meta_ecpf_dwm.",
     )
     parser.add_argument(
         "--detector-type",
@@ -51,6 +57,12 @@ def main() -> None:
         type=int,
         default=0,
         help="If >0, run only first N rows (debug).",
+    )
+    parser.add_argument(
+        "--model-type",
+        choices=["ht", "hf"],
+        default=None,
+        help="Streaming model backend. Defaults to hf for UQ/meta modes, otherwise ht.",
     )
     args = parser.parse_args()
 
@@ -70,11 +82,16 @@ def main() -> None:
             f"warm-start ({args.warm_start}) must be < dataset size ({len(y)})."
         )
 
+    model_type = args.model_type or (
+        "hf" if args.signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hier_parallel", "uq_warning"} else "ht"
+    )
+
     cfg = PipelineConfig(
         use_ecpf=True,
-        model_type="ht",
+        model_type=model_type,
         ecpf_signal_mode=args.signal_mode,
         ecpf_oracle_true_drift_times=drift_times if args.signal_mode == "oracle_60" else None,
+        ecpf_uq_mode=args.uq_mode,
         ecpf_warning_length=60,
         ecpf_max_pool_size=10,
         ecpf_detector_type=args.detector_type,
@@ -102,6 +119,10 @@ def main() -> None:
                     "timestamp": int(d.timestamp),
                     "source": d.detector_source,
                     "drift_type": d.drift_type.value,
+                    "ecpf_protocol": d.details.get("ecpf_protocol"),
+                    "uq_mode": d.details.get("uq_mode"),
+                    "uq_raw": d.details.get("uq_raw"),
+                    "uq_smoothed": d.details.get("uq_smoothed"),
                     "buffer_len": d.details.get("buffer_len"),
                     "pool_size": d.details.get("collection_size"),
                     "best_idx": d.details.get("best_idx"),
@@ -126,8 +147,11 @@ def main() -> None:
     print("Run complete")
     print(f"csv: {csv_path}")
     print(f"samples: {len(y)}")
+    print(f"model type: {model_type}")
     if args.signal_mode == "oracle_60":
         print(f"oracle drift starts loaded: {len(drift_times)}")
+    if args.signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hier_parallel"}:
+        print(f"uq mode: {args.uq_mode}")
     print(f"detected drift events: {drift_events}")
     print(f"pool alive snapshots: {alive}")
     print(f"prequential accuracy (post-warm-start): {acc:.4f}")

@@ -10,7 +10,7 @@ class BaseIndicator(ABC):
     """
     
     @abstractmethod
-    def update(self, x: np.ndarray, y_true: float, y_pred: float, err: float) -> None:
+    def update(self, x: np.ndarray, y_true: float, y_pred: float, err: float, **kwargs) -> None:
         """
         更新內部狀態 (如滑動視窗、不確定性計算、潛在空間分佈等)。
         """
@@ -36,14 +36,26 @@ class BaseIndicator(ABC):
 class KSDistributionIndicator(BaseIndicator):
     """將原有的 KS Test 封裝成標準 Indicator 介面 (Data distribution-based proxy)"""
     def __init__(self, window_size: int):
-        from detectors.distribution import DistributionModule
+        from detectors.core.distribution import DistributionModule
         self.detector = DistributionModule(window_size=window_size)
         
-    def update(self, x: np.ndarray, y_true: float, y_pred: float, err: float) -> None:
+    def update(self, x: np.ndarray, y_true: float, y_pred: float, err: float, **kwargs) -> None:
         self.detector.update(np.asarray(x).ravel())
         
     def detect(self) -> Tuple[bool, Dict[str, Any]]:
-        return self.detector.detect()
+        flag, stats = self.detector.detect()
+        
+        # Calculate a continuous proxy score based on min p-value
+        proxy_score = 0.0
+        if stats:
+            min_p = min([feat_stats.get("p_value", 1.0) for feat_name, feat_stats in stats.items() if isinstance(feat_stats, dict)])
+            # If p-value is small (e.g. < 0.05 is the typical threshold), score goes up to 1.
+            # E.g. score = max(0, 1.0 - (min_p / 0.1)), so min_p=0 gives 1, min_p=0.05 gives 0.5
+            proxy_score = min(max(1.0 - (min_p / 0.1), 0.0), 1.0)
+            
+        stats["proxy_score"] = proxy_score
+        
+        return flag, stats
         
     def reset(self) -> None:
         self.detector.reset()
@@ -59,14 +71,14 @@ class ErrorRateTrendIndicator(BaseIndicator):
         self.threshold = threshold
         self.errors = []
         
-    def update(self, x: np.ndarray, y_true: float, y_pred: float, err: float) -> None:
+    def update(self, x: np.ndarray, y_true: float, y_pred: float, err: float, **kwargs) -> None:
         self.errors.append(err)
         if len(self.errors) > self.long_window:
             self.errors.pop(0)
             
     def detect(self) -> Tuple[bool, Dict[str, Any]]:
         if len(self.errors) < self.long_window:
-            return False, {}
+            return False, {"proxy_score": 0.0}
             
         short_err = np.mean(self.errors[-self.short_window:])
         long_err = np.mean(self.errors)
@@ -74,10 +86,15 @@ class ErrorRateTrendIndicator(BaseIndicator):
         diff = short_err - long_err
         warning_flag = bool(diff > self.threshold)
         
+        # Continuous proxy score based on how close the diff is to the threshold
+        # (e.g. diff = threshold -> score = 0.5, double threshold -> score = 1.0)
+        proxy_score = min(max(diff / (self.threshold * 2), 0.0), 1.0)
+        
         stats = {
             "short_term_error": float(short_err),
             "long_term_error": float(long_err),
-            "error_diff": float(diff)
+            "error_diff": float(diff),
+            "proxy_score": float(proxy_score)
         }
         return warning_flag, stats
         
@@ -95,20 +112,26 @@ class UncertaintyProxyIndicator(BaseIndicator):
         self.variance_threshold = variance_threshold
         self.predictions = []
         
-    def update(self, x: np.ndarray, y_true: float, y_pred: float, err: float) -> None:
+    def update(self, x: np.ndarray, y_true: float, y_pred: float, err: float, **kwargs) -> None:
         self.predictions.append(y_pred)
         if len(self.predictions) > self.window_size:
             self.predictions.pop(0)
             
     def detect(self) -> Tuple[bool, Dict[str, Any]]:
         if len(self.predictions) < self.window_size:
-            return False, {}
+            return False, {"proxy_score": 0.0}
             
         var = np.var(self.predictions)
         # 如果模型預測的變異度異常飆高 (預測變得非常不穩定、不確定)
         warning_flag = bool(var > self.variance_threshold)
         
-        stats = {"prediction_variance": float(var)}
+        # Continuous score based on variance
+        proxy_score = min(max(var / (self.variance_threshold * 1.5), 0.0), 1.0)
+        
+        stats = {
+            "prediction_variance": float(var),
+            "proxy_score": float(proxy_score)
+        }
         return warning_flag, stats
 
     def reset(self) -> None:

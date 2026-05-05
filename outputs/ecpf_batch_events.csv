@@ -1,0 +1,2 @@
+file,timestamp,source,drift_type,ecpf_protocol,uq_mode,uq_raw,uq_smoothed,buffer_len,pool_size,best_idx,acc_current_on_warning,acc_best_on_warning,acc_new_on_warning
+recurring_sud_sea100k_g00.csv,679,meta_ecpf_hier_parallel,sudden,dwm_proxy_warning_then_voting_drift,mi_like,0.502206758107481,0.2917422624886461,504,2,0,0.9206349206349206,0.9206349206349206,0.9384920634920635

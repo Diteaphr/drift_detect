@@ -1,0 +1,11 @@
+file,samples,gt_drift_count,detected_drifts,prequential_accuracy,detection_delay,false_warning_rate,reuse_precision,avg_collection_size,runtime_s,setting,label
+recurring_sud_sea100k_g00.csv,20000,1,1,0.9592929292929293,500.0,1.0,0.0,1.9504040404040404,33.710131792,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel
+recurring_sud_sea100k_g01.csv,20000,2,0,0.9511111111111111,500.0,0.0,,1.0,21.189895917,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel
+recurring_sud_sea100k_g02.csv,20000,1,0,0.9375757575757576,500.0,0.0,,1.0,22.624827959000008,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel
+recurring_sud_sea100k_g03.csv,20000,2,0,0.9598989898989899,500.0,0.0,,1.0,26.130118875000008,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel
+recurring_sud_sea100k_g04.csv,20000,1,0,0.9631818181818181,500.0,0.0,,1.0,30.76750700000001,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel
+recurring_sud_sea100k_g05.csv,20000,2,0,0.9301010101010101,500.0,0.0,,1.0,29.70292733400001,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel
+recurring_sud_sea100k_g06.csv,20000,1,0,0.9587878787878787,500.0,0.0,,1.0,29.405129792000025,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel
+recurring_sud_sea100k_g07.csv,20000,2,0,0.9458585858585858,500.0,0.0,,1.0,35.73900304200001,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel
+recurring_sud_sea100k_g08.csv,20000,1,0,0.9707070707070707,500.0,0.0,,1.0,27.621723000000003,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel
+recurring_sud_sea100k_g09.csv,20000,1,0,0.939949494949495,500.0,0.0,,1.0,23.698791625000013,F_hier_parallel,ECPF+HF+UQ(MI)+HierParallel

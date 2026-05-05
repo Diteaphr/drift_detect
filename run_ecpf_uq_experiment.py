@@ -8,6 +8,7 @@ Compares five settings across recurring-drift datasets (g00..g09):
     C. UQ Warning:  ECPF + HF  + UQ warning (MI-like) + error drift confirmation
     D1. Ablation:   ECPF + HF  + UQ warning (vote_disagreement)
     D2. Ablation:   ECPF + HF  + UQ warning (predictive_entropy)
+    E. Meta ECPF:   ECPF + HF  + UQ warning (MI-like) + DWM Meta Detector
 
 Evaluation metrics:
     - prequential accuracy
@@ -40,6 +41,18 @@ from src.pipeline import load_recurring_stream_pair, ConceptDriftPipeline
 # Experiment settings
 # ──────────────────────────────────────────────────────────────────────
 SETTINGS: Dict[str, Dict[str, Any]] = {
+    "E_meta_ecpf_dwm": {
+        "model_type": "hf",
+        "signal_mode": "meta_ecpf_dwm",
+        "uq_mode": "mi_like",
+        "label": "ECPF+HF+UQ(MI)+DWM",
+    },
+    "F_hier_parallel": {
+        "model_type": "hf",
+        "signal_mode": "meta_ecpf_hier_parallel",
+        "uq_mode": "mi_like",
+        "label": "ECPF+HF+UQ(MI)+HierParallel",
+    },
     "A_baseline_ht_error": {
         "model_type": "ht",
         "signal_mode": "detector",

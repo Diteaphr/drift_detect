@@ -82,6 +82,8 @@ class PipelineConfig:
     # - "oracle_60": warning at true drift T, confirm drift after 60 samples.
     # - "meta_retro_60": when detector fires at T, use previous 60 as warning buffer.
     # - "detector": warning/drift from standalone ECPF detector (src/ecpf_detector.py).
+    # - "meta_ecpf_dwm": UQ/ErrorTrend proxy warning + DWM atom confirmation.
+    # - "meta_ecpf_hier_parallel": experimental hierarchical-parallel ECPF detector.
     ecpf_signal_mode: str = "oracle_60"
     ecpf_oracle_true_drift_times: Optional[List[int]] = None
     ecpf_warning_length: int = 60

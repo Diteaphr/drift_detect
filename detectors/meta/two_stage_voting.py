@@ -3,7 +3,7 @@ import numpy as np
 
 from .base import BaseMetaDetector
 from detectors.meta.indicators import BaseIndicator, KSDistributionIndicator
-from detectors.unified import UnifiedDriftDetector
+from detectors.core.unified import UnifiedDriftDetector
 
 class TwoStageVotingDetector(BaseMetaDetector):
     """
@@ -36,23 +36,52 @@ class TwoStageVotingDetector(BaseMetaDetector):
         self.ensemble_strategy = "majority"
         self.first_proxy_warning_t = None
 
+    def _update_indicators(
+        self,
+        x: np.ndarray,
+        y_true: float,
+        y_pred: float,
+        err: float,
+        **kwargs,
+    ) -> Tuple[bool, Dict[str, Any]]:
+        any_proxy_warning = False
+        all_indicator_stats = {}
+        for indicator in self.indicators:
+            indicator.update(x, y_true, y_pred, err, **kwargs)
+            flag, stats = indicator.detect()
+            any_proxy_warning = any_proxy_warning or bool(flag)
+            name = getattr(indicator, "name", indicator.__class__.__name__)
+            all_indicator_stats[name] = {"warning": bool(flag), "stats": stats}
+        return any_proxy_warning, all_indicator_stats
+
+    def _select_strategy(self, any_proxy_warning: bool) -> str:
+        return "any" if any_proxy_warning else "lenient"
+
+    def _vote(self, drift_details: Dict[str, bool], strategy: str) -> bool:
+        votes = sum(drift_details.values())
+        total_detectors = len(self.drift_detector.detectors)
+        if strategy == "majority":
+            return votes >= max(3, int(total_detectors * 0.7))
+        if strategy == "lenient":
+            return votes >= max(2, int(total_detectors * 0.5))
+        if strategy == "any":
+            return votes >= max(1, int(total_detectors * 0.15))
+        if strategy == "all":
+            return all(drift_details.values())
+        raise ValueError(f"Unknown ensemble strategy: {strategy}")
+
     def update_and_detect(
         self,
         x: np.ndarray,
         y_true: float,
         y_pred: float,
         err: float,
-        t: int
+        t: int, **kwargs
     ) -> Tuple[bool, int, Dict[str, Any]]:
         # 1. Update all indicators and check if ANY proxy generates a warning
-        any_proxy_warning = False
-        all_indicator_stats = {}
-        for idx, indicator in enumerate(self.indicators):
-            indicator.update(x, y_true, y_pred, err)
-            flag, stats = indicator.detect()
-            if flag:
-                any_proxy_warning = True
-            all_indicator_stats[f"indicator_{idx}"] = {"warning": flag, "stats": stats}
+        any_proxy_warning, all_indicator_stats = self._update_indicators(
+            x, y_true, y_pred, err, **kwargs
+        )
 
         if any_proxy_warning and self.first_proxy_warning_t is None:
             self.first_proxy_warning_t = t
@@ -61,47 +90,14 @@ class TwoStageVotingDetector(BaseMetaDetector):
         self.drift_detector.update(err)
 
         # 3. Dynamic Strategy Switch (War-time / Peace-time)
-        if any_proxy_warning:
-            self.ensemble_strategy = "any"  # 依比例調降投票門檻
-            
-            # 讓 Atom Detectors 更敏感 (進入備戰狀態)
-            if "ddm" in self.drift_detector.detectors:
-                self.drift_detector.detectors["ddm"].drift_level = 3.0
-            if "page_hinkley" in self.drift_detector.detectors:
-                self.drift_detector.detectors["page_hinkley"].threshold = 10.0
-            if "adwin" in self.drift_detector.detectors:
-                self.drift_detector.detectors["adwin"].delta = 0.1
-            if "ecdd" in self.drift_detector.detectors:
-                self.drift_detector.detectors["ecdd"].drift_level = 2.0
-        else:
-            self.ensemble_strategy = "lenient"
-            
-            # 恢復 Atom Detectors 預設參數 (和平狀態)
-            if "ddm" in self.drift_detector.detectors:
-                self.drift_detector.detectors["ddm"].drift_level = 4.0
-            if "page_hinkley" in self.drift_detector.detectors:
-                self.drift_detector.detectors["page_hinkley"].threshold = 15.0
-            if "adwin" in self.drift_detector.detectors:
-                self.drift_detector.detectors["adwin"].delta = 0.01
-            if "ecdd" in self.drift_detector.detectors:
-                self.drift_detector.detectors["ecdd"].drift_level = 3.0
+        self.ensemble_strategy = self._select_strategy(any_proxy_warning)
+        profile = "sensitive" if any_proxy_warning else "normal"
+        self.drift_detector.set_sensitivity(profile)
 
         # 4. Gather ensemble results and apply strategy decision
         drift_details = self.drift_detector.detect()
         
-        drift_detected = False
-        votes = sum(drift_details.values())
-        total_detectors = len(self.drift_detector.detectors)
-        
-        if self.ensemble_strategy == "majority":
-            drift_detected = votes >= max(3, int(total_detectors * 0.7))  # 至少 3 票 或 70% 以上
-        elif self.ensemble_strategy == "lenient":
-            drift_detected = votes >= max(2, int(total_detectors * 0.5))  # 至少 2 票 或 半數以上
-        elif self.ensemble_strategy == "any":
-            # "any" 其實是備戰狀態下的低門檻，至少 1 票 或 2 票 (依照總數量而定)
-            drift_detected = votes >= max(1, int(total_detectors * 0.15))
-        elif self.ensemble_strategy == "all":
-            drift_detected = all(drift_details.values())
+        drift_detected = self._vote(drift_details, self.ensemble_strategy)
 
         # 5. Bundle detailed Sub-Detector Statistics
         sub_detector_stats = {

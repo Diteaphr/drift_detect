@@ -42,14 +42,15 @@ def load_dataset(csv_path: str, drift_times_path: str):
 def main():
     parser = argparse.ArgumentParser(description="Concept Drift Pipeline Demo")
     parser.add_argument("meta_detector", nargs="?", default="tsv", 
-                        choices=["tsv", "dwm", "statistical"],
+                        choices=["tsv", "dwm", "statistical", "dwme"],
                         help="Meta detector to use: tsv (Two Stage Voting), dwm (Dynamic Weighted), or statistical")
     args = parser.parse_args()
 
     meta_map = {
         "tsv": "two_stage",
         "dwm": "dynamic_weighted",
-        "statistical": "statistical_fusion"
+        "statistical": "statistical_fusion",
+        "dwme": "dynamic_weighted_ecpf"
     }
     selected_meta_type = meta_map[args.meta_detector]
 
@@ -78,18 +79,20 @@ def main():
 
     # 2) Initialize and run Pipeline
     config = PipelineConfig(
+        use_ecpf=False,
         meta_ks_window_size=100,
         atom_min_samples=30,
         update_batch_size=500,
         recurrence_threshold=0.15,
         model_type="ht",
         meta_detector_type=selected_meta_type,  # 透過命令列參數動態選擇
-        selected_detectors=["ddm", "hddm_a", "page_hinkley"], # 只使用部分 Atom Detectors 以觀察效果
-        # selected_detectors=["hddm_w", "eddm", "ddm", "hddm_a", "page_hinkley", "adwin"], # 使用全部預設的 6 種方法
-        # selected_detectors=["ddm", "page_hinkley"], # 只使用兩種方法以觀察效果
+        # selected_detectors=["ddm", "hddm_a", "page_hinkley"], # 只使用部分 Atom Detectors 以觀察效果
+        selected_detectors=["hddm_w", "ddm", "hddm_a", "page_hinkley", "adwin"], # 使用全部預設的 6 種方法
+
+        # selected_detectors=["adwin"], # 只使用兩種方法以觀察效果
         atom_kwargs={
             "adwin": { "delta": 0.01 },
-            "ddm": { "drift_level": 3.0 },
+            "ddm": { "drift_level": 5.0 },
             "page_hinkley": { "threshold": 15.0 },
             "ecdd": { "warning_level": 2.0, "drift_level": 3.0 }
         }

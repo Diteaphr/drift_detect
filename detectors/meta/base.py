@@ -15,7 +15,7 @@ class BaseMetaDetector(ABC):
         y_true: float,
         y_pred: float,
         err: float,
-        t: int
+        t: int, **kwargs
     ) -> Tuple[bool, int, Dict[str, Any]]:
         """
         Update the meta-detector state with new samples and detect if a concept drift occurred.
@@ -41,3 +41,11 @@ class BaseMetaDetector(ABC):
         Reset the meta-detector state (usually called after a drift is confirmed).
         """
         pass
+
+    def notify_drift(self, **kwargs) -> None:
+        """
+        Notification hook called when a drift has been confirmed by the pipeline.
+        Default implementation is a no-op. Meta-detectors can override this to
+        evolve internal state (e.g. preserve/adjust weights) instead of full reset.
+        """
+        return None
