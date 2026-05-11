@@ -12,6 +12,17 @@ import pandas as pd
 
 from src.config import PipelineConfig
 from src.pipeline import load_recurring_stream_pair, ConceptDriftPipeline
+from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
+from detectors.meta_ecpf.signal_routing import SIGNAL_CHOICES
+
+
+ADWIN_FAMILY_SIGNAL_MODES = [
+    "detector",
+    "dual_seed",
+    "dual_seqdrift2",
+    "hybrid_adwin_family",
+    *ECPFAdwinFamilyDetector.COMBOS.keys(),
+]
 
 
 def run_one(
@@ -24,6 +35,14 @@ def run_one(
     detector_delta: float,
     detector_delta_w: float,
     detector_min_instances: int,
+    adwin_family_combo: str,
+    warning_detector: str | None,
+    drift_detector: str | None,
+    warning_signal: str,
+    drift_signal: str,
+    uq_num_classes: int | None,
+    warning_value_range: float,
+    drift_value_range: float,
 ) -> tuple[dict, list[dict]]:
     X, y, drift_times = load_recurring_stream_pair(str(csv_path))
     if max_steps > 0:
@@ -43,6 +62,14 @@ def run_one(
         detector_delta=detector_delta,
         detector_delta_w=detector_delta_w,
         ecpf_detector_min_instances=detector_min_instances,
+        ecpf_adwin_family_combo=adwin_family_combo,
+        ecpf_warning_detector=warning_detector,
+        ecpf_drift_detector=drift_detector,
+        ecpf_warning_signal=warning_signal,
+        ecpf_drift_signal=drift_signal,
+        ecpf_uq_num_classes=uq_num_classes,
+        ecpf_warning_value_range=warning_value_range,
+        ecpf_drift_value_range=drift_value_range,
     )
     pipe = ConceptDriftPipeline(cfg)
     pipe.warm_start(X[:warm_start], y[:warm_start])
@@ -63,9 +90,18 @@ def run_one(
                         "source": d.detector_source,
                         "drift_type": d.drift_type.value,
                         "ecpf_protocol": d.details.get("ecpf_protocol"),
+                        "detector_type": d.details.get("detector_type"),
+                        "warning_detector": d.details.get("warning_detector"),
+                        "drift_detector": d.details.get("drift_detector"),
+                        "warning_signal": d.details.get("warning_signal"),
+                        "drift_signal": d.details.get("drift_signal"),
                         "uq_mode": d.details.get("uq_mode"),
                         "uq_raw": d.details.get("uq_raw"),
                         "uq_smoothed": d.details.get("uq_smoothed"),
+                        "gddm_U": d.details.get("gddm_U"),
+                        "gddm_G_warning": d.details.get("gddm_G_warning"),
+                        "gddm_G_drift": d.details.get("gddm_G_drift"),
+                        "gddm_drift_type": d.details.get("gddm_drift_type"),
                         "buffer_len": d.details.get("buffer_len"),
                         "pool_size": d.details.get("collection_size"),
                         "best_idx": d.details.get("best_idx"),
@@ -98,8 +134,14 @@ def main() -> None:
     parser.add_argument("--max-steps", type=int, default=0)
     parser.add_argument(
         "--signal-mode",
-        choices=["oracle_60", "detector", "meta_ecpf_dwm", "meta_ecpf_hier_parallel"],
+        choices=["oracle_60", *ADWIN_FAMILY_SIGNAL_MODES, "meta_ecpf_dwm", "meta_ecpf_hcdt", "meta_ecpf_hier_parallel", "meta_ecpf_gddm"],
         default="detector",
+    )
+    parser.add_argument(
+        "--adwin-family-combo",
+        choices=sorted(ECPFAdwinFamilyDetector.COMBOS.keys()),
+        default="seed_warning_adwin_drift",
+        help="Warning/drift combo used when --signal-mode hybrid_adwin_family.",
     )
     parser.add_argument(
         "--uq-mode",
@@ -110,6 +152,13 @@ def main() -> None:
     parser.add_argument("--detector-delta", type=float, default=0.05)
     parser.add_argument("--detector-delta-w", type=float, default=0.1)
     parser.add_argument("--detector-min-instances", type=int, default=30)
+    parser.add_argument("--warning-detector", choices=["adwin", "seed", "seqdrift2"], default=None)
+    parser.add_argument("--drift-detector", choices=["adwin", "seed", "seqdrift2"], default=None)
+    parser.add_argument("--warning-signal", choices=sorted(SIGNAL_CHOICES), default="error")
+    parser.add_argument("--drift-signal", choices=sorted(SIGNAL_CHOICES), default="error")
+    parser.add_argument("--uq-num-classes", type=int, default=None)
+    parser.add_argument("--warning-value-range", type=float, default=1.0)
+    parser.add_argument("--drift-value-range", type=float, default=1.0)
     parser.add_argument(
         "--model-type",
         choices=["ht", "hf"],
@@ -125,7 +174,13 @@ def main() -> None:
     rows = []
     all_events: list[dict] = []
     model_type = args.model_type or (
-        "hf" if args.signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hier_parallel", "uq_warning"} else "ht"
+        "hf"
+        if (
+            args.signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hcdt", "meta_ecpf_hier_parallel", "meta_ecpf_gddm", "uq_warning"}
+            or args.warning_signal != "error"
+            or args.drift_signal != "error"
+        )
+        else "ht"
     )
     for i in range(10):
         name = f"recurring_sud_sea100k_g{i:02d}.csv"
@@ -143,6 +198,14 @@ def main() -> None:
             detector_delta=args.detector_delta,
             detector_delta_w=args.detector_delta_w,
             detector_min_instances=args.detector_min_instances,
+            adwin_family_combo=args.adwin_family_combo,
+            warning_detector=args.warning_detector,
+            drift_detector=args.drift_detector,
+            warning_signal=args.warning_signal,
+            drift_signal=args.drift_signal,
+            uq_num_classes=args.uq_num_classes,
+            warning_value_range=args.warning_value_range,
+            drift_value_range=args.drift_value_range,
         )
         rows.append(row)
         all_events.extend(events)

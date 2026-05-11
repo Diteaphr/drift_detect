@@ -1,140 +1,199 @@
-# Hierarchical Parallel ECPF Runbook
+# Hierarchical Hypothesis ECPF Runbook
 
-This runbook documents the experimental hierarchical-parallel ECPF detector.
-It is added alongside the existing Dynamic Weighted ECPF detector; it does not
-replace the original DWM implementation.
-
-## Files
-
-- `detectors/meta_ecpf/hierarchical_parallel.py`
-- `detectors/meta_ecpf/dynamic_weighted.py`
-- `detectors/meta_ecpf/indicators.py`
-- `detectors/meta/dynamic_weighted.py`
-
-The new detector class is:
+This runbook documents the detector currently exposed as:
 
 ```python
 HierarchicalParallelECPFDetector
 ```
 
-It subclasses `DynamicWeightedVotingECPFDetector` so it can reuse the existing
-indicator and atom-detector plumbing while changing the decision logic.
-
-## Why This Exists
-
-The original DWM idea tried to combine heterogeneous atom detectors using one
-weighted vote. In practice, that can become a consensus bottleneck:
-
-- sudden detectors can fire alone but get diluted by gradual detectors
-- UQ and ErrorTrend are noisy and should not grade atom detector correctness
-- requiring all signals to align on the same exact instance is too strict
-
-The hierarchical-parallel detector separates responsibilities instead of
-forcing everything into one pool-level vote.
-
-## State Machine
-
-The intended lifecycle is:
+The class and signal-mode names are kept for experiment compatibility, but the
+implementation is now a hierarchical multiple-hypothesis trigger:
 
 ```text
-Step 1. UQ + ErrorTrend both trigger
-        -> open warning buffer
-
-Step 2. While warning buffer is active
-        -> atom detectors keep reading the error stream
-
-Step 3. gradual-path atom vote >= threshold
-        and warning age >= minimum confirmation age
-        -> confirmed drift
-
-Step 4. ECPF uses warning buffer for expert comparison
-
-Step 5. After drift is handled
-        -> reset atom/proxy transient state
-        -> close warning buffer
-        -> enter cooldown
+Detection Layer -> candidate drift
+Validation Layer -> confirmed drift
+ECPF -> expert reuse / new learner comparison
 ```
 
-## Paths
+It is no longer a dynamic weighted voting detector. It subclasses the existing
+ECPF-DWM class only to reuse indicator, atom-detector, and pipeline plumbing.
 
-Fast path:
+## Files
 
-```text
-ADWIN, DDM
-```
+- `detectors/meta_ecpf/hierarchical_parallel.py`
+- `src/config.py`
+- `src/pipeline.py`
+- `run_ecpf_recurring.py`
+- `run_ecpf_uq_experiment.py`
 
-These are tracked separately for diagnostics. They are intended to represent
-fast/sudden sensitivity.
-
-Gradual confirmation path:
-
-```text
-HDDM_A, PageHinkley
-```
-
-These confirm drift during an active warning buffer.
-
-Current confirmation rule:
-
-```text
-gradual_path_score >= 0.5
-```
-
-With two gradual-path detectors, this means at least one gradual-path detector
-must vote drift while warning is active and the minimum warning-buffer age has
-been reached.
-
-## Proxy Role
-
-UQ and ErrorTrend are not treated as ground truth.
-
-They do not punish or reward atom detector weights. Their only role is to open
-the warning state.
-
-This avoids the earlier logical problem where noisy proxy signals acted like a
-teacher grading atom detectors.
-
-## ECPF Interaction
-
-The detector returns the same shape as other meta detectors:
-
-- `is_drift`
-- `t`
-- `sub_detector_stats`
-
-Pipeline behavior is unchanged:
-
-1. `proxy_indicators["any_warning"]` opens the ECPF warning buffer.
-2. Incoming stream samples are collected into `_ecpf_buffer`.
-3. `is_drift=True` calls `_handle_ecpf_drift(...)`.
-4. ECPF compares stored experts and a fresh learner on the warning buffer.
-5. `notify_drift()` resets transient detector state and enters cooldown.
-
-## Diagnostics
-
-Useful fields in event details:
-
-- `meta_info.score_ratio`: all-atom weighted score
-- `meta_info.fast_path_score`: score for ADWIN/DDM
-- `meta_info.gradual_path_score`: score for HDDM_A/PageHinkley
-- `meta_info.gradual_confirm_threshold`
-- `proxy_indicators.warning_age`
-- `proxy_indicators.cooldown_until`
-
-These help distinguish:
-
-- warning opened but gradual path never confirmed
-- gradual path confirmed too early
-- cooldown suppressing repeated warnings
-- fast path seeing something that gradual path does not confirm
-
-## How To Test
-
-The detector is available through an explicit signal mode:
+The signal mode is still:
 
 ```text
 meta_ecpf_hier_parallel
 ```
+
+## Core Idea
+
+The old version used UQ + ErrorTrend to open a warning buffer, then let gradual
+atom-detector votes directly confirm drift. That behaved like a path-based DWM.
+
+The new version separates the hypotheses:
+
+```text
+H_detect:
+    low-cost detector or proxy signal proposes a candidate warning/drift
+
+H_valid:
+    recent zero-one loss must be worse than the pre-warning baseline
+
+Detection result:
+    drift is returned only when validation passes
+```
+
+So:
+
+```text
+candidate drift != confirmed drift
+```
+
+## Default Detector Stack
+
+Default detection layer:
+
+```text
+HDDM-W
+```
+
+This keeps per-instance cost low. You can still override `selected_detectors`,
+but the recommended efficient configuration is one or two detectors, such as:
+
+```python
+selected_detectors=["hddm_w"]
+selected_detectors=["adwin", "hddm_w"]
+selected_detectors=["page_hinkley"]
+```
+
+The detector still reports path diagnostics:
+
+```text
+fast path:    ADWIN, DDM
+gradual path: HDDM-W, HDDM_A, PageHinkley, EDDM
+```
+
+With the default `["hddm_w"]`, a single HDDM-W drift vote is enough to propose a
+candidate. It does not confirm drift by itself.
+
+## State Machine
+
+```text
+Step 1. Update proxy indicators and the low-cost detection layer.
+
+Step 2. If a proxy warning or detector candidate appears:
+        -> open ECPF warning buffer
+        -> start validation layer
+
+Step 3. While warning is active:
+        -> collect ECPF warning samples
+        -> collect recent zero-one losses for validation
+
+Step 4. Once minimum warning age is reached:
+        -> compare recent error with baseline error
+        -> confirm drift only if validation gap passes threshold
+
+Step 5. After confirmed drift:
+        -> ECPF compares current / best historical / fresh learner
+        -> reset transient detector and validation state
+        -> enter cooldown
+```
+
+A warning can therefore be opened by either:
+
+```text
+proxy_warning_event or candidate_drift
+```
+
+This avoids relying on UQ and ErrorTrend to fire on the same exact timestep.
+
+## Validation Layer
+
+The validation layer uses zero-one loss:
+
+```python
+err = int(y_pred != y_true)
+```
+
+It maintains:
+
+```text
+W_hist = pre-warning baseline errors
+W_new  = warning-window recent errors
+```
+
+and computes:
+
+```text
+validation_gap = mean(W_new) - mean(W_hist)
+```
+
+Drift is confirmed only if:
+
+```text
+validation_gap > ecpf_hier_validation_gap_threshold
+```
+
+Default validation parameters:
+
+```python
+ecpf_hier_validation_hist_size = 250
+ecpf_hier_validation_new_size = 60
+ecpf_hier_validation_min_new_size = 30
+ecpf_hier_validation_gap_threshold = 0.02
+```
+
+The validation cost is O(1) per instance.
+
+## Config Knobs
+
+```python
+ecpf_hier_fast_candidate_threshold = 0.5
+ecpf_hier_gradual_candidate_threshold = 0.5
+ecpf_hier_proxy_policy = "any"
+ecpf_hier_validation_hist_size = 250
+ecpf_hier_validation_new_size = 60
+ecpf_hier_validation_min_new_size = 30
+ecpf_hier_validation_gap_threshold = 0.02
+```
+
+Shared ECPF timing knobs still apply:
+
+```python
+ecpf_warning_length       # minimum confirmation age
+ecpf_uq_warning_timeout   # max active warning age
+```
+
+## Event Diagnostics
+
+The event CSV now includes the important hierarchical-hypothesis fields:
+
+```csv
+candidate_drift,
+candidate_source,
+fast_path_score,
+gradual_path_score,
+validation_passed,
+validation_gap,
+hist_error,
+new_error,
+warning_start_t,
+confirmation_t,
+warning_age,
+buffer_len
+```
+
+These columns are the main evidence that the validation layer is doing work,
+instead of simply returning atom-detector votes.
+
+## How To Test
 
 Single-file run:
 
@@ -165,28 +224,32 @@ python3 run_ecpf_uq_experiment.py \
   --print-events
 ```
 
+Recommended comparison:
+
+```text
+A_baseline_ht_error
+B_hf_error_direct
+E_meta_ecpf_dwm
+F_hier_parallel
+```
+
+Interpret `F_hier_parallel` as:
+
+```text
+ECPF + HF + HDDM-W candidate + zero-one validation
+```
+
 ## Expected Benefits
 
-Compared with plain DWM, this design should:
-
-- avoid sudden/gradual vote dilution
-- keep proxy signals out of atom-detector grading
-- allow warning and confirmation to happen over a window instead of the same
-  exact sample
-- produce warning buffers that ECPF can use for expert comparison
+- lower runtime than the old six-detector path ensemble
+- cleaner distinction between warning, candidate drift, and confirmed drift
+- fewer false confirmations from one noisy atom vote
+- event logs that expose why validation passed or failed
 
 ## Known Risks
 
-This design is still experimental.
-
-Possible failure modes:
-
-- UQ + ErrorTrend may open warning too early
-- gradual confirmation may still produce false positives
-- warning buffers may be too short or too long if timeout/min-age parameters are
-  not tuned
-- reuse precision can be low if the fresh learner beats stored experts on the
-  warning buffer
-
-Interpret results as detector-behavior diagnostics first, not as final model
-quality.
+- `validation_gap_threshold=0.02` may need a dataset sweep
+- if the baseline error is already high, the gap can be conservative
+- if the model adapts very quickly during warning collection, the gap can shrink
+- proxy-only warnings will not confirm unless a detector candidate has also been
+  seen during the warning lifecycle

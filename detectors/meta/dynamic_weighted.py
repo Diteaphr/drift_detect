@@ -1,9 +1,13 @@
+import logging
 from typing import Tuple, Dict, Any, List, Optional
 import numpy as np
 
 from .base import BaseMetaDetector
 from detectors.core.unified import DEFAULT_ATOM_DETECTORS, UnifiedDriftDetector
 from detectors.meta.indicators import BaseIndicator, KSDistributionIndicator
+
+
+logger = logging.getLogger(__name__)
 
 
 class DynamicWeightedVotingDetector(BaseMetaDetector):
@@ -202,13 +206,14 @@ class DynamicWeightedVotingDetector(BaseMetaDetector):
         
         # 5. Global Drift 發生後，印出當下的權重狀態並重置所有權重
         if global_drift:
-            print(f"\n{'='*50}")
-            print(f"🚨 [Dynamic DWM] Global Drift Detected at step t={t}!")
-            print("📊 Current Atom Detector Weights Before Reset:")
-            for det_name, weight in self.weights.items():
-                print(f"   - {det_name:<15}: {weight:.4f}")
-            print(f"📈 Score Ratio: {current_score:.4f} (Threshold: {self.threshold})")
-            print(f"{'='*50}\n")
+            logger.info(
+                "Dynamic DWM global drift detected at t=%d; score_ratio=%.4f "
+                "(threshold=%.4f); weights=%s",
+                t,
+                current_score,
+                self.threshold,
+                {name: round(weight, 4) for name, weight in self.weights.items()},
+            )
             self.proxy_warning_active = False
             self.first_proxy_warning_t = None
             self.cooldown_until = t + self.cooldown_duration

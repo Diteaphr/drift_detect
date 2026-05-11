@@ -1,0 +1,11 @@
+file,samples,gt_drift_count,detected_drifts,prequential_accuracy,detection_delay,false_warning_rate,reuse_precision,avg_collection_size,runtime_s,setting,label
+recurring_sud_sea100k_g00.csv,20000,1,0,0.9593939393939394,500.0,0.0,,1.0,2.399675875,H_meta_ecpf_hcdt,ECPF+HT+HCDT
+recurring_sud_sea100k_g01.csv,20000,2,0,0.9509090909090909,500.0,0.0,,1.0,2.353875208,H_meta_ecpf_hcdt,ECPF+HT+HCDT
+recurring_sud_sea100k_g02.csv,20000,1,0,0.9593434343434344,500.0,0.0,,1.0,2.350265833999999,H_meta_ecpf_hcdt,ECPF+HT+HCDT
+recurring_sud_sea100k_g03.csv,20000,2,0,0.9436363636363636,500.0,0.0,,1.0,2.931966417,H_meta_ecpf_hcdt,ECPF+HT+HCDT
+recurring_sud_sea100k_g04.csv,20000,1,0,0.9514646464646465,500.0,0.0,,1.0,2.4300757500000003,H_meta_ecpf_hcdt,ECPF+HT+HCDT
+recurring_sud_sea100k_g05.csv,20000,2,0,0.9205050505050505,500.0,0.0,,1.0,2.176275207999998,H_meta_ecpf_hcdt,ECPF+HT+HCDT
+recurring_sud_sea100k_g06.csv,20000,1,0,0.9463131313131313,500.0,0.0,,1.0,2.337065041999999,H_meta_ecpf_hcdt,ECPF+HT+HCDT
+recurring_sud_sea100k_g07.csv,20000,2,0,0.9624747474747475,500.0,0.0,,1.0,3.170158082999997,H_meta_ecpf_hcdt,ECPF+HT+HCDT
+recurring_sud_sea100k_g08.csv,20000,1,0,0.962929292929293,500.0,0.0,,1.0,4.1973846250000015,H_meta_ecpf_hcdt,ECPF+HT+HCDT
+recurring_sud_sea100k_g09.csv,20000,1,0,0.9568686868686869,500.0,0.0,,1.0,2.6179035420000005,H_meta_ecpf_hcdt,ECPF+HT+HCDT

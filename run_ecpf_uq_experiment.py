@@ -21,6 +21,8 @@ Evaluation metrics:
 Usage:
     python run_ecpf_uq_experiment.py
     python run_ecpf_uq_experiment.py --max-steps 5000 --print-events
+    python3 run_ecpf_uq_experiment.py --max-steps 2000 --print-events
+
 """
 
 from __future__ import annotations
@@ -35,12 +37,56 @@ import pandas as pd
 
 from src.config import PipelineConfig
 from src.pipeline import load_recurring_stream_pair, ConceptDriftPipeline
+from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
+from detectors.meta_ecpf.signal_routing import SIGNAL_CHOICES
 
 
 # ──────────────────────────────────────────────────────────────────────
 # Experiment settings
 # ──────────────────────────────────────────────────────────────────────
 SETTINGS: Dict[str, Dict[str, Any]] = {
+    "A_baseline_ht_error": {
+        "model_type": "ht",
+        "signal_mode": "detector",
+        "uq_mode": None,
+        "label": "ECPF+HT+error",
+    },
+    "H_dual_seed": {
+        "model_type": "ht",
+        "signal_mode": "dual_seed",
+        "uq_mode": None,
+        "label": "ECPF+HT+dual-SEED",
+    },
+    "I_dual_seqdrift2": {
+        "model_type": "ht",
+        "signal_mode": "dual_seqdrift2",
+        "uq_mode": None,
+        "label": "ECPF+HT+dual-SeqDrift2",
+    },
+    "J_seed_warning_adwin_drift": {
+        "model_type": "ht",
+        "signal_mode": "seed_warning_adwin_drift",
+        "uq_mode": None,
+        "label": "ECPF+HT+SEEDwarn+ADWINdrift",
+    },
+    "K_adwin_warning_seed_drift": {
+        "model_type": "ht",
+        "signal_mode": "adwin_warning_seed_drift",
+        "uq_mode": None,
+        "label": "ECPF+HT+ADWINwarn+SEEDdrift",
+    },
+    "L_seqdrift2_warning_adwin_drift": {
+        "model_type": "ht",
+        "signal_mode": "seqdrift2_warning_adwin_drift",
+        "uq_mode": None,
+        "label": "ECPF+HT+SeqDrift2warn+ADWINdrift",
+    },
+    "M_adwin_warning_seqdrift2_drift": {
+        "model_type": "ht",
+        "signal_mode": "adwin_warning_seqdrift2_drift",
+        "uq_mode": None,
+        "label": "ECPF+HT+ADWINwarn+SeqDrift2drift",
+    },
     "E_meta_ecpf_dwm": {
         "model_type": "hf",
         "signal_mode": "meta_ecpf_dwm",
@@ -53,12 +99,19 @@ SETTINGS: Dict[str, Dict[str, Any]] = {
         "uq_mode": "mi_like",
         "label": "ECPF+HF+UQ(MI)+HierParallel",
     },
-    "A_baseline_ht_error": {
-        "model_type": "ht",
-        "signal_mode": "detector",
-        "uq_mode": None,
-        "label": "ECPF+HT+error",
+    "G_meta_ecpf_gddm": {
+        "model_type": "hf",
+        "signal_mode": "meta_ecpf_gddm",
+        "uq_mode": "mi_like",
+        "label": "ECPF+HF+GDDM",
     },
+    "H_meta_ecpf_hcdt": {
+        "model_type": "ht",
+        "signal_mode": "meta_ecpf_hcdt",
+        "uq_mode": None,
+        "label": "ECPF+HT+HCDT",
+    },
+
     "B_hf_error_direct": {
         "model_type": "hf",
         "signal_mode": "detector",
@@ -142,6 +195,14 @@ def run_one(
     detector_delta: float,
     detector_delta_w: float,
     detector_min_instances: int,
+    adwin_family_combo: str,
+    warning_detector: Optional[str],
+    drift_detector: Optional[str],
+    warning_signal: str,
+    drift_signal: str,
+    uq_num_classes: Optional[int],
+    warning_value_range: float,
+    drift_value_range: float,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     X, y, drift_times = load_recurring_stream_pair(str(csv_path))
     if max_steps > 0:
@@ -149,9 +210,15 @@ def run_one(
         X, y = X[:n], y[:n]
         drift_times = [t for t in drift_times if t < n]
 
+    effective_model_type = (
+        "hf"
+        if model_type == "ht" and (warning_signal != "error" or drift_signal != "error")
+        else model_type
+    )
+
     cfg_kwargs: Dict[str, Any] = dict(
         use_ecpf=True,
-        model_type=model_type,
+        model_type=effective_model_type,
         ecpf_signal_mode=signal_mode,
         ecpf_oracle_true_drift_times=None,
         ecpf_warning_length=60,
@@ -159,6 +226,14 @@ def run_one(
         detector_delta=detector_delta,
         detector_delta_w=detector_delta_w,
         ecpf_detector_min_instances=detector_min_instances,
+        ecpf_adwin_family_combo=adwin_family_combo,
+        ecpf_warning_detector=warning_detector,
+        ecpf_drift_detector=drift_detector,
+        ecpf_warning_signal=warning_signal,
+        ecpf_drift_signal=drift_signal,
+        ecpf_uq_num_classes=uq_num_classes,
+        ecpf_warning_value_range=warning_value_range,
+        ecpf_drift_value_range=drift_value_range,
     )
     if uq_mode is not None:
         cfg_kwargs["ecpf_uq_mode"] = uq_mode
@@ -187,9 +262,30 @@ def run_one(
                     "source": d.detector_source,
                     "drift_type": d.drift_type.value,
                     "ecpf_protocol": det_details.get("ecpf_protocol"),
+                    "detector_type": det_details.get("detector_type"),
+                    "warning_detector": det_details.get("warning_detector"),
+                    "drift_detector": det_details.get("drift_detector"),
+                    "warning_signal": det_details.get("warning_signal"),
+                    "drift_signal": det_details.get("drift_signal"),
                     "uq_mode": det_details.get("uq_mode"),
                     "uq_raw": det_details.get("uq_raw"),
                     "uq_smoothed": det_details.get("uq_smoothed"),
+                    "gddm_U": det_details.get("gddm_U"),
+                    "gddm_G_warning": det_details.get("gddm_G_warning"),
+                    "gddm_G_drift": det_details.get("gddm_G_drift"),
+                    "gddm_drift_type": det_details.get("gddm_drift_type"),
+                    "candidate_drift": det_details.get("candidate_drift"),
+                    "candidate_source": det_details.get("active_candidate_source")
+                    or det_details.get("candidate_source"),
+                    "fast_path_score": det_details.get("fast_path_score"),
+                    "gradual_path_score": det_details.get("gradual_path_score"),
+                    "validation_passed": det_details.get("validation_passed"),
+                    "validation_gap": det_details.get("validation_gap"),
+                    "hist_error": det_details.get("hist_error"),
+                    "new_error": det_details.get("new_error"),
+                    "warning_start_t": det_details.get("warning_start_t"),
+                    "confirmation_t": det_details.get("confirmation_t"),
+                    "warning_age": det_details.get("warning_age"),
                     "buffer_len": det_details.get("buffer_len"),
                     "pool_size": det_details.get("collection_size"),
                     "best_idx": det_details.get("best_idx"),
@@ -244,6 +340,19 @@ def main() -> None:
     parser.add_argument("--detector-delta", type=float, default=0.05)
     parser.add_argument("--detector-delta-w", type=float, default=0.1)
     parser.add_argument("--detector-min-instances", type=int, default=30)
+    parser.add_argument("--warning-detector", choices=["adwin", "seed", "seqdrift2"], default=None)
+    parser.add_argument("--drift-detector", choices=["adwin", "seed", "seqdrift2"], default=None)
+    parser.add_argument("--warning-signal", choices=sorted(SIGNAL_CHOICES), default="error")
+    parser.add_argument("--drift-signal", choices=sorted(SIGNAL_CHOICES), default="error")
+    parser.add_argument("--uq-num-classes", type=int, default=None)
+    parser.add_argument("--warning-value-range", type=float, default=1.0)
+    parser.add_argument("--drift-value-range", type=float, default=1.0)
+    parser.add_argument(
+        "--adwin-family-combo",
+        choices=sorted(ECPFAdwinFamilyDetector.COMBOS.keys()),
+        default="seed_warning_adwin_drift",
+        help="Warning/drift combo used by hybrid_adwin_family settings.",
+    )
     parser.add_argument("--out-dir", default="outputs")
     parser.add_argument("--print-events", action="store_true")
     parser.add_argument(
@@ -288,6 +397,14 @@ def main() -> None:
                 detector_delta=args.detector_delta,
                 detector_delta_w=args.detector_delta_w,
                 detector_min_instances=args.detector_min_instances,
+                adwin_family_combo=args.adwin_family_combo,
+                warning_detector=args.warning_detector,
+                drift_detector=args.drift_detector,
+                warning_signal=args.warning_signal,
+                drift_signal=args.drift_signal,
+                uq_num_classes=args.uq_num_classes,
+                warning_value_range=args.warning_value_range,
+                drift_value_range=args.drift_value_range,
             )
             summary["setting"] = setting_key
             summary["label"] = s["label"]

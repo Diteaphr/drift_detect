@@ -1,2 +1,5 @@
-file,timestamp,source,drift_type,ecpf_protocol,uq_mode,uq_raw,uq_smoothed,buffer_len,pool_size,best_idx,acc_current_on_warning,acc_best_on_warning,acc_new_on_warning
-recurring_sud_sea100k_g00.csv,679,meta_ecpf_hier_parallel,sudden,dwm_proxy_warning_then_voting_drift,mi_like,0.502206758107481,0.2917422624886461,504,2,0,0.9206349206349206,0.9206349206349206,0.9384920634920635
+file,timestamp,source,drift_type,ecpf_protocol,detector_type,warning_detector,drift_detector,warning_signal,drift_signal,uq_mode,uq_raw,uq_smoothed,gddm_U,gddm_G_warning,gddm_G_drift,gddm_drift_type,buffer_len,pool_size,best_idx,acc_current_on_warning,acc_best_on_warning,acc_new_on_warning
+recurring_sud_sea100k_g04.csv,18722,ecpf_detector_dual_seed,sudden,detector_warning_drift,dual_seed,seed,seed,error,error,,,,,,,,20,2,0,0.8,0.8,0.75
+recurring_sud_sea100k_g05.csv,10069,ecpf_detector_dual_seed,sudden,detector_warning_drift,dual_seed,seed,seed,error,error,,,,,,,,10,2,0,0.7,0.7,0.9
+recurring_sud_sea100k_g05.csv,14908,ecpf_detector_dual_seed,sudden,detector_warning_drift,dual_seed,seed,seed,error,error,,,,,,,,14,3,0,0.7142857142857143,0.8571428571428571,0.8571428571428571
+recurring_sud_sea100k_g09.csv,8460,ecpf_detector_dual_seed,sudden,detector_warning_drift,dual_seed,seed,seed,error,error,,,,,,,,86,2,0,0.8837209302325582,0.8837209302325582,0.9534883720930233

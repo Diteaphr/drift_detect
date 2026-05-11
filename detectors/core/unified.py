@@ -139,6 +139,80 @@ class DDM:
         self._p_std_min = float("inf")
 
 
+class RDDM(DDM):
+    """Reactive Drift Detection Method.
+
+    RDDM reuses DDM's binomial error-rate bounds and adds warning-period
+    bookkeeping so callers can reconfigure after long unconfirmed warnings.
+    """
+
+    def __init__(
+        self,
+        min_samples: int = 30,
+        warning_level: float = 2.0,
+        drift_level: float = 3.0,
+        max_warning_length: int = 400,
+    ):
+        super().__init__(
+            min_samples=min_samples,
+            warning_level=warning_level,
+            drift_level=drift_level,
+        )
+        self.max_warning_length = int(max_warning_length)
+        self._warning_active = False
+        self._warning_start_n: Optional[int] = None
+        self._last_reconfigure = False
+
+    def detect(self) -> Tuple[bool, bool]:
+        drift, warning = super().detect()
+        self._last_reconfigure = False
+
+        if warning and not self._warning_active:
+            self._warning_active = True
+            self._warning_start_n = self._total_samples
+
+        warning_age = self.warning_age
+        if (
+            self._warning_active
+            and not drift
+            and warning_age is not None
+            and warning_age >= self.max_warning_length
+        ):
+            self._last_reconfigure = True
+            self.reset()
+            return False, False
+
+        return drift, warning
+
+    @property
+    def warning_age(self) -> Optional[int]:
+        if self._warning_start_n is None:
+            return None
+        return self._total_samples - self._warning_start_n
+
+    @property
+    def reconfigure_triggered(self) -> bool:
+        return self._last_reconfigure
+
+    def stats(self) -> Dict[str, Any]:
+        return {
+            "detector": "rddm",
+            "updates": self._total_samples,
+            "p": self._p,
+            "s": self._p_std,
+            "p_min": None if not math.isfinite(self._p_min) else self._p_min,
+            "s_min": None if not math.isfinite(self._p_std_min) else self._p_std_min,
+            "warning_active": self._warning_active,
+            "warning_age": self.warning_age,
+            "reconfigure": self._last_reconfigure,
+        }
+
+    def reset(self) -> None:
+        super().reset()
+        self._warning_active = False
+        self._warning_start_n = None
+
+
 class HDDM_A:
     """Hoeffding Drift Detection Method - A."""
 
@@ -351,6 +425,7 @@ ATOM_DETECTORS: Dict[str, Type] = {
     "hddm_w": HDDM_W,
     "eddm": EDDM,
     "ddm": DDM,
+    "rddm": RDDM,
     "hddm_a": HDDM_A,
     "page_hinkley": PageHinkley,
     "adwin": ADWIN,
@@ -409,12 +484,12 @@ class UnifiedDriftDetector:
             if detector_cls is None:
                 raise ValueError(f"Unknown atom detector: {name}")
             kwargs = dict(self.atom_kwargs.get(name_lower, {}))
-            if name_lower in {"hddm_w", "eddm"} and "min_samples" not in kwargs:
+            if name_lower in {"hddm_w", "eddm", "rddm"} and "min_samples" not in kwargs:
                 kwargs["min_samples"] = min_samples
             self.detectors[name_lower] = detector_cls(**kwargs)
 
         self._buffer: deque = deque(maxlen=2000)
-        self._returns_tuple = {"eddm", "ddm", "ecdd", "stepd"}
+        self._returns_tuple = {"eddm", "ddm", "rddm", "ecdd", "stepd"}
         self.sensitivity_profile: Optional[str] = None
 
     def update(self, error: float) -> None:
@@ -422,7 +497,7 @@ class UnifiedDriftDetector:
         binary_error = 1 if error > 0.5 else 0
 
         for name, detector in self.detectors.items():
-            if name in {"hddm_w", "eddm", "ddm"}:
+            if name in {"hddm_w", "eddm", "ddm", "rddm"}:
                 detector.update(binary_error)
             elif name in {"ecdd", "stepd"}:
                 detector.update(float(binary_error))

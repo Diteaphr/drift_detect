@@ -38,7 +38,7 @@ Why ``mi_like`` is the primary choice:
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 def _entropy(proba: Dict[Any, float]) -> float:
@@ -50,14 +50,32 @@ def _entropy(proba: Dict[Any, float]) -> float:
     return h
 
 
-def _unify_classes(matrix: List[Dict[Any, float]]) -> List[Dict[Any, float]]:
+def _normalize_proba(proba: Dict[Any, float]) -> Dict[Any, float]:
+    """Clamp negative mass and normalize a probability dict."""
+    cleaned = {c: max(0.0, float(p)) for c, p in proba.items()}
+    total = sum(cleaned.values())
+    if total <= 0.0:
+        return cleaned
+    return {c: p / total for c, p in cleaned.items()}
+
+
+def _unify_classes(
+    matrix: List[Dict[Any, float]],
+    *,
+    num_classes: Optional[int] = None,
+    normalize: bool = True,
+) -> List[Dict[Any, float]]:
     """Ensure all dicts in *matrix* share the same class keys (fill missing with 0)."""
     all_classes: set = set()
     for proba in matrix:
         all_classes.update(proba.keys())
+    if num_classes is not None:
+        all_classes.update(range(int(num_classes)))
     unified: List[Dict[Any, float]] = []
     for proba in matrix:
         d = {c: proba.get(c, 0.0) for c in all_classes}
+        if normalize:
+            d = _normalize_proba(d)
         unified.append(d)
     return unified
 
@@ -73,12 +91,20 @@ class UQExtractor:
 
     MODES = {"mi_like", "vote_disagreement", "predictive_entropy"}
 
-    def __init__(self, mode: str = "mi_like") -> None:
+    def __init__(
+        self,
+        mode: str = "mi_like",
+        *,
+        num_classes: Optional[int] = None,
+        normalize_probabilities: bool = True,
+    ) -> None:
         if mode not in self.MODES:
             raise ValueError(
                 f"Unknown UQ mode {mode!r}.  Choose from {sorted(self.MODES)}"
             )
         self.mode = mode
+        self.num_classes = int(num_classes) if num_classes is not None else None
+        self.normalize_probabilities = bool(normalize_probabilities)
 
     def extract(self, proba_matrix: List[Dict[Any, float]]) -> float:
         """Compute UQ scalar from per-tree probability dicts.
@@ -102,7 +128,11 @@ class UQExtractor:
         if not valid:
             return 0.0
 
-        valid = _unify_classes(valid)
+        valid = _unify_classes(
+            valid,
+            num_classes=self.num_classes,
+            normalize=self.normalize_probabilities,
+        )
 
         if self.mode == "mi_like":
             return self._mi_like(valid)

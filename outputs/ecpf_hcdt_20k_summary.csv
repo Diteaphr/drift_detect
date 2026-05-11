@@ -1,0 +1,11 @@
+file,samples,groundtruth_drift_count,groundtruth_drift_times,detected_drift_events,pool_alive_snapshots,prequential_accuracy,model_type
+recurring_sud_sea100k_g00.csv,20000,1,14476,1,2,0.9605050505050505,hf
+recurring_sud_sea100k_g01.csv,20000,2,4631 13318,1,2,0.9551010101010101,hf
+recurring_sud_sea100k_g02.csv,20000,1,10693,3,2,0.9453535353535354,hf
+recurring_sud_sea100k_g03.csv,20000,2,8454 19297,2,2,0.9596969696969697,hf
+recurring_sud_sea100k_g04.csv,20000,1,18553,1,2,0.9632323232323232,hf
+recurring_sud_sea100k_g05.csv,20000,2,9764 14788,4,4,0.9566666666666667,hf
+recurring_sud_sea100k_g06.csv,20000,1,12981,4,4,0.9579797979797979,hf
+recurring_sud_sea100k_g07.csv,20000,2,5095 14736,0,1,0.9458585858585858,hf
+recurring_sud_sea100k_g08.csv,20000,1,12151,1,2,0.9710606060606061,hf
+recurring_sud_sea100k_g09.csv,20000,1,7989,6,5,0.9537878787878787,hf

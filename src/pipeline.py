@@ -29,6 +29,8 @@ from detectors import (
 from .ecpf import ECPFMetaLearner, load_drift_times_file
 from .ecpf_detector import ECPFWarningDriftDetector
 from .uq_warning_detector import UQWarningDetector
+from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
+from detectors.meta_ecpf.signal_routing import extract_signal
 from .drift_type_classifier_dtc_rf import classify_drift_type
 from .model_pool import ModelPool
 from .prediction_model import PredictionModel
@@ -43,10 +45,20 @@ except ImportError:
 
 from detectors.meta import TwoStageVotingDetector, DynamicWeightedVotingDetector, StatisticalFusionDetector
 from detectors.meta_ecpf.dynamic_weighted import DynamicWeightedVotingECPFDetector
-from detectors.meta_ecpf.hierarchical_parallel import HierarchicalParallelECPFDetector
+from detectors.meta_ecpf.hcdt import HCDTECPFDetector
 from detectors.meta.indicators import KSDistributionIndicator, ErrorRateTrendIndicator, UncertaintyProxyIndicator
 
 logger = logging.getLogger(__name__)
+
+
+ECPF_ADWIN_FAMILY_SIGNAL_MODES = {
+    "detector",
+    "dual_adwin",
+    "dual_seed",
+    "dual_seqdrift2",
+    "hybrid_adwin_family",
+    *ECPFAdwinFamilyDetector.COMBOS.keys(),
+}
 
 
 class ConceptDriftPipeline:
@@ -78,12 +90,8 @@ class ConceptDriftPipeline:
                 uq_mode=self.config.ecpf_uq_mode or "mi_like",
                 selected_detectors=self.config.selected_detectors
             )
-        elif self.config.ecpf_signal_mode == "meta_ecpf_hier_parallel":
-            self.meta_detector = HierarchicalParallelECPFDetector(
-                self.config,
-                uq_mode=self.config.ecpf_uq_mode or "mi_like",
-                selected_detectors=self.config.selected_detectors
-            )
+        elif self.config.ecpf_signal_mode == "meta_ecpf_hcdt":
+            self.meta_detector = HCDTECPFDetector(self.config)
         elif self.config.meta_detector_type == "two_stage":
             self.meta_detector = TwoStageVotingDetector(
                 self.config, 
@@ -161,13 +169,26 @@ class ConceptDriftPipeline:
         self._ecpf_buffer: List[Tuple[np.ndarray, float]] = []
         self._ecpf_oracle_started: set = set()
         self._ecpf_ring: deque = deque(maxlen=5000)
-        self._ecpf_detector: Optional[ECPFWarningDriftDetector] = None
-        if self.config.use_ecpf and self.config.ecpf_signal_mode == "detector":
-            self._ecpf_detector = ECPFWarningDriftDetector(
-                min_num_instances=self.config.ecpf_detector_min_instances,
-                delta=self.config.detector_delta,
-                delta_w=self.config.detector_delta_w,
-            )
+        self._ecpf_detector: Optional[ECPFAdwinFamilyDetector] = None
+        if self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES:
+            warning_detector, drift_detector = self._resolve_ecpf_adwin_family_detectors()
+            if warning_detector == "adwin" and drift_detector == "adwin":
+                self._ecpf_detector = ECPFWarningDriftDetector(
+                    min_num_instances=self.config.ecpf_detector_min_instances,
+                    delta=self.config.detector_delta,
+                    delta_w=self.config.detector_delta_w,
+                )
+            else:
+                self._ecpf_detector = ECPFAdwinFamilyDetector(
+                    warning_detector_type=warning_detector,
+                    drift_detector_type=drift_detector,
+                    min_num_instances=self.config.ecpf_detector_min_instances,
+                    delta=self.config.detector_delta,
+                    delta_w=self.config.detector_delta_w,
+                    random_seed=self.config.recurring_random_seed,
+                    warning_value_range=self.config.ecpf_warning_value_range,
+                    drift_value_range=self.config.ecpf_drift_value_range,
+                )
 
         # UQ Warning Layer: UQ-only warning + error-based drift confirmation
         self._uq_warning_detector: Optional[UQWarningDetector] = None
@@ -192,6 +213,31 @@ class ConceptDriftPipeline:
         self._post_alert_fifo_x: Optional[deque] = None
         self._post_alert_fifo_err: Optional[deque] = None
         self._pending_drift: Optional[Dict[str, Any]] = None
+
+    def _resolve_ecpf_adwin_family_combo(self) -> str:
+        mode = self.config.ecpf_signal_mode
+        if mode == "detector":
+            return "dual_adwin"
+        if mode in {"dual_adwin", "dual_seed", "dual_seqdrift2"}:
+            return mode
+        if mode == "hybrid_adwin_family":
+            return self.config.ecpf_adwin_family_combo
+        if mode in ECPFAdwinFamilyDetector.COMBOS:
+            return mode
+        raise ValueError(f"Unknown ECPF ADWIN-family signal mode: {mode}")
+
+    def _resolve_ecpf_adwin_family_detectors(self) -> Tuple[str, str]:
+        if self.config.ecpf_warning_detector or self.config.ecpf_drift_detector:
+            warning_detector = (self.config.ecpf_warning_detector or "adwin").lower()
+            drift_detector = (self.config.ecpf_drift_detector or "adwin").lower()
+            for detector_type in (warning_detector, drift_detector):
+                if detector_type not in {"adwin", "seed", "seqdrift2"}:
+                    raise ValueError(
+                        f"Unknown ECPF detector type {detector_type!r}; "
+                        "choose from adwin, seed, seqdrift2"
+                    )
+            return warning_detector, drift_detector
+        return ECPFAdwinFamilyDetector.COMBOS[self._resolve_ecpf_adwin_family_combo()]
 
     # ------------------------------------------------------------------
     # Warm start
@@ -319,7 +365,7 @@ class ConceptDriftPipeline:
                         )
                         self._ecpf_warning_active = False
                         self._ecpf_warning_start_idx = None
-                        self.meta_detector.notify_drift()
+                        self.meta_detector.reset()
                         self._batch_X.clear()
                         self._batch_y.clear()
                         self.buffer = StreamBuffer(
@@ -327,15 +373,43 @@ class ConceptDriftPipeline:
                         )
                         return y_pred, new_detections, True
                     return y_pred, [], False
-            elif self.config.ecpf_signal_mode == "detector" and self._ecpf_detector is not None:
-                err01 = 1.0 if int(round(float(y_pred))) != int(round(float(y_true))) else 0.0
-                is_warning, is_drift = self._ecpf_detector.update(err01)
+            elif self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES and self._ecpf_detector is not None:
+                proba_matrix = None
+                if hasattr(self.prediction_model, 'predict_proba_matrix'):
+                    try:
+                        proba_matrix = self.prediction_model.predict_proba_matrix(x_)
+                    except Exception:
+                        pass
+                warning_value = extract_signal(
+                    self.config.ecpf_warning_signal,
+                    y_true=y_true,
+                    y_pred=y_pred,
+                    err=err,
+                    proba_matrix=proba_matrix,
+                    num_classes=self.config.ecpf_uq_num_classes,
+                )
+                drift_value = extract_signal(
+                    self.config.ecpf_drift_signal,
+                    y_true=y_true,
+                    y_pred=y_pred,
+                    err=err,
+                    proba_matrix=proba_matrix,
+                    num_classes=self.config.ecpf_uq_num_classes,
+                )
+                is_warning, is_drift = self._ecpf_detector.update_values(
+                    warning_value,
+                    drift_value,
+                )
 
                 if is_warning and not self._ecpf_warning_active:
                     self._ecpf_warning_active = True
                     self._ecpf_warning_start_idx = int(index)
                     self._ecpf_buffer = []
-                    logger.info("ECPF detector: warning started at t=%d", index)
+                    logger.info(
+                        "ECPF detector: warning started at t=%d (%s)",
+                        index,
+                        self._ecpf_detector.combo_name,
+                    )
 
                 if self._ecpf_warning_active:
                     self._ecpf_buffer.append(
@@ -346,18 +420,19 @@ class ConceptDriftPipeline:
                     self._handle_ecpf_drift(
                         self._ecpf_buffer[:],
                         int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
-                            "ecpf_detector_adwin_dual",
+                        f"ecpf_detector_{self._ecpf_detector.combo_name}",
                         new_detections,
-                            {
-                                "ecpf_protocol": "detector_warning_drift",
-                                "detector_type": "adwin_dual",
-                                **self._ecpf_detector.stats,
-                            },
+                        {
+                            "ecpf_protocol": "detector_warning_drift",
+                            "warning_signal": self.config.ecpf_warning_signal,
+                            "drift_signal": self.config.ecpf_drift_signal,
+                            **self._ecpf_detector.stats,
+                        },
                     )
                     self._ecpf_warning_active = False
                     self._ecpf_warning_start_idx = None
                     self._ecpf_buffer = []
-                    self.meta_detector.notify_drift()
+                    self.meta_detector.reset()
                     self._batch_X.clear()
                     self._batch_y.clear()
                     self.buffer = StreamBuffer(
@@ -367,7 +442,7 @@ class ConceptDriftPipeline:
 
                 if self._ecpf_warning_active:
                     return y_pred, [], False
-            elif self.config.ecpf_signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hier_parallel"} and self.meta_detector is not None:
+            elif self.config.ecpf_signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hcdt"} and self.meta_detector is not None:
                 # Update meta detector continuously
                 proba_matrix = None
                 if hasattr(self.prediction_model, 'predict_proba_matrix'):
@@ -387,6 +462,8 @@ class ConceptDriftPipeline:
 
                 proxy_stats = sub_stats.get("proxy_indicators", {})
                 uq_warning = proxy_stats.get("any_warning", False)
+                detector_warning_active = proxy_stats.get("warning_active", self._ecpf_warning_active)
+                false_positive = proxy_stats.get("false_positive", False)
 
                 # Warning
                 if uq_warning and not self._ecpf_warning_active:
@@ -399,43 +476,57 @@ class ConceptDriftPipeline:
                         (np.asarray(x_.ravel(), dtype=np.float64).copy(), float(y_true))
                     )
 
+                if (
+                    self.config.ecpf_signal_mode == "meta_ecpf_hcdt"
+                    and self._ecpf_warning_active
+                    and false_positive
+                    and not is_drift
+                ):
+                    self._ecpf_warning_active = False
+                    self._ecpf_warning_start_idx = None
+                    self._ecpf_buffer = []
+                    return y_pred, [], False
+
+                if (
+                    self.config.ecpf_signal_mode == "meta_ecpf_hcdt"
+                    and self._ecpf_warning_active
+                    and not detector_warning_active
+                    and not is_drift
+                ):
+                    self._ecpf_warning_active = False
+                    self._ecpf_warning_start_idx = None
+                    self._ecpf_buffer = []
+                    return y_pred, [], False
+
                 # Drift confirmation
                 if is_drift and self._ecpf_warning_active and self._ecpf_buffer:
-                    event_details = {
-                        "ecpf_protocol": "dwm_proxy_warning_then_voting_drift",
-                        "uq_mode": self.config.ecpf_uq_mode,
-                        **sub_stats,
-                    }
-                    for indicator_detail in proxy_stats.get("details", {}).values():
-                        stats = indicator_detail.get("stats", {})
-                        if "uq_raw" in stats:
-                            event_details.update(stats)
+                    detector_source = self.config.ecpf_signal_mode
+                    protocol = (
+                        "hcdt_detection_warning_then_rddm_validation"
+                        if detector_source == "meta_ecpf_hcdt"
+                        else "dwm_proxy_warning_then_voting_drift"
+                    )
                     self._handle_ecpf_drift(
                         self._ecpf_buffer[:],
                         int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
-                        self.config.ecpf_signal_mode,
+                        detector_source,
                         new_detections,
-                        event_details,
+                        {
+                            "ecpf_protocol": protocol,
+                            "uq_mode": self.config.ecpf_uq_mode,
+                            **sub_stats.get("meta_info", {}),
+                        },
                     )
                     self._ecpf_warning_active = False
                     self._ecpf_warning_start_idx = None
                     self._ecpf_buffer = []
-                    self.meta_detector.notify_drift()
+                    self.meta_detector.reset()
                     self._batch_X.clear()
                     self._batch_y.clear()
                     self.buffer = StreamBuffer(
                         max_len=self.buffer.max_len if hasattr(self.buffer, "max_len") else 3000
                     )
                     return y_pred, new_detections, True
-
-                if (
-                    self._ecpf_warning_active
-                    and not proxy_stats.get("warning_active", uq_warning)
-                    and not is_drift
-                ):
-                    self._ecpf_warning_active = False
-                    self._ecpf_warning_start_idx = None
-                    self._ecpf_buffer = []
 
                 if self._ecpf_warning_active:
                     return y_pred, [], False
@@ -509,7 +600,7 @@ class ConceptDriftPipeline:
                     self._ecpf_buffer = []
                     self._uq_warning_detector.reset()
                     self._uq_drift_detector.reset()
-                    self.meta_detector.notify_drift()
+                    self.meta_detector.reset()
                     self._batch_X.clear()
                     self._batch_y.clear()
                     self.buffer = StreamBuffer(
@@ -567,7 +658,12 @@ class ConceptDriftPipeline:
             except Exception:
                 pass
 
-        if self.config.use_ecpf and self.config.ecpf_signal_mode in {"oracle_60", "detector", "meta_ecpf_dwm", "meta_ecpf_hier_parallel"}:
+        if self.config.use_ecpf and self.config.ecpf_signal_mode in {
+            "oracle_60",
+            *ECPF_ADWIN_FAMILY_SIGNAL_MODES,
+            "meta_ecpf_dwm",
+            "meta_ecpf_hcdt",
+        }:
             is_drift, drift_time, sub_detector_stats = False, index, {}
         else:
             is_drift, drift_time, sub_detector_stats = self.meta_detector.update_and_detect(
@@ -595,7 +691,7 @@ class ConceptDriftPipeline:
                     len(buf),
                     L,
                 )
-            self.meta_detector.notify_drift()
+            self.meta_detector.reset()
             self._batch_X.clear()
             self._batch_y.clear()
             self.buffer = StreamBuffer(
@@ -827,8 +923,8 @@ class ConceptDriftPipeline:
                 # Incremental: keep continuity and adapt conservatively (same handler as gradual for now)
                 self._handle_gradual_reset(drift_alert_timestamp)
 
-        # Notify meta-detector of confirmed drift (do not force full reset)
-        self.meta_detector.notify_drift()
+        # Reset detectors
+        self.meta_detector.reset()
 
         self._batch_X.clear()
         self._batch_y.clear()

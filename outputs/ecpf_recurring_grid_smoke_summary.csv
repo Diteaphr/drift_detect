@@ -1,0 +1,3 @@
+warning_detector,drift_detector,warning_signal,drift_signal,model_type,files,mean_accuracy,mean_detected_drifts,mean_time_s,total_time_s
+adwin,adwin,error,error,ht,10,0.9400000000000002,0.0,0.0425079875,0.425079875
+adwin,adwin,error,uq_mi,hf,10,0.9096666666666666,0.0,0.24710733750000005,2.4710733750000005
