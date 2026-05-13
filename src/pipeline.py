@@ -26,7 +26,7 @@ from detectors import (
     ConceptMemory,
     detect_recurring_drift,
 )
-from .ecpf import ECPFMetaLearner, load_drift_times_file
+from .ecpf import ECPFMetaLearner, load_drift_times_file, load_drift_intervals_file
 from .ecpf_detector import ECPFWarningDriftDetector
 from .uq_warning_detector import UQWarningDetector
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector

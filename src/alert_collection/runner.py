@@ -28,17 +28,34 @@ def load_stream_csv(path: Union[str, Path]) -> tuple[np.ndarray, np.ndarray]:
 
 def default_pipeline_config() -> PipelineConfig:
     """
-    Default pipeline config aligned with :file:`main.py` demo
-    (meta RF + dynamic_weighted, etc.).
+    Default for **alert-only** collection: run the same streaming + meta/atom
+    stack as a normal demo, but **disable ECPF** so
+    :meth:`~src.pipeline.ConceptDriftPipeline.step` actually runs
+    ``meta_detector.update_and_detect`` and fills ``pipeline.detections``.
+
+    (Repository default :class:`PipelineConfig` has ``use_ecpf=True`` with empty
+    oracle times, which silences meta drifts; this override fixes that for
+    off-line alert logging.)
+
+    Tuned to stay close to :file:`main.py` (Hoeffding + atom subset + two_stage).
+    Override via :func:`pipeline_config_from_dict` or ``--config-json`` /
+    ``--meta`` in :file:`scripts/collect_alert_times.py`.
     """
     return PipelineConfig(
+        use_ecpf=False,
         meta_ks_window_size=100,
         atom_min_samples=30,
-        update_batch_size=1500,
+        update_batch_size=500,
         recurrence_threshold=0.15,
-        model_type="rf",
-        meta_detector_type="dynamic_weighted",
-        atom_kwargs={"adwin": {"delta": 0.002}},
+        model_type="ht",
+        meta_detector_type="two_stage",
+        selected_detectors=["ddm", "hddm_a", "page_hinkley"],
+        atom_kwargs={
+            "adwin": {"delta": 0.01},
+            "ddm": {"drift_level": 3.0},
+            "page_hinkley": {"threshold": 15.0},
+            "ecdd": {"warning_level": 2.0, "drift_level": 3.0},
+        },
     )
 
 

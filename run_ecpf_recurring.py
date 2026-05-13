@@ -23,7 +23,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from src.config import PipelineConfig
-from src.pipeline import load_recurring_stream_pair, ConceptDriftPipeline
+from src.pipeline import load_recurring_stream_pair, load_drift_intervals_file, ConceptDriftPipeline
+from src.metrics import build_perturbation_intervals, compute_correct_detection
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
 from detectors.meta_ecpf.signal_routing import SIGNAL_CHOICES
 
@@ -227,6 +228,22 @@ def main() -> None:
             f"routing: warning={args.warning_detector or 'mode-default'}/{args.warning_signal} "
             f"drift={args.drift_detector or 'mode-default'}/{args.drift_signal}"
         )
+
+    # --- Correct Detection score ---
+    _dt_path = args.drift_times or str(csv_path.with_name(csv_path.stem + "_drift_times.txt"))
+    try:
+        _intervals = load_drift_intervals_file(_dt_path)
+        _perturbation = build_perturbation_intervals(_intervals, extension=1000)
+        _det_ts = [d.timestamp for d in pipe.detections]
+        _cd = compute_correct_detection(_det_ts, _perturbation)
+        _score_str = f"{_cd.score_percent:.1f}%" if _cd.score_percent is not None else "n/a"
+        print(
+            f"correct detection (perturbation=drift_interval+1000): "
+            f"TP={_cd.tp}, FP={_cd.fp}, N={_cd.n_intervals}, score={_score_str} "
+            f"((TP-FP)/N×100, floored at 0%)"
+        )
+    except FileNotFoundError:
+        print("correct detection: drift intervals file not found, skipping")
 
     # Persist event log
     out_events = Path(args.events_csv)

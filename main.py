@@ -8,18 +8,96 @@ import ast
 import sys
 import argparse
 from pathlib import Path
+from typing import List, Optional, Tuple
 
 # Ensure project root is on path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from src.config import PipelineConfig
 from src.pipeline import ConceptDriftPipeline
+from src.metrics import build_perturbation_intervals
 from tests.evaluation import (
     correct_detection_from_detections,
     evaluate_detectors,
     evaluate_drift_type_classifier,
     prediction_metrics,
 )
+
+
+def plot_correct_detection(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    detection_timestamps: List[int],
+    perturbation_intervals: List[Tuple[int, int]],
+    drift_intervals: List[Tuple[int, int]],
+    cd_result,
+    meta_detector_type: str,
+    dataset_name: str,
+    out_path: str,
+    roll_window: int = 500,
+) -> None:
+    import matplotlib.pyplot as plt
+    import matplotlib.patches as mpatches
+
+    n = len(y_true)
+    valid = np.isfinite(y_pred)
+
+    # Rolling accuracy
+    correct = np.where(valid, (np.round(y_pred) == y_true).astype(float), np.nan)
+    roll_acc = pd.Series(correct).rolling(window=roll_window, min_periods=50).mean().to_numpy()
+
+    # Classify each alert as TP or FP
+    def in_any(t, intervals):
+        return any(s <= t <= e for s, e in intervals)
+
+    tp_times = [t for t in detection_timestamps if in_any(t, perturbation_intervals)]
+    fp_times = [t for t in detection_timestamps if not in_any(t, perturbation_intervals)]
+
+    score_str = f"{cd_result.score_percent:.1f}%" if cd_result.score_percent is not None else "n/a"
+
+    fig, ax = plt.subplots(figsize=(16, 5))
+
+    # Shade perturbation intervals
+    for s, e in perturbation_intervals:
+        ax.axvspan(s, min(e, n - 1), alpha=0.12, color="steelblue", label="_nolegend_")
+
+    # Shade original drift intervals (slightly darker)
+    for s, e in drift_intervals:
+        ax.axvspan(s, min(e, n - 1), alpha=0.30, color="steelblue", label="_nolegend_")
+
+    # Rolling accuracy
+    ax.plot(roll_acc, color="black", linewidth=0.9, label=f"Rolling acc (w={roll_window})")
+
+    # TP / FP vertical lines
+    for t in tp_times:
+        ax.axvline(t, color="green", linewidth=1.2, alpha=0.8, linestyle="--")
+    for t in fp_times:
+        ax.axvline(t, color="red", linewidth=1.2, alpha=0.8, linestyle="--")
+
+    # Legend proxies
+    patches = [
+        mpatches.Patch(color="steelblue", alpha=0.35, label="Drift interval (dark) + +1000 extension (light)"),
+        mpatches.Patch(color="green", label=f"TP alert ({len(tp_times)})"),
+        mpatches.Patch(color="red", label=f"FP alert ({len(fp_times)})"),
+    ]
+    ax.legend(handles=patches + [ax.lines[0]], loc="lower left", fontsize=8)
+
+    ax.set_xlim(0, n - 1)
+    ax.set_ylim(0, 1.05)
+    ax.set_xlabel("Time index")
+    ax.set_ylabel("Rolling accuracy")
+    ax.set_title(
+        f"{dataset_name}  |  detector={meta_detector_type}\n"
+        f"Correct Detection: TP={cd_result.tp}  FP={cd_result.fp}  "
+        f"N={cd_result.n_intervals}  score={score_str}  "
+        f"((TP-FP)/N×100, perturbation=drift_interval+1000)"
+    )
+
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+    print(f"Plot saved → {out_path}")
 
 
 def load_dataset(csv_path: str, drift_times_path: str):
@@ -41,9 +119,13 @@ def load_dataset(csv_path: str, drift_times_path: str):
 
 def main():
     parser = argparse.ArgumentParser(description="Concept Drift Pipeline Demo")
-    parser.add_argument("meta_detector", nargs="?", default="tsv", 
+    parser.add_argument("meta_detector", nargs="?", default="tsv",
                         choices=["tsv", "dwm", "statistical", "dwme"],
                         help="Meta detector to use: tsv (Two Stage Voting), dwm (Dynamic Weighted), or statistical")
+    parser.add_argument("--plot", action="store_true",
+                        help="Save a correct detection timeline plot after evaluation.")
+    parser.add_argument("--plot-path", default=None,
+                        help="Output PNG path for the plot (default: outputs/<dataset>_<detector>_cd.png).")
     args = parser.parse_args()
 
     meta_map = {
@@ -109,9 +191,8 @@ def main():
     for i in range(50, n_samples):
         y_p, dets, _ = pipeline.step(X_true[i], y_true[i], index=i)
         y_pred[i] = y_p
-        # 移除這個每次印出的迴圈，以避免洗頻，但保留進度追蹤
-        # for d in dets:
-        #     print(f"  [!] Pipeline Alert -> Drift at t={d.timestamp}: {d.drift_type.value} (triggered by: {d.detector_source})")
+        if i % 5000 == 0:
+            print(f"  [progress] t={i}/{n_samples} ({100*i//n_samples}%)", flush=True)
 
     for d in pipeline.detections:
         source = d.detector_source
@@ -161,10 +242,12 @@ def main():
     if eval_det.get("precision") is not None:
         print(f"Precision: {eval_det['precision']:.3f}, Recall: {eval_det['recall']:.3f}, F1: {eval_det['f1']:.3f}")
 
-    cd = correct_detection_from_detections(detections, drift_intervals)
+    perturbation_intervals = build_perturbation_intervals(drift_intervals, extension=1000)
+    cd = correct_detection_from_detections(detections, perturbation_intervals)
     score_str = f"{cd.score_percent:.1f}%" if cd.score_percent is not None else "n/a"
     print(
-        f"Correct detection: TP={cd.tp}, FP={cd.fp}, N={cd.n_intervals}, "
+        f"Correct detection (perturbation=drift_interval+1000): "
+        f"TP={cd.tp}, FP={cd.fp}, N={cd.n_intervals}, "
         f"score={score_str} ((TP-FP)/N×100, floored at 0%)"
     )
 
@@ -186,6 +269,20 @@ def main():
     print(f"MAE (over stream): {m['mae']:.4f}")
     if m["rolling_mae"]:
         print(f"Rolling MAE (last window): {m['rolling_mae'][-1]:.4f}")
+
+    if args.plot:
+        plot_path = args.plot_path or f"outputs/{dataset_name}_{args.meta_detector}_cd.png"
+        plot_correct_detection(
+            y_true=y_true,
+            y_pred=y_pred,
+            detection_timestamps=[d.timestamp for d in detections],
+            perturbation_intervals=perturbation_intervals,
+            drift_intervals=drift_intervals,
+            cd_result=cd,
+            meta_detector_type=selected_meta_type,
+            dataset_name=dataset_name,
+            out_path=plot_path,
+        )
 
     print("\nDone.")
 

@@ -54,6 +54,24 @@ def _in_union(t: int, bounds: List[Tuple[int, int]]) -> bool:
     return False
 
 
+def build_perturbation_intervals(
+    drift_intervals: Sequence[Interval],
+    extension: int = 1000,
+) -> List[Tuple[int, int]]:
+    """Extend each ground-truth drift interval's right edge by ``extension`` samples.
+
+    e.g. [250, 2000] with extension=1000 → [250, 3000].
+    Bounds are normalised so start ≤ end before extending.
+    """
+    out: List[Tuple[int, int]] = []
+    for it in drift_intervals:
+        s, e = int(it[0]), int(it[1])
+        if s > e:
+            s, e = e, s
+        out.append((s, e + extension))
+    return out
+
+
 def compute_correct_detection(
     detection_timestamps: Sequence[int],
     ground_truth_intervals: Sequence[Interval],

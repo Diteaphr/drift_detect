@@ -1,0 +1,17 @@
+{
+  "setting": "factorial_w40_g00",
+  "runs": [
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g00",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        8249,
+        29948,
+        71254,
+        74717
+      ]
+    }
+  ]
+}

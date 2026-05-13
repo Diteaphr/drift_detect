@@ -8,9 +8,14 @@ Run from the **repository root**::
 
     python scripts/collect_alert_times.py --glob 'data/sudden_drift/*.csv' --setting myrun --out alerts.json
 
-Optional ``--config-json`` merges keys into :class:`src.config.PipelineConfig` (same
-defaults as ``main.py``). Output JSON: ``setting`` + ``runs`` with ``csv`` (absolute
-path), ``csv_stem``, ``n_samples``, ``n_alerts``, ``alert_times``.
+By default this script uses :func:`src.alert_collection.default_pipeline_config`
+(**ECPF off**, meta+atom only) so alerts are actually recorded. Use ``--ecpf`` to
+re-enable ECPF (e.g. with oracle times in ``--config-json``).
+
+Optional ``--config-json`` merges into :class:`src.config.PipelineConfig`. If the
+file omits ``meta_detector_type``, it is set from ``--meta`` (``tsv``/``dwm``/``statistical``,
+same shorthand as ``main.py``). Output: ``setting`` + ``runs`` (``csv``, ``csv_stem``,
+``n_samples``, ``n_alerts``, ``alert_times``).
 """
 
 from __future__ import annotations
@@ -18,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import replace
 from glob import glob as glob_fn
 from pathlib import Path
 
@@ -87,7 +93,19 @@ def main() -> None:
         "--config-json",
         type=Path,
         default=None,
-        help="Optional JSON object of PipelineConfig fields to override defaults (main.py-style).",
+        help="Optional JSON object of PipelineConfig fields to override defaults.",
+    )
+    parser.add_argument(
+        "--meta",
+        choices=["tsv", "dwm", "statistical"],
+        default="tsv",
+        help="Shorthand for meta detector (if not set in --config-json): tsv=two_stage, "
+        "dwm=dynamic_weighted, statistical=statistical_fusion (same as main.py).",
+    )
+    parser.add_argument(
+        "--ecpf",
+        action="store_true",
+        help="Enable ECPF in the pipeline (default: off; use pure meta+atom for alert logs).",
     )
     parser.add_argument(
         "--verbose",
@@ -99,14 +117,31 @@ def main() -> None:
     paths = _collect_csv_paths(args.csv, args.glob)
     if not paths:
         parser.error("No CSV files: pass --csv and/or --glob")
+    for p in paths:
+        if not p.is_file():
+            print(
+                f"collect_alert_times: file not found (use a real path, not a README placeholder): {p}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
-    overrides = None
+    merged: dict = {}
     if args.config_json is not None:
         with open(args.config_json, "r", encoding="utf-8") as f:
-            overrides = json.load(f)
-        if not isinstance(overrides, dict):
+            loaded = json.load(f)
+        if not isinstance(loaded, dict):
             parser.error("--config-json must contain a JSON object")
-    config = pipeline_config_from_dict(overrides)
+        merged.update(loaded)
+    if "meta_detector_type" not in merged:
+        meta_map = {
+            "tsv": "two_stage",
+            "dwm": "dynamic_weighted",
+            "statistical": "statistical_fusion",
+        }
+        merged["meta_detector_type"] = meta_map[args.meta]
+    config = pipeline_config_from_dict(merged)
+    if args.ecpf:
+        config = replace(config, use_ecpf=True)
 
     runs: list[dict] = []
     for path in paths:

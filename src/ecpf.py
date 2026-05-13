@@ -423,3 +423,34 @@ def load_drift_times_file(path: str) -> List[int]:
         pass
     lines = text.replace(",", " ").replace("[", " ").replace("]", " ").split()
     return [int(x) for x in lines if x.lstrip("-").isdigit()]
+
+
+def load_drift_intervals_file(path: str) -> List[Tuple[int, int]]:
+    """Load drift intervals from txt; returns a list of (start, end) pairs.
+
+    Supports two formats:
+    - List-of-pairs: ``[[s1, e1], [s2, e2], ...]``
+    - Single integers / list of ints: each is treated as a zero-width interval (t, t).
+    """
+    with open(path, "r", encoding="utf-8") as f:
+        text = f.read().strip()
+    if not text:
+        return []
+    try:
+        obj = ast.literal_eval(text)
+        if isinstance(obj, list):
+            out: List[Tuple[int, int]] = []
+            for item in obj:
+                if isinstance(item, (list, tuple)) and len(item) >= 2:
+                    out.append((int(item[0]), int(item[1])))
+                elif isinstance(item, (list, tuple)) and len(item) == 1:
+                    t = int(item[0])
+                    out.append((t, t))
+                else:
+                    t = int(item)
+                    out.append((t, t))
+            return out
+    except Exception:
+        pass
+    lines = text.replace(",", " ").replace("[", " ").replace("]", " ").split()
+    return [(int(x), int(x)) for x in lines if x.lstrip("-").isdigit()]

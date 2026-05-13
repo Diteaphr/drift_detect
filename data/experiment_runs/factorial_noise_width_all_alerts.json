@@ -1,0 +1,2586 @@
+{
+  "setting": "factorial_noise_width_all",
+  "runs": [
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g00",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        2849,
+        28548,
+        30647,
+        57746,
+        84245
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g01",
+      "n_samples": 100000,
+      "n_alerts": 2,
+      "alert_times": [
+        29649,
+        74548
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g02",
+      "n_samples": 100000,
+      "n_alerts": 8,
+      "alert_times": [
+        249,
+        18679,
+        31978,
+        39677,
+        42676,
+        43107,
+        54606,
+        71705
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g03",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        4449,
+        24391,
+        41490,
+        87290
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g04",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        3408,
+        33707,
+        40972,
+        60071,
+        61170,
+        68528
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g05",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        33449,
+        34974,
+        69473,
+        93111
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g06",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        6592,
+        31553,
+        68852
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g07",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        3449,
+        26318,
+        27817,
+        37716,
+        47015,
+        64114,
+        71752
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g08",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        3426,
+        29444,
+        54306
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w160_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w160_g09",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        4249,
+        18748,
+        25647,
+        47946
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g00",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        25049,
+        62264,
+        62726,
+        63295,
+        63994
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g01",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        13839,
+        23014,
+        45975,
+        94455,
+        97877
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g02",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        4049,
+        15748,
+        21362,
+        39061,
+        81207
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g03",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        2088,
+        14784,
+        18207,
+        36492,
+        64331,
+        74896
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g04",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        4849,
+        8148,
+        48447,
+        51888,
+        61674,
+        82976,
+        86397
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g05",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        1649,
+        18948,
+        57212,
+        86711
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g06",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        12249,
+        15577,
+        37629
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g07",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        7682,
+        8581,
+        44264,
+        77224
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g08",
+      "n_samples": 100000,
+      "n_alerts": 1,
+      "alert_times": [
+        28928
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w320_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w320_g09",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        12016,
+        24251,
+        25850,
+        56349,
+        60248
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g00",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        3410,
+        8209,
+        17305,
+        37684,
+        62097,
+        80512,
+        91211
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g01",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        4849,
+        11792,
+        26729,
+        45828,
+        63127
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g02",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        3526,
+        37436,
+        38332,
+        64966
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g03",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        43481,
+        62980,
+        90994
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g04",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        15793,
+        30403,
+        32902,
+        40401,
+        83582
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g05",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        11849,
+        12148,
+        15747,
+        33579
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g06",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        22408,
+        39307,
+        55406
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g07",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        3444,
+        18143,
+        23842,
+        31055,
+        83651
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g08",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        3249,
+        7008,
+        18284,
+        38467,
+        99366
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w40_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w40_g09",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        18614,
+        22513,
+        35505,
+        84543
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g00",
+      "n_samples": 100000,
+      "n_alerts": 2,
+      "alert_times": [
+        431,
+        55969
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g01",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        3849,
+        5689,
+        27541,
+        49486,
+        83441
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g02",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        5114,
+        36413,
+        37536,
+        56235
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g03",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        11649,
+        29748,
+        35973,
+        98872
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g04",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        9095,
+        24894,
+        44839,
+        87919
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g05",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        7418,
+        33140,
+        41239,
+        69224
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g06",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        23049,
+        48148,
+        92447
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g07",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        3452,
+        29008,
+        53631
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g08",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        22107,
+        32584,
+        54783,
+        57582,
+        58228,
+        80055,
+        91894
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0_w80_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0_w80_g09",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        15449,
+        16240,
+        34435,
+        36434,
+        68533,
+        74632
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g00",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        3438,
+        13846,
+        23853,
+        53714,
+        76520
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g01",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        28649,
+        39148,
+        62847
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g02",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        3449,
+        26853,
+        47152,
+        52891,
+        53709
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g03",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        3446,
+        48691,
+        50190,
+        54589,
+        93676,
+        96784,
+        98583
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g04",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        2849,
+        3445,
+        3835,
+        23134,
+        56033,
+        58132,
+        74201,
+        86349,
+        90648,
+        94138
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g05",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        3263,
+        4110,
+        18009,
+        41900,
+        42399,
+        57011,
+        60872,
+        69930,
+        74729,
+        81929
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g06",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        3849,
+        8363,
+        37462,
+        50561,
+        86660
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g07",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        4449,
+        27467,
+        53366,
+        84865
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g08",
+      "n_samples": 100000,
+      "n_alerts": 2,
+      "alert_times": [
+        32452,
+        88866
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w160_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w160_g09",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        7049,
+        21548,
+        68114,
+        98813
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g00",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        6502,
+        45401,
+        54517
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g01",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        3483,
+        22107,
+        38487,
+        84186,
+        91785,
+        94774
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g02",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        6849,
+        13948,
+        14247,
+        50298
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g03",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        3442,
+        29341,
+        30028,
+        46327,
+        47175,
+        66345
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g04",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        6649,
+        9148,
+        23655,
+        69384
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g05",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        1049,
+        3430,
+        40329,
+        92228
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g06",
+      "n_samples": 100000,
+      "n_alerts": 9,
+      "alert_times": [
+        6449,
+        7748,
+        8799,
+        45678,
+        56377,
+        57218,
+        76717,
+        80598,
+        81897
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g07",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        33183,
+        55354,
+        55653,
+        56372
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g08",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        38768,
+        47467,
+        89055,
+        89793
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w320_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w320_g09",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        2849,
+        18748,
+        50341,
+        53803,
+        69502,
+        84779
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g00",
+      "n_samples": 100000,
+      "n_alerts": 8,
+      "alert_times": [
+        13433,
+        17532,
+        20999,
+        63698,
+        67449,
+        76846,
+        79587,
+        98588
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g01",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        5590,
+        18689,
+        59027,
+        59937,
+        91562
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g02",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        41155,
+        43854,
+        48859,
+        56540,
+        63753,
+        73499
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g03",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        5449,
+        33447,
+        76363,
+        77153,
+        90807,
+        91374,
+        94857
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g04",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        1194,
+        7344,
+        25009,
+        90908
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g05",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        3434,
+        19533,
+        30419,
+        31049,
+        42782,
+        55744,
+        56243
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g06",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        40249,
+        55748,
+        75447,
+        99146
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g07",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        3446,
+        11545,
+        30514,
+        49719
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g08",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        449,
+        5348,
+        8847,
+        43146
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w40_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w40_g09",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        4249,
+        7689,
+        21746,
+        41045,
+        63344,
+        97509
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g00",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        5849,
+        29836,
+        90853,
+        91152,
+        98492
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g01",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        3344,
+        40043,
+        57142,
+        86440
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g02",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        5449,
+        17548,
+        34647,
+        54746
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g03",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        3448,
+        12747,
+        41446,
+        55965
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g04",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        4449,
+        32265,
+        75564
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g05",
+      "n_samples": 100000,
+      "n_alerts": 8,
+      "alert_times": [
+        4449,
+        28948,
+        29323,
+        35522,
+        49313,
+        77570,
+        81369,
+        82074
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g06",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        3485,
+        43518,
+        44518,
+        52817,
+        60491,
+        89190,
+        89643,
+        96679,
+        97035,
+        97734
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g07",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        2825,
+        26491,
+        73138
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g08",
+      "n_samples": 100000,
+      "n_alerts": 12,
+      "alert_times": [
+        13559,
+        14568,
+        15126,
+        15825,
+        38324,
+        54423,
+        59722,
+        72821,
+        73407,
+        75306,
+        75805,
+        95965
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p05_w80_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p05_w80_g09",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        3552,
+        27051,
+        41065,
+        71654,
+        80980,
+        84441,
+        95334
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g00",
+      "n_samples": 100000,
+      "n_alerts": 2,
+      "alert_times": [
+        2324,
+        87023
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g01",
+      "n_samples": 100000,
+      "n_alerts": 9,
+      "alert_times": [
+        3434,
+        45933,
+        46632,
+        46931,
+        47630,
+        55529,
+        55897,
+        57654,
+        94184
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g02",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        8557,
+        13633,
+        18002,
+        30649,
+        60465,
+        60764,
+        61663,
+        61962,
+        63044,
+        91496
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g03",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        708,
+        3607,
+        11949,
+        38448,
+        38947,
+        78046,
+        83745
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g04",
+      "n_samples": 100000,
+      "n_alerts": 8,
+      "alert_times": [
+        3459,
+        3958,
+        7157,
+        17456,
+        28755,
+        32228,
+        50534,
+        94499
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g05",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        18249,
+        22093,
+        45254,
+        97153
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g06",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        7049,
+        30333,
+        64564,
+        65049,
+        98548,
+        99047
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g07",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        3424,
+        36523,
+        47422,
+        52021,
+        76747,
+        77246
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g08",
+      "n_samples": 100000,
+      "n_alerts": 11,
+      "alert_times": [
+        4134,
+        17914,
+        18479,
+        23078,
+        30002,
+        31039,
+        54795,
+        55494,
+        56264,
+        88422,
+        90121
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w160_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w160_g09",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        19129,
+        19492,
+        21928,
+        22935,
+        39774,
+        40686
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g00",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        2232,
+        5659,
+        42558,
+        89857,
+        99803
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g01",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        5449,
+        35548,
+        37549,
+        87048
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g02",
+      "n_samples": 100000,
+      "n_alerts": 1,
+      "alert_times": [
+        35561
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g03",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        4398,
+        25897,
+        64996,
+        68288,
+        99787
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g04",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        4249,
+        10362,
+        36216,
+        36915,
+        40778,
+        41427,
+        53441,
+        71328,
+        78127,
+        96426
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g05",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        8449,
+        23145,
+        24044,
+        43743,
+        81242,
+        81541,
+        82124
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g06",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        5729,
+        28087,
+        43463,
+        85162,
+        89953,
+        90647
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g07",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        9859,
+        10446,
+        48878,
+        69455,
+        70270
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g08",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        2676,
+        3375,
+        35674,
+        36068,
+        45139,
+        45595,
+        77289
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w320_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w320_g09",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        12249,
+        65948,
+        66340,
+        66839
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g00",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        5726,
+        67605,
+        92788,
+        97987
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g01",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        249,
+        3459,
+        49358,
+        77010,
+        77389,
+        85334,
+        90130
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g02",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        12492,
+        71791,
+        87690,
+        90088,
+        90503
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g03",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        6449,
+        20884,
+        21383,
+        35682,
+        44484,
+        45183,
+        45682,
+        77093,
+        77490,
+        84293
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g04",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        4249,
+        21348,
+        29247,
+        40989,
+        80853
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g05",
+      "n_samples": 100000,
+      "n_alerts": 3,
+      "alert_times": [
+        17675,
+        82533,
+        93707
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g06",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        3390,
+        3689,
+        25029,
+        27328,
+        88447,
+        93344
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g07",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        3437,
+        9410,
+        24109,
+        42553,
+        69376,
+        71277
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g08",
+      "n_samples": 100000,
+      "n_alerts": 9,
+      "alert_times": [
+        3450,
+        4841,
+        5430,
+        22670,
+        38369,
+        38750,
+        66759,
+        67302,
+        74851
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w40_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w40_g09",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        2602,
+        3301,
+        10245,
+        81744,
+        89229,
+        90328,
+        92191
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g00",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        4307,
+        11206,
+        39512,
+        75811,
+        76545,
+        97433
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g01",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        22634,
+        27439,
+        28452,
+        51151,
+        70872,
+        81771,
+        98469
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g02",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        3285,
+        3784,
+        44083,
+        73561,
+        78560
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g03",
+      "n_samples": 100000,
+      "n_alerts": 7,
+      "alert_times": [
+        6049,
+        24474,
+        25278,
+        25977,
+        26676,
+        46741,
+        63329
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g04",
+      "n_samples": 100000,
+      "n_alerts": 2,
+      "alert_times": [
+        48849,
+        79234
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g05",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        3446,
+        13994,
+        39199,
+        55498,
+        70297,
+        70763
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g06",
+      "n_samples": 100000,
+      "n_alerts": 9,
+      "alert_times": [
+        5449,
+        5929,
+        6628,
+        16637,
+        37424,
+        37723,
+        48668,
+        49304,
+        79950
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g07",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        34449,
+        76088,
+        76587,
+        77058,
+        78357,
+        81771
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g08",
+      "n_samples": 100000,
+      "n_alerts": 4,
+      "alert_times": [
+        3857,
+        28044,
+        52143,
+        87790
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p1_w80_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p1_w80_g09",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        6049,
+        10046,
+        56345,
+        60544,
+        98043
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g00",
+      "n_samples": 100000,
+      "n_alerts": 16,
+      "alert_times": [
+        1102,
+        1809,
+        2708,
+        3397,
+        4193,
+        16892,
+        17691,
+        18205,
+        20776,
+        21275,
+        51300,
+        52220,
+        53890,
+        54895,
+        55394,
+        77012
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g01",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        649,
+        18967,
+        20183,
+        32482,
+        40115,
+        49441,
+        50154,
+        94951,
+        95371,
+        96193
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g02",
+      "n_samples": 100000,
+      "n_alerts": 8,
+      "alert_times": [
+        19653,
+        19952,
+        20651,
+        31671,
+        68918,
+        70217,
+        70916,
+        90863
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g03",
+      "n_samples": 100000,
+      "n_alerts": 12,
+      "alert_times": [
+        1101,
+        2224,
+        30444,
+        30943,
+        45705,
+        46171,
+        48291,
+        61609,
+        72740,
+        98639,
+        99138,
+        99637
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g04",
+      "n_samples": 100000,
+      "n_alerts": 28,
+      "alert_times": [
+        449,
+        2040,
+        2739,
+        3268,
+        7367,
+        7754,
+        15357,
+        31065,
+        55706,
+        59139,
+        59638,
+        60437,
+        60870,
+        61616,
+        62581,
+        63160,
+        63631,
+        77130,
+        78329,
+        80623,
+        80922,
+        81621,
+        88109,
+        89806,
+        95505,
+        96604,
+        97103,
+        97571
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g05",
+      "n_samples": 100000,
+      "n_alerts": 11,
+      "alert_times": [
+        4721,
+        5020,
+        15519,
+        15896,
+        60609,
+        84941,
+        86195,
+        86694,
+        87940,
+        88639,
+        89670
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g06",
+      "n_samples": 100000,
+      "n_alerts": 15,
+      "alert_times": [
+        249,
+        748,
+        3454,
+        4969,
+        5868,
+        20124,
+        23560,
+        40979,
+        44908,
+        47451,
+        70150,
+        70737,
+        71636,
+        88049,
+        95028
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g07",
+      "n_samples": 100000,
+      "n_alerts": 19,
+      "alert_times": [
+        249,
+        598,
+        10097,
+        11490,
+        12389,
+        17024,
+        64523,
+        78879,
+        86952,
+        87451,
+        88618,
+        89025,
+        89381,
+        90481,
+        91180,
+        91679,
+        95196,
+        97981,
+        98841
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g08",
+      "n_samples": 100000,
+      "n_alerts": 14,
+      "alert_times": [
+        774,
+        6273,
+        50409,
+        51418,
+        52250,
+        56573,
+        57072,
+        80571,
+        82096,
+        82595,
+        83272,
+        83992,
+        84459,
+        92358
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w160_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w160_g09",
+      "n_samples": 100000,
+      "n_alerts": 8,
+      "alert_times": [
+        449,
+        3421,
+        4120,
+        31795,
+        35254,
+        44174,
+        47073,
+        74944
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g00",
+      "n_samples": 100000,
+      "n_alerts": 31,
+      "alert_times": [
+        449,
+        948,
+        1247,
+        2072,
+        7371,
+        9070,
+        15069,
+        27547,
+        32832,
+        33331,
+        33900,
+        34895,
+        42119,
+        42818,
+        53309,
+        65370,
+        70745,
+        71485,
+        72184,
+        77163,
+        78419,
+        80518,
+        81417,
+        89092,
+        89571,
+        90070,
+        90560,
+        91314,
+        92013,
+        92512,
+        94409
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g01",
+      "n_samples": 100000,
+      "n_alerts": 11,
+      "alert_times": [
+        4889,
+        5188,
+        11283,
+        11782,
+        37390,
+        39156,
+        40593,
+        46615,
+        47514,
+        80813,
+        88214
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g02",
+      "n_samples": 100000,
+      "n_alerts": 5,
+      "alert_times": [
+        76449,
+        79999,
+        87698,
+        97223,
+        98187
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g03",
+      "n_samples": 100000,
+      "n_alerts": 22,
+      "alert_times": [
+        3825,
+        28612,
+        29411,
+        61110,
+        61920,
+        62719,
+        63407,
+        67135,
+        67498,
+        80327,
+        81142,
+        82005,
+        82904,
+        83403,
+        83758,
+        84457,
+        85356,
+        95855,
+        96368,
+        98014,
+        98313,
+        98908
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g04",
+      "n_samples": 100000,
+      "n_alerts": 9,
+      "alert_times": [
+        3987,
+        4843,
+        27000,
+        49264,
+        73042,
+        73609,
+        81949,
+        83265,
+        86720
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g05",
+      "n_samples": 100000,
+      "n_alerts": 6,
+      "alert_times": [
+        16663,
+        17663,
+        18562,
+        36926,
+        42052,
+        55014
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g06",
+      "n_samples": 100000,
+      "n_alerts": 25,
+      "alert_times": [
+        3536,
+        4067,
+        5410,
+        7957,
+        13767,
+        14066,
+        14501,
+        24000,
+        48821,
+        49753,
+        51255,
+        51754,
+        52453,
+        53452,
+        55940,
+        56354,
+        56853,
+        68769,
+        81624,
+        82323,
+        95622,
+        96321,
+        96802,
+        97653,
+        98899
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g07",
+      "n_samples": 100000,
+      "n_alerts": 26,
+      "alert_times": [
+        249,
+        29857,
+        30556,
+        31707,
+        32206,
+        55123,
+        56284,
+        56783,
+        57082,
+        58181,
+        58680,
+        59179,
+        59878,
+        60577,
+        67867,
+        68661,
+        69160,
+        70059,
+        71828,
+        73137,
+        74092,
+        87813,
+        92634,
+        92933,
+        94132,
+        96631
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g08",
+      "n_samples": 100000,
+      "n_alerts": 16,
+      "alert_times": [
+        649,
+        4611,
+        8610,
+        8977,
+        20483,
+        21368,
+        21916,
+        25356,
+        26527,
+        28800,
+        29277,
+        29576,
+        72692,
+        73391,
+        98290,
+        99689
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w320_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w320_g09",
+      "n_samples": 100000,
+      "n_alerts": 12,
+      "alert_times": [
+        36222,
+        37321,
+        38320,
+        40773,
+        41543,
+        43270,
+        52053,
+        61668,
+        64565,
+        76546,
+        80014,
+        88713
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g00",
+      "n_samples": 100000,
+      "n_alerts": 20,
+      "alert_times": [
+        6049,
+        13708,
+        14549,
+        15048,
+        15747,
+        16046,
+        16545,
+        17311,
+        20210,
+        21084,
+        21783,
+        29931,
+        30821,
+        31421,
+        56120,
+        67705,
+        68251,
+        85326,
+        86444,
+        87643
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g01",
+      "n_samples": 100000,
+      "n_alerts": 11,
+      "alert_times": [
+        3424,
+        4123,
+        4822,
+        23846,
+        62151,
+        62660,
+        63087,
+        63586,
+        70663,
+        75140,
+        83340
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g02",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        30360,
+        42117,
+        79297,
+        79854,
+        80153,
+        80652,
+        82176,
+        98295,
+        98794,
+        99093
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g03",
+      "n_samples": 100000,
+      "n_alerts": 15,
+      "alert_times": [
+        7724,
+        19423,
+        21767,
+        22576,
+        27475,
+        28174,
+        28473,
+        40967,
+        41266,
+        62161,
+        62460,
+        75676,
+        76375,
+        76674,
+        93373
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g04",
+      "n_samples": 100000,
+      "n_alerts": 17,
+      "alert_times": [
+        649,
+        3435,
+        4007,
+        17859,
+        18487,
+        33694,
+        34193,
+        35326,
+        36380,
+        38563,
+        38862,
+        39561,
+        52160,
+        55224,
+        55738,
+        56520,
+        86076
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g05",
+      "n_samples": 100000,
+      "n_alerts": 20,
+      "alert_times": [
+        849,
+        2156,
+        4302,
+        5001,
+        26562,
+        37158,
+        37657,
+        40356,
+        51255,
+        52336,
+        52735,
+        54685,
+        54984,
+        89505,
+        90605,
+        92004,
+        92398,
+        92871,
+        94030,
+        97523
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g06",
+      "n_samples": 100000,
+      "n_alerts": 23,
+      "alert_times": [
+        580,
+        4849,
+        5701,
+        6559,
+        7058,
+        15739,
+        42068,
+        51167,
+        51843,
+        52431,
+        53598,
+        58197,
+        62495,
+        71549,
+        88415,
+        89114,
+        89496,
+        90349,
+        94836,
+        95135,
+        98656,
+        99389,
+        99754
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g07",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        649,
+        1242,
+        1541,
+        3801,
+        69101,
+        69691,
+        70153,
+        70852,
+        72549,
+        85941
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g08",
+      "n_samples": 100000,
+      "n_alerts": 10,
+      "alert_times": [
+        380,
+        1152,
+        9614,
+        33171,
+        34028,
+        67436,
+        70883,
+        71974,
+        72390,
+        74352
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w40_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w40_g09",
+      "n_samples": 100000,
+      "n_alerts": 21,
+      "alert_times": [
+        449,
+        1148,
+        7347,
+        8505,
+        15624,
+        16123,
+        17353,
+        17652,
+        18048,
+        19754,
+        49270,
+        49650,
+        52149,
+        53214,
+        54113,
+        54912,
+        57565,
+        62264,
+        62763,
+        78206,
+        99566
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g00.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g00",
+      "n_samples": 100000,
+      "n_alerts": 13,
+      "alert_times": [
+        1999,
+        2720,
+        3437,
+        35501,
+        47968,
+        81622,
+        81921,
+        82220,
+        92257,
+        92556,
+        92855,
+        96328,
+        97427
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g01.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g01",
+      "n_samples": 100000,
+      "n_alerts": 18,
+      "alert_times": [
+        848,
+        4347,
+        7738,
+        10813,
+        11674,
+        25480,
+        26508,
+        27007,
+        49345,
+        85784,
+        86083,
+        86782,
+        87532,
+        88231,
+        88730,
+        89559,
+        90820,
+        91461
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g02.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g02",
+      "n_samples": 100000,
+      "n_alerts": 25,
+      "alert_times": [
+        907,
+        7018,
+        8409,
+        9333,
+        12884,
+        18790,
+        19278,
+        20167,
+        20666,
+        21091,
+        23281,
+        23983,
+        28733,
+        29032,
+        29382,
+        29881,
+        30967,
+        35907,
+        36206,
+        37939,
+        39114,
+        39850,
+        67046,
+        67944,
+        68843
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g03.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g03",
+      "n_samples": 100000,
+      "n_alerts": 21,
+      "alert_times": [
+        864,
+        18763,
+        30999,
+        34926,
+        41592,
+        42821,
+        43690,
+        45427,
+        46443,
+        48228,
+        51685,
+        62712,
+        63511,
+        66151,
+        67018,
+        67870,
+        69612,
+        70774,
+        77944,
+        99043,
+        99765
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g04.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g04",
+      "n_samples": 100000,
+      "n_alerts": 11,
+      "alert_times": [
+        33139,
+        33638,
+        34137,
+        34636,
+        43696,
+        66522,
+        67021,
+        83061,
+        83960,
+        84659,
+        85758
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g05.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g05",
+      "n_samples": 100000,
+      "n_alerts": 16,
+      "alert_times": [
+        15887,
+        17736,
+        18235,
+        34653,
+        35249,
+        36312,
+        37074,
+        40499,
+        43746,
+        50024,
+        59423,
+        59860,
+        60159,
+        60605,
+        62707,
+        99091
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g06.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g06",
+      "n_samples": 100000,
+      "n_alerts": 13,
+      "alert_times": [
+        18727,
+        20080,
+        22194,
+        39027,
+        39526,
+        40522,
+        41421,
+        42420,
+        42886,
+        50185,
+        64195,
+        70110,
+        70499
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g07.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g07",
+      "n_samples": 100000,
+      "n_alerts": 32,
+      "alert_times": [
+        3596,
+        8795,
+        9168,
+        17878,
+        18177,
+        19654,
+        20853,
+        25952,
+        26645,
+        27344,
+        29055,
+        29441,
+        43140,
+        61111,
+        61475,
+        61774,
+        62622,
+        63121,
+        63918,
+        64817,
+        69116,
+        69465,
+        70164,
+        70463,
+        70962,
+        75561,
+        81554,
+        94453,
+        95189,
+        95908,
+        96897,
+        99738
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g08.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g08",
+      "n_samples": 100000,
+      "n_alerts": 26,
+      "alert_times": [
+        2538,
+        3299,
+        22680,
+        25172,
+        26214,
+        31591,
+        32000,
+        32432,
+        32731,
+        33630,
+        40577,
+        42480,
+        43379,
+        43881,
+        44180,
+        44679,
+        44978,
+        49693,
+        51053,
+        51771,
+        52070,
+        52369,
+        65947,
+        77246,
+        78375,
+        79077
+      ]
+    },
+    {
+      "csv": "/Users/Iris/Documents/NTU/114-2/專題/data_generation/sudden_drift/result/factorial_noise_width/sea_sudden_rand_noise0p2_w80_g09.csv",
+      "csv_stem": "sea_sudden_rand_noise0p2_w80_g09",
+      "n_samples": 100000,
+      "n_alerts": 25,
+      "alert_times": [
+        249,
+        899,
+        6828,
+        7127,
+        8226,
+        9825,
+        13811,
+        14310,
+        52041,
+        52719,
+        53072,
+        53482,
+        54792,
+        55591,
+        56090,
+        57540,
+        58254,
+        59900,
+        60599,
+        65691,
+        66429,
+        71077,
+        71776,
+        83063,
+        83362
+      ]
+    }
+  ]
+}

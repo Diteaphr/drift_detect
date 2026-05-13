@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 
 from src.config import PipelineConfig
-from src.pipeline import load_recurring_stream_pair, ConceptDriftPipeline
+from src.pipeline import load_recurring_stream_pair, load_drift_intervals_file, ConceptDriftPipeline
+from src.metrics import build_perturbation_intervals, compute_correct_detection
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
 from detectors.meta_ecpf.signal_routing import SIGNAL_CHOICES
 
@@ -114,6 +115,19 @@ def run_one(
     valid = ~np.isnan(y_pred)
     acc = float(np.mean((y_pred[valid] == y[valid]).astype(np.float64))) if np.any(valid) else 0.0
     alive = sum(1 for s in pipe._ecpf.slots if s is not None) if pipe._ecpf is not None else 0
+
+    # Correct Detection score (perturbation = drift_interval + 1000)
+    _dt_path = csv_path.with_name(csv_path.stem + "_drift_times.txt")
+    cd_tp, cd_fp, cd_n, cd_score = 0, 0, 0, None
+    try:
+        _intervals = load_drift_intervals_file(str(_dt_path))
+        _perturbation = build_perturbation_intervals(_intervals, extension=1000)
+        _det_ts = [d.timestamp for d in pipe.detections]
+        _cd = compute_correct_detection(_det_ts, _perturbation)
+        cd_tp, cd_fp, cd_n, cd_score = _cd.tp, _cd.fp, _cd.n_intervals, _cd.score_percent
+    except FileNotFoundError:
+        pass
+
     summary = {
         "file": csv_path.name,
         "samples": int(len(y)),
@@ -123,6 +137,10 @@ def run_one(
         "pool_alive_snapshots": int(alive),
         "prequential_accuracy": float(acc),
         "model_type": model_type,
+        "cd_tp": cd_tp,
+        "cd_fp": cd_fp,
+        "cd_n": cd_n,
+        "cd_score_pct": cd_score,
     }
     return summary, event_rows
 
@@ -209,10 +227,14 @@ def main() -> None:
         )
         rows.append(row)
         all_events.extend(events)
+        _cd_str = (
+            f"{row['cd_score_pct']:.1f}%" if row["cd_score_pct"] is not None else "n/a"
+        )
         print(
             f"{row['file']}: gt={row['groundtruth_drift_count']} "
             f"detected={row['detected_drift_events']} "
-            f"pool={row['pool_alive_snapshots']} acc={row['prequential_accuracy']:.4f}"
+            f"pool={row['pool_alive_snapshots']} acc={row['prequential_accuracy']:.4f} "
+            f"cd(TP={row['cd_tp']},FP={row['cd_fp']},N={row['cd_n']},score={_cd_str})"
         )
         if args.print_events:
             for e in events:
@@ -239,6 +261,12 @@ def main() -> None:
     print(f"files: {len(df)}")
     print(f"mean accuracy: {df['prequential_accuracy'].mean():.4f}")
     print(f"mean detected drifts: {df['detected_drift_events'].mean():.2f}")
+    valid_scores = df["cd_score_pct"].dropna()
+    if not valid_scores.empty:
+        print(
+            f"mean correct detection score: {valid_scores.mean():.1f}% "
+            f"(TP-FP)/N×100, perturbation=drift_interval+1000"
+        )
     print(f"summary csv: {out}")
     print(f"events csv: {out_events}")
 
