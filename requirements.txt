@@ -1,6 +1,13 @@
-numpy>=1.24
+# Core — required for all experiments
+numpy>=1.24,<3
+pandas>=1.5
 scikit-learn>=1.0
 scipy>=1.7.0
 river>=0.21
-xgboost>=2.0
-torch>=2.0
+matplotlib>=3.5
+
+# Optional — only needed for model_type='gru'
+# torch>=2.0
+
+# Optional — only needed for model_type='xgb'
+# xgboost>=2.0
