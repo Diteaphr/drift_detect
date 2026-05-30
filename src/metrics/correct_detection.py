@@ -24,6 +24,8 @@ from typing import List, Optional, Sequence, Tuple, Union
 # Ground-truth interval as (start, end) or [start, end] with int bounds.
 Interval = Union[Tuple[int, int], List[int]]
 
+DEFAULT_PERTURBATION_EXTENSION = 2000
+
 
 @dataclass(frozen=True)
 class CorrectDetectionResult:
@@ -56,7 +58,7 @@ def _in_union(t: int, bounds: List[Tuple[int, int]]) -> bool:
 
 def build_perturbation_intervals(
     drift_intervals: Sequence[Interval],
-    extension: int = 1000,
+    extension: int = DEFAULT_PERTURBATION_EXTENSION,
 ) -> List[Tuple[int, int]]:
     """Extend each ground-truth drift interval's right edge by ``extension`` samples.
 

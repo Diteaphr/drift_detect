@@ -1,0 +1,133 @@
+
+[adwin] Calibrating on 5 streams...
+  [calib] adwin | recurring_sud_sea100k_g00.csv | delta=0.001 N_fire=  9 N_actual=10 count_score=0.900
+  [calib] adwin | recurring_sud_sea100k_g00.csv | delta=0.005 N_fire= 10 N_actual=10 count_score=1.000
+  [calib] adwin | recurring_sud_sea100k_g00.csv | delta=0.01  N_fire= 10 N_actual=10 count_score=1.000
+  [calib] adwin | recurring_sud_sea100k_g00.csv | delta=0.02  N_fire= 10 N_actual=10 count_score=1.000
+  [calib] adwin | recurring_sud_sea100k_g00.csv | delta=0.05  N_fire= 11 N_actual=10 count_score=0.900
+  [calib] adwin | recurring_sud_sea100k_g00.csv | delta=0.1   N_fire= 12 N_actual=10 count_score=0.800
+  [calib] adwin | recurring_sud_sea100k_g00.csv | delta=0.2   N_fire= 12 N_actual=10 count_score=0.800
+  [calib] adwin | recurring_sud_sea100k_g00.csv | delta=0.3   N_fire= 16 N_actual=10 count_score=0.400
+  recurring_sud_sea100k_g00.csv: warning_param=0.05  confirm_param=0.005
+  [calib] adwin | recurring_sud_sea100k_g01.csv | delta=0.001 N_fire= 11 N_actual= 8 count_score=0.625
+  [calib] adwin | recurring_sud_sea100k_g01.csv | delta=0.005 N_fire= 12 N_actual= 8 count_score=0.500
+  [calib] adwin | recurring_sud_sea100k_g01.csv | delta=0.01  N_fire= 12 N_actual= 8 count_score=0.500
+  [calib] adwin | recurring_sud_sea100k_g01.csv | delta=0.02  N_fire= 12 N_actual= 8 count_score=0.500
+  [calib] adwin | recurring_sud_sea100k_g01.csv | delta=0.05  N_fire= 12 N_actual= 8 count_score=0.500
+  [calib] adwin | recurring_sud_sea100k_g01.csv | delta=0.1   N_fire= 15 N_actual= 8 count_score=0.125
+  [calib] adwin | recurring_sud_sea100k_g01.csv | delta=0.2   N_fire= 18 N_actual= 8 count_score=0.000
+  [calib] adwin | recurring_sud_sea100k_g01.csv | delta=0.3   N_fire= 19 N_actual= 8 count_score=0.000
+  recurring_sud_sea100k_g01.csv: warning_param=0.001  confirm_param=0.3
+  [calib] adwin | recurring_sud_sea100k_g02.csv | delta=0.001 N_fire=  7 N_actual= 8 count_score=0.875
+  [calib] adwin | recurring_sud_sea100k_g02.csv | delta=0.005 N_fire=  7 N_actual= 8 count_score=0.875
+  [calib] adwin | recurring_sud_sea100k_g02.csv | delta=0.01  N_fire=  7 N_actual= 8 count_score=0.875
+  [calib] adwin | recurring_sud_sea100k_g02.csv | delta=0.02  N_fire=  8 N_actual= 8 count_score=1.000
+  [calib] adwin | recurring_sud_sea100k_g02.csv | delta=0.05  N_fire=  8 N_actual= 8 count_score=1.000
+  [calib] adwin | recurring_sud_sea100k_g02.csv | delta=0.1   N_fire= 10 N_actual= 8 count_score=0.750
+  [calib] adwin | recurring_sud_sea100k_g02.csv | delta=0.2   N_fire= 12 N_actual= 8 count_score=0.500
+  [calib] adwin | recurring_sud_sea100k_g02.csv | delta=0.3   N_fire= 15 N_actual= 8 count_score=0.125
+  recurring_sud_sea100k_g02.csv: warning_param=0.1  confirm_param=0.02
+  [calib] adwin | recurring_sud_sea100k_g03.csv | delta=0.001 N_fire=  8 N_actual=12 count_score=0.667
+  [calib] adwin | recurring_sud_sea100k_g03.csv | delta=0.005 N_fire=  8 N_actual=12 count_score=0.667
+  [calib] adwin | recurring_sud_sea100k_g03.csv | delta=0.01  N_fire=  8 N_actual=12 count_score=0.667
+  [calib] adwin | recurring_sud_sea100k_g03.csv | delta=0.02  N_fire= 10 N_actual=12 count_score=0.833
+  [calib] adwin | recurring_sud_sea100k_g03.csv | delta=0.05  N_fire= 14 N_actual=12 count_score=0.833
+  [calib] adwin | recurring_sud_sea100k_g03.csv | delta=0.1   N_fire= 14 N_actual=12 count_score=0.833
+  [calib] adwin | recurring_sud_sea100k_g03.csv | delta=0.2   N_fire= 17 N_actual=12 count_score=0.583
+  [calib] adwin | recurring_sud_sea100k_g03.csv | delta=0.3   N_fire= 20 N_actual=12 count_score=0.333
+  recurring_sud_sea100k_g03.csv: warning_param=0.05  confirm_param=0.02
+  [calib] adwin | recurring_sud_sea100k_g04.csv | delta=0.001 N_fire= 10 N_actual= 6 count_score=0.333
+  [calib] adwin | recurring_sud_sea100k_g04.csv | delta=0.005 N_fire= 12 N_actual= 6 count_score=0.000
+  [calib] adwin | recurring_sud_sea100k_g04.csv | delta=0.01  N_fire= 12 N_actual= 6 count_score=0.000
+  [calib] adwin | recurring_sud_sea100k_g04.csv | delta=0.02  N_fire= 12 N_actual= 6 count_score=0.000
+  [calib] adwin | recurring_sud_sea100k_g04.csv | delta=0.05  N_fire= 14 N_actual= 6 count_score=0.000
+  [calib] adwin | recurring_sud_sea100k_g04.csv | delta=0.1   N_fire= 16 N_actual= 6 count_score=0.000
+  [calib] adwin | recurring_sud_sea100k_g04.csv | delta=0.2   N_fire= 17 N_actual= 6 count_score=0.000
+  [calib] adwin | recurring_sud_sea100k_g04.csv | delta=0.3   N_fire= 21 N_actual= 6 count_score=0.000
+  recurring_sud_sea100k_g04.csv: warning_param=0.001  confirm_param=0.3
+  → warning_param=0.05  confirm_param=0.02
+
+[adwin] Evaluating warning_param=0.05...
+  [eval/warning] adwin | recurring_sud_sea100k_g05.csv | delta=0.05  N_fire= 23 N_actual= 8 count_score=0.000 avg_delay=183 CD%=0.0
+  [eval/warning] adwin | recurring_sud_sea100k_g06.csv | delta=0.05  N_fire= 16 N_actual= 8 count_score=0.000 avg_delay=102 CD%=0.0
+  [eval/warning] adwin | recurring_sud_sea100k_g07.csv | delta=0.05  N_fire= 11 N_actual= 8 count_score=0.625 avg_delay=563 CD%=37.5
+  [eval/warning] adwin | recurring_sud_sea100k_g08.csv | delta=0.05  N_fire=  9 N_actual= 6 count_score=0.500 avg_delay=744 CD%=0.0
+  [eval/warning] adwin | recurring_sud_sea100k_g09.csv | delta=0.05  N_fire= 17 N_actual= 8 count_score=0.000 avg_delay=248 CD%=0.0
+
+[adwin] Evaluating confirm_param=0.02...
+  [eval/confirm] adwin | recurring_sud_sea100k_g05.csv | delta=0.02  N_fire= 21 N_actual= 8 count_score=0.000 avg_delay=180 CD%=0.0
+  [eval/confirm] adwin | recurring_sud_sea100k_g06.csv | delta=0.02  N_fire= 15 N_actual= 8 count_score=0.125 avg_delay=107 CD%=0.0
+  [eval/confirm] adwin | recurring_sud_sea100k_g07.csv | delta=0.02  N_fire=  8 N_actual= 8 count_score=1.000 avg_delay=635 CD%=25.0
+  [eval/confirm] adwin | recurring_sud_sea100k_g08.csv | delta=0.02  N_fire=  8 N_actual= 6 count_score=0.667 avg_delay=949 CD%=0.0
+  [eval/confirm] adwin | recurring_sud_sea100k_g09.csv | delta=0.02  N_fire= 16 N_actual= 8 count_score=0.000 avg_delay=221 CD%=0.0
+
+[seqdrift2] Calibrating on 5 streams...
+  [calib] seqdrift2 | recurring_sud_sea100k_g00.csv | delta=0.05  N_fire=  5 N_actual=10 count_score=0.500
+  [calib] seqdrift2 | recurring_sud_sea100k_g00.csv | delta=0.1   N_fire=  7 N_actual=10 count_score=0.700
+  [calib] seqdrift2 | recurring_sud_sea100k_g00.csv | delta=0.15  N_fire=  9 N_actual=10 count_score=0.900
+  [calib] seqdrift2 | recurring_sud_sea100k_g00.csv | delta=0.2   N_fire= 10 N_actual=10 count_score=1.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g00.csv | delta=0.25  N_fire= 12 N_actual=10 count_score=0.800
+  [calib] seqdrift2 | recurring_sud_sea100k_g00.csv | delta=0.3   N_fire= 18 N_actual=10 count_score=0.200
+  [calib] seqdrift2 | recurring_sud_sea100k_g00.csv | delta=0.4   N_fire= 25 N_actual=10 count_score=0.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g00.csv | delta=0.5   N_fire= 14 N_actual=10 count_score=0.600
+  recurring_sud_sea100k_g00.csv: warning_param=0.25  confirm_param=0.2
+  [calib] seqdrift2 | recurring_sud_sea100k_g01.csv | delta=0.05  N_fire=  6 N_actual= 8 count_score=0.750
+  [calib] seqdrift2 | recurring_sud_sea100k_g01.csv | delta=0.1   N_fire=  8 N_actual= 8 count_score=1.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g01.csv | delta=0.15  N_fire= 10 N_actual= 8 count_score=0.750
+  [calib] seqdrift2 | recurring_sud_sea100k_g01.csv | delta=0.2   N_fire= 14 N_actual= 8 count_score=0.250
+  [calib] seqdrift2 | recurring_sud_sea100k_g01.csv | delta=0.25  N_fire= 14 N_actual= 8 count_score=0.250
+  [calib] seqdrift2 | recurring_sud_sea100k_g01.csv | delta=0.3   N_fire= 19 N_actual= 8 count_score=0.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g01.csv | delta=0.4   N_fire= 24 N_actual= 8 count_score=0.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g01.csv | delta=0.5   N_fire= 20 N_actual= 8 count_score=0.000
+  recurring_sud_sea100k_g01.csv: warning_param=0.15  confirm_param=0.1
+  [calib] seqdrift2 | recurring_sud_sea100k_g02.csv | delta=0.05  N_fire=  4 N_actual= 8 count_score=0.500
+  [calib] seqdrift2 | recurring_sud_sea100k_g02.csv | delta=0.1   N_fire= 11 N_actual= 8 count_score=0.625
+  [calib] seqdrift2 | recurring_sud_sea100k_g02.csv | delta=0.15  N_fire= 12 N_actual= 8 count_score=0.500
+  [calib] seqdrift2 | recurring_sud_sea100k_g02.csv | delta=0.2   N_fire=  8 N_actual= 8 count_score=1.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g02.csv | delta=0.25  N_fire= 14 N_actual= 8 count_score=0.250
+  [calib] seqdrift2 | recurring_sud_sea100k_g02.csv | delta=0.3   N_fire= 14 N_actual= 8 count_score=0.250
+  [calib] seqdrift2 | recurring_sud_sea100k_g02.csv | delta=0.4   N_fire= 17 N_actual= 8 count_score=0.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g02.csv | delta=0.5   N_fire= 18 N_actual= 8 count_score=0.000
+  recurring_sud_sea100k_g02.csv: warning_param=0.1  confirm_param=0.2
+  [calib] seqdrift2 | recurring_sud_sea100k_g03.csv | delta=0.05  N_fire=  1 N_actual=12 count_score=0.083
+  [calib] seqdrift2 | recurring_sud_sea100k_g03.csv | delta=0.1   N_fire=  4 N_actual=12 count_score=0.333
+  [calib] seqdrift2 | recurring_sud_sea100k_g03.csv | delta=0.15  N_fire=  7 N_actual=12 count_score=0.583
+  [calib] seqdrift2 | recurring_sud_sea100k_g03.csv | delta=0.2   N_fire=  8 N_actual=12 count_score=0.667
+  [calib] seqdrift2 | recurring_sud_sea100k_g03.csv | delta=0.25  N_fire= 14 N_actual=12 count_score=0.833
+  [calib] seqdrift2 | recurring_sud_sea100k_g03.csv | delta=0.3   N_fire= 12 N_actual=12 count_score=1.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g03.csv | delta=0.4   N_fire= 22 N_actual=12 count_score=0.167
+  [calib] seqdrift2 | recurring_sud_sea100k_g03.csv | delta=0.5   N_fire= 24 N_actual=12 count_score=0.000
+  recurring_sud_sea100k_g03.csv: warning_param=0.25  confirm_param=0.3
+  [calib] seqdrift2 | recurring_sud_sea100k_g04.csv | delta=0.05  N_fire=  6 N_actual= 6 count_score=1.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g04.csv | delta=0.1   N_fire=  5 N_actual= 6 count_score=0.833
+  [calib] seqdrift2 | recurring_sud_sea100k_g04.csv | delta=0.15  N_fire= 11 N_actual= 6 count_score=0.167
+  [calib] seqdrift2 | recurring_sud_sea100k_g04.csv | delta=0.2   N_fire= 14 N_actual= 6 count_score=0.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g04.csv | delta=0.25  N_fire= 15 N_actual= 6 count_score=0.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g04.csv | delta=0.3   N_fire= 15 N_actual= 6 count_score=0.000
+  [calib] seqdrift2 | recurring_sud_sea100k_g04.csv | delta=0.4   N_fire= 10 N_actual= 6 count_score=0.333
+  [calib] seqdrift2 | recurring_sud_sea100k_g04.csv | delta=0.5   N_fire= 20 N_actual= 6 count_score=0.000
+  recurring_sud_sea100k_g04.csv: warning_param=0.4  confirm_param=0.05
+  → warning_param=0.25  confirm_param=0.2
+
+[seqdrift2] Evaluating warning_param=0.25...
+  [eval/warning] seqdrift2 | recurring_sud_sea100k_g05.csv | delta=0.25  N_fire= 15 N_actual= 8 count_score=0.125 avg_delay=248 CD%=37.5
+  [eval/warning] seqdrift2 | recurring_sud_sea100k_g06.csv | delta=0.25  N_fire= 12 N_actual= 8 count_score=0.500 avg_delay=157 CD%=0.0
+  [eval/warning] seqdrift2 | recurring_sud_sea100k_g07.csv | delta=0.25  N_fire= 12 N_actual= 8 count_score=0.500 avg_delay=311 CD%=0.0
+  [eval/warning] seqdrift2 | recurring_sud_sea100k_g08.csv | delta=0.25  N_fire=  6 N_actual= 6 count_score=1.000 avg_delay=362 CD%=33.3
+  [eval/warning] seqdrift2 | recurring_sud_sea100k_g09.csv | delta=0.25  N_fire= 11 N_actual= 8 count_score=0.625 avg_delay=316 CD%=12.5
+
+[seqdrift2] Evaluating confirm_param=0.2...
+  [eval/confirm] seqdrift2 | recurring_sud_sea100k_g05.csv | delta=0.2   N_fire= 17 N_actual= 8 count_score=0.000 avg_delay=220 CD%=12.5
+  [eval/confirm] seqdrift2 | recurring_sud_sea100k_g06.csv | delta=0.2   N_fire= 11 N_actual= 8 count_score=0.625 avg_delay=157 CD%=12.5
+  [eval/confirm] seqdrift2 | recurring_sud_sea100k_g07.csv | delta=0.2   N_fire= 12 N_actual= 8 count_score=0.500 avg_delay=311 CD%=0.0
+  [eval/confirm] seqdrift2 | recurring_sud_sea100k_g08.csv | delta=0.2   N_fire=  4 N_actual= 6 count_score=0.667 avg_delay=662 CD%=66.7
+  [eval/confirm] seqdrift2 | recurring_sud_sea100k_g09.csv | delta=0.2   N_fire=  9 N_actual= 8 count_score=0.875 avg_delay=316 CD%=37.5
+
+=== Standalone Detector Calibration ===
+Calibration: g00–g04   Evaluation: g05–g09   tolerance=2000
+detector   warning_param  warn_count_score  warn_CD%  warn_avg_delay  confirm_param  conf_count_score  conf_CD%  conf_avg_delay
+---------  -------------  ----------------  --------  --------------  -------------  ----------------  --------  --------------
+adwin      0.05           0.225             7.5       368             0.02           0.358             5.0       418           
+seqdrift2  0.25           0.550             16.7      279             0.2            0.533             25.8      333           
+
+Saved: /Users/iiris/Desktop/drift_detect/outputs/calibration_standalone/calibration_standalone_summary.csv

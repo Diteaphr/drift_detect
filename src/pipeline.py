@@ -45,7 +45,9 @@ except ImportError:
 
 from detectors.meta import TwoStageVotingDetector, DynamicWeightedVotingDetector, StatisticalFusionDetector
 from detectors.meta_ecpf.dynamic_weighted import DynamicWeightedVotingECPFDetector
+from detectors.meta_ecpf.gddm import ECPFGDDMDetector
 from detectors.meta_ecpf.hcdt import HCDTECPFDetector
+from detectors.meta_ecpf.hierarchical_parallel import HierarchicalParallelECPFDetector
 from detectors.meta.indicators import KSDistributionIndicator, ErrorRateTrendIndicator, UncertaintyProxyIndicator
 
 logger = logging.getLogger(__name__)
@@ -92,6 +94,17 @@ class ConceptDriftPipeline:
             )
         elif self.config.ecpf_signal_mode == "meta_ecpf_hcdt":
             self.meta_detector = HCDTECPFDetector(self.config)
+        elif self.config.ecpf_signal_mode == "meta_ecpf_gddm":
+            self.meta_detector = ECPFGDDMDetector(
+                self.config,
+                uq_mode=self.config.ecpf_uq_mode or "mi_like",
+            )
+        elif self.config.ecpf_signal_mode == "meta_ecpf_hier_parallel":
+            self.meta_detector = HierarchicalParallelECPFDetector(
+                self.config,
+                uq_mode=self.config.ecpf_uq_mode or "mi_like",
+                selected_detectors=self.config.selected_detectors,
+            )
         elif self.config.meta_detector_type == "two_stage":
             self.meta_detector = TwoStageVotingDetector(
                 self.config, 
@@ -442,7 +455,7 @@ class ConceptDriftPipeline:
 
                 if self._ecpf_warning_active:
                     return y_pred, [], False
-            elif self.config.ecpf_signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hcdt"} and self.meta_detector is not None:
+            elif self.config.ecpf_signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hcdt", "meta_ecpf_gddm", "meta_ecpf_hier_parallel"} and self.meta_detector is not None:
                 # Update meta detector continuously
                 proba_matrix = None
                 if hasattr(self.prediction_model, 'predict_proba_matrix'):

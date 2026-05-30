@@ -138,10 +138,41 @@ def _run_stream(csv_path: Path, txt_path: Path, cfg: PipelineConfig) -> Tuple[Li
 
     pipeline = ConceptDriftPipeline(cfg)
     pipeline.warm_start(X[:WARM_START], y[:WARM_START])
+    warning_timestamps: List[int] = []
     for i in range(WARM_START, len(y)):
-        pipeline.step(X[i], y[i], index=i)
+        _, detections, _ = pipeline.step(X[i], y[i], index=i)
+        for d in detections:
+            if getattr(d, "timestamp", None) is not None:
+                warning_timestamps.append(int(d.timestamp))
 
-    return pipeline.warning_timestamps, drift_starts, drift_intervals
+    # Backward compatibility: old pipeline versions exposed warning_timestamps.
+    if not warning_timestamps and hasattr(pipeline, "warning_timestamps"):
+        warning_timestamps = [int(t) for t in getattr(pipeline, "warning_timestamps")]
+
+    return warning_timestamps, drift_starts, drift_intervals
+
+
+def _print_stream_done(
+    phase: str,
+    detector: str,
+    csv_path: Path,
+    param: float,
+    n_warnings: int,
+    n_actual: int,
+    count_score: float,
+    *,
+    mean_delay: Optional[float] = None,
+    cd_pct: Optional[float] = None,
+) -> None:
+    msg = (
+        f"  [{phase}] {detector} | {csv_path.name} | param={param:g} | "
+        f"N_warn={n_warnings} N_actual={n_actual} count_score={count_score:.3f}"
+    )
+    if mean_delay is not None:
+        delay_str = _fmt(mean_delay, ".0f")
+        cd_str = _fmt(cd_pct, ".1f")
+        msg += f" avg_delay={delay_str} CD%={cd_str}"
+    print(msg, flush=True)
 
 
 # ---------------------------------------------------------------------------
@@ -161,6 +192,15 @@ def calibrate(spec: DetectorSpec, calib_paths: List[Tuple[Path, Path]]) -> float
             warnings, drift_starts, _ = _run_stream(csv_path, txt_path, cfg)
             n_actual = len(drift_starts)
             score = compute_count_score(len(warnings), n_actual) or 0.0
+            _print_stream_done(
+                "calibrate",
+                spec.name,
+                csv_path,
+                param,
+                len(warnings),
+                n_actual,
+                score,
+            )
             if score > best_score:
                 best_score = score
                 best_param = param
@@ -218,6 +258,17 @@ def evaluate_at_param(
             n_actual=n_actual,
             n_matched=delay_info["n_matched"],
         ))
+        _print_stream_done(
+            "eval",
+            spec.name,
+            csv_path,
+            param,
+            len(warnings),
+            n_actual,
+            score,
+            mean_delay=delay_info["mean_delay"],
+            cd_pct=cd_pct,
+        )
 
     return results
 

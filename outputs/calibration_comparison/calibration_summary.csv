@@ -1,0 +1,5 @@
+detector,param_attr,calib_param,count_score,CD%,avg_delay
+dual_adwin,detector_delta,0.001,0.433,40.0,290
+meta_ecpf_hcdt,ecpf_hcdt_detection_delta,0.005,0.583,42.5,150
+meta_ecpf_gddm,ecpf_gddm_warning_alpha,0.01,0.000,0.0,n/a
+meta_ecpf_hier_parallel,ecpf_hier_validation_gap_threshold,0.005,0.000,0.0,n/a
