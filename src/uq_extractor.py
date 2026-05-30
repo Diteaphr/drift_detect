@@ -8,7 +8,7 @@ ADWIN (and most change-detection algorithms) consume a **one-dimensional
 scalar stream**.  A forest of M trees produces an M × K probability matrix
 per sample; we need a principled reduction to a single scalar ``u_t``.
 
-Three extraction modes are provided:
+Four extraction modes are provided:
 
 Primary — ``mi_like`` (MI-like disagreement / epistemic uncertainty)
     u_t = H(p̄_t) − (1/M) Σ H(p_{t,m})
@@ -25,6 +25,12 @@ Baseline 1 — ``vote_disagreement``
 Baseline 2 — ``predictive_entropy``
     u_t = H(p̄_t)
     Total predictive uncertainty (aleatoric + epistemic).
+
+Baseline 3 -- ``variance_eu``
+    u_t = sum_k Var_m(p_{t,m,k})
+    Cross-tree probability variance summed over classes. This is a direct
+    ensemble-variance epistemic uncertainty scalar; it does not rely on any
+    tree-internal variance estimate.
 
 Why ``mi_like`` is the primary choice:
 *   It isolates epistemic uncertainty (inter-tree disagreement) from
@@ -86,10 +92,11 @@ class UQExtractor:
     Parameters
     ----------
     mode : str
-        One of ``"mi_like"``, ``"vote_disagreement"``, ``"predictive_entropy"``.
+        One of ``"mi_like"``, ``"vote_disagreement"``,
+        ``"predictive_entropy"``, ``"variance_eu"``.
     """
 
-    MODES = {"mi_like", "vote_disagreement", "predictive_entropy"}
+    MODES = {"mi_like", "vote_disagreement", "predictive_entropy", "variance_eu"}
 
     def __init__(
         self,
@@ -140,6 +147,8 @@ class UQExtractor:
             return self._vote_disagreement(valid)
         elif self.mode == "predictive_entropy":
             return self._predictive_entropy(valid)
+        elif self.mode == "variance_eu":
+            return self._variance_eu(valid)
         return 0.0  # unreachable
 
     # ------------------------------------------------------------------
@@ -186,3 +195,17 @@ class UQExtractor:
         for c in all_classes:
             p_bar[c] = sum(d.get(c, 0.0) for d in matrix) / m
         return _entropy(p_bar)
+
+    @staticmethod
+    def _variance_eu(matrix: List[Dict[Any, float]]) -> float:
+        """Cross-tree probability variance summed over classes."""
+        m = len(matrix)
+        if m <= 1:
+            return 0.0
+        all_classes = sorted(matrix[0].keys())
+        total = 0.0
+        for c in all_classes:
+            values = [float(d.get(c, 0.0)) for d in matrix]
+            mean = sum(values) / m
+            total += sum((v - mean) ** 2 for v in values) / m
+        return max(0.0, total)

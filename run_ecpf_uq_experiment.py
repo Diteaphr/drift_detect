@@ -8,6 +8,7 @@ Compares five settings across recurring-drift datasets (g00..g09):
     C. UQ Warning:  ECPF + HF  + UQ warning (MI-like) + error drift confirmation
     D1. Ablation:   ECPF + HF  + UQ warning (vote_disagreement)
     D2. Ablation:   ECPF + HF  + UQ warning (predictive_entropy)
+    D3. Ablation:   ECPF + HF  + UQ warning (variance_eu)
     E. Meta ECPF:   ECPF + HF  + UQ warning (MI-like) + DWM Meta Detector
 
 Evaluation metrics:
@@ -93,6 +94,24 @@ SETTINGS: Dict[str, Dict[str, Any]] = {
         "uq_mode": "mi_like",
         "label": "ECPF+HF+UQ(MI)+DWM",
     },
+    "E_vote_ecpf_dwm": {
+        "model_type": "hf",
+        "signal_mode": "meta_ecpf_dwm",
+        "uq_mode": "vote_disagreement",
+        "label": "ECPF+HF+UQ(vote)+DWM",
+    },
+    "E_entropy_ecpf_dwm": {
+        "model_type": "hf",
+        "signal_mode": "meta_ecpf_dwm",
+        "uq_mode": "predictive_entropy",
+        "label": "ECPF+HF+UQ(entropy)+DWM",
+    },
+    "E_var_ecpf_dwm": {
+        "model_type": "hf",
+        "signal_mode": "meta_ecpf_dwm",
+        "uq_mode": "variance_eu",
+        "label": "ECPF+HF+UQ(varEU)+DWM",
+    },
     "F_hier_parallel": {
         "model_type": "hf",
         "signal_mode": "meta_ecpf_hier_parallel",
@@ -110,6 +129,12 @@ SETTINGS: Dict[str, Dict[str, Any]] = {
         "signal_mode": "meta_ecpf_hcdt",
         "uq_mode": None,
         "label": "ECPF+HT+HCDT",
+    },
+    "H_hf_meta_ecpf_hcdt": {
+        "model_type": "hf",
+        "signal_mode": "meta_ecpf_hcdt",
+        "uq_mode": None,
+        "label": "ECPF+HF+HCDT",
     },
 
     "B_hf_error_direct": {
@@ -135,6 +160,12 @@ SETTINGS: Dict[str, Dict[str, Any]] = {
         "signal_mode": "uq_warning",
         "uq_mode": "predictive_entropy",
         "label": "ECPF+HF+UQ(entropy)",
+    },
+    "D3_hf_uq_variance_eu": {
+        "model_type": "hf",
+        "signal_mode": "uq_warning",
+        "uq_mode": "variance_eu",
+        "label": "ECPF+HF+UQ(varEU)",
     },
 }
 
@@ -268,8 +299,10 @@ def run_one(
                     "warning_signal": det_details.get("warning_signal"),
                     "drift_signal": det_details.get("drift_signal"),
                     "uq_mode": det_details.get("uq_mode"),
+                    "uq_extracted": det_details.get("uq_extracted"),
                     "uq_raw": det_details.get("uq_raw"),
                     "uq_smoothed": det_details.get("uq_smoothed"),
+                    "uq_scale": det_details.get("uq_scale"),
                     "gddm_U": det_details.get("gddm_U"),
                     "gddm_G_warning": det_details.get("gddm_G_warning"),
                     "gddm_G_drift": det_details.get("gddm_G_drift"),

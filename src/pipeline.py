@@ -506,6 +506,7 @@ class ConceptDriftPipeline:
                         if detector_source == "meta_ecpf_hcdt"
                         else "dwm_proxy_warning_then_voting_drift"
                     )
+                    uq_proxy_stats = self._extract_uq_proxy_stats(sub_stats)
                     self._handle_ecpf_drift(
                         self._ecpf_buffer[:],
                         int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
@@ -515,6 +516,7 @@ class ConceptDriftPipeline:
                             "ecpf_protocol": protocol,
                             "uq_mode": self.config.ecpf_uq_mode,
                             **sub_stats.get("meta_info", {}),
+                            **uq_proxy_stats,
                         },
                     )
                     self._ecpf_warning_active = False
@@ -733,6 +735,18 @@ class ConceptDriftPipeline:
         if len(items) <= n:
             return [(np.asarray(a, dtype=np.float64), float(b)) for a, b, _ in items]
         return [(np.asarray(a, dtype=np.float64), float(b)) for a, b, _ in items[-n:]]
+
+    @staticmethod
+    def _extract_uq_proxy_stats(sub_stats: Dict[str, Any]) -> Dict[str, Any]:
+        proxy_stats = sub_stats.get("proxy_indicators", {})
+        details = proxy_stats.get("details", {}) if isinstance(proxy_stats, dict) else {}
+        if not isinstance(details, dict):
+            return {}
+        uq_entry = details.get("UQWarningIndicator", {})
+        if not isinstance(uq_entry, dict):
+            return {}
+        stats = uq_entry.get("stats", {})
+        return dict(stats) if isinstance(stats, dict) else {}
 
     def _handle_ecpf_drift(
         self,

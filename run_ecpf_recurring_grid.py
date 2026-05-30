@@ -4,10 +4,10 @@ Run all ADWIN-family detector/signal combinations on recurring g00..g09.
 Grid size:
     warning_detector: adwin | seed | seqdrift2
     drift_detector:   adwin | seed | seqdrift2
-    warning_signal:   error | uq_mi | uq_vote | uq_entropy
-    drift_signal:     error | uq_mi | uq_vote | uq_entropy
+    warning_signal:   error | uq_mi | uq_vote | uq_entropy | uq_variance
+    drift_signal:     error | uq_mi | uq_vote | uq_entropy | uq_variance
 
-Total: 3 * 3 * 4 * 4 = 144 experiment combinations.
+Total: 3 * 3 * 5 * 5 = 225 experiment combinations.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from run_ecpf_recurring_batch import run_one
 
 
 DETECTORS = ("adwin", "seed", "seqdrift2")
-SIGNALS = ("error", "uq_mi", "uq_vote", "uq_entropy")
+SIGNALS = ("error", "uq_mi", "uq_vote", "uq_entropy", "uq_variance")
 
 
 def _model_type_for_signals(warning_signal: str, drift_signal: str) -> str:
@@ -97,7 +97,7 @@ def _run_combo(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Run 144 ECPF ADWIN-family detector/signal combinations."
+        description="Run 225 ECPF ADWIN-family detector/signal combinations."
     )
     parser.add_argument("--data-dir", default="data/recurring_drift")
     parser.add_argument("--warm-start", type=int, default=200)

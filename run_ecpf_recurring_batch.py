@@ -163,7 +163,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--uq-mode",
-        choices=["mi_like", "vote_disagreement", "predictive_entropy"],
+        choices=["mi_like", "vote_disagreement", "predictive_entropy", "variance_eu"],
         default="mi_like",
         help="UQ proxy mode used by meta_ecpf_dwm.",
     )

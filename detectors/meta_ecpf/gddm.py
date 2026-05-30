@@ -57,6 +57,7 @@ class ECPFGDDMDetector:
             "mi_like": UQExtractor("mi_like"),
             "vote_disagreement": UQExtractor("vote_disagreement"),
             "predictive_entropy": UQExtractor("predictive_entropy"),
+            "variance_eu": UQExtractor("variance_eu"),
         }
         if uq_mode not in self._uq_extractors:
             self._uq_extractors[uq_mode] = UQExtractor("mi_like")

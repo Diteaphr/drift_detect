@@ -141,7 +141,8 @@ class PipelineConfig:
     ecpf_drift_value_range: float = 1.0
 
     # --- UQ Warning Layer (Hoeffding Forest uncertainty-based early warning) ---
-    # UQ scalar extraction mode: "mi_like" | "vote_disagreement" | "predictive_entropy"
+    # UQ scalar extraction mode:
+    # "mi_like" | "vote_disagreement" | "predictive_entropy" | "variance_eu"
     ecpf_uq_mode: str = "mi_like"
     ecpf_uq_delta: float = 0.01
     ecpf_uq_grace_period: int = 50
