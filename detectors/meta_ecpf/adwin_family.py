@@ -42,11 +42,13 @@ def _make_detector(
     if kind == "seed":
         return SEEDDetector(
             role=role,
+            delta=delta,
             value_range=value_range,
         )
     if kind in {"seqdrift2", "seqdrift"}:
         return SeqDrift2Detector(
             role=role,
+            delta=delta,
             min_num_instances=min_num_instances,
             value_range=value_range,
             seed=random_seed,
