@@ -40,6 +40,8 @@ STAGE_DEFAULT_MAX_STEPS = {
     "stage1": 20000,
     "stage2": 50000,
     "stage3": 0,
+    "uqdet_smoke": 20000,
+    "uqdet_stageb": 50000,
 }
 
 STAGE_DEFAULT_GROUPS = {
@@ -47,6 +49,17 @@ STAGE_DEFAULT_GROUPS = {
     "stage1": ["recurring"],
     "stage2": ["recurring"],
     "stage3": ["recurring", "sudden", "gradual", "incremental"],
+    "uqdet_smoke": ["recurring"],
+    "uqdet_stageb": ["recurring"],
+}
+
+STAGE_DEFAULT_LIMIT_FILES = {
+    "stage0": 0,
+    "stage1": 0,
+    "stage2": 0,
+    "stage3": 0,
+    "uqdet_smoke": 2,
+    "uqdet_stageb": 0,
 }
 
 DATASET_GROUP_DIRS = {
@@ -128,6 +141,48 @@ def _spec(
     )
 
 
+def build_uq_detector_matrix_specs() -> List[ExperimentSpec]:
+    """Return UQ-warning x detector-family configs for recurring screening."""
+
+    uq_signals = [
+        ("mi_like", "uq_mi", "mi_like"),
+        ("vote", "uq_vote", "vote_disagreement"),
+        ("entropy", "uq_entropy", "predictive_entropy"),
+        ("variance", "uq_variance", "variance_eu"),
+    ]
+    detector_families = [
+        ("adwin", "ADWIN", 0.05, 0.02),
+        ("seed", "SEED", 0.10, 0.05),
+        ("seqdrift2", "SeqDrift2", 0.550, 0.553),
+    ]
+
+    specs: List[ExperimentSpec] = []
+    for uq_id, warning_signal, uq_mode in uq_signals:
+        for detector, detector_label, warning_delta, drift_delta in detector_families:
+            specs.append(
+                _spec(
+                    config_id=f"uq_{uq_id}_{detector}",
+                    family="UQ_detector_matrix",
+                    description=(
+                        f"{uq_mode} warning signal with {detector_label} "
+                        "warning/error-confirmation detectors "
+                        f"(warning_delta={warning_delta}, drift_delta={drift_delta})."
+                    ),
+                    model_type="hf",
+                    signal_mode="hybrid_adwin_family",
+                    warning_detector=detector,
+                    drift_detector=detector,
+                    warning_signal=warning_signal,
+                    drift_signal="error",
+                    detector_delta=drift_delta,
+                    detector_delta_w=warning_delta,
+                    detector_min_instances=30,
+                    uq_mode=uq_mode,
+                )
+            )
+    return specs
+
+
 def build_stage_specs(stage: str) -> List[ExperimentSpec]:
     """Return built-in candidates for a stage.
 
@@ -136,6 +191,9 @@ def build_stage_specs(stage: str) -> List[ExperimentSpec]:
     conservative default finalist set but should normally be narrowed with
     ``--config-id`` after reviewing Stage 1/2 outputs.
     """
+
+    if stage in {"uqdet_smoke", "uqdet_stageb"}:
+        return build_uq_detector_matrix_specs()
 
     specs: List[ExperimentSpec] = []
 
@@ -878,6 +936,7 @@ def write_manifest(path: Path, specs: Sequence[ExperimentSpec], args: argparse.N
         "stage": args.stage,
         "warm_start": args.warm_start,
         "max_steps": args.max_steps_effective,
+        "limit_files": args.limit_files_effective,
         "groups": args.groups_effective,
         "split": args.split,
         "config_count": len(specs),
@@ -945,11 +1004,16 @@ def run_stage(args: argparse.Namespace) -> None:
         if args.max_steps is None
         else args.max_steps
     )
+    args.limit_files_effective = (
+        STAGE_DEFAULT_LIMIT_FILES[stage_for_selection]
+        if args.limit_files == 0
+        else args.limit_files
+    )
     streams = discover_streams(
         data_root=Path(args.data_root),
         groups=args.groups_effective,
         split=args.split,
-        limit_files=args.limit_files,
+        limit_files=args.limit_files_effective,
     )
 
     if args.dry_run or args.stage == "list":
@@ -1023,7 +1087,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--stage",
-        choices=["list", "stage0", "stage1", "stage2", "stage3"],
+        choices=[
+            "list",
+            "stage0",
+            "stage1",
+            "stage2",
+            "stage3",
+            "uqdet_smoke",
+            "uqdet_stageb",
+        ],
         default="list",
         help="Stage to inspect or run. Stage runs require --execute.",
     )
@@ -1066,7 +1138,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Family name(s) to include. Can be repeated or comma-separated.",
     )
     parser.add_argument("--limit-configs", type=int, default=0)
-    parser.add_argument("--limit-files", type=int, default=0)
+    parser.add_argument(
+        "--limit-files",
+        type=int,
+        default=0,
+        help="Limit selected streams. 0 uses the stage default; uqdet_smoke defaults to 2.",
+    )
     parser.add_argument(
         "--flush-each",
         action="store_true",
