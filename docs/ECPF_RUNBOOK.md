@@ -153,7 +153,7 @@ Example:
 
 For `meta_ecpf_dwm`, the event row also includes:
 - `ecpf_protocol`: `dwm_proxy_warning_then_voting_drift`.
-- `uq_mode`: which UQ proxy was used (`mi_like`, `vote_disagreement`, or `predictive_entropy`).
+- `uq_mode`: which UQ proxy was used (`mi_like`, `vote_disagreement`, `predictive_entropy`, or `variance_eu`).
 - `uq_raw` / `uq_smoothed`: the warning signal before and after smoothing.
 
 ## 6) Metric Notes

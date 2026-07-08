@@ -89,6 +89,12 @@ class PipelineConfig:
     # Evaluation
     eval_window: int = 200
 
+    # --- Stage tracing (observer-only; off by default) ---
+    # When enabled, the pipeline records intermediate per-stage outputs via
+    # src/tracing.py for interpretability analysis. Has no effect on decisions.
+    trace_enabled: bool = False
+    trace_window: int = 300  # ± samples around each event kept in the stage-1 signal trace
+
     # --- Enhanced Concept Profiling Framework (ECPF), Anderson et al. (TKDE) ---
     use_ecpf: bool = True
 
@@ -141,7 +147,8 @@ class PipelineConfig:
     ecpf_drift_value_range: float = 1.0
 
     # --- UQ Warning Layer (Hoeffding Forest uncertainty-based early warning) ---
-    # UQ scalar extraction mode: "mi_like" | "vote_disagreement" | "predictive_entropy"
+    # UQ scalar extraction mode:
+    # "mi_like" | "vote_disagreement" | "predictive_entropy" | "variance_eu"
     ecpf_uq_mode: str = "mi_like"
     ecpf_uq_delta: float = 0.01
     ecpf_uq_grace_period: int = 50

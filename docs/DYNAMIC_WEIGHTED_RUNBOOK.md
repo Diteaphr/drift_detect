@@ -80,6 +80,7 @@ If the model provides `proba_matrix`, UQ is based on the configured mode:
 - `mi_like`
 - `vote_disagreement`
 - `predictive_entropy`
+- `variance_eu`
 
 If no `proba_matrix` is available, it falls back to
 `UncertaintyProxyIndicator`, using prediction instability as a lightweight

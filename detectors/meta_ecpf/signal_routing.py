@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 from src.uq_extractor import UQExtractor
 
 
-SIGNAL_CHOICES = {"error", "uq_mi", "uq_vote", "uq_entropy"}
+SIGNAL_CHOICES = {"error", "uq_mi", "uq_vote", "uq_entropy", "uq_variance"}
 logger = logging.getLogger(__name__)
 _WARNED_MISSING_PROBA: set[str] = set()
 
@@ -27,6 +27,9 @@ def normalize_signal_name(signal: str) -> str:
         "vote_disagreement": "uq_vote",
         "uq_predictive_entropy": "uq_entropy",
         "predictive_entropy": "uq_entropy",
+        "uq_variance_eu": "uq_variance",
+        "variance_eu": "uq_variance",
+        "prob_variance": "uq_variance",
     }
     name = aliases.get(name, name)
     if name not in SIGNAL_CHOICES:
@@ -83,6 +86,14 @@ def extract_signal(
             proba_matrix,
             num_classes=num_classes,
         )
+    if name == "uq_variance":
+        return _normalize_variance_eu(
+            UQExtractor("variance_eu", num_classes=num_classes).extract(
+                proba_matrix
+            ),
+            proba_matrix,
+            num_classes=num_classes,
+        )
     return float(err)
 
 
@@ -102,3 +113,21 @@ def _normalize_entropy_like(
     if max_entropy <= 0.0:
         return 0.0
     return max(0.0, min(1.0, float(value) / max_entropy))
+
+
+def _normalize_variance_eu(
+    value: float,
+    proba_matrix: List[Dict[Any, float]],
+    *,
+    num_classes: Optional[int] = None,
+) -> float:
+    classes: set[Any] = set()
+    for proba in proba_matrix:
+        classes.update(proba.keys())
+    n_classes = int(num_classes) if num_classes is not None else len(classes)
+    if n_classes <= 1:
+        return 0.0
+    max_variance_eu = 1.0 - (1.0 / n_classes)
+    if max_variance_eu <= 0.0:
+        return 0.0
+    return max(0.0, min(1.0, float(value) / max_variance_eu))
