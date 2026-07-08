@@ -35,6 +35,7 @@ from .drift_type_classifier_dtc_rf import classify_drift_type
 from .model_pool import ModelPool
 from .prediction_model import PredictionModel
 from .model_adapter import BaseModelAdapter, is_advanced_model_type
+from .tracing import StageTracer, NullTracer
 
 try:
     import river  # noqa: F401
@@ -227,6 +228,14 @@ class ConceptDriftPipeline:
         self._post_alert_fifo_err: Optional[deque] = None
         self._pending_drift: Optional[Dict[str, Any]] = None
 
+        # Observer-only stage tracer (no effect on decisions; off by default).
+        self.tracer = (
+            StageTracer(self.config.trace_window)
+            if getattr(self.config, "trace_enabled", False)
+            else NullTracer()
+        )
+        self._trace_index: int = 0
+
     def _resolve_ecpf_adwin_family_combo(self) -> str:
         mode = self.config.ecpf_signal_mode
         if mode == "detector":
@@ -281,6 +290,7 @@ class ConceptDriftPipeline:
         if index is None:
             index = self._step
         self._step += 1
+        self._trace_index = index
 
         if self._lock_out > 0:
             self._lock_out -= 1
@@ -412,6 +422,10 @@ class ConceptDriftPipeline:
                 is_warning, is_drift = self._ecpf_detector.update_values(
                     warning_value,
                     drift_value,
+                )
+                self.tracer.log_signal(
+                    index, y_true, y_pred, err,
+                    warning_value, drift_value, is_warning, is_drift,
                 )
 
                 if is_warning and not self._ecpf_warning_active:
@@ -655,7 +669,15 @@ class ConceptDriftPipeline:
         # ---- Lock-out period: update model but skip detectors ----
         if self._lock_out > 0:
             if self.config.use_ecpf and self._ecpf:
+                _pre_swaps = self._ecpf.leader_swaps
                 self._ecpf.on_stream_instance(self.prediction_model, x_, y_true, y_pred_leader=y_pred)
+                self.tracer.log_duel(
+                    index, self._ecpf.curr_correct, self._ecpf.new_correct,
+                    self._ecpf.total_inst,
+                    swapped=self._ecpf.leader_swaps > _pre_swaps,
+                    current_idx=self._ecpf.current_idx,
+                    has_shadow=self._ecpf.new_model is not None,
+                )
             elif not self._use_advanced:
                 self._batch_X.append(x_flat)
                 self._batch_y.append(y_true)
@@ -728,7 +750,15 @@ class ConceptDriftPipeline:
 
         # ---- No drift: incremental adaptation (ECPF trains leader + shadow each step) ----
         if self.config.use_ecpf and self._ecpf:
+            _pre_swaps = self._ecpf.leader_swaps
             self._ecpf.on_stream_instance(self.prediction_model, x_, y_true, y_pred_leader=y_pred)
+            self.tracer.log_duel(
+                index, self._ecpf.curr_correct, self._ecpf.new_correct,
+                self._ecpf.total_inst,
+                swapped=self._ecpf.leader_swaps > _pre_swaps,
+                current_idx=self._ecpf.current_idx,
+                has_shadow=self._ecpf.new_model is not None,
+            )
         elif not self._use_advanced:
             self._batch_X.append(x_flat)
             self._batch_y.append(y_true)
@@ -772,7 +802,15 @@ class ConceptDriftPipeline:
         if self._ecpf is None:
             return
         merged_details = dict(detector_details or {})
-        merged_details.update(self._ecpf.on_drift(self.prediction_model, buffer))
+        ecpf_details = self._ecpf.on_drift(self.prediction_model, buffer)
+        merged_details.update(ecpf_details)
+        self.tracer.on_event(
+            warning_t=drift_ts,
+            confirmation_t=self._trace_index,
+            source=source,
+            stage2=dict(detector_details or {}),
+            stage3=ecpf_details,
+        )
         out_detections.append(
             DriftDetection(
                 timestamp=drift_ts,

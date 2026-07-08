@@ -61,3 +61,10 @@ venv.bak/
 *.pkl
 
 CLAUDE.md
+
+# Stage-trace experiment artifacts — large, regenerate via
+# docs/READ_FIRST_stage_trace_experiment_zh.md
+outputs/stage_trace_recurring/
+outputs/smoke_stage_trace/
+outputs/stage_trace_recurring_run.log
+outputs/stage_trace_recurring_s4_run.log

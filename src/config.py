@@ -89,6 +89,12 @@ class PipelineConfig:
     # Evaluation
     eval_window: int = 200
 
+    # --- Stage tracing (observer-only; off by default) ---
+    # When enabled, the pipeline records intermediate per-stage outputs via
+    # src/tracing.py for interpretability analysis. Has no effect on decisions.
+    trace_enabled: bool = False
+    trace_window: int = 300  # ± samples around each event kept in the stage-1 signal trace
+
     # --- Enhanced Concept Profiling Framework (ECPF), Anderson et al. (TKDE) ---
     use_ecpf: bool = True
 

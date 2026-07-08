@@ -501,6 +501,8 @@ def run_stream_case(
     case: StreamCase,
     warm_start: int,
     max_steps: int,
+    trace_dir: Optional[Path] = None,
+    trace_window: int = 300,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     X, y, drift_starts = load_recurring_stream_pair(
         str(case.csv_path),
@@ -521,7 +523,13 @@ def run_stream_case(
         )
 
     cfg = build_pipeline_config(spec, drift_starts)
+    if trace_dir is not None:
+        cfg.trace_enabled = True
+        cfg.trace_window = trace_window
     pipe = ConceptDriftPipeline(cfg)
+    if trace_dir is not None:
+        pipe.tracer.configure(trace_dir, spec.config_id, case.csv_path.name)
+        pipe.tracer.set_groundtruth(drift_starts, drift_intervals)
     pipe.warm_start(X[:warm_start], y[:warm_start])
 
     y_pred = np.full(len(y), np.nan, dtype=float)
@@ -662,6 +670,8 @@ def run_stream_case(
     }
     for attr, value in spec.extra_attrs.items():
         summary[attr] = value
+    if trace_dir is not None:
+        pipe.tracer.flush()
     return summary, event_rows
 
 
@@ -1059,6 +1069,8 @@ def run_stage(args: argparse.Namespace) -> None:
                 case=case,
                 warm_start=args.warm_start,
                 max_steps=args.max_steps_effective,
+                trace_dir=(output_dir / "traces") if args.trace != "off" else None,
+                trace_window=args.trace_window,
             )
             details.append(summary)
             events.extend(event_rows)
@@ -1148,6 +1160,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--flush-each",
         action="store_true",
         help="Write detail/event CSVs after each stream for long runs.",
+    )
+    parser.add_argument(
+        "--trace",
+        choices=["off", "events"],
+        default="off",
+        help="Capture per-stage traces: stage-1 signals near events + stage-2/3 event records.",
+    )
+    parser.add_argument(
+        "--trace-window",
+        type=int,
+        default=300,
+        help="± samples around each event kept in the stage-1 signal trace.",
     )
     return parser
 

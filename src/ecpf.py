@@ -97,6 +97,7 @@ class ECPFMetaLearner:
         self.num_drifts = 0
         self.model_reuses = 0
         self.model_merges = 0
+        self.leader_swaps = 0  # stage-4: lifetime count of post-drift duel leader swaps
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -193,6 +194,7 @@ class ECPFMetaLearner:
                 self.new_model.scaler = sc_a
                 self.new_model._scaler_fitted = fit_a
             self.slots[self.current_idx] = _deep_clone(prediction_model)
+            self.leader_swaps += 1
             logger.info("ECPF: swapped leader in favour of shadow learner")
 
     def on_drift(
@@ -311,6 +313,8 @@ class ECPFMetaLearner:
         details["acc_best_on_warning"] = acc_best
         details["acc_new_on_warning"] = acc_new
         details["winner_initial"] = "reused_copy"
+        # Per-expert accuracy on the warning buffer (stage-3 interpretability).
+        details["acc_on_buffer"] = {int(i): float(v) for i, v in acc_on_buffer.items()}
         return details
 
     def _fresh_model(self) -> Any:
