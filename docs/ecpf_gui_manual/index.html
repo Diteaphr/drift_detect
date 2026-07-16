@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECPF GUI 操作手冊 · 監控台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: #E7E5DC; color: #1E222A; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #C9C6BB; border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  @keyframes guiFadeOut { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: .16; transform: translateY(8px) scale(.94); } }
+  @keyframes guiPulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+  @keyframes guiBlink { 0%, 100% { box-shadow: 0 0 0 0 rgba(46,148,96,0); } 50% { box-shadow: 0 0 0 5px rgba(46,148,96,.15); } }
+  @keyframes guiSweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(320%); } }
+</style>
+<script src="ecpf_data.js"></script>
+</head>
+<body>
+<div id="app"></div>
+
+<template id="dc-tpl">
+  <!-- ============ VIEW TABS ============ -->
+  <div style="width:100%; display:flex; justify-content:center; padding:14px 22px 2px;">
+    <div style="display:inline-flex; gap:6px; background:#EFEDE5; border:1px solid #DFDCD2; border-radius:12px; padding:5px;">
+      <button onClick="{{ showManual }}" style="{{ tabManualStyle }}">📖 逐步操作手冊</button>
+      <button onClick="{{ showParams }}" style="{{ tabParamsStyle }}">⚙ 全部可調參數 · {{ allParamCount }} 項</button>
+    </div>
+  </div>
+
+  <sc-if value="{{ notParamsView }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh; padding:22px; display:flex; flex-direction:column; align-items:center;">
+
+  <!-- manual header -->
+  <div style="width:100%; max-width:1300px; margin-bottom:14px;">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:5px; padding:3px 9px; font-weight:600;">設計稿 · MOCKUP</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; color:#8A6A18; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:5px; padding:3px 9px; font-weight:600;">GUI 操作手冊</span>
+    </div>
+    <h1 style="font-family:'Noto Serif TC',serif; font-weight:700; font-size:26px; line-height:1.3; margin:10px 0 0; color:#1A1D24;">ECPF 監控台 · 想像中的使用者介面逐步導覽</h1>
+    <p style="margin:8px 0 0; font-size:13.5px; line-height:1.65; color:#5C626C; max-width:900px;">假設面向使用者的 GUI 尚未實作 — 這份手冊先把「從輸入資料後，每一步畫面會呈現給使用者<b style="color:#1E222A;">什麼數據與視覺化</b>」列出來。數值取自真實 CSV;逐筆/機制類序列標為<b style="color:#4A3FB5;">示意</b>,離線指標標為<b style="color:#41506A;">離線</b>。</p>
+  </div>
+
+  <!-- ============ APP WINDOW ============ -->
+  <div style="width:100%; max-width:1300px; background:#fff; border:1px solid #D2D0C7; border-radius:14px; box-shadow:0 20px 55px rgba(40,38,30,.16); overflow:hidden;">
+
+    <!-- title bar -->
+    <div style="display:flex; align-items:center; gap:12px; padding:11px 16px; background:linear-gradient(#EEECE4,#E8E6DD); border-bottom:1px solid #DAD8CF;">
+      <div style="display:flex; gap:7px; flex:0 0 auto;">
+        <span style="width:12px; height:12px; border-radius:50%; background:#E06A5B;"></span>
+        <span style="width:12px; height:12px; border-radius:50%; background:#E5B33E;"></span>
+        <span style="width:12px; height:12px; border-radius:50%; background:#57B75E;"></span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex:1; justify-content:center;">
+        <span style="font-size:13px; font-weight:600; color:#4A4E57;">ECPF Monitor</span>
+        <span style="font-size:12px; color:#9298A2;">— 概念漂移即時監控台</span>
+      </div>
+      <div style="flex:0 0 auto; display:flex; align-items:center; gap:7px;">
+        <span style="width:8px; height:8px; border-radius:50%; background:#2E9460; animation:guiPulse 1.6s ease-in-out infinite;"></span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B7079;">串流連線中</span>
+      </div>
+    </div>
+
+    <!-- toolbar -->
+    <div style="display:flex; align-items:center; gap:12px; padding:9px 16px; background:#FBFAF6; border-bottom:1px solid #EAE8E0; flex-wrap:wrap;">
+      <span style="font-size:11.5px; color:#8A909A; font-weight:500;">觀測事件</span>
+      <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #DCDAD1; border-radius:8px; padding:5px 11px; min-width:330px;">
+        <sc-if value="{{ ev.isStar }}" hint-placeholder-val="{{ false }}"><span style="color:#C8941A;">★</span></sc-if>
+        <span style="width:9px; height:9px; border-radius:50%; background:{{ selCfgColor }}; flex:0 0 auto;"></span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">{{ ev.fileShort }} · w{{ warningT }}→c{{ confT }}</span>
+        <span style="{{ gtChipStyle }}">{{ gtMatch }}</span>
+      </div>
+      <div style="display:flex; gap:5px;">
+        <button onClick="{{ prevEv }}" style="width:30px; height:30px; border:1px solid #DCDAD1; background:#fff; border-radius:7px; cursor:pointer; font-size:14px; color:#5C626C;">‹</button>
+        <button onClick="{{ nextEv }}" style="width:30px; height:30px; border:1px solid #DCDAD1; background:#fff; border-radius:7px; cursor:pointer; font-size:14px; color:#5C626C;">›</button>
+      </div>
+      <button onClick="{{ jumpStar }}" style="border:1px solid #E8D6A6; background:#FBF2DC; color:#8A6A18; border-radius:7px; padding:6px 11px; cursor:pointer; font-size:11.5px; font-weight:600;">★ 跳到範例事件</button>
+      <div style="flex:1;"></div>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9298A2;">config · {{ selCfgLabel }}</span>
+      <sc-if value="{{ isMock }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size:11px; font-weight:600; color:#9A6A0E; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:5px; padding:3px 8px;">示範資料</span>
+      </sc-if>
+    </div>
+
+    <!-- body: sidebar | main | notes -->
+    <div style="display:grid; grid-template-columns:224px minmax(0,1fr) 296px; min-height:560px;">
+
+      <!-- SIDEBAR (step rail) -->
+      <div style="background:#FAF9F5; border-right:1px solid #EAE8E0; padding:14px 12px;">
+        <div style="font-size:10.5px; font-weight:700; letter-spacing:.06em; color:#9298A2; text-transform:uppercase; padding:2px 8px 10px;">操作步驟</div>
+        <sc-for list="{{ stepList }}" as="s" hint-placeholder-count="8">
+          <button onClick="{{ s.onClick }}" style="{{ s.style }}">
+            <span style="{{ s.numStyle }}">{{ s.num }}</span>
+            <span style="flex:1; min-width:0; text-align:left;">
+              <span style="display:block; font-size:12.5px; font-weight:600; line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ s.title }}</span>
+              <span style="display:block; font-size:10.5px; color:#9EA3AC; line-height:1.3;">{{ s.zone }}</span>
+            </span>
+          </button>
+        </sc-for>
+        <div style="margin-top:14px; padding:10px; background:#fff; border:1px solid #EAE8E0; border-radius:9px;">
+          <div style="font-size:10.5px; font-weight:700; color:#6B7079; margin-bottom:7px;">資料真實性圖例</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <span style="display:inline-flex; align-items:center; gap:6px; font-size:10.5px; color:#1A7A4A;"><span style="width:9px; height:9px; border-radius:3px; background:#2E9460;"></span>真實 · 事件層即時</span>
+            <span style="display:inline-flex; align-items:center; gap:6px; font-size:10.5px; color:#4A3FB5;"><span style="width:9px; height:9px; border-radius:3px; background:#7C6FD6;"></span>示意 · 逐筆/機制未存</span>
+            <span style="display:inline-flex; align-items:center; gap:6px; font-size:10.5px; color:#41506A;"><span style="width:9px; height:9px; border-radius:3px; background:#8B99AE;"></span>離線 · 事後摘要</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN SCREEN -->
+      <div style="padding:18px 20px; background:#fff; min-width:0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:9px;">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:#fff; background:{{ curStepColor }}; border-radius:6px; padding:3px 9px;">{{ curStepNum }}</span>
+              <h2 style="margin:0; font-size:17px; font-weight:700; color:#1A1D24;">{{ curStepTitle }}</h2>
+            </div>
+            <p style="margin:5px 0 0; font-size:12.5px; color:#7C8089; line-height:1.5;">{{ curStepSub }}</p>
+          </div>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#B4B0A5; flex:0 0 auto;">{{ stepIdx }} / {{ stepTotal }}</span>
+        </div>
+
+        <!-- ===== S1 資料輸入 ===== -->
+        <sc-if value="{{ isS1 }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; flex-direction:column; gap:13px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:11px;">
+              <div style="background:#F7F9F8; border:1px solid #E2E8E4; border-radius:10px; padding:12px 13px;"><div style="font-size:10.5px; color:#8A909A;">串流檔</div><div style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#1A1D24; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ ev.fileShort }}</div><div style="font-size:10.5px; color:#9EA3AC; margin-top:2px;">.csv · 逐筆送入</div></div>
+              <div style="background:#F7F9F8; border:1px solid #E2E8E4; border-radius:10px; padding:12px 13px;"><div style="font-size:10.5px; color:#8A909A;">目前位置(樣本索引)</div><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:600; color:#1A7A4A; margin-top:3px;">{{ warningT }}</div><div style="font-size:10.5px; color:#9EA3AC; margin-top:2px;">warning_t 快照 <span style="color:#1A7A4A;">真實</span></div></div>
+              <div style="background:#F7F9F8; border:1px solid #E2E8E4; border-radius:10px; padding:12px 13px;"><div style="font-size:10.5px; color:#8A909A;">輸送量</div><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:600; color:#4A4E57; margin-top:3px;">≈ 1,000<span style="font-size:11px; color:#9EA3AC;"> /s</span></div><div style="font-size:10.5px; color:#4A3FB5; margin-top:2px;">示意</div></div>
+            </div>
+
+            <div style="background:#FAF7FC; border:1px solid #E6E1F2; border-radius:10px; padding:13px 15px;">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span style="font-size:12px; font-weight:600; color:#3A2F8F;">暖機 / 冷啟動進度</span>
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#4A3FB5;">100 / 100 筆 · _warm = True</span>
+              </div>
+              <div style="height:9px; background:#E7E2F4; border-radius:5px; overflow:hidden; margin-top:9px;"><div style="height:100%; width:100%; background:linear-gradient(90deg,#7C6FD6,#4A3FB5); border-radius:5px;"></div></div>
+              <div style="font-size:10.5px; color:#6E63B0; margin-top:7px; line-height:1.5;">前 update_batch_size(=100)筆為暖機;滿額前尚無現役模型 → 顯示 cold-start。此進度為機制示意(逐筆未存事件層)。</div>
+            </div>
+
+            <div style="border:1px solid #EAE8E0; border-radius:10px; overflow:hidden;">
+              <div style="display:grid; grid-template-columns:64px 1fr 1fr 52px 52px 46px; background:#F5F4EF; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#8A909A; font-weight:600;">
+                <span style="padding:8px 10px;">t</span><span style="padding:8px 10px;">feat₁</span><span style="padding:8px 10px;">feat₂</span><span style="padding:8px 10px;">y</span><span style="padding:8px 10px;">ŷ</span><span style="padding:8px 10px;"></span>
+              </div>
+              <sc-for list="{{ tableRows }}" as="r" hint-placeholder-count="5">
+                <div style="{{ r.rowStyle }}">
+                  <span style="padding:7px 10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B7079;">{{ r.t }}</span>
+                  <span style="padding:7px 10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5C626C;">{{ r.f1 }}</span>
+                  <span style="padding:7px 10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5C626C;">{{ r.f2 }}</span>
+                  <span style="padding:7px 10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#1A1D24;">{{ r.y }}</span>
+                  <span style="padding:7px 10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#1A1D24;">{{ r.yhat }}</span>
+                  <span style="{{ r.okStyle }}">{{ r.okTxt }}</span>
+                </div>
+              </sc-for>
+              <div style="padding:6px 10px; font-size:10.5px; color:#9EA3AC; background:#FCFBF8;">資料表為示意(逐筆特徵未存事件層);t 錨定 warning_t 附近。</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ===== S2 即時推論 ===== -->
+        <sc-if value="{{ isS2 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:13px;">
+            <div style="display:grid; grid-template-columns:180px 1fr; gap:13px;">
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:11px; padding:14px; display:flex; flex-direction:column; justify-content:center;">
+                <div style="font-size:11px; color:#5E8870;">目前準確率</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:30px; font-weight:600; color:#1A7A4A; line-height:1.1; margin-top:3px;">{{ accCurPct }}</div>
+                <div style="font-size:10.5px; color:#5E8870; margin-top:3px;">acc_current_on_warning <span style="color:#1A7A4A;">真實</span></div>
+                <div style="height:1px; background:#D6E6DC; margin:11px 0;"></div>
+                <div style="font-size:11px; color:#5C626C;">現役模型(leader)</div>
+                <div style="font-size:12.5px; font-weight:600; color:#1A1D24; margin-top:2px;">Hoeffding Forest</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B7079; margin-top:1px;">slot #{{ currentIdx }}</div>
+              </div>
+              <div style="background:#fff; border:1px solid #EAE8E0; border-radius:11px; padding:12px 14px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:11.5px; font-weight:600; color:#5C626C;">逐筆準確率(滾動)</span><span style="font-size:10.5px; color:#4A3FB5;">示意序列</span></div>
+                <svg viewBox="0 0 320 96" width="100%" height="96" style="margin-top:8px; overflow:visible;">
+                  <line x1="0" y1="24" x2="320" y2="24" stroke="#F0EFEA" stroke-width="1"></line>
+                  <line x1="0" y1="60" x2="320" y2="60" stroke="#F0EFEA" stroke-width="1"></line>
+                  <path d="{{ rollArea }}" fill="rgba(46,148,96,.10)"></path>
+                  <polyline points="{{ rollPoints }}" fill="none" stroke="#2E9460" stroke-width="2" stroke-linejoin="round"></polyline>
+                  <circle cx="{{ rollLastX }}" cy="{{ rollLastY }}" r="3.5" fill="#1A7A4A"></circle>
+                </svg>
+                <div style="font-size:10.5px; color:#9EA3AC; margin-top:2px;">末端下彎示意漂移前的準確率衰退。</div>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:13px;">
+              <div style="background:#fff; border:1px solid #EAE8E0; border-radius:11px; padding:13px 14px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;"><span style="font-size:11.5px; font-weight:600; color:#5C626C;">類別機率(proba_matrix)</span><span style="font-size:10.5px; color:#4A3FB5;">示意</span></div>
+                <sc-for list="{{ probBars }}" as="p" hint-placeholder-count="3">
+                  <div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#5C626C;">{{ p.label }}</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6B7079;">{{ p.pct }}</span></div><div style="height:7px; background:#EFEEE9; border-radius:4px; overflow:hidden;"><div style="height:100%; border-radius:4px; background:{{ p.color }}; width:{{ p.w }}%;"></div></div></div>
+                </sc-for>
+              </div>
+              <div style="background:#fff; border:1px solid #EAE8E0; border-radius:11px; padding:13px 14px; display:flex; flex-direction:column; justify-content:center;">
+                <div style="font-size:11.5px; font-weight:600; color:#5C626C; margin-bottom:9px;">本筆預測 <span style="font-size:10.5px; color:#4A3FB5; font-weight:400;">示意</span></div>
+                <div style="display:flex; gap:11px; align-items:center;">
+                  <div style="flex:1; text-align:center; background:#F7F9F8; border:1px solid #E2E8E4; border-radius:9px; padding:11px;"><div style="font-size:10px; color:#8A909A;">真值 y</div><div style="font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; color:#1A1D24;">{{ predY }}</div></div>
+                  <div style="flex:1; text-align:center; background:#F7F9F8; border:1px solid #E2E8E4; border-radius:9px; padding:11px;"><div style="font-size:10px; color:#8A909A;">預測 ŷ</div><div style="font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; color:#1A1D24;">{{ predYhat }}</div></div>
+                  <div style="{{ predOkStyle }}">{{ predOkTxt }}</div>
+                </div>
+                <div style="font-size:10.5px; color:#9EA3AC; margin-top:9px; line-height:1.5;">err = |y − ŷ| 進入訊號抽取;(x,y,index) 同步推入 _ecpf_ring。</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ===== S3 訊號儀表 ===== -->
+        <sc-if value="{{ isS3 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:13px;">
+            <div style="display:grid; grid-template-columns:260px 1fr; gap:13px;">
+              <div style="background:#fff; border:1px solid #EAE8E0; border-radius:11px; padding:13px 14px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:11.5px; font-weight:600; color:#5C626C;">漂移訊號儀表</span><span style="font-size:10.5px; color:#4A3FB5;">示意</span></div>
+                <svg viewBox="0 0 300 150" width="100%" style="margin-top:4px;">
+                  <path d="M 70 118 A 80 80 0 0 1 230 118" fill="none" stroke="#EDEBE4" stroke-width="12" stroke-linecap="round"></path>
+                  <path d="M 70 118 A 80 80 0 0 1 230 118" fill="none" stroke="#EDEBE4" stroke-width="12" stroke-linecap="round" stroke-dasharray="{{ gaugeDash }}"></path>
+                  <path d="{{ gaugeValPath }}" fill="none" stroke="{{ gaugeColor }}" stroke-width="12" stroke-linecap="round"></path>
+                  <line x1="150" y1="118" x2="{{ threshX }}" y2="{{ threshY }}" stroke="#C8551E" stroke-width="2" stroke-dasharray="3 2"></line>
+                  <line x1="150" y1="118" x2="{{ needleX }}" y2="{{ needleY }}" stroke="#1A1D24" stroke-width="2.5" stroke-linecap="round"></line>
+                  <circle cx="150" cy="118" r="5" fill="#1A1D24"></circle>
+                  <text x="150" y="140" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="{{ gaugeColor }}">{{ gaugePct }}</text>
+                </svg>
+                <div style="display:flex; justify-content:space-between; font-size:10px; color:#9EA3AC; margin-top:-6px; padding:0 4px;"><span>穩定</span><span style="color:#C8551E;">↑ 門檻</span><span>漂移</span></div>
+              </div>
+              <div style="background:#fff; border:1px solid #EAE8E0; border-radius:11px; padding:13px 14px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;"><span style="font-size:11.5px; font-weight:600; color:#5C626C;">warning_value 走勢</span><span style="font-size:10.5px; color:#4A3FB5;">示意</span></div>
+                <svg viewBox="0 0 320 110" width="100%" height="110" style="margin-top:8px; overflow:visible;">
+                  <line x1="0" y1="{{ warnLineY }}" x2="320" y2="{{ warnLineY }}" stroke="#E0B48A" stroke-width="1.2" stroke-dasharray="4 3"></line>
+                  <text x="318" y="{{ warnLabelY }}" text-anchor="end" font-size="9" fill="#C89A3C">警告門檻</text>
+                  <line x1="0" y1="{{ driftLineY }}" x2="320" y2="{{ driftLineY }}" stroke="#D98A6A" stroke-width="1.2" stroke-dasharray="4 3"></line>
+                  <text x="318" y="{{ driftLabelY }}" text-anchor="end" font-size="9" fill="#C8551E">漂移門檻</text>
+                  <path d="{{ signalArea }}" fill="rgba(200,154,60,.10)"></path>
+                  <polyline points="{{ signalPoints }}" fill="none" stroke="#C89A3C" stroke-width="2" stroke-linejoin="round"></polyline>
+                </svg>
+                <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+                  <span style="{{ adwinDotStyle }}"></span>
+                  <span style="font-size:11.5px; color:#5C626C;">ADWIN 狀態 · <b style="color:{{ adwinColor }};">{{ adwinState }}</b></span>
+                </div>
+              </div>
+            </div>
+            <div style="background:#F3F5F8; border:1px solid #DCE2EA; border-radius:11px; padding:12px 14px;">
+              <div style="font-size:11.5px; font-weight:600; color:#41506A; margin-bottom:9px;">事件層僅存離線 prewarn 摘要 <span style="font-size:10.5px; color:#41506A; font-weight:400;">離線</span></div>
+              <div style="display:flex; gap:9px; flex-wrap:wrap;">
+                <div style="background:#fff; border:1px solid #DEE4EC; border-radius:8px; padding:7px 12px;"><div style="font-size:10px; color:#8A909A;">prewarn_slope</div><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#384459;">{{ prewarnSlope }}</div></div>
+                <div style="background:#fff; border:1px solid #DEE4EC; border-radius:8px; padding:7px 12px;"><div style="font-size:10px; color:#8A909A;">prewarn_peak</div><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#384459;">{{ prewarnPeak }}</div></div>
+                <div style="background:#fff; border:1px solid #DEE4EC; border-radius:8px; padding:7px 12px;"><div style="font-size:10px; color:#8A909A;">prewarn_mean</div><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#384459;">{{ prewarnMean }}</div></div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ===== S4 警告緩衝 ===== -->
+        <sc-if value="{{ isS4 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:13px;">
+            <div style="display:flex; gap:9px; align-items:center; flex-wrap:wrap;">
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:9px; padding:9px 13px;"><div style="font-size:10px; color:#5E8870;">warning_t</div><div style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:#1A7A4A;">{{ warningT }}</div></div>
+              <span style="color:#9FCDB3; font-weight:700;">→</span>
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:9px; padding:9px 13px;"><div style="font-size:10px; color:#5E8870;">confirmation_t</div><div style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:#1A7A4A;">{{ confT }}</div></div>
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:9px; padding:9px 13px;"><div style="font-size:10px; color:#5E8870;">age(warning→confirm)</div><div style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:#1A7A4A;">{{ age }}</div></div>
+            </div>
+
+            <div style="background:#fff; border:1px solid #EAE8E0; border-radius:11px; padding:13px 15px;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:3px;"><span style="font-size:11.5px; font-weight:600; color:#5C626C;">警告緩衝 _ecpf_buffer 實收 (x, y)</span><span style="font-family:'IBM Plex Mono',monospace;"><span style="font-size:21px; font-weight:700; color:#1A7A4A;">{{ bufferLen }}</span> <span style="font-size:10.5px; color:#5E8870;">筆 · 真實</span></span></div>
+              <div style="font-size:10.5px; color:#8A909A; margin-bottom:2px; line-height:1.5;">buffer 從警告開啟一路收到漂移確認,大小 = age + 1。下面用<b>對數刻度</b>比較它和兩個參考門檻的量級 — 答案:這個 buffer 是 <b style="color:#1A7A4A;">{{ bufferLen }}</b>,不是 1000。</div>
+              <svg viewBox="0 0 320 60" width="100%" height="60" style="overflow:visible;">
+                <rect x="8" y="30" width="304" height="8" rx="4" fill="#EEF3F0"></rect>
+                <rect x="8" y="30" width="{{ bufFillW }}" height="8" rx="4" fill="#2E9460"></rect>
+                <line x1="{{ x60 }}" y1="22" x2="{{ x60 }}" y2="46" stroke="#B0894A" stroke-width="1.4" stroke-dasharray="2 2"></line>
+                <text x="{{ x60lbl }}" y="17" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#B0894A">參數 L=60</text>
+                <line x1="{{ x1000 }}" y1="22" x2="{{ x1000 }}" y2="46" stroke="#C8551E" stroke-width="1.4" stroke-dasharray="2 2"></line>
+                <text x="{{ x1000lbl }}" y="17" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#C8551E">逾時門檻 1000</text>
+                <circle cx="{{ bufX }}" cy="34" r="4.5" fill="#1A7A4A"></circle>
+                <text x="{{ bufXlbl }}" y="57" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" font-weight="600" fill="#1A7A4A">buffer_len {{ bufferLen }}</text>
+              </svg>
+            </div>
+
+            <div style="background:#F3F5F8; border:1px solid #DCE2EA; border-radius:11px; padding:11px 14px;">
+              <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-bottom:5px;"><span style="font-size:11.5px; font-weight:600; color:#41506A;">關於那個「1000」</span><span style="font-size:9.5px; font-weight:600; color:#6E7886; background:#E5EAF0; border:1px solid #D2D9E2; border-radius:4px; padding:1px 6px;">僅 uq_warning 模式 · 本資料不套用</span></div>
+              <div style="font-size:10.5px; color:#5C6472; line-height:1.6;">1000 是 <span style="font-family:'IBM Plex Mono',monospace;">ecpf_uq_warning_timeout</span> 的逾時上限,<b>不是 buffer 大小</b>,而且<b>只在 uq_warning 模式生效</b>。本資料三個 config 都是雙偵測器(警告 + 漂移),不套用此逾時 — 所以 buffer 常遠超過 1000(全庫 442/798 事件的 age 都 &gt; 1000)。警告結束的真正條件是<b>漂移確認(出口 A)</b>或<b>警告清除(出口 B)</b>。</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:11px;">
+              <div style="{{ exitConfirmStyle }}"><div style="font-size:12px; font-weight:700;">出口 A · 確認漂移</div><div style="font-size:11px; margin-top:3px; line-height:1.5;">is_drift ✓ → 呼叫 on_drift(進入下一步)</div></div>
+              <div style="{{ exitAbortStyle }}"><div style="font-size:12px; font-weight:700;">出口 B · 誤報取消</div><div style="font-size:11px; margin-top:3px; line-height:1.5;">逾時/取消 → 丟棄 buffer、警告結束</div></div>
+            </div>
+            <div style="font-size:11px; color:#7C8089; background:#F6F7F9; border:1px solid #E6E9EE; border-radius:8px; padding:8px 11px; line-height:1.5;">本事件為 <b style="color:{{ gtColor }};">{{ gtMatch }}</b> — GUI 高亮<b>{{ exitLabel }}</b>。並非每個警告都通往確認。</div>
+          </div>
+        </sc-if>
+
+        <!-- ===== S5 on_drift 決策 ===== -->
+        <sc-if value="{{ isS5 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:#EAF4EE; border:1px solid #C7E2D2; border-radius:10px; padding:11px 14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="font-size:16px;">🏆</span>
+              <span style="font-size:12.5px; color:#1A5C39; line-height:1.5;">系統一律先以 <b>best 專家的複本</b> 就地當初始 leader(winner_initial = "reused_copy");新影子先當挑戰者。</span>
+            </div>
+            <div style="background:#fff; border:1px solid #EAE8E0; border-radius:11px; padding:14px 15px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:11px;"><span style="font-size:11.5px; font-weight:600; color:#5C626C;">三專家在 warning buffer 上的準確率</span><span style="font-size:10.5px; color:#8A909A;">0.85–1.0 映射</span></div>
+              <sc-for list="{{ accBars }}" as="b" hint-placeholder-count="3">
+                <div style="margin-bottom:11px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                    <span style="display:flex; align-items:center; gap:7px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#3A4048;">{{ b.label }}</span><span style="{{ b.tagStyle }}">{{ b.tag }}</span></span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:{{ b.color }};">{{ b.pct }}</span>
+                  </div>
+                  <div style="height:9px; background:#EFEEE9; border-radius:5px; overflow:hidden;"><div style="height:100%; border-radius:5px; background:{{ b.fill }}; width:{{ b.w }}%;"></div></div>
+                  <div style="font-size:10px; color:#9EA3AC; margin-top:3px;">{{ b.desc }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:11px;">
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:10px; padding:11px 13px;"><div style="font-size:10.5px; color:#5E8870;">選中 best_idx</div><div style="font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:600; color:#1A7A4A; margin-top:2px;">{{ bestIdx }}</div><div style="font-size:10px; color:#5E8870; margin-top:1px;">合併後 acc 驅動</div></div>
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:10px; padding:11px 13px;"><div style="font-size:10.5px; color:#5E8870;">新 current_idx</div><div style="font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:600; color:#1A7A4A; margin-top:2px;">{{ currentIdx }}</div><div style="font-size:10px; color:#5E8870; margin-top:1px;">clone(best) 入池</div></div>
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:10px; padding:11px 13px;"><div style="font-size:10.5px; color:#5E8870;">collection_size</div><div style="font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:600; color:#1A7A4A; margin-top:2px;">{{ collectionSize }}</div><div style="font-size:10px; color:#5E8870; margin-top:1px;">≤ 10 上限</div></div>
+            </div>
+            <div style="background:#FBF2DC; border:1px solid #E8D6A6; border-radius:9px; padding:10px 13px; font-size:11.5px; color:#8A5E10; line-height:1.55;"><b>acc_new 算了但不選 leader</b> — leader 一律是 best 複本;acc_new 僅供之後 stage④ 對決參考,不 gate 任何換手決策。合併結果 merged 只進 log(事件 CSV 未存)。</div>
+          </div>
+        </sc-if>
+
+        <!-- ===== S6 模型池 ===== -->
+        <sc-if value="{{ isS6 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:13px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+              <span style="font-size:11.5px; color:#5C626C; line-height:1.5;">模型池<b style="color:#1E222A;">不是靜態存檔架</b> — 每次漂移都合併、淡出、超量驅逐。下方 fade 分數為機制示意。</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:5px; padding:3px 8px;">⚙ 活體維護 · 示意</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:10px;">
+              <sc-for list="{{ poolExperts }}" as="e" hint-placeholder-count="5">
+                <div style="{{ e.cardStyle }}">
+                  <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; color:{{ e.idColor }};">slot #{{ e.idx }}</span>
+                    <span style="{{ e.badgeStyle }}">{{ e.badge }}</span>
+                  </div>
+                  <div style="font-size:10px; color:#8A909A; margin-top:5px;">fade 分數</div>
+                  <div style="height:7px; background:#EFEEE9; border-radius:4px; overflow:hidden; margin-top:3px;"><div style="height:100%; border-radius:4px; background:{{ e.fadeColor }}; width:{{ e.fadeW }}%;"></div></div>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; color:{{ e.fadeColor }}; margin-top:4px;">{{ e.fadeTxt }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:200px; background:#FAF7FC; border:1px solid #E6E1F2; border-radius:10px; padding:11px 13px;">
+                <div style="font-size:11.5px; font-weight:600; color:#3A2F8F; margin-bottom:7px;">每漂移維護順序</div>
+                <div style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:#5C4FA8; line-height:1.5;">
+                  <span>① 凍結 leader → 定格 snapshot</span>
+                  <span>② 相似度合併(m=0.95)→ 淘汰終身較差者</span>
+                  <span>③ clone(best) 入池 → 池長大 +1</span>
+                  <span>④ 淡出:leader +15 · 其餘 −1 · ≤0 淘汰</span>
+                  <span>⑤ 池上限:&gt;10 驅逐 fade 最低的非 leader</span>
+                </div>
+              </div>
+              <div style="flex:0 0 auto; display:flex; flex-direction:column; gap:8px; justify-content:center; background:#fff; border:1px solid #EAE8E0; border-radius:10px; padding:11px 15px;">
+                <div style="display:flex; align-items:center; gap:8px;"><span style="width:11px; height:11px; border-radius:3px; background:#2E9460; box-shadow:0 0 0 2px #BCE0CB;"></span><span style="font-size:11px; color:#5C626C;">leader(+15)</span></div>
+                <div style="display:flex; align-items:center; gap:8px;"><span style="width:11px; height:11px; border-radius:3px; background:#7C6FD6;"></span><span style="font-size:11px; color:#5C626C;">best 候選</span></div>
+                <div style="display:flex; align-items:center; gap:8px;"><span style="width:11px; height:11px; border-radius:3px; background:#A9C9B6;"></span><span style="font-size:11px; color:#5C626C;">存活專家(−1)</span></div>
+                <div style="display:flex; align-items:center; gap:8px;"><span style="width:11px; height:11px; border-radius:3px; background:#D8B3B3;"></span><span style="font-size:11px; color:#5C626C;">淘汰(≤0)</span></div>
+              </div>
+            </div>
+            <div style="font-size:11px; color:#7C8089; background:#F4F8F5; border:1px solid #D6E6DC; border-radius:8px; padding:8px 11px; line-height:1.55;">事件層只有 <b>collection_size = {{ collectionSize }}</b> 間接反映池大小;fade 分數、合併/驅逐明細為逐筆機制,未存事件 CSV。</div>
+          </div>
+        </sc-if>
+
+        <!-- ===== S7 對決 (stage④ 已量測) ===== -->
+        <sc-if value="{{ isS7 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:13px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:#EAF4EE; border:1px solid #C7E2D2; border-radius:9px; padding:9px 13px;">
+              <span style="font-size:11px; font-weight:700; color:#1A7A4A; background:#fff; border:1px solid #B9DEC9; border-radius:5px; padding:2px 8px;">stage④ 已量測</span>
+              <span style="font-size:11.5px; color:#1A5C39; line-height:1.5;">漂移後 in-control 期,leader 與新影子逐筆對決;結果已存入事件資料。</span>
+            </div>
+
+            <!-- final verdict banner -->
+            <div style="{{ duelBannerStyle }}">
+              <div style="display:flex; align-items:center; gap:11px;">
+                <span style="font-size:26px;">{{ duelIcon }}</span>
+                <div>
+                  <div style="font-size:10.5px; opacity:.8; font-weight:500;">最終 leader 由誰勝出 · final_leader_origin</div>
+                  <div style="font-size:17px; font-weight:700; line-height:1.2; margin-top:1px;">{{ duelWinnerTxt }}</div>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:10.5px; opacity:.8;">收盤差距 · duel_final_margin</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:700;">{{ duelMargin }}</div>
+              </div>
+            </div>
+
+            <!-- lead-race timeline -->
+            <div style="background:#fff; border:1px solid #EAE8E0; border-radius:11px; padding:13px 15px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;"><span style="font-size:11.5px; font-weight:600; color:#5C626C;">領先權時間軸 · 誰在領先</span><span style="font-size:10.5px; color:#4A3FB5;">示意軌跡 · 端點錨定真實結果</span></div>
+              <svg viewBox="0 0 320 92" width="100%" height="92" style="overflow:visible;">
+                <text x="0" y="12" font-size="9" fill="#1A7A4A">reuse 領先</text>
+                <text x="0" y="86" font-size="9" fill="#9A6A0E">fresh 領先</text>
+                <line x1="0" y1="46" x2="320" y2="46" stroke="#EDEBE4" stroke-width="1"></line>
+                <path d="{{ duelArea }}" fill="rgba(74,63,181,.07)"></path>
+                <polyline points="{{ duelLine }}" fill="none" stroke="#6D5BB8" stroke-width="2.2" stroke-linejoin="round"></polyline>
+                <sc-for list="{{ duelSwapDots }}" as="d" hint-placeholder-count="0">
+                  <circle cx="{{ d.x }}" cy="{{ d.y }}" r="3" fill="#fff" stroke="#4A3FB5" stroke-width="1.6"></circle>
+                </sc-for>
+                <circle cx="{{ duelEndX }}" cy="{{ duelEndY }}" r="4.5" fill="{{ duelEndColor }}"></circle>
+              </svg>
+              <div style="font-size:10.5px; color:#9EA3AC; margin-top:2px;">圈點為換將(leader swap);末端實心點為收盤領先方。</div>
+            </div>
+
+            <!-- measured metric tiles -->
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:10px; padding:10px 12px;"><div style="font-size:10px; color:#5E8870;">換將次數 · n_leader_swaps</div><div style="font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:600; color:#1A7A4A;">{{ nSwaps }}</div><div style="font-size:10px; color:#5E8870; margin-top:1px;">真實</div></div>
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:10px; padding:10px 12px;"><div style="font-size:10px; color:#5E8870;">對決視窗 · duel_segment_len</div><div style="font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:600; color:#1A7A4A;">{{ duelSeg }}</div><div style="font-size:10px; color:#5E8870; margin-top:1px;">兩漂移之間樣本數</div></div>
+              <div style="background:#FAF7FC; border:1px solid #E6E1F2; border-radius:10px; padding:10px 12px;"><div style="font-size:10px; color:#6E63B0;">新模型曾領先 · fresh_ever_led</div><div style="font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:600; color:#4A3FB5;">{{ freshLedTxt }}</div><div style="font-size:10px; color:#6E63B0; margin-top:1px;">reuse_survived = {{ reuseSurvTxt }}</div></div>
+            </div>
+
+            <!-- snapshot vs duel honesty box -->
+            <div style="{{ snapBoxStyle }}">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                <span style="font-size:12px; font-weight:700;">buffer 表象 vs 對決結果 · snapshot_matched_duel</span>
+                <span style="{{ snapChipStyle }}">{{ snapChipTxt }}</span>
+              </div>
+              <div style="display:flex; align-items:stretch; gap:10px;">
+                <div style="flex:1; background:rgba(255,255,255,.6); border-radius:8px; padding:8px 11px;"><div style="font-size:10px; opacity:.75;">警告當下 buffer 判讀</div><div style="font-size:13px; font-weight:700; margin-top:2px;">{{ snapSaidTxt }}</div><div style="font-size:10px; opacity:.7; margin-top:1px;">reuse_looked_better</div></div>
+                <div style="align-self:center; font-size:16px; opacity:.6;">{{ snapArrow }}</div>
+                <div style="flex:1; background:rgba(255,255,255,.6); border-radius:8px; padding:8px 11px;"><div style="font-size:10px; opacity:.75;">對決期間領先權</div><div style="font-size:13px; font-weight:700; margin-top:2px;">{{ duelSaidTxt }}</div><div style="font-size:10px; opacity:.7; margin-top:1px;">reuse_survived</div></div>
+              </div>
+              <div style="font-size:11px; margin-top:8px; line-height:1.55;">{{ snapVerdictNote }}</div>
+            </div>
+
+            <div style="font-size:11px; color:#7C8089; background:#F6F7F9; border:1px solid #E6E9EE; border-radius:8px; padding:8px 11px; line-height:1.55;">機制:每步對 leader 與影子都 _train_one,每 model_check_freq(=1)步比較,<b style="color:#1E222A;">影子嚴格較準才換將</b>;鎖定期(_lock_out&gt;0)持續訓練但跳過漂移確認。全庫統計:164 個 TP 中,收盤 leader 為新模型 <b style="color:#9A6A0E;">101</b>、重用 <b style="color:#1A7A4A;">63</b>;buffer 表象與對決結果一致率僅 <b style="color:#1E222A;">38%</b>(全庫 62%)。</div>
+          </div>
+        </sc-if>
+
+        <!-- ===== S8 報告 ===== -->
+        <sc-if value="{{ isS8 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:13px;">
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+              <div style="background:#F4F8F5; border:1px solid #D6E6DC; border-radius:10px; padding:11px 13px;"><div style="font-size:10.5px; color:#5E8870;">TP · 真漂移</div><div style="font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:600; color:#1A7A4A;">{{ tpCount }}</div></div>
+              <div style="background:#F3F5F8; border:1px solid #DCE2EA; border-radius:10px; padding:11px 13px;"><div style="font-size:10.5px; color:#6E7886;">FP · 誤報</div><div style="font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:600; color:#41506A;">{{ fpCount }}</div></div>
+              <div style="background:#fff; border:1px solid #EAE8E0; border-radius:10px; padding:11px 13px;"><div style="font-size:10.5px; color:#8A909A;">reuse_looked_better</div><div style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:{{ reuseChipColor }};">{{ reuseLabel }}</div></div>
+              <div style="background:#fff; border:1px solid #EAE8E0; border-radius:10px; padding:11px 13px;"><div style="font-size:10.5px; color:#8A909A;">confirmation_delay</div><div style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:{{ confDelayColor }};">{{ confDelay }}</div></div>
+            </div>
+            <div style="border:1px solid #EAE8E0; border-radius:10px; overflow:hidden;">
+              <div style="display:grid; grid-template-columns:1fr 46px 68px 68px 52px; background:#F5F4EF; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#8A909A; font-weight:600;">
+                <span style="padding:8px 10px;">事件(file · w→c)</span><span style="padding:8px 6px;">gt</span><span style="padding:8px 6px;">acc_best</span><span style="padding:8px 6px;">acc_new</span><span style="padding:8px 6px;">reuse</span>
+              </div>
+              <sc-for list="{{ histRows }}" as="h" hint-placeholder-count="7">
+                <button onClick="{{ h.onClick }}" style="{{ h.rowStyle }}">
+                  <span style="padding:7px 10px; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#3A4048;">{{ h.star }}{{ h.label }}</span>
+                  <span style="{{ h.gtStyle }}">{{ h.gt }}</span>
+                  <span style="padding:7px 6px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#1A7A4A;">{{ h.accBest }}</span>
+                  <span style="padding:7px 6px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9A6A0E;">{{ h.accNew }}</span>
+                  <span style="padding:7px 6px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B7079;">{{ h.reuse }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="font-size:11px; color:#41506A; background:#F3F5F8; border:1px solid #DCE2EA; border-radius:8px; padding:9px 12px; line-height:1.55;"><b>離線層</b> · 執行後由 analyze 腳本讀 trace + meta.json 算出,與 runtime <b>無回饋箭頭</b>。gt_match、nearest_drift_start、confirmation_delay 需 ground truth。</div>
+          </div>
+        </sc-if>
+
+        <!-- tunable parameters for this page -->
+        <sc-if value="{{ hasParams }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:16px; border-top:1px dashed #E4E1D8; padding-top:14px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-size:12.5px; font-weight:700; color:#3A2F8F;">⚙ 可調參數 · 本頁相關</span>
+                <span style="font-size:10.5px; color:#8A909A;">真實系統中可調的超參數,對應此步驟</span>
+              </div>
+              <button onClick="{{ resetParams }}" style="border:1px solid #DCDAD1; background:#fff; color:#6E63B0; border-radius:7px; padding:5px 11px; cursor:pointer; font-size:11px; font-family:inherit; font-weight:600;">重設為預設</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:11px;">
+              <sc-for list="{{ curParams }}" as="p" hint-placeholder-count="2">
+                <div style="{{ p.cardStyle }}">
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                    <div style="min-width:0;">
+                      <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600; color:#3A2F8F;">{{ p.label }}</span>
+                        <sc-if value="{{ p.star }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px; font-weight:700; color:#8A5E10; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:4px; padding:0 5px;">{{ p.star }}</span></sc-if>
+                      </div>
+                      <div style="font-size:10.5px; color:#8A909A; margin-top:2px; line-height:1.4;">{{ p.zh }}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:5px; flex:0 0 auto;">
+                      <sc-if value="{{ p.modified }}" hint-placeholder-val="{{ false }}"><span style="width:6px; height:6px; border-radius:50%; background:#C8941A;"></span></sc-if>
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:700; color:#4A3FB5;">{{ p.valTxt }}</span>
+                    </div>
+                  </div>
+                  <sc-if value="{{ p.isSlider }}" hint-placeholder-val="{{ true }}">
+                    <input type="range" min="{{ p.min }}" max="{{ p.max }}" step="{{ p.step }}" value="{{ p.val }}" onChange="{{ p.onInput }}" style="width:100%; margin-top:9px; accent-color:#6D5BB8; cursor:pointer;" />
+                  </sc-if>
+                  <sc-if value="{{ p.isBool }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ p.toggle }}" style="{{ p.toggleStyle }}"><span style="{{ p.knobStyle }}"></span></button>
+                  </sc-if>
+                  <sc-if value="{{ p.warn }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:9.5px; color:#B0894A; margin-top:5px; line-height:1.4;">{{ p.warn }}</div>
+                  </sc-if>
+                  <div style="font-size:10px; color:#7C8089; margin-top:5px; line-height:1.45;">{{ p.effect }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size:10.5px; color:#9EA3AC; margin-top:9px; line-height:1.5;">調整僅示範介面控制,不重算上方數值 — 本頁事件為既有執行結果。實際生效需重跑實驗。</div>
+          </div>
+        </sc-if>
+
+        <!-- step nav footer -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:18px; padding-top:14px; border-top:1px solid #EEEDE6;">
+          <button onClick="{{ prevStep }}" style="border:1px solid #DCDAD1; background:#fff; color:#5C626C; border-radius:8px; padding:8px 15px; cursor:pointer; font-size:12.5px; font-family:inherit;">‹ 上一步</button>
+          <div style="display:flex; gap:5px;">
+            <sc-for list="{{ dots }}" as="d" hint-placeholder-count="8">
+              <span style="{{ d.style }}"></span>
+            </sc-for>
+          </div>
+          <button onClick="{{ nextStep }}" style="border:1px solid #2E9460; background:#2E9460; color:#fff; border-radius:8px; padding:8px 15px; cursor:pointer; font-size:12.5px; font-weight:600; font-family:inherit;">下一步 ›</button>
+        </div>
+      </div>
+
+      <!-- NOTES COLUMN -->
+      <div style="background:#FAF9F5; border-left:1px solid #EAE8E0; padding:16px 15px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:.04em; color:#6B7079; text-transform:uppercase; margin-bottom:4px;">本畫面說明</div>
+        <div style="font-size:11px; color:#9EA3AC; line-height:1.5; margin-bottom:12px;">GUI 在這一步呈現給使用者什麼、資料是否即時。</div>
+        <sc-for list="{{ notes }}" as="n" hint-placeholder-count="4">
+          <div style="display:flex; gap:9px; margin-bottom:13px;">
+            <span style="flex:0 0 22px; height:22px; border-radius:50%; background:{{ curStepColor }}; color:#fff; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center;">{{ n.n }}</span>
+            <div style="flex:1; min-width:0;">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;"><span style="font-size:12px; font-weight:600; color:#1E222A; line-height:1.4;">{{ n.title }}</span><span style="{{ n.tagStyle }}">{{ n.tag }}</span></div>
+              <div style="font-size:11px; color:#6B7079; line-height:1.55; margin-top:2px;">{{ n.desc }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="width:100%; max-width:1300px; margin-top:13px; font-size:11.5px; color:#8A909A; line-height:1.6;">
+    此為介面設計稿,非已實作系統。數值取自 <span style="font-family:'IBM Plex Mono',monospace; color:#6B7079;">event_interactions.csv</span>;逐筆序列(準確率/訊號/類別機率/fade 分數)為<b style="color:#4A3FB5;">機制示意</b>,事件層未儲存。stage④ 對決<b style="color:#1A7A4A;">已量測</b>並存入事件資料(換將次數、最終勝方、對決差距、buffer 是否說中)。切換上方觀測事件,各步驟「事件層有資料」的數值即時更新。
+  </div>
+</div>
+  </sc-if>
+
+  <sc-if value="{{ paramsView }}" hint-placeholder-val="{{ false }}">
+  <!-- ============ CONSOLIDATED PARAMETERS PAGE ============ -->
+  <div style="min-height:100vh; padding:8px 22px 44px; display:flex; flex-direction:column; align-items:center;">
+
+    <!-- header -->
+    <div style="width:100%; max-width:1120px; margin-bottom:14px;">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; color:#3A2F8F; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:5px; padding:3px 9px; font-weight:600;">⚙ 參數集中頁</span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; color:#8A6A18; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:5px; padding:3px 9px; font-weight:600;">共 {{ allParamCount }} 個超參數</span>
+      </div>
+      <h1 style="font-family:'Noto Serif TC',serif; font-weight:700; font-size:26px; line-height:1.3; margin:10px 0 0; color:#1A1D24;">全部可調參數 · 集中於同一頁</h1>
+      <p style="margin:8px 0 0; font-size:13.5px; line-height:1.65; color:#5C626C; max-width:900px;">把原本散落在各步驟（節點 1 / 2 / 3 / 6 / 7）的可調超參數<b style="color:#1E222A;">集中在這一頁</b>一次調整。此處與逐步手冊共用同一組設定，任一邊改動都會同步。{{ paramDetectorNote }}</p>
+    </div>
+
+    <!-- app window -->
+    <div style="width:100%; max-width:1120px; background:#fff; border:1px solid #D2D0C7; border-radius:14px; box-shadow:0 20px 55px rgba(40,38,30,.14); overflow:hidden;">
+
+      <!-- context / actions toolbar -->
+      <div style="display:flex; align-items:center; gap:12px; padding:11px 16px; background:#FBFAF6; border-bottom:1px solid #EAE8E0; flex-wrap:wrap;">
+        <span style="font-size:11.5px; color:#8A909A; font-weight:500;">尺度參考事件</span>
+        <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #DCDAD1; border-radius:8px; padding:5px 11px; min-width:300px;">
+          <sc-if value="{{ ev.isStar }}" hint-placeholder-val="{{ false }}"><span style="color:#C8941A;">★</span></sc-if>
+          <span style="width:9px; height:9px; border-radius:50%; background:{{ selCfgColor }}; flex:0 0 auto;"></span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">{{ ev.fileShort }} · w{{ warningT }}</span>
+          <span style="{{ gtChipStyle }}">{{ gtMatch }}</span>
+        </div>
+        <div style="display:flex; gap:5px;">
+          <button onClick="{{ prevEv }}" style="width:30px; height:30px; border:1px solid #DCDAD1; background:#fff; border-radius:7px; cursor:pointer; font-size:14px; color:#5C626C;">‹</button>
+          <button onClick="{{ nextEv }}" style="width:30px; height:30px; border:1px solid #DCDAD1; background:#fff; border-radius:7px; cursor:pointer; font-size:14px; color:#5C626C;">›</button>
+        </div>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#3A2F8F; background:#F1EFFB; border:1px solid #DDD8F4; border-radius:6px; padding:4px 9px;">偵測器 · {{ paramDetectorFam }}</span>
+        <div style="flex:1;"></div>
+        <span style="font-size:11.5px; color:#8A5E10; font-weight:600;">{{ modifiedCount }} 項已調整</span>
+        <button onClick="{{ resetParams }}" style="border:1px solid #DCDAD1; background:#fff; color:#6E63B0; border-radius:7px; padding:6px 13px; cursor:pointer; font-size:11.5px; font-family:inherit; font-weight:600;">重設全部為預設</button>
+      </div>
+
+      <!-- parameter groups -->
+      <div style="padding:16px;">
+        <sc-for list="{{ allParamGroups }}" as="g" hint-placeholder-count="5">
+          <div style="margin-bottom:14px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:9px;">
+              <span style="font-size:12.5px; font-weight:700; color:#3A2F8F;">{{ g.title }}</span>
+              <div style="flex:1; height:1px; background:#EEECE4;"></div>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:11px;">
+              <sc-for list="{{ g.params }}" as="p" hint-placeholder-count="2">
+                <div style="{{ p.cardStyle }}">
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                    <div style="min-width:0;">
+                      <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600; color:#3A2F8F;">{{ p.label }}</span>
+                        <sc-if value="{{ p.star }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px; font-weight:700; color:#8A5E10; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:4px; padding:0 5px;">{{ p.star }}</span></sc-if>
+                      </div>
+                      <div style="font-size:10.5px; color:#8A909A; margin-top:2px; line-height:1.4;">{{ p.zh }}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px; flex:0 0 auto;">
+                      <sc-if value="{{ p.modified }}" hint-placeholder-val="{{ false }}"><span style="width:6px; height:6px; border-radius:50%; background:#C8941A;"></span></sc-if>
+                      <span id="{{ p.liveId }}" style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:700; color:#4A3FB5;">{{ p.valTxt }}</span>
+                    </div>
+                  </div>
+                  <sc-if value="{{ p.isSlider }}" hint-placeholder-val="{{ true }}">
+                    <input type="range" min="{{ p.min }}" max="{{ p.max }}" step="{{ p.step }}" value="{{ p.val }}" onInput="{{ p.live }}" onChange="{{ p.onInput }}" style="width:100%; margin-top:9px; accent-color:#6D5BB8; cursor:pointer;" />
+                    <div style="display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#A8AEB6; margin-top:1px;">
+                      <span>{{ p.min }}</span><span style="color:#8A6A18;">預設 {{ p.defTxt }}</span><span>{{ p.max }}</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ p.isBool }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:2px;">
+                      <button onClick="{{ p.toggle }}" style="{{ p.toggleStyle }}"><span style="{{ p.knobStyle }}"></span></button>
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#A8AEB6;">預設 {{ p.defTxt }}</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ p.warn }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:9.5px; color:#B0894A; margin-top:5px; line-height:1.4;">{{ p.warn }}</div>
+                  </sc-if>
+                  <div style="font-size:10px; color:#7C8089; margin-top:5px; line-height:1.45;">{{ p.effect }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- settings summary -->
+      <div style="border-top:1px solid #EAE8E0; background:#FBFAF6; padding:14px 16px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="font-size:12px; font-weight:700; color:#41506A;">設定摘要</span>
+          <span style="font-size:10.5px; color:#9298A2;">目前值 vs 預設 — 黃底 = 已改動</span>
+        </div>
+        <div style="border:1px solid #E7E4DA; border-radius:9px; overflow:hidden;">
+          <div style="display:grid; grid-template-columns:1fr 92px 92px; gap:8px; padding:7px 11px; background:#F3F1EA; font-size:10px; font-weight:700; color:#8A909A; text-transform:uppercase; letter-spacing:.04em;">
+            <span>參數</span><span style="text-align:right;">目前</span><span style="text-align:right;">預設</span>
+          </div>
+          <sc-for list="{{ settingsSummary }}" as="r" hint-placeholder-count="10">
+            <div style="{{ r.rowStyle }}">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#3A4048; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.label }}</span>
+              <span style="{{ r.valStyle }}">{{ r.cur }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; text-align:right; color:#9EA3AC;">{{ r.def }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:10.5px; color:#9EA3AC; margin-top:10px; line-height:1.55;">調整僅示範介面控制，<b style="color:#8A5E10;">不重算</b>手冊中顯示的事件數值 — 那些是既有執行結果。實際生效需以對應參數重跑實驗（見各卡片的 effect 與 CLI 提示）。<code style="font-family:'IBM Plex Mono',monospace;">_lock_out_duration</code> 為硬寫常數（非 config），此處僅為介面示範。</div>
+      </div>
+
+    </div>
+  </div>
+  </sc-if>
+
+</template>
+
+<!-- ===== x-dc runtime (replaces support.js) ===== -->
+<script>
+// ============================================================================
+// dc-runtime — standalone reimplementation of the Claude Design (x-dc) runtime.
+// (same engine as the lifecycle viz, with range-slider handling for the
+//  parameter console: sliders commit on `change` so a full re-render never
+//  interrupts a native drag; `input` stays live for readouts.)
+// ============================================================================
+(function () {
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function cssEsc(s) {
+    if (window.CSS && CSS.escape) return CSS.escape(s);
+    return String(s).replace(/["\\]/g, '\\$&');
+  }
+
+  function resolve(path, scopes) {
+    path = (path || '').trim();
+    if (path === 'true') return true;
+    if (path === 'false') return false;
+    if (path === 'null') return null;
+    if (/^-?\d+(\.\d+)?$/.test(path)) return Number(path);
+    var segs = path.split('.');
+    var base, found = false;
+    for (var i = scopes.length - 1; i >= 0; i--) {
+      var s = scopes[i];
+      if (s && typeof s === 'object' && (segs[0] in s)) { base = s[segs[0]]; found = true; break; }
+    }
+    if (!found) return undefined;
+    for (var k = 1; k < segs.length; k++) {
+      if (base == null) return undefined;
+      base = base[segs[k]];
+    }
+    return base;
+  }
+
+  function interpolate(str, scopes) {
+    if (str.indexOf('{{') === -1) return str;
+    return str.replace(/\{\{([^}]*)\}\}/g, function (_, expr) {
+      var v = resolve(expr, scopes);
+      return (v == null) ? '' : String(v);
+    });
+  }
+
+  function bindExpr(v) {
+    if (v == null) return '';
+    var m = v.match(/\{\{([^}]*)\}\}/);
+    return m ? m[1].trim() : v.trim();
+  }
+
+  function processChildren(node, scopes, svg) {
+    var out = [], kids = node.childNodes;
+    for (var i = 0; i < kids.length; i++) {
+      var r = processNode(kids[i], scopes, svg);
+      for (var j = 0; j < r.length; j++) out.push(r[j]);
+    }
+    return out;
+  }
+
+  function processNode(node, scopes, svg) {
+    if (node.nodeType === 1) {
+      var tag = node.tagName.toLowerCase();
+
+      if (tag === 'sc-if') {
+        var cond = resolve(bindExpr(node.getAttribute('value')), scopes);
+        return cond ? processChildren(node, scopes, svg) : [];
+      }
+      if (tag === 'sc-for') {
+        var list = resolve(bindExpr(node.getAttribute('list')), scopes) || [];
+        var asName = node.getAttribute('as') || 'item';
+        var out = [];
+        for (var idx = 0; idx < list.length; idx++) {
+          var scope = {}; scope[asName] = list[idx]; scope.$index = idx;
+          var kids = processChildren(node, scopes.concat([scope]), svg);
+          for (var m = 0; m < kids.length; m++) out.push(kids[m]);
+        }
+        return out;
+      }
+
+      var isSvg = svg || tag === 'svg';
+      var el = isSvg ? document.createElementNS(SVG_NS, tag) : document.createElement(tag);
+      var attrs = node.attributes;
+      for (var a = 0; a < attrs.length; a++) {
+        var name = attrs[a].name, val = attrs[a].value, lname = name.toLowerCase();
+        if (lname.indexOf('hint-placeholder') === 0) continue;
+
+        if (lname === 'onclick' || lname === 'onchange' || lname === 'oninput') {
+          var fn = resolve(bindExpr(val), scopes);
+          if (typeof fn === 'function') {
+            var evt;
+            if (lname === 'onclick') evt = 'click';
+            else if (lname === 'onchange') evt = (el.tagName === 'INPUT' && el.type === 'range') ? 'change' : 'input';
+            else evt = 'input';
+            el.addEventListener(evt, fn);
+          }
+          continue;
+        }
+
+        var out2 = interpolate(val, scopes);
+        if (lname === 'value' && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+          try { el.value = out2; } catch (e) {}
+          el.setAttribute('value', out2);
+          if (el.type !== 'range' && el.type !== 'checkbox') el.dataset.dcFocusKey = 'val:' + bindExpr(val);
+          continue;
+        }
+        el.setAttribute(name, out2);
+      }
+
+      var childNodes = processChildren(node, scopes, isSvg);
+      for (var c = 0; c < childNodes.length; c++) el.appendChild(childNodes[c]);
+      return [el];
+    }
+    if (node.nodeType === 3) return [document.createTextNode(interpolate(node.nodeValue, scopes))];
+    return [];
+  }
+
+  function renderTemplate(tplContent, vals) {
+    var scopes = [vals], frag = document.createDocumentFragment(), kids = tplContent.childNodes;
+    for (var i = 0; i < kids.length; i++) {
+      var r = processNode(kids[i], scopes, false);
+      for (var j = 0; j < r.length; j++) frag.appendChild(r[j]);
+    }
+    return frag;
+  }
+
+  function DCLogic(props) { this.props = props || {}; this.state = {}; this._app = null; this._tpl = null; }
+  DCLogic.prototype.setState = function (patch, cb) {
+    var next = (typeof patch === 'function') ? patch(this.state) : patch;
+    this.state = Object.assign({}, this.state, next);
+    this._render();
+    if (cb) cb();
+  };
+  DCLogic.prototype.mount = function (appEl, tplContent) {
+    this._app = appEl; this._tpl = tplContent;
+    this._render();
+    if (this.componentDidMount) this.componentDidMount();
+  };
+  DCLogic.prototype._render = function () {
+    var vals = this.renderVals();
+    var ae = document.activeElement, fk = null, ss = null, se = null;
+    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA') &&
+        ae.type !== 'range' && ae.type !== 'checkbox' &&
+        ae.dataset && ae.dataset.dcFocusKey && this._app.contains(ae)) {
+      fk = ae.dataset.dcFocusKey; ss = ae.selectionStart; se = ae.selectionEnd;
+    }
+    var frag;
+    if (!vals || !vals.ready) {
+      frag = document.createDocumentFragment();
+      var d = document.createElement('div');
+      d.style.cssText = 'padding:80px 24px; text-align:center; color:#9298A2; font-size:14px;';
+      d.textContent = '載入 ECPF 事件資料中…';
+      frag.appendChild(d);
+    } else {
+      frag = renderTemplate(this._tpl, vals);
+    }
+    this._app.replaceChildren(frag);
+    if (fk) {
+      var back = this._app.querySelector('[data-dc-focus-key="' + cssEsc(fk) + '"]');
+      if (back) { back.focus(); try { back.setSelectionRange(ss, se); } catch (e) {} }
+    }
+  };
+
+  window.__DC = { DCLogic: DCLogic };
+})();
+</script>
+
+<!-- ===== ported design logic (verbatim) + consolidated-params extension + bootstrap ===== -->
+<script>
+(function () {
+  var DCLogic = window.__DC.DCLogic;
+
+  class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { events: null, isMock: false, selIdx: 0, step: 1, settings: {} };
+    this._cfg = {
+      uq_entropy_adwin:      { label: 'entropy · adwin',      color: '#2C7A7B' },
+      uq_variance_seqdrift2: { label: 'variance · seqdrift2', color: '#6D5BB8' },
+      uq_vote_seqdrift2:     { label: 'vote · seqdrift2',     color: '#B85C7A' },
+    };
+    this._steps = [
+      { title: '資料輸入與串流', zone: '⓪ bootstrap · 節點1' },
+      { title: '即時推論監控',   zone: '節點2' },
+      { title: '漂移訊號儀表',   zone: '節點3–4' },
+      { title: '警告緩衝',       zone: '節點5 · 5a' },
+      { title: '漂移確認 · on_drift', zone: '節點6–7' },
+      { title: '模型池 · 活體維護',   zone: '節點6f/7a/7b ⚙' },
+      { title: 'in-control 對決', zone: '節點8 · stage④ ✓' },
+      { title: '事件報告 · 離線', zone: '⚪ 離線層' },
+    ];
+    // tunable hyperparameters mapped to their console page (step index)
+    this._paramSteps = {
+      1: ['warm_start'],
+      2: ['n_trees'],
+      3: ['detector_delta', 'detector_delta_w'],
+      6: ['ecpf_max_pool_size', 'ecpf_similarity_margin', 'ecpf_fade_points', 'ecpf_fade_enabled'],
+      7: ['ecpf_model_check_freq', 'lock_out_duration'],
+    };
+    this._paramMeta = {
+      warm_start:             { label: 'warm_start',             zh: '開頭先 fit、不判漂移的筆數（runner 旗標）', min: 0, max: 1000, step: 50, def: 200, effect: '見 --warm-start;↑ 開頭更穩定' },
+      n_trees:                { label: 'n_trees',                zh: 'Hoeffding 森林棵數', min: 1, max: 30, step: 1, def: 10, effect: '分析顯示 5 棵常優於 10:準確率↑、延遲↓、快約 2×（model_kwargs={"n_trees":5}）', star: '建議 5' },
+      ecpf_max_pool_size:     { label: 'ecpf_max_pool_size',     zh: '模型池最多留幾個專家', min: 2, max: 30, step: 1, def: 10, effect: '↑ 記更多舊概念（記憶體↑）　↓ 更精簡（可能丟有用舊概念）' },
+      ecpf_similarity_margin: { label: 'ecpf_similarity_margin', zh: '兩專家一致度 ≥ m 就合併', min: 0.80, max: 1.0, step: 0.01, def: 0.95, effect: '↑ 更少合併（池較大、專家較細）　↓ 更常合併（池精簡）' },
+      ecpf_fade_points:       { label: 'ecpf_fade_points',       zh: 'leader 每漂移 +f、其餘 −1、≤0 淘汰', min: 1, max: 60, step: 1, def: 15, effect: '↑ 舊專家活更久（池較滿）　↓ 更快淘汰沒用的' },
+      ecpf_fade_enabled:      { label: 'ecpf_fade_enabled',      zh: '是否啟用淡出', bool: true, def: true, effect: 'False = 專家不因閒置被淘汰' },
+      ecpf_model_check_freq:  { label: 'ecpf_model_check_freq',  zh: '每幾步檢查一次對決換將', min: 1, max: 50, step: 1, def: 1, effect: '↑ 換將較少 / 反應較慢　1 = 每步都檢查' },
+      lock_out_duration:      { label: '_lock_out_duration',     zh: '鎖定期長度', min: 0, max: 500, step: 10, def: 100, effect: '↑ 剛換模型受保護更久,較不易被漂移後雜訊誤觸', warn: '硬寫常數（非 config）· 此處為介面示範' },
+    };
+  }
+
+  _deltaSpec(ev, which) {
+    const adwin = ev.config_id === 'uq_entropy_adwin';
+    if (adwin) return { fam: 'ADWIN', min: 0.005, max: 0.10, step: 0.005, def: which === 'drift' ? 0.02 : 0.05, other: 'SeqDrift2 ~0.55' };
+    return { fam: 'SeqDrift2', min: 0.40, max: 0.70, step: 0.001, def: which === 'drift' ? 0.553 : 0.550, other: 'ADWIN ~0.02–0.05' };
+  }
+  _setParam(key, val) { this.setState(s => ({ settings: Object.assign({}, s.settings, { [key]: val }) })); }
+
+  _buildParams(step, ev) {
+    const keys = this._paramSteps[step] || [];
+    const set = this.state.settings || {};
+    const cardBase = 'border-radius:10px; padding:11px 12px;';
+    return keys.map(key => {
+      // detector delta (scale depends on the selected event's detector)
+      if (key === 'detector_delta' || key === 'detector_delta_w') {
+        const which = key === 'detector_delta' ? 'drift' : 'warn';
+        const spec = this._deltaSpec(ev, which);
+        const skey = key + '::' + spec.fam;
+        let v = set[skey]; if (v == null || v < spec.min || v > spec.max) v = spec.def;
+        const mod = set[skey] != null && Math.abs(set[skey] - spec.def) > 1e-9;
+        return {
+          key: skey, isBool: false, isSlider: true,
+          label: which === 'drift' ? 'detector_delta（漂移 δ）' : 'detector_delta_w（警告 δ）',
+          zh: which === 'drift' ? '漂移偵測器門檻 / 信心' : '警告偵測器門檻（提早警告用）',
+          valTxt: v.toFixed(3), min: spec.min, max: spec.max, step: spec.step, val: v, modified: mod, star: '',
+          warn: '⚠️ 尺度隨偵測器不同 · 目前為 ' + spec.fam + '（另:' + spec.other + '）',
+          effect: which === 'drift' ? '↓ 更保守（少誤報、反應慢）　↑ 更敏感（多報、快）' : '通常比漂移 δ 更敏感,好提早開 buffer',
+          cardStyle: 'background:#FAF9FC; border:1px solid #EAE6F4; ' + cardBase,
+          onInput: (e) => this._setParam(skey, parseFloat(e.target.value)),
+        };
+      }
+      const m = this._paramMeta[key];
+      if (m.bool) {
+        const cur = set[key]; const on = (cur == null ? m.def : cur);
+        return {
+          key, isBool: true, isSlider: false, label: m.label, zh: m.zh, effect: m.effect, star: '', warn: '',
+          valTxt: on ? 'True' : 'False', modified: cur != null && cur !== m.def,
+          toggle: () => this._setParam(key, !on),
+          toggleStyle: 'width:42px; height:23px; border-radius:12px; border:none; cursor:pointer; position:relative; margin-top:9px; background:' + (on ? '#6D5BB8' : '#CFC9C0') + '; transition:background .15s;',
+          knobStyle: 'position:absolute; top:2.5px; left:' + (on ? '21px' : '2.5px') + '; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); transition:left .15s;',
+          cardStyle: 'background:#FAF9FC; border:1px solid #EAE6F4; ' + cardBase,
+        };
+      }
+      let v = set[key]; if (v == null) v = m.def;
+      const isInt = !m.step || m.step >= 1;
+      return {
+        key, isBool: false, isSlider: true, label: m.label, zh: m.zh, effect: m.effect,
+        star: m.star || '', warn: m.warn || '',
+        valTxt: isInt ? String(v) : v.toFixed(2), min: m.min, max: m.max, step: m.step, val: v,
+        modified: set[key] != null && set[key] !== m.def,
+        cardStyle: (m.star ? 'background:#FDFAF2; border:1px solid #EBD9A8; ' : 'background:#FAF9FC; border:1px solid #EAE6F4; ') + cardBase,
+        onInput: (e) => this._setParam(key, isInt ? parseInt(e.target.value, 10) : parseFloat(e.target.value)),
+      };
+    });
+  }
+
+  componentDidMount() { this._tryLoad(0); }
+  _tryLoad(n) {
+    if (typeof window !== 'undefined' && window.__ECPF_DATA && window.__ECPF_DATA.length) {
+      this.setState({ events: window.__ECPF_DATA, isMock: false }, () => this._initSel());
+    } else if (n < 50) { setTimeout(() => this._tryLoad(n + 1), 50); }
+    else { this.setState({ events: this._mock(), isMock: true }, () => this._initSel()); }
+  }
+  _initSel() {
+    const evs = this.state.events || [];
+    let i = evs.findIndex(e => e.isStar);
+    if (i < 0) i = evs.findIndex(e => e.gt_match === 'TP');
+    if (i < 0) i = 0;
+    this.setState({ selIdx: i });
+  }
+  _cfgLabel(c) { return (this._cfg[c] || {}).label || c; }
+  _cfgColor(c) { return (this._cfg[c] || {}).color || '#888'; }
+  _rng(seed) { let s = (seed >>> 0) || 1; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+  _mock() {
+    const out = []; let k = 0;
+    const specs = [
+      { c: 'uq_entropy_adwin', n: 8, tp: .41, age: 3981, b: .956, nw: .949 },
+      { c: 'uq_variance_seqdrift2', n: 16, tp: .20, age: 2092, b: .963, nw: .945 },
+      { c: 'uq_vote_seqdrift2', n: 16, tp: .19, age: 2062, b: .960, nw: .947 },
+    ];
+    specs.forEach(s => { for (let j = 0; j < s.n; j++) {
+      const isTP = Math.random() < s.tp; const wt = Math.floor(2000 + Math.random() * 70000);
+      const age = Math.floor(s.age * (0.3 + Math.random() * 1.6));
+      const ab = Math.min(0.999, s.b + (Math.random() - 0.5) * 0.06);
+      const an = Math.min(0.999, s.nw + (Math.random() - 0.5) * 0.06);
+      const reuse = ab >= an ? 1 : 0; const cs = 2 + Math.floor(Math.random() * 8);
+      out.push({ idx: k, event_id: 'MOCK::' + s.c + '::' + k, config_id: s.c,
+        fileShort: 'mock_stream_g' + String(j % 10).padStart(2, '0'), warning_t: wt, confirmation_t: wt + age, age,
+        source: 'ecpf_detector_dual', best_idx: Math.max(0, cs - 2), current_idx: cs - 1, collection_size: cs,
+        acc_current: ab - Math.random() * 0.03, acc_best: ab, acc_new: an, buffer_len: age + 1,
+        reuse_looked_better: reuse, acc_best_minus_new: ab - an, gt_match: isTP ? 'TP' : 'FP',
+        nearest_drift_start: wt + Math.floor((Math.random() - 0.5) * 6000), confirmation_delay: Math.floor((Math.random() - 0.3) * 4000),
+        prewarn_slope: Math.random() < 0.5 ? null : (Math.random() - 0.5) * 4e-4,
+        prewarn_peak: Math.random() < 0.5 ? null : 0.999 - Math.random() * 0.01,
+        prewarn_mean: Math.random() < 0.5 ? null : 0.55 + Math.random() * 0.18, isStar: isTP && reuse === 0 });
+      k++;
+    }});
+    return out;
+  }
+
+  _tag(kind) {
+    const m = {
+      real: { t: '真實', s: 'font-size:9.5px; font-weight:600; color:#1A7A4A; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:4px; padding:1px 6px;' },
+      mock: { t: '示意', s: 'font-size:9.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:1px 6px;' },
+      off:  { t: '離線', s: 'font-size:9.5px; font-weight:600; color:#41506A; background:#EBEFF4; border:1px solid #C9D3DE; border-radius:4px; padding:1px 6px;' },
+    };
+    return m[kind] || m.real;
+  }
+
+  _notesFor(step, ev) {
+    const mk = (n, kind, title, desc) => { const t = this._tag(kind); return { n, tag: t.t, tagStyle: t.s, title, desc }; };
+    const N = {
+      1: [ mk(1, 'real', '選擇串流檔', '使用者選/上傳資料檔,系統逐筆讀入 (x, y)。'),
+           mk(2, 'mock', '暖機進度', '前 100 筆暖機建第一專家;完成前顯示 cold-start。'),
+           mk(3, 'real', '目前位置', 'warning_t 指出目前樣本索引(事件快照)。'),
+           mk(4, 'mock', '資料預覽表', '最近數筆特徵、真值 y、預測 ŷ(逐筆未存)。') ],
+      2: [ mk(1, 'real', '現役模型與準確率', 'leader = slot #' + ev.current_idx + ',acc_current 即時顯示。'),
+           mk(2, 'mock', '滾動準確率曲線', '逐筆準確率走勢,末端下彎預示漂移。'),
+           mk(3, 'mock', '類別機率', 'proba_matrix 各類別信心(逐筆未存)。'),
+           mk(4, 'mock', '本筆預測', 'y vs ŷ 與對錯;err 進入訊號抽取。') ],
+      3: [ mk(1, 'mock', '漂移訊號儀表', 'drift_value 接近門檻的程度,即時擺針。'),
+           mk(2, 'mock', 'warning_value 走勢', '訊號逼近警告/漂移兩條門檻線。'),
+           mk(3, 'mock', 'ADWIN 狀態燈', '穩定 / 警告 / 漂移三態指示。'),
+           mk(4, 'off', 'prewarn 摘要', '事件層只存離線 slope/peak/mean。') ],
+      4: [ mk(1, 'real', '警告時間軸', 'warning_t → confirmation_t → age。'),
+           mk(2, 'real', 'buffer 量級', 'buffer_len = age+1;對數刻度比較 L=60 與逾時 1000。'),
+           mk(3, 'real', '「1000」是什麼', '逾時上限,非 buffer 大小,且僅 uq_warning 模式。'),
+           mk(4, 'real', '兩種出口', '確認漂移 / 誤報取消,依本事件高亮。') ],
+      5: [ mk(1, 'real', '三專家準確率', 'acc_current / best / new_on_warning 橫條。'),
+           mk(2, 'real', '選中 best_idx', '合併後 acc 驅動的重用候選。'),
+           mk(3, 'real', '就地換 leader', '一律以 best 複本當初始 leader。'),
+           mk(4, 'mock', 'acc_new 不選 leader', '算了僅供對決參考,不 gate 換手。') ],
+      6: [ mk(1, 'mock', '專家與 fade 分數', '每個 slot 的存活預算(逐筆未存)。'),
+           mk(2, 'mock', '合併 / 淡出 / 驅逐', '概念等價合併、±分數、超量驅逐。'),
+           mk(3, 'real', 'collection_size', '事件層唯一間接反映池大小的欄位。'),
+           mk(4, 'mock', '池是活的', '非靜態存檔:每漂移增刪專家。') ],
+      7: [ mk(1, 'real', '最終勝方', 'final_leader_origin:收盤 leader 是 fresh 或 reused。'),
+           mk(2, 'real', '換將與視窗', 'n_leader_swaps · duel_segment_len · duel_final_margin。'),
+           mk(3, 'real', '新模型曾領先', 'fresh_ever_led / reuse_survived(互為反面)。'),
+           mk(4, 'real', 'buffer 是否說中', 'snapshot_matched_duel:表象與對決一致否。') ],
+      8: [ mk(1, 'off', '事件清單', '全部漂移事件與其結果,可點擊載入。'),
+           mk(2, 'off', 'TP / FP', 'ground-truth 對齊的混淆統計。'),
+           mk(3, 'off', '重用是否較準', 'reuse_looked_better 與 acc 差。'),
+           mk(4, 'off', '離線、無回饋', '事後由 analyze 腳本算,不回饋 runtime。') ],
+    };
+    return N[step] || N[1];
+  }
+
+  _series(ev, kind) {
+    const W = 320, lo = 0.80, hi = 1.0, rnd = this._rng(ev.idx + (kind === 'sig' ? 77 : 3));
+    const N = 46; const pts = [];
+    if (kind === 'roll') {
+      const H = 96, base = ev.acc_current || 0.94;
+      for (let i = 0; i < N; i++) {
+        let v = base + (rnd() - 0.5) * 0.028;
+        if (i > N - 11) v -= ((i - (N - 11)) / 11) * 0.07;
+        v = Math.max(lo, Math.min(hi, v));
+        pts.push([i / (N - 1) * W, H - ((v - lo) / (hi - lo)) * H]);
+      }
+      const line = pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+      let area = 'M ' + pts[0][0].toFixed(1) + ' ' + H;
+      pts.forEach(p => area += ' L ' + p[0].toFixed(1) + ' ' + p[1].toFixed(1));
+      area += ' L ' + W + ' ' + H + ' Z';
+      return { line, area, lastX: pts[N - 1][0].toFixed(1), lastY: pts[N - 1][1].toFixed(1) };
+    } else {
+      const H = 110;
+      for (let i = 0; i < N; i++) {
+        const prog = i / (N - 1);
+        let v = 0.15 + prog * prog * 0.78 + (rnd() - 0.5) * 0.06;
+        v = Math.max(0.02, Math.min(0.99, v));
+        pts.push([prog * W, H - v * H]);
+      }
+      const line = pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+      let area = 'M ' + pts[0][0].toFixed(1) + ' ' + H;
+      pts.forEach(p => area += ' L ' + p[0].toFixed(1) + ' ' + p[1].toFixed(1));
+      area += ' L ' + W + ' ' + H + ' Z';
+      return { line, area, warnY: (H - 0.70 * H).toFixed(1), driftY: (H - 0.85 * H).toFixed(1) };
+    }
+  }
+
+  _gauge(v) {
+    const cx = 150, cy = 118, r = 80;
+    const ang = (val) => Math.PI - val * Math.PI;
+    const pt = (val, rr) => [cx + rr * Math.cos(ang(val)), cy - rr * Math.sin(ang(val))];
+    const needle = pt(v, r - 8);
+    const thr = pt(0.70, r + 8);
+    // value arc from 0 to v along the semicircle track
+    const a0 = pt(0, r), a1 = pt(v, r);
+    const large = 0; const sweep = 1;
+    const valPath = 'M ' + a0[0].toFixed(1) + ' ' + a0[1].toFixed(1) + ' A ' + r + ' ' + r + ' 0 ' + large + ' ' + sweep + ' ' + a1[0].toFixed(1) + ' ' + a1[1].toFixed(1);
+    return { needleX: needle[0].toFixed(1), needleY: needle[1].toFixed(1), threshX: thr[0].toFixed(1), threshY: thr[1].toFixed(1), valPath };
+  }
+
+  _duel(ev) {
+    // lead-race: y in [0,1] where 0=top(reuse leads), 1=bottom(fresh leads).
+    // Start at reuse (0.12) since on_drift installs reused copy first.
+    // End anchored to final_leader_origin; number of crossings ~ n_leader_swaps.
+    const W = 320, H = 92, top = 12, bot = 80, mid = 46;
+    const swaps = Math.max(0, Math.min(17, ev.n_leader_swaps || 0));
+    const freshLed = ev.fresh_ever_led === 1;
+    const endFresh = ev.final_leader_origin === 'fresh';
+    const N = 48;
+    const rnd = this._rng(ev.idx + 41);
+    const pts = [];
+    // build a lead value: piecewise between swap points
+    const segs = swaps + 1;
+    // side sequence: start reuse(0). If never led fresh, stay reuse the whole time (flat near top).
+    const sides = [0];
+    for (let s = 1; s <= swaps; s++) sides.push(1 - sides[s - 1]);
+    // ensure final side matches endFresh
+    if (swaps > 0) sides[sides.length - 1] = endFresh ? 1 : 0;
+    if (!freshLed) { for (let i = 0; i < sides.length; i++) sides[i] = 0; }
+    for (let i = 0; i < N; i++) {
+      const prog = i / (N - 1);
+      const segIdx = Math.min(segs - 1, Math.floor(prog * segs));
+      const side = sides[Math.min(sides.length - 1, segIdx)];
+      const target = side === 1 ? bot : top;
+      const jitter = (rnd() - 0.5) * 9;
+      let y = target + jitter;
+      y = Math.max(6, Math.min(H - 6, y));
+      pts.push([prog * W, y]);
+    }
+    // swap dot x positions at segment boundaries
+    const swapDots = [];
+    for (let s = 1; s <= swaps && s <= 12; s++) {
+      const x = (s / segs) * W;
+      swapDots.push({ x: x.toFixed(1), y: mid.toFixed(1) });
+    }
+    const line = pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+    let area = 'M 0 ' + mid;
+    pts.forEach(p => area += ' L ' + p[0].toFixed(1) + ' ' + p[1].toFixed(1));
+    area += ' L ' + W + ' ' + mid + ' Z';
+    return { line, area, swapDots, endX: pts[N - 1][0].toFixed(1), endY: pts[N - 1][1].toFixed(1),
+      endColor: endFresh ? '#C8941A' : '#2E9460' };
+  }
+
+  _pool(ev) {
+    const n = Math.max(1, Math.min(10, ev.collection_size || 2));
+    const leader = Math.max(0, Math.min(n - 1, ev.current_idx || 0));
+    const best = Math.max(0, Math.min(n - 1, ev.best_idx || 0));
+    const rnd = this._rng(ev.idx + 21);
+    const arr = [];
+    for (let i = 0; i < n; i++) {
+      let fade, state, badge, badgeStyle, fadeColor, cardStyle, idColor;
+      if (i === leader) { fade = 15; state = 'leader'; }
+      else { fade = Math.max(1, Math.round(3 + rnd() * 11)); state = (i === best ? 'best' : 'alive'); }
+      const fadeW = Math.round(fade / 15 * 100);
+      if (state === 'leader') { fadeColor = '#2E9460'; idColor = '#1A7A4A';
+        badge = 'leader'; badgeStyle = 'font-size:9px; font-weight:700; color:#fff; background:#2E9460; border-radius:4px; padding:1px 6px;';
+        cardStyle = 'background:#F1F8F4; border:1.5px solid #2E9460; border-radius:10px; padding:10px 11px; box-shadow:0 0 0 3px rgba(46,148,96,.12);'; }
+      else if (state === 'best') { fadeColor = '#7C6FD6'; idColor = '#4A3FB5';
+        badge = 'best'; badgeStyle = 'font-size:9px; font-weight:700; color:#fff; background:#7C6FD6; border-radius:4px; padding:1px 6px;';
+        cardStyle = 'background:#FAF7FC; border:1.5px solid #B9AEEC; border-radius:10px; padding:10px 11px;'; }
+      else { fadeColor = '#4E8A66'; idColor = '#5C626C';
+        badge = ''; badgeStyle = 'font-size:9px;';
+        cardStyle = 'background:#F7F9F8; border:1px solid #DFE6E1; border-radius:10px; padding:10px 11px;'; }
+      arr.push({ idx: i, fade, fadeW, fadeTxt: '+' + fade, fadeColor, badge, badgeStyle, cardStyle, idColor });
+    }
+    // ghost eliminated
+    arr.push({ idx: '—', fade: 0, fadeW: 4, fadeTxt: '≤ 0', fadeColor: '#C87A7A', badge: '淘汰', idColor: '#B06A6A',
+      badgeStyle: 'font-size:9px; font-weight:700; color:#fff; background:#D08A8A; border-radius:4px; padding:1px 6px;',
+      cardStyle: 'background:#FBF5F5; border:1px dashed #E3C0C0; border-radius:10px; padding:10px 11px; animation:guiFadeOut 2.6s ease-in-out infinite alternate;' });
+    return arr;
+  }
+
+  renderVals() {
+    const evs = this.state.events;
+    if (!evs || !evs.length) return { ready: false };
+    const step = this.state.step;
+    const fnum = (v) => (v === null || v === undefined) ? '—' : Number(v).toLocaleString('en-US');
+    const fpct = (v) => (v === null || v === undefined) ? '—' : (v * 100).toFixed(1) + '%';
+    const accW = (v) => (v === null || v === undefined) ? 0 : Math.max(0, Math.min(1, (v - 0.85) / 0.15)) * 100;
+    const ev = evs[this.state.selIdx] || evs[0];
+
+    // step rail
+    const stepColors = ['#2E9460','#2E9460','#C89A3C','#2E9460','#1A7A4A','#4A3FB5','#41506A','#41506A'];
+    const stepList = this._steps.map((s, i) => {
+      const active = (i + 1) === step;
+      return { num: (i === 7 ? '報' : String(i + 1)), title: s.title, zone: s.zone,
+        style: 'display:flex; align-items:center; gap:9px; width:100%; padding:8px 8px; border:none; border-radius:8px; cursor:pointer; font-family:inherit; margin-bottom:2px; background:' + (active ? '#fff' : 'transparent') + (active ? '; box-shadow:0 1px 3px rgba(40,38,30,.07); outline:1px solid #E7E4DA;' : ';'),
+        numStyle: 'flex:0 0 24px; height:24px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:\'IBM Plex Mono\',monospace; font-size:11.5px; font-weight:700; color:' + (active ? '#fff' : '#9EA3AC') + '; background:' + (active ? stepColors[i] : '#EFEDE5') + ';',
+        onClick: () => this.setState({ step: i + 1 }) };
+    });
+    const dots = this._steps.map((s, i) => ({ style: 'width:' + ((i + 1) === step ? '20px' : '7px') + '; height:7px; border-radius:4px; background:' + ((i + 1) === step ? stepColors[i] : '#D9D6CC') + '; transition:width .2s;' }));
+
+    // acc bars (S5)
+    const tg = (k) => { const t = this._tag(k); return { tag: t.t, tagStyle: t.s }; };
+    const accBars = [
+      Object.assign({ label: 'acc_current_on_warning', desc: '凍結前的現役 leader', pct: fpct(ev.acc_current), w: accW(ev.acc_current), color: '#6B7C95', fill: '#8896AB' }, tg('real')),
+      Object.assign({ label: 'acc_best_on_warning', desc: '重用候選 · 合併後此版驅動 best_idx', pct: fpct(ev.acc_best), w: accW(ev.acc_best), color: '#1A7A4A', fill: '#2E9460' }, tg('real')),
+      Object.assign({ label: 'acc_new_on_warning', desc: '新影子 · 算了但不選 leader', pct: fpct(ev.acc_new), w: accW(ev.acc_new), color: '#9A6A0E', fill: '#D8AE55' }, tg('real')),
+    ];
+
+    // S1 table
+    const rnd = this._rng(ev.idx + 5); const tableRows = [];
+    for (let i = 0; i < 5; i++) {
+      const y = rnd() < 0.5 ? 0 : 1; const ok = rnd() < 0.88; const yhat = ok ? y : (1 - y);
+      tableRows.push({ t: fnum((ev.warning_t || 0) - (4 - i)), f1: (rnd() * 10).toFixed(2), f2: (rnd() * 10).toFixed(2), y: y, yhat: yhat,
+        okTxt: ok ? '✓' : '✕', okStyle: 'padding:7px 10px; font-size:12px; color:' + (ok ? '#2E9460' : '#C8551E') + ';',
+        rowStyle: 'display:grid; grid-template-columns:64px 1fr 1fr 52px 52px 46px; border-top:1px solid #F0EFE9; background:' + (i % 2 ? '#FCFBF8' : '#fff') + ';' });
+    }
+
+    // S2 series + probs + pred
+    const roll = this._series(ev, 'roll');
+    const pr = this._rng(ev.idx + 9); let p0 = 0.55 + pr() * 0.35; const p1 = 1 - p0;
+    const probBars = [
+      { label: 'class 0', pct: (p0 * 100).toFixed(1) + '%', w: Math.round(p0 * 100), color: '#2E9460' },
+      { label: 'class 1', pct: (p1 * 100).toFixed(1) + '%', w: Math.round(p1 * 100), color: '#8896AB' },
+    ];
+    const predOk = p0 > 0.5; const predY = predOk ? 0 : 1; const predYhat = 0;
+    const predOkTxt = (predY === predYhat) ? '✓ 正確' : '✕ 錯誤';
+    const predOkStyle = 'flex:0 0 auto; font-size:12px; font-weight:700; color:' + (predY === predYhat ? '#1A7A4A' : '#C8551E') + '; background:' + (predY === predYhat ? '#E8F4ED' : '#FBEDE7') + '; border-radius:8px; padding:8px 11px;';
+
+    // S3 gauge + signal
+    const gVal = ev.gt_match === 'TP' ? 0.9 : (ev.reuse_looked_better === 1 ? 0.6 : 0.72);
+    const g = this._gauge(gVal);
+    const sig = this._series(ev, 'sig');
+    const adwinConfirmed = true;
+    const adwinState = '漂移確認'; const adwinColor = '#C8551E';
+    const adwinDotStyle = 'width:9px; height:9px; border-radius:50%; background:#C8551E; box-shadow:0 0 0 3px rgba(200,85,30,.15);';
+
+    // S4 buffer scale (log) + exits
+    const lmax = Math.log10(18000);
+    const lx = (v) => 8 + Math.min(1, Math.log10(Math.max(v, 1)) / lmax) * 304;
+    const clampLbl = (x) => Math.max(24, Math.min(296, x));
+    const bufXn = lx(ev.buffer_len || 1);
+    const x60n = lx(60);
+    const x1000n = lx(1000);
+    const isTP = ev.gt_match === 'TP';
+    const exitConfirmStyle = 'border-radius:10px; padding:11px 13px; ' + (isTP ? 'background:#EAF4EE; border:1.5px solid #2E9460; color:#1A5C39;' : 'background:#F7F9F8; border:1px solid #E2E8E4; color:#9EA3AC;');
+    const exitAbortStyle = 'border-radius:10px; padding:11px 13px; ' + (!isTP ? 'background:#FBF2DC; border:1.5px solid #C89A3C; color:#8A5E10;' : 'background:#F7F9F8; border:1px solid #E2E8E4; color:#9EA3AC;');
+
+    // S8 history
+    const lo = Math.max(0, this.state.selIdx - 3);
+    const hist = evs.slice(lo, lo + 8);
+    const histRows = hist.map(e => ({
+      label: e.fileShort.slice(-16) + ' w' + fnum(e.warning_t),
+      star: e.isStar ? '★ ' : '',
+      gt: e.gt_match, accBest: fpct(e.acc_best), accNew: fpct(e.acc_new),
+      reuse: e.reuse_looked_better === 1 ? '較準' : '—',
+      gtStyle: 'padding:7px 6px; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; color:' + (e.gt_match === 'TP' ? '#1A7A4A' : '#6B7C95') + ';',
+      rowStyle: 'display:grid; grid-template-columns:1fr 46px 68px 68px 52px; align-items:center; width:100%; border:none; border-top:1px solid #F0EFE9; cursor:pointer; font-family:inherit; background:' + (e.idx === this.state.selIdx ? '#EAF4EE' : '#fff') + ';',
+      onClick: () => this.setState({ selIdx: e.idx }),
+    }));
+    const tpCount = evs.filter(e => e.gt_match === 'TP').length;
+
+    return {
+      ready: true, isMock: this.state.isMock, ev,
+      selCfgColor: this._cfgColor(ev.config_id), selCfgLabel: this._cfgLabel(ev.config_id),
+      gtMatch: ev.gt_match, gtColor: ev.gt_match === 'TP' ? '#1A7A4A' : '#6B7C95',
+      gtChipStyle: 'flex:0 0 auto; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; color:' + (ev.gt_match === 'TP' ? '#1A7A4A' : '#6B7C95') + '; background:' + (ev.gt_match === 'TP' ? '#E8F4ED' : '#EBEFF4') + ';',
+      warningT: fnum(ev.warning_t), confT: fnum(ev.confirmation_t), age: fnum(ev.age), bufferLen: fnum(ev.buffer_len),
+      bestIdx: ev.best_idx, currentIdx: ev.current_idx, collectionSize: ev.collection_size,
+      accCurPct: fpct(ev.acc_current), accBestPct: fpct(ev.acc_best), accNewPct: fpct(ev.acc_new),
+      accCurW: accW(ev.acc_current), accNewW: accW(ev.acc_new),
+      prewarnSlope: ev.prewarn_slope === null ? '—' : Number(ev.prewarn_slope).toExponential(2),
+      prewarnPeak: ev.prewarn_peak === null ? '—' : ev.prewarn_peak.toFixed(4),
+      prewarnMean: ev.prewarn_mean === null ? '—' : ev.prewarn_mean.toFixed(4),
+      // step
+      stepList, dots, stepIdx: step, stepTotal: 8,
+      curStepNum: step === 8 ? '報告' : ('步驟 ' + step), curStepColor: stepColors[step - 1],
+      curStepTitle: this._steps[step - 1].title,
+      curStepSub: ['系統逐筆讀入資料;暖機滿額後建立第一個專家。','以現役 leader 對每筆做預測,並持續監看準確率。','抽取的訊號進入偵測器,逼近門檻時觸發警告 / 漂移。','警告開啟後收集緩衝,等待確認或逾時取消。','確認漂移 → 選 best 專家、就地換 leader、更新池。','池會合併、淡出、超量驅逐 — 活體維護,非靜態存檔。','漂移後 leader 與新影子逐筆對決,決定最終誰勝出(已量測)。','執行後由離線腳本彙整所有事件與 ground-truth。'][step - 1],
+      notes: this._notesFor(step, ev),
+      isS1: step === 1, isS2: step === 2, isS3: step === 3, isS4: step === 4, isS5: step === 5, isS6: step === 6, isS7: step === 7, isS8: step === 8,
+      accBars, tableRows,
+      rollPoints: roll.line, rollArea: roll.area, rollLastX: roll.lastX, rollLastY: roll.lastY,
+      probBars, predY, predYhat, predOkTxt, predOkStyle,
+      gaugeValPath: g.valPath, gaugeColor: gVal >= 0.85 ? '#C8551E' : (gVal >= 0.7 ? '#D8AE55' : '#48A778'),
+      gaugeDash: '0', needleX: g.needleX, needleY: g.needleY, threshX: g.threshX, threshY: g.threshY,
+      gaugePct: (gVal * 100).toFixed(0) + '%',
+      signalPoints: sig.line, signalArea: sig.area, warnLineY: sig.warnY, driftLineY: sig.driftY,
+      warnLabelY: (Number(sig.warnY) - 3).toFixed(1), driftLabelY: (Number(sig.driftY) - 3).toFixed(1),
+      adwinState, adwinColor, adwinDotStyle,
+      bufX: bufXn.toFixed(1), bufXlbl: clampLbl(bufXn).toFixed(1), bufFillW: Math.max(0, bufXn - 8).toFixed(1),
+      x60: x60n.toFixed(1), x60lbl: clampLbl(x60n).toFixed(1),
+      x1000: x1000n.toFixed(1), x1000lbl: clampLbl(x1000n).toFixed(1),
+      exitConfirmStyle, exitAbortStyle, exitLabel: isTP ? '出口 A(確認漂移)' : '出口 B(誤報取消)',
+      poolExperts: this._pool(ev),
+      // S7 stage④ duel (measured)
+      ...(() => {
+        const d = this._duel(ev);
+        const endFresh = ev.final_leader_origin === 'fresh';
+        const freshLed = ev.fresh_ever_led === 1;
+        const snapMatch = ev.snapshot_matched_duel === 1;
+        const bannerColor = endFresh
+          ? 'background:linear-gradient(#FBF2DC,#F7E9C6); border:1px solid #E8D6A6; color:#8A5E10;'
+          : 'background:linear-gradient(#EAF4EE,#DCF0E4); border:1px solid #C7E2D2; color:#1A5C39;';
+        const snapOk = 'background:#EAF4EE; border:1.5px solid #C7E2D2; color:#1A5C39; border-radius:11px; padding:12px 14px;';
+        const snapNo = 'background:#FBF2DC; border:1.5px solid #E8D6A6; color:#8A5E10; border-radius:11px; padding:12px 14px;';
+        return {
+          duelLine: d.line, duelArea: d.area, duelSwapDots: d.swapDots,
+          duelEndX: d.endX, duelEndY: d.endY, duelEndColor: d.endColor,
+          duelBannerStyle: 'display:flex; align-items:center; justify-content:space-between; gap:12px; border-radius:11px; padding:13px 16px; ' + bannerColor,
+          duelIcon: endFresh ? '🌱' : '🔁',
+          duelWinnerTxt: endFresh ? '新模型 fresh 勝出' : '重用 reused 勝出',
+          duelMargin: fnum(ev.duel_final_margin),
+          nSwaps: fnum(ev.n_leader_swaps),
+          duelSeg: fnum(ev.duel_segment_len),
+          freshLedTxt: freshLed ? '是 (1)' : '否 (0)',
+          reuseSurvTxt: ev.reuse_survived === 1 ? '1' : '0',
+          snapBoxStyle: snapMatch ? snapOk : snapNo,
+          snapChipTxt: snapMatch ? '一致 ✓' : '不一致 ✕',
+          snapChipStyle: 'font-size:10px; font-weight:700; color:#fff; border-radius:5px; padding:2px 8px; background:' + (snapMatch ? '#2E9460' : '#C8941A') + ';',
+          snapSaidTxt: ev.reuse_looked_better === 1 ? '重用較準' : '新模型較準',
+          duelSaidTxt: ev.reuse_survived === 1 ? '重用全程領先' : '新模型曾奪得領先',
+          snapArrow: snapMatch ? '＝' : '≠',
+          snapVerdictNote: snapMatch
+            ? '警告當下 buffer 的判讀與對決期間的領先權走向一致 — 這次快照表象靠得住(另見上方最終勝方)。'
+            : '警告當下 buffer 判讀與對決期間領先權走向相反 — 印證「buffer 表象不是定論」,實際較量要看 stage④ 對決。',
+        };
+      })(),
+      tpCount, fpCount: evs.length - tpCount, histRows,
+      reuseLabel: ev.reuse_looked_better === 1 ? '1 · 重用較準' : '0 · 新模型較準',
+      reuseChipColor: ev.reuse_looked_better === 1 ? '#1A7A4A' : '#9A6A0E',
+      confDelay: fnum(ev.confirmation_delay), confDelayColor: ev.confirmation_delay < 0 ? '#9A6A0E' : '#384459',
+      // handlers
+      prevEv: () => this.setState(s => ({ selIdx: Math.max(0, s.selIdx - 1) })),
+      nextEv: () => this.setState(s => ({ selIdx: Math.min(evs.length - 1, s.selIdx + 1) })),
+      jumpStar: () => { let i = evs.findIndex(e => e.isStar); if (i < 0) i = 0; this.setState({ selIdx: i }); },
+      prevStep: () => this.setState(s => ({ step: Math.max(1, s.step - 1) })),
+      nextStep: () => this.setState(s => ({ step: Math.min(8, s.step + 1) })),
+      // tunable-parameter panel (this page's relevant hyperparameters)
+      curParams: this._buildParams(step, ev),
+      hasParams: (this._paramSteps[step] || []).length > 0,
+      resetParams: () => this.setState({ settings: {} }),
+    };
+  }
+}
+
+  // ============================================================================
+// App — extends the ported Component to add a single consolidated
+// "全部可調參數" page that gathers every tunable hyperparameter (otherwise
+// scattered across steps 1/2/3/6/7) onto one page. It reuses the design's own
+// _buildParams / _paramMeta / _deltaSpec and the shared this.state.settings, so
+// edits stay in sync with the per-step panels in the step-by-step manual.
+// ============================================================================
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = Object.assign({}, this.state, { paramsView: false });
+  }
+
+  _detFam(ev) { return ev.config_id === 'uq_entropy_adwin' ? 'ADWIN' : 'SeqDrift2'; }
+
+  _liveDec(p) { return !p.isSlider ? 0 : (p.step >= 1 ? 0 : (p.step <= 0.005 ? 3 : 2)); }
+
+  _defTxt(key, ev) {
+    if (String(key).indexOf('::') >= 0) {
+      const base = key.split('::')[0];
+      const spec = this._deltaSpec(ev, base === 'detector_delta' ? 'drift' : 'warn');
+      return spec.def.toFixed(3);
+    }
+    const m = this._paramMeta[key];
+    if (m.bool) return m.def ? 'True' : 'False';
+    return (!m.step || m.step >= 1) ? String(m.def) : m.def.toFixed(2);
+  }
+
+  _buildAllParamGroups(ev) {
+    const self = this;
+    const titles = {
+      1: '① 資料輸入 · 暖機',
+      2: '② 即時推論（森林）',
+      3: '③ 漂移偵測門檻',
+      6: '⑥ 模型池 · 活體維護',
+      7: '⑦ in-control 對決 · 鎖定期',
+    };
+    return [1, 2, 3, 6, 7].map(function (step) {
+      const params = self._buildParams(step, ev).map(function (p) {
+        p.liveId = 'pval-' + String(p.key).replace(/[^a-zA-Z0-9]+/g, '_');
+        const dec = self._liveDec(p);
+        p.live = function (e) {
+          const el = document.getElementById(p.liveId);
+          if (el) { const v = parseFloat(e.target.value); el.textContent = dec ? v.toFixed(dec) : String(Math.round(v)); }
+        };
+        p.defTxt = self._defTxt(p.key, ev);
+        return p;
+      });
+      return { title: titles[step], step: step, params: params };
+    });
+  }
+
+  renderVals() {
+    const v = super.renderVals();
+    if (!v || !v.ready) return v;
+
+    const ev = v.ev;
+    const groups = this._buildAllParamGroups(ev);
+    const allParams = groups.reduce(function (acc, g) { return acc.concat(g.params); }, []);
+    const modifiedCount = allParams.filter(function (p) { return p.modified; }).length;
+
+    const settingsSummary = allParams.map(function (p) {
+      return { label: p.label, cur: p.valTxt, def: p.defTxt, modified: p.modified,
+        rowStyle: 'display:grid; grid-template-columns:1fr 92px 92px; align-items:center; gap:8px; padding:7px 11px; border-top:1px solid #F0EFE9; background:' + (p.modified ? '#FDFAF2' : '#fff') + ';',
+        valStyle: 'font-family:\'IBM Plex Mono\',monospace; font-size:12.5px; font-weight:700; text-align:right; color:' + (p.modified ? '#8A5E10' : '#3A2F8F') + ';' };
+    });
+
+    const paramsView = !!this.state.paramsView;
+    const fam = this._detFam(ev);
+
+    const tabOn = 'display:inline-flex; align-items:center; gap:7px; border:none; border-radius:9px; padding:9px 17px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; background:#fff; color:#3A2F8F; box-shadow:0 2px 9px rgba(74,63,181,.15); outline:1px solid #CFC9F2;';
+    const tabOff = 'display:inline-flex; align-items:center; gap:7px; border:none; border-radius:9px; padding:9px 17px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; background:transparent; color:#787D86;';
+
+    return Object.assign(v, {
+      paramsView: paramsView,
+      notParamsView: !paramsView,
+      showManual: () => this.setState({ paramsView: false }),
+      showParams: () => this.setState({ paramsView: true }),
+      tabManualStyle: paramsView ? tabOff : tabOn,
+      tabParamsStyle: paramsView ? tabOn : tabOff,
+      allParamGroups: groups,
+      allParamCount: allParams.length,
+      settingsSummary: settingsSummary,
+      modifiedCount: modifiedCount,
+      hasModified: modifiedCount > 0,
+      paramDetectorFam: fam,
+      paramDetectorNote: '偵測門檻（detector_delta / _w）的尺度依目前事件的偵測器家族而定 — 目前為 '
+        + fam + '（' + v.selCfgLabel + '）。切換事件可看到另一家族的尺度。',
+    });
+  }
+}
+
+  document.addEventListener('DOMContentLoaded', function () {
+    new App({}).mount(document.getElementById('app'), document.getElementById('dc-tpl').content);
+  });
+})();
+</script>
+</body>
+</html>
