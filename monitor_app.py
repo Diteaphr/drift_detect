@@ -130,6 +130,71 @@ def draw_pool(ph, pool: List[Dict[str, Any]], max_pool: int) -> None:
             st.progress(min(1.0, max(0.0, p["fade"] / fade_max)))
 
 
+def draw_buffer(ph, pipe: Any, t: int, events: List[Dict[str, Any]]) -> None:
+    """② warning buffer accumulation + the new_model fit it produced.
+
+    Two halves, because they run on different clocks. The buffer fills live,
+    one sample per step, for as long as the warning stays open. The fresh model
+    is then fit on the whole buffer in a single `_fit_on_buffer` call at the
+    moment of drift confirmation (`ecpf.py:273`) -- there is no incremental
+    training curve to show, only its result.
+    """
+    with ph.container():
+        st.caption("② 警告緩衝 · new_model 訓練")
+
+        active = getattr(pipe, "_ecpf_warning_active", False)
+        if active:
+            start = pipe._ecpf_warning_start_idx
+            n_buf = len(pipe._ecpf_buffer)
+            st.warning(
+                f"🟡 warning 開啟中 · warning_t = **{start:,}**　"
+                f"已累積 **{n_buf:,}** 筆（持續 {t - (start or t):,} 步）"
+            )
+            # Deliberately no progress bar: in detector mode the buffer has no
+            # target length -- it grows until drift confirms. Only the oracle /
+            # retro modes cap it at config.ecpf_warning_length.
+        else:
+            st.info("⚪ 目前無 warning，buffer 未累積")
+
+        if not events:
+            st.caption("尚無訓練結果（需先有漂移確認）")
+            return
+
+        d = events[-1]["details"]
+        acc_new = d.get("acc_new_on_warning")
+        acc_best = d.get("acc_best_on_warning")
+        acc_cur = d.get("acc_current_on_warning")
+        if acc_new is None:
+            return
+
+        st.markdown(
+            f"**最近一次訓練** · t={events[-1]['timestamp']:,} · "
+            f"buffer {d.get('buffer_len', 0):,} 筆"
+        )
+        cols = st.columns(3)
+        cols[0].metric("現任 leader", f"{acc_cur:.3f}" if acc_cur is not None else "—")
+        cols[1].metric(
+            f"最佳重用 (slot {d.get('best_idx', '?')})",
+            f"{acc_best:.3f}" if acc_best is not None else "—",
+        )
+        cols[2].metric(
+            "全新 new_model",
+            f"{acc_new:.3f}",
+            delta=None if acc_best is None else f"{acc_new - acc_best:+.3f}",
+        )
+        if acc_best is not None:
+            verdict = "重用勝出" if acc_best >= acc_new else "全新勝出"
+            st.caption(
+                f"buffer 上的對比：{verdict}。ECPF 一律先安裝最佳重用副本為 leader"
+                f"（winner_initial={d.get('winner_initial')}），全新模型轉為 shadow "
+                f"進入 ④ 的 in-control 對決。"
+            )
+        # S9 in the HTML manual also showed precision / recall / F1, but those
+        # were labelled 示意 -- per-class detail is not stored at the event
+        # layer, so there is nothing real to plot here.
+        st.caption("註：precision / recall / F1 未存於事件層，故不提供。")
+
+
 def draw_duel(ph, ecpf: Any, duel_hist: deque) -> None:
     with ph.container():
         st.caption("④ in-control 對決 · leader vs shadow")
@@ -217,7 +282,7 @@ def main() -> None:
 
     ph_head = st.empty()
     col_l, col_r = st.columns(2)
-    ph_chart, ph_duel = col_l.empty(), col_l.empty()
+    ph_chart, ph_buffer, ph_duel = col_l.empty(), col_l.empty(), col_l.empty()
     ph_pool, ph_events = col_r.empty(), col_r.empty()
 
     hist: deque = deque(maxlen=HIST_POINTS)
@@ -227,6 +292,7 @@ def main() -> None:
     warn_win: deque = deque(maxlen=200)  # rolling windows for the signal lines
     drift_win: deque = deque(maxlen=200)
     last_swaps = 0
+    last_warn_active = False
     t0 = time.perf_counter()
 
     def redraw(t: int) -> None:
@@ -236,6 +302,7 @@ def main() -> None:
         draw_header(ph_head, t, n_total, acc, len(pool), len(events),
                     time.perf_counter() - t0)
         draw_chart(ph_chart, hist, events)
+        draw_buffer(ph_buffer, pipe, t, events)
         draw_duel(ph_duel, ecpf, duel_hist)
         draw_pool(ph_pool, pool, opts["max_pool_size"])
         draw_events(ph_events, events)
@@ -278,11 +345,20 @@ def main() -> None:
                 }
             )
 
-        #常態低頻聚合、關鍵事件穿透
+        # 常態低頻聚合、關鍵事件穿透. Warning open/close is a trigger too: a
+        # short warning phase can otherwise begin and end inside one stride and
+        # never be drawn at all.
         swaps = ecpf.leader_swaps if ecpf is not None else 0
-        if drift or swaps != last_swaps or t % stride == 0:
+        warn_active = bool(getattr(pipe, "_ecpf_warning_active", False))
+        if (
+            drift
+            or swaps != last_swaps
+            or warn_active != last_warn_active
+            or t % stride == 0
+        ):
             redraw(t)
         last_swaps = swaps
+        last_warn_active = warn_active
 
     redraw(n_total - 1)
     st.success(

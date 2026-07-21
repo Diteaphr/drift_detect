@@ -72,10 +72,30 @@ for t, y_true, y_pred, dets, drift in pipe.run_stream(X, y, warm_start):
 | 區塊 | 元件 | 資料來源 |
 | --- | --- | --- |
 | 頂列 | `st.progress` + `st.metric` × 3（t / acc / 池大小） | 迴圈變數 |
-| 左上 | 訊號時序圖，drift 垂直線 | `hist` |
-| 右上 | 模型池 slot 卡 + fade 分數條，leader 高亮 | `pipe._ecpf.slots` / `fade_scores` / `current_idx` |
-| 左下 | leader vs shadow 對決雙線、換將標記 | `pipe._ecpf.curr_correct` / `new_correct` |
-| 右下 | 事件表，展開看全欄位 | `st.dataframe` + `st.json(d.details)` |
+| 左① | 訊號時序圖，drift 垂直線 | `hist` |
+| 左② | 警告緩衝累積 + `new_model` 訓練結果 | `pipe._ecpf_warning_active` / `_ecpf_buffer`；`acc_*_on_warning` |
+| 左④ | leader vs shadow 對決雙線、換將標記 | `pipe._ecpf.curr_correct` / `new_correct` |
+| 右③ | 模型池 slot 卡 + fade 分數條，leader 高亮 | `pipe._ecpf.slots` / `fade_scores` / `current_idx` |
+| 右⑤ | 事件表，展開看全欄位 | `st.json(d.details)` |
+
+### ② 警告緩衝面板的兩個時鐘
+
+這一區對應 HTML 手冊的 S9。要注意它的兩半跑在不同時鐘上：
+
+- **buffer 累積是即時的** — 每步 `_ecpf_buffer.append()` 一筆，直到漂移確認。
+- **`new_model` 訓練不是。** 它在漂移那一瞬間由 `_fit_on_buffer()` 一次 fit 完
+  （`src/ecpf.py:273`），**沒有逐步訓練曲線**，只有結果。
+
+**不畫 buffer 進度條**：detector 模式下 buffer 無上限，一路長到漂移確認為止
+（實測最大 2048 筆）。`ecpf_warning_length=60` 只在 oracle / retro 模式套用
+（`src/pipeline.py:381`）。畫成「填到 60」會是假的。
+
+**顯示三方對比**而非只有 `acc_new`：`acc_current_on_warning` /
+`acc_best_on_warning` / `acc_new_on_warning`，因為「重用 vs 全新」的勝負才是
+這一步的決策內容。S9 只顯示了 new。
+
+**不提供 precision / recall / F1**：S9 那三張卡片標的是「示意」（由 acc 模擬）。
+per-class 明細未存於事件層，沒有真值可畫，因此本監控台直接不做。
 
 Sidebar：資料檔選擇、`warm_start`、`max_steps`、偵測器組合、`STRIDE`，
 按「開始」才跑。
