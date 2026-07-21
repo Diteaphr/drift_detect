@@ -17,6 +17,7 @@ from collections import deque
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -28,9 +29,20 @@ SIGNAL_CHOICES = ["error", "uq_mi", "uq_vote", "uq_entropy", "uq_variance"]
 DETECTOR_CHOICES = ["adwin", "seed", "seqdrift2"]
 DATA_DIR = Path("data/recurring_drift")
 
-# Ring-buffer depth for the signal chart. At STRIDE=50 this is ~100k samples of
-# stream history, i.e. the whole run for the standard 100k files.
+# Ring-buffer depth for the signal chart, in sampled points (one per stride).
+# At STRIDE=50 this spans ~100k samples, i.e. a whole standard file.
 HIST_POINTS = 2000
+
+# Half-width of the ground-truth band drawn behind the signal chart. A drift
+# confirmed inside the band counts as a true positive -- same tolerance the
+# batch runner scores with (`run_ecpf_uq_experiment._detection_delay`).
+GT_TOLERANCE = 500
+
+# Chart palette: categorical slots 1-3 for the three signals, a reserved status
+# colour for drift rules, muted ink for the recessive ground-truth band.
+SERIES_1, SERIES_2, SERIES_3 = "#2a78d6", "#eb6834", "#1baf7a"
+STATUS_CRITICAL = "#d03b3b"
+INK_MUTED = "#52514e"
 
 
 # ----------------------------------------------------------------------
@@ -101,18 +113,102 @@ def draw_header(ph, t: int, n_total: int, acc: Optional[float], n_pool: int,
         st.progress(min(1.0, t / n_total) if n_total else 0.0)
 
 
-def draw_chart(ph, hist: deque, events: List[Dict[str, Any]]) -> None:
-    """Signal time series with drift-confirmation markers."""
+def draw_chart(
+    ph,
+    hist: deque,
+    events: List[Dict[str, Any]],
+    gt_times: List[int],
+    warn_name: str,
+    drift_name: str,
+) -> None:
+    """Signal time series over ground-truth bands, with drift markers.
+
+    Three layers, back to front: ground-truth tolerance bands, the signal
+    lines, then a red rule per confirmed drift. A detection landing inside a
+    band is a true positive, outside it a false positive -- the same
+    ±GT_TOLERANCE rule the batch runner scores with.
+    """
     with ph.container():
         st.caption("① 訊號時序 · err / warning / drift")
         if not hist:
             st.info("等待資料…")
             return
-        df = pd.DataFrame(list(hist)).set_index("t")
-        st.line_chart(df[["err", "warn_val", "drift_val"]], height=260)
-        if events:
-            marks = ", ".join(str(e["timestamp"]) for e in events[-8:])
-            st.caption(f"最近漂移確認 t： {marks}")
+
+        df = pd.DataFrame(list(hist))
+        t_lo, t_hi = int(df["t"].iloc[0]), int(df["t"].iloc[-1])
+
+        # When both detectors watch the same signal the two series are
+        # identical at every step, so drawing both hides one entirely behind
+        # the other and leaves a legend entry pointing at an invisible line.
+        # Collapse them into one honestly-named series instead.
+        same_signal = warn_name == drift_name
+        if same_signal:
+            df = df.drop(columns=["warn_val"]).rename(
+                columns={"drift_val": f"warn=drift ({drift_name})"}
+            )
+        else:
+            df = df.rename(columns={"warn_val": f"warning ({warn_name})",
+                                    "drift_val": f"drift ({drift_name})"})
+        value_cols = [c for c in df.columns if c != "t"]
+        long = df.melt("t", value_vars=value_cols,
+                       var_name="signal", value_name="value").dropna()
+
+        x_axis = alt.X("t:Q", title="t",
+                       scale=alt.Scale(domain=[t_lo, t_hi], nice=False))
+        layers = []
+
+        # --- ground-truth bands (recessive, behind everything) ---
+        gt_vis = [g for g in gt_times if t_lo - GT_TOLERANCE <= g <= t_hi + GT_TOLERANCE]
+        if gt_vis:
+            band = pd.DataFrame(
+                {"lo": [g - GT_TOLERANCE for g in gt_vis],
+                 "hi": [g + GT_TOLERANCE for g in gt_vis]}
+            )
+            layers.append(
+                alt.Chart(band).mark_rect(color=INK_MUTED, opacity=0.13)
+                .encode(x="lo:Q", x2="hi:Q")
+            )
+            # exact drift point inside its band
+            layers.append(
+                alt.Chart(pd.DataFrame({"t": gt_vis}))
+                .mark_rule(color=INK_MUTED, strokeDash=[3, 3], size=1)
+                .encode(x="t:Q")
+            )
+
+        # --- signal lines ---
+        layers.append(
+            alt.Chart(long).mark_line(size=2).encode(
+                x=x_axis,
+                y=alt.Y("value:Q", title=None),
+                color=alt.Color(
+                    "signal:N", title=None,
+                    scale=alt.Scale(
+                        domain=value_cols,
+                        range=[SERIES_1, SERIES_2, SERIES_3][: len(value_cols)],
+                    ),
+                    legend=alt.Legend(orient="top"),
+                ),
+                tooltip=["t:Q", "signal:N", alt.Tooltip("value:Q", format=".3f")],
+            )
+        )
+
+        # --- confirmed drifts, on top ---
+        det_vis = [e["timestamp"] for e in events if t_lo <= e["timestamp"] <= t_hi]
+        if det_vis:
+            layers.append(
+                alt.Chart(pd.DataFrame({"t": det_vis}))
+                .mark_rule(color=STATUS_CRITICAL, size=2)
+                .encode(x="t:Q", tooltip=alt.Tooltip("t:Q", title="漂移確認 t"))
+            )
+
+        st.altair_chart(
+            alt.layer(*layers).properties(height=280).interactive(),
+            width="stretch",
+        )
+        st.caption(
+            f"灰帶 = ground truth 漂移 ±{GT_TOLERANCE}（判定為 TP 的容許窗）· "
+            f"灰虛線 = 真實漂移點 · 紅線 = 偵測到的漂移確認"
+        )
 
 
 def draw_pool(ph, pool: List[Dict[str, Any]], max_pool: int) -> None:
@@ -256,7 +352,7 @@ def main() -> None:
         detector_min_instances = st.number_input("detector_min_instances", 1, 1000, 30, step=10)
         max_pool_size = st.number_input("ecpf_max_pool_size", 1, 50, 10)
         model_type = st.selectbox("model_type", ["ht", "hf"])
-        start = st.button("▶ 開始監控", type="primary", use_container_width=True)
+        start = st.button("▶ 開始監控", type="primary", width="stretch")
 
     if not start:
         st.info("在左側設定參數後按「開始監控」。跑完為止，中途無法暫停"
@@ -272,10 +368,11 @@ def main() -> None:
         max_pool_size=max_pool_size, model_type=model_type,
     )
 
-    X, y, _drift_times = load_recurring_stream_pair(str(csv_path))
+    X, y, gt_times = load_recurring_stream_pair(str(csv_path))
     if max_steps > 0:
         n = min(int(max_steps), len(y))
         X, y = X[:n], y[:n]
+        gt_times = [t for t in gt_times if t < n]
     n_total = len(y)
 
     pipe = build_pipeline(opts)
@@ -301,7 +398,8 @@ def main() -> None:
         acc = (sum(correct) / len(correct)) if correct else None
         draw_header(ph_head, t, n_total, acc, len(pool), len(events),
                     time.perf_counter() - t0)
-        draw_chart(ph_chart, hist, events)
+        draw_chart(ph_chart, hist, events, gt_times,
+                   opts["warning_signal"], opts["drift_signal"])
         draw_buffer(ph_buffer, pipe, t, events)
         draw_duel(ph_duel, ecpf, duel_hist)
         draw_pool(ph_pool, pool, opts["max_pool_size"])
@@ -319,17 +417,22 @@ def main() -> None:
             warn_win.append(float(stats["warning_value"]))
         if stats.get("drift_value") is not None:
             drift_win.append(float(stats["drift_value"]))
-        # All three lines are rolling means. Raw values are unreadable at
-        # HIST_POINTS density: with signal="error" they are a 0/1 spike train,
-        # and even continuous UQ signals are heavily jittered per sample.
-        hist.append(
-            {
-                "t": t,
-                "err": 1.0 - (sum(correct) / len(correct)),
-                "warn_val": (sum(warn_win) / len(warn_win)) if warn_win else None,
-                "drift_val": (sum(drift_win) / len(drift_win)) if drift_win else None,
-            }
-        )
+        # The rolling windows above advance every sample, but the chart series
+        # is sampled once per stride: at HIST_POINTS=2000 that spans the whole
+        # 100k stream, so the ground-truth bands stay on screen instead of
+        # scrolling off after 2000 samples.
+        # All three lines are rolling means. Raw values are unreadable at this
+        # density: with signal="error" they are a 0/1 spike train, and even
+        # continuous UQ signals are heavily jittered per sample.
+        if t % stride == 0 or drift:
+            hist.append(
+                {
+                    "t": t,
+                    "err": 1.0 - (sum(correct) / len(correct)),
+                    "warn_val": (sum(warn_win) / len(warn_win)) if warn_win else None,
+                    "drift_val": (sum(drift_win) / len(drift_win)) if drift_win else None,
+                }
+            )
         if ecpf is not None and ecpf.new_model is not None:
             duel_hist.append(
                 {"t": t, "leader": ecpf.curr_correct, "shadow": ecpf.new_correct}
