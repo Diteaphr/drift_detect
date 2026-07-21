@@ -1,0 +1,295 @@
+"""ECPF 即時監控台 (Streamlit)。
+
+    streamlit run monitor_app.py
+
+Drives ``ConceptDriftPipeline.run_stream`` over one recurring-drift CSV and
+redraws a four-panel console as the stream advances. Read-only: it observes the
+values the pipeline already yields and never feeds anything back, so a monitored
+run behaves identically to the same run under ``run_ecpf_uq_experiment.py``.
+
+Design notes and rejected alternatives: ``docs/ECPF_MONITOR_PLAN.md``.
+"""
+
+from __future__ import annotations
+
+import time
+from collections import deque
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+import pandas as pd
+import streamlit as st
+
+from src.config import PipelineConfig
+from src.pipeline import ConceptDriftPipeline, load_recurring_stream_pair
+
+SIGNAL_CHOICES = ["error", "uq_mi", "uq_vote", "uq_entropy", "uq_variance"]
+DETECTOR_CHOICES = ["adwin", "seed", "seqdrift2"]
+DATA_DIR = Path("data/recurring_drift")
+
+# Ring-buffer depth for the signal chart. At STRIDE=50 this is ~100k samples of
+# stream history, i.e. the whole run for the standard 100k files.
+HIST_POINTS = 2000
+
+
+# ----------------------------------------------------------------------
+# Pipeline wiring
+# ----------------------------------------------------------------------
+def build_pipeline(opts: Dict[str, Any]) -> ConceptDriftPipeline:
+    """Construct a pipeline from sidebar options.
+
+    Mirrors the config assembly in ``run_ecpf_uq_experiment.run_one`` so a
+    monitored run is comparable to a batch one.
+    """
+    # UQ signals need per-class probabilities, which the plain Hoeffding tree
+    # does not expose -- the batch runner promotes ht -> hf for the same reason.
+    model_type = opts["model_type"]
+    if model_type == "ht" and (
+        opts["warning_signal"] != "error" or opts["drift_signal"] != "error"
+    ):
+        model_type = "hf"
+
+    cfg = PipelineConfig(
+        use_ecpf=True,
+        model_type=model_type,
+        ecpf_signal_mode=opts["signal_mode"],
+        ecpf_oracle_true_drift_times=None,
+        ecpf_warning_length=60,
+        ecpf_max_pool_size=opts["max_pool_size"],
+        detector_delta=opts["detector_delta"],
+        detector_delta_w=opts["detector_delta_w"],
+        ecpf_detector_min_instances=opts["detector_min_instances"],
+        ecpf_warning_detector=opts["warning_detector"],
+        ecpf_drift_detector=opts["drift_detector"],
+        ecpf_warning_signal=opts["warning_signal"],
+        ecpf_drift_signal=opts["drift_signal"],
+    )
+    return ConceptDriftPipeline(cfg)
+
+
+def pool_snapshot(ecpf: Any) -> List[Dict[str, Any]]:
+    """Read the live model-pool state. Returns [] when ECPF is not active."""
+    if ecpf is None:
+        return []
+    rows = []
+    for idx, slot in enumerate(ecpf.slots):
+        if slot is None:
+            continue
+        rows.append(
+            {
+                "slot": idx,
+                "fade": ecpf.fade_scores.get(idx, 0),
+                "is_leader": idx == ecpf.current_idx,
+            }
+        )
+    return rows
+
+
+# ----------------------------------------------------------------------
+# Rendering
+# ----------------------------------------------------------------------
+def draw_header(ph, t: int, n_total: int, acc: Optional[float], n_pool: int,
+                n_events: int, elapsed: float) -> None:
+    with ph.container():
+        cols = st.columns(5)
+        cols[0].metric("樣本 t", f"{t:,}", f"/ {n_total:,}")
+        cols[1].metric("Accuracy (窗)", "—" if acc is None else f"{acc:.3f}")
+        cols[2].metric("模型池", n_pool)
+        cols[3].metric("漂移事件", n_events)
+        cols[4].metric("已耗時", f"{elapsed:.0f}s")
+        st.progress(min(1.0, t / n_total) if n_total else 0.0)
+
+
+def draw_chart(ph, hist: deque, events: List[Dict[str, Any]]) -> None:
+    """Signal time series with drift-confirmation markers."""
+    with ph.container():
+        st.caption("① 訊號時序 · err / warning / drift")
+        if not hist:
+            st.info("等待資料…")
+            return
+        df = pd.DataFrame(list(hist)).set_index("t")
+        st.line_chart(df[["err", "warn_val", "drift_val"]], height=260)
+        if events:
+            marks = ", ".join(str(e["timestamp"]) for e in events[-8:])
+            st.caption(f"最近漂移確認 t： {marks}")
+
+
+def draw_pool(ph, pool: List[Dict[str, Any]], max_pool: int) -> None:
+    with ph.container():
+        st.caption(f"③ 模型池 · {len(pool)} / {max_pool} slots")
+        if not pool:
+            st.info("池尚未建立")
+            return
+        # fade score drives the bar; leader is flagged rather than sorted first
+        # so a slot keeps a stable visual position across redraws.
+        fade_max = max((p["fade"] for p in pool), default=1) or 1
+        for p in pool:
+            tag = "🟢 leader" if p["is_leader"] else "　"
+            st.write(f"`slot {p['slot']:>2}` {tag}　fade **{p['fade']}**")
+            st.progress(min(1.0, max(0.0, p["fade"] / fade_max)))
+
+
+def draw_duel(ph, ecpf: Any, duel_hist: deque) -> None:
+    with ph.container():
+        st.caption("④ in-control 對決 · leader vs shadow")
+        if ecpf is None or ecpf.new_model is None:
+            st.info("目前無 shadow model（非 lockout 期）")
+            return
+        cols = st.columns(3)
+        cols[0].metric("leader", ecpf.curr_correct)
+        cols[1].metric("shadow", ecpf.new_correct)
+        cols[2].metric("換將次數", ecpf.leader_swaps)
+        if duel_hist:
+            df = pd.DataFrame(list(duel_hist)).set_index("t")
+            st.line_chart(df[["leader", "shadow"]], height=180)
+
+
+def draw_events(ph, events: List[Dict[str, Any]]) -> None:
+    with ph.container():
+        st.caption(f"⑤ 漂移事件流 · {len(events)} 筆")
+        if not events:
+            st.info("尚無漂移事件")
+            return
+        for e in reversed(events[-10:]):
+            label = f"t={e['timestamp']:,} · {e['source']} · {e['drift_type']}"
+            with st.expander(label):
+                st.json(e["details"])
+
+
+# ----------------------------------------------------------------------
+# Main
+# ----------------------------------------------------------------------
+def main() -> None:
+    st.set_page_config(page_title="ECPF 即時監控台", layout="wide")
+    st.title("ECPF 即時監控台")
+
+    files = sorted(DATA_DIR.glob("*.csv")) if DATA_DIR.is_dir() else []
+
+    with st.sidebar:
+        st.header("設定")
+        if not files:
+            st.error(f"找不到資料：{DATA_DIR}/*.csv")
+            st.stop()
+        csv_path = st.selectbox("資料檔", files, format_func=lambda p: p.name)
+        warm_start = st.number_input("warm_start", 0, 10_000, 200, step=50)
+        max_steps = st.number_input("max_steps（0 = 全部）", 0, 200_000, 20_000, step=1000)
+        stride = st.slider("重繪間隔 STRIDE", 10, 500, 50, step=10,
+                           help="每幾筆重繪一次；漂移與換將一律立即重繪")
+        st.divider()
+        signal_mode = st.selectbox(
+            "signal_mode",
+            ["detector", "dual_adwin", "dual_seqdrift2", "dual_seed", "uq_warning"],
+        )
+        warning_signal = st.selectbox("warning_signal", SIGNAL_CHOICES)
+        drift_signal = st.selectbox("drift_signal", SIGNAL_CHOICES)
+        warning_detector = st.selectbox("warning_detector", [None] + DETECTOR_CHOICES)
+        drift_detector = st.selectbox("drift_detector", [None] + DETECTOR_CHOICES)
+        st.divider()
+        detector_delta = st.number_input("detector_delta", 0.0, 1.0, 0.05, step=0.01, format="%.3f")
+        detector_delta_w = st.number_input("detector_delta_w", 0.0, 1.0, 0.1, step=0.01, format="%.3f")
+        detector_min_instances = st.number_input("detector_min_instances", 1, 1000, 30, step=10)
+        max_pool_size = st.number_input("ecpf_max_pool_size", 1, 50, 10)
+        model_type = st.selectbox("model_type", ["ht", "hf"])
+        start = st.button("▶ 開始監控", type="primary", use_container_width=True)
+
+    if not start:
+        st.info("在左側設定參數後按「開始監控」。跑完為止，中途無法暫停"
+                "（見 docs/ECPF_MONITOR_PLAN.md §4.2）。")
+        return
+
+    opts = dict(
+        signal_mode=signal_mode, warning_signal=warning_signal,
+        drift_signal=drift_signal, warning_detector=warning_detector,
+        drift_detector=drift_detector, detector_delta=detector_delta,
+        detector_delta_w=detector_delta_w,
+        detector_min_instances=detector_min_instances,
+        max_pool_size=max_pool_size, model_type=model_type,
+    )
+
+    X, y, _drift_times = load_recurring_stream_pair(str(csv_path))
+    if max_steps > 0:
+        n = min(int(max_steps), len(y))
+        X, y = X[:n], y[:n]
+    n_total = len(y)
+
+    pipe = build_pipeline(opts)
+
+    ph_head = st.empty()
+    col_l, col_r = st.columns(2)
+    ph_chart, ph_duel = col_l.empty(), col_l.empty()
+    ph_pool, ph_events = col_r.empty(), col_r.empty()
+
+    hist: deque = deque(maxlen=HIST_POINTS)
+    duel_hist: deque = deque(maxlen=HIST_POINTS)
+    events: List[Dict[str, Any]] = []
+    correct: deque = deque(maxlen=500)  # rolling accuracy window
+    warn_win: deque = deque(maxlen=200)  # rolling windows for the signal lines
+    drift_win: deque = deque(maxlen=200)
+    last_swaps = 0
+    t0 = time.perf_counter()
+
+    def redraw(t: int) -> None:
+        ecpf = pipe._ecpf
+        pool = pool_snapshot(ecpf)
+        acc = (sum(correct) / len(correct)) if correct else None
+        draw_header(ph_head, t, n_total, acc, len(pool), len(events),
+                    time.perf_counter() - t0)
+        draw_chart(ph_chart, hist, events)
+        draw_duel(ph_duel, ecpf, duel_hist)
+        draw_pool(ph_pool, pool, opts["max_pool_size"])
+        draw_events(ph_events, events)
+
+    for t, y_true, y_pred, dets, drift in pipe.run_stream(X, y, int(warm_start)):
+        correct.append(1 if y_pred == y_true else 0)
+        ecpf = pipe._ecpf
+
+        # ECPFAdwinFamilyDetector.stats is (re)written on every update_values
+        # call; it is absent before the first call and the detector itself is
+        # None for signal modes that do not use it (e.g. oracle_*).
+        stats = getattr(pipe._ecpf_detector, "stats", None) or {}
+        if stats.get("warning_value") is not None:
+            warn_win.append(float(stats["warning_value"]))
+        if stats.get("drift_value") is not None:
+            drift_win.append(float(stats["drift_value"]))
+        # All three lines are rolling means. Raw values are unreadable at
+        # HIST_POINTS density: with signal="error" they are a 0/1 spike train,
+        # and even continuous UQ signals are heavily jittered per sample.
+        hist.append(
+            {
+                "t": t,
+                "err": 1.0 - (sum(correct) / len(correct)),
+                "warn_val": (sum(warn_win) / len(warn_win)) if warn_win else None,
+                "drift_val": (sum(drift_win) / len(drift_win)) if drift_win else None,
+            }
+        )
+        if ecpf is not None and ecpf.new_model is not None:
+            duel_hist.append(
+                {"t": t, "leader": ecpf.curr_correct, "shadow": ecpf.new_correct}
+            )
+
+        for d in dets:
+            events.append(
+                {
+                    "timestamp": int(d.timestamp),
+                    "source": d.detector_source,
+                    "drift_type": d.drift_type.value,
+                    "details": d.details or {},
+                }
+            )
+
+        #常態低頻聚合、關鍵事件穿透
+        swaps = ecpf.leader_swaps if ecpf is not None else 0
+        if drift or swaps != last_swaps or t % stride == 0:
+            redraw(t)
+        last_swaps = swaps
+
+    redraw(n_total - 1)
+    st.success(
+        f"完成：{n_total:,} 筆，{len(events)} 個漂移事件，"
+        f"耗時 {time.perf_counter() - t0:.1f}s"
+    )
+
+
+if __name__ == "__main__":
+    main()
