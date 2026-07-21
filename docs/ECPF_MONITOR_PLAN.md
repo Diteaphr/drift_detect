@@ -77,6 +77,22 @@ for t, y_true, y_pred, dets, drift in pipe.run_stream(X, y, warm_start):
 | 左④ | leader vs shadow 對決雙線、換將標記 | `pipe._ecpf.curr_correct` / `new_correct` |
 | 右③ | 模型池 slot 卡 + fade 分數條，leader 高亮 | `pipe._ecpf.slots` / `fade_scores` / `current_idx` |
 | 右⑤ | 事件表，展開看全欄位 | `st.json(d.details)` |
+| 底⑧ | 離線事件報告（跑完才出現） | events + ground truth |
+
+### ⑧ 離線事件報告
+
+對應手冊 S8。**跑完才產生**，因為它需要 ground truth 才能判 TP/FP — 這就是
+「離線層」的意思，與 runtime 無回饋箭頭。
+
+計分函式**直接 import 自 `run_ecpf_uq_experiment`**（`_detection_delay` /
+`_false_warning_rate`），不自己重寫一份，否則監控台與批次報表會各算各的而悄悄
+分歧。該模組有 `if __name__ == "__main__"` 保護，import 無副作用。
+
+**時間語意的坑**：`DriftDetection.timestamp` 是 **warning 起點**，不是確認點 —
+`_handle_ecpf_drift` 收到的是緩衝的 `_ecpf_warning_start_idx`
+（`src/pipeline.py:446`）。批次腳本計分也是用這個值（`run_ecpf_uq_experiment.py:342`），
+所以本監控台跟著用，兩邊數字才會一致。確認點另外由迴圈當下的 `t` 記為
+`confirmation_t`，兩者相減即 `confirmation_delay`。
 
 ### ② 警告緩衝面板的兩個時鐘
 

@@ -25,6 +25,11 @@ import streamlit as st
 from src.config import PipelineConfig
 from src.pipeline import ConceptDriftPipeline, load_recurring_stream_pair
 
+# Scored with the batch runner's own definitions so the monitor's report and a
+# `run_ecpf_uq_experiment.py` report of the same run cannot diverge. That module
+# is guarded by `if __name__ == "__main__"`, so importing it is side-effect free.
+from run_ecpf_uq_experiment import _detection_delay, _false_warning_rate
+
 SIGNAL_CHOICES = ["error", "uq_mi", "uq_vote", "uq_entropy", "uq_variance"]
 DETECTOR_CHOICES = ["adwin", "seed", "seqdrift2"]
 DATA_DIR = Path("data/recurring_drift")
@@ -198,7 +203,7 @@ def draw_chart(
             layers.append(
                 alt.Chart(pd.DataFrame({"t": det_vis}))
                 .mark_rule(color=STATUS_CRITICAL, size=2)
-                .encode(x="t:Q", tooltip=alt.Tooltip("t:Q", title="漂移確認 t"))
+                .encode(x="t:Q", tooltip=alt.Tooltip("t:Q", title="warning_t"))
             )
 
         st.altair_chart(
@@ -207,7 +212,8 @@ def draw_chart(
         )
         st.caption(
             f"灰帶 = ground truth 漂移 ±{GT_TOLERANCE}（判定為 TP 的容許窗）· "
-            f"灰虛線 = 真實漂移點 · 紅線 = 偵測到的漂移確認"
+            f"灰虛線 = 真實漂移點 · 紅線 = 事件的 warning_t（非確認點，"
+            f"與批次腳本計分所用的時間一致）"
         )
 
 
@@ -316,6 +322,100 @@ def draw_events(ph, events: List[Dict[str, Any]]) -> None:
             label = f"t={e['timestamp']:,} · {e['source']} · {e['drift_type']}"
             with st.expander(label):
                 st.json(e["details"])
+
+
+def draw_report(events: List[Dict[str, Any]], gt_times: List[int]) -> None:
+    """⑧ Offline event report -- scored against ground truth after the run.
+
+    This is the offline layer: it needs the ground-truth drift schedule, so
+    unlike panels ①-⑤ it cannot exist while the stream is still running, and
+    it feeds nothing back into the pipeline.
+    """
+    st.divider()
+    st.subheader("⑧ 事件報告 · 離線")
+
+    if not events:
+        st.info("本次執行沒有漂移事件，無報告可產生。")
+        return
+
+    det_times = [e["timestamp"] for e in events]
+
+    def is_tp(e: Dict[str, Any]) -> bool:
+        return any(abs(e["timestamp"] - g) <= GT_TOLERANCE for g in gt_times)
+
+    n_tp = sum(1 for e in events if is_tp(e))
+    n_fp = len(events) - n_tp
+    missed = [g for g in gt_times
+              if not any(abs(d - g) <= GT_TOLERANCE for d in det_times)]
+
+    delay = _detection_delay(gt_times, det_times, GT_TOLERANCE)
+    fw_rate = _false_warning_rate(det_times, gt_times, GT_TOLERANCE)
+    conf_delays = [e["confirmation_t"] - e["warning_t"] for e in events]
+    reuse_better = [
+        e for e in events
+        if (e["details"].get("acc_best_on_warning") is not None
+            and e["details"].get("acc_new_on_warning") is not None
+            and e["details"]["acc_best_on_warning"] >= e["details"]["acc_new_on_warning"])
+    ]
+
+    cols = st.columns(4)
+    cols[0].metric("TP · 真漂移", n_tp)
+    cols[1].metric("FP · 誤報", n_fp, delta=f"誤報率 {fw_rate:.0%}",
+                   delta_color="inverse")
+    cols[2].metric("漏報 · 未偵測到", len(missed), f"/ {len(gt_times)} 個真漂移")
+    cols[3].metric("平均偵測延遲", f"{delay:.0f}",
+                   help=f"每個真漂移到最近偵測的平均距離；未配對者以 {GT_TOLERANCE} 計"
+                        "（同 run_ecpf_uq_experiment._detection_delay）")
+
+    cols = st.columns(2)
+    cols[0].metric(
+        "reuse_looked_better",
+        f"{len(reuse_better)} / {len(events)}",
+        help="buffer 上最佳重用專家的準確度 ≥ 全新訓練模型的事件數",
+    )
+    cols[1].metric(
+        "平均 confirmation_delay",
+        f"{np.mean(conf_delays):.0f}" if conf_delays else "—",
+        help="warning_t → confirmation_t 的平均步數",
+    )
+
+    rows = []
+    for e in events:
+        d = e["details"]
+        near = min(gt_times, key=lambda g: abs(g - e["timestamp"])) if gt_times else None
+        acc_best = d.get("acc_best_on_warning")
+        acc_new = d.get("acc_new_on_warning")
+        rows.append(
+            {
+                "warning_t": e["warning_t"],
+                "confirm_t": e["confirmation_t"],
+                "delay": e["confirmation_t"] - e["warning_t"],
+                "gt": "TP" if is_tp(e) else "FP",
+                "nearest_gt": near,
+                "offset": None if near is None else e["timestamp"] - near,
+                "buffer": d.get("buffer_len"),
+                "acc_best": acc_best,
+                "acc_new": acc_new,
+                "reuse": (
+                    None if acc_best is None or acc_new is None
+                    else ("重用" if acc_best >= acc_new else "全新")
+                ),
+            }
+        )
+    st.dataframe(
+        pd.DataFrame(rows),
+        width="stretch",
+        hide_index=True,
+        column_config={
+            "acc_best": st.column_config.NumberColumn(format="%.3f"),
+            "acc_new": st.column_config.NumberColumn(format="%.3f"),
+        },
+    )
+    st.caption(
+        f"**離線層**：需 ground truth 才能算，執行後產生，與 runtime 無回饋箭頭。"
+        f"TP/FP 以 warning_t 與最近真漂移相距 ≤ {GT_TOLERANCE} 判定，"
+        f"計分函式直接取自 `run_ecpf_uq_experiment`，故與批次報表一致。"
+    )
 
 
 # ----------------------------------------------------------------------
@@ -439,9 +539,16 @@ def main() -> None:
             )
 
         for d in dets:
+            # `DriftDetection.timestamp` is the *warning start*, not the
+            # confirmation (`_handle_ecpf_drift` is called with the buffered
+            # `_ecpf_warning_start_idx`). The confirmation is the step we are
+            # on right now. The batch runner scores against `timestamp` too,
+            # so TP/FP here match its numbers.
             events.append(
                 {
                     "timestamp": int(d.timestamp),
+                    "warning_t": int(d.timestamp),
+                    "confirmation_t": int(t),
                     "source": d.detector_source,
                     "drift_type": d.drift_type.value,
                     "details": d.details or {},
@@ -468,6 +575,7 @@ def main() -> None:
         f"完成：{n_total:,} 筆，{len(events)} 個漂移事件，"
         f"耗時 {time.perf_counter() - t0:.1f}s"
     )
+    draw_report(events, gt_times)
 
 
 if __name__ == "__main__":
