@@ -217,6 +217,25 @@ HELP_MODEL_TYPE = """
 因為單棵樹算不出不確定感。
 """
 
+HELP_ACC_WINDOW = """
+最近 500 筆預測的正確率，只看近況，不代表整趟跑下來的總表現。
+
+漂移剛發生時這個數字會明顯跌下去，之後隨著 leader 換上更適合的模型
+慢慢回升——這正是它的用途：看「現在」好不好，反應快但會晃。
+想看整趟跑下來真正的總成績，見下方「整體預測 · prequential accuracy」。
+"""
+
+# Tooltip for the prequential-accuracy panel (below the header).
+HELP_PANEL_PREQ = """
+從 `warm_start` 之後累積到目前為止的整體正確率（test-then-train），
+不會隨時間被沖淡或遺忘——這跟上方「Accuracy（窗）」只看最近 500 筆不同。
+
+這條線通常會愈跑愈平：早期單一漂移對它的影響大，跑得夠久後，
+單一事件對整體平均的影響會被稀釋，曲線因此收斂變穩定。
+數值定義跟 `run_ecpf_uq_experiment` 報表裡的 `prequential_accuracy`
+完全一致，所以這裡最終看到的數字可以直接拿去跟批次報表對照。
+"""
+
 # Tooltip for panel ① (the signal time-series chart).
 HELP_PANEL_SIGNAL = """
 這張圖把系統每一步監看的數值畫成隨時間變化的曲線。由後往前疊三層：
@@ -367,11 +386,29 @@ def draw_header(ph, t: int, n_total: int, acc: Optional[float], n_pool: int,
     with ph.container():
         cols = st.columns(5)
         cols[0].metric("樣本 t", f"{t:,}", f"/ {n_total:,}")
-        cols[1].metric("Accuracy (窗)", "—" if acc is None else f"{acc:.3f}")
+        cols[1].metric("Accuracy (窗)", "—" if acc is None else f"{acc:.3f}",
+                       help=HELP_ACC_WINDOW)
         cols[2].metric("模型池", n_pool)
         cols[3].metric("漂移事件", n_events)
         cols[4].metric("已耗時", f"{elapsed:.0f}s")
         st.progress(min(1.0, t / n_total) if n_total else 0.0)
+
+
+def draw_prequential(ph, preq_hist: deque, preq_acc: Optional[float]) -> None:
+    """Cumulative test-then-train accuracy since warm_start -- the same
+    number `run_ecpf_uq_experiment` reports as `prequential_accuracy`, so a
+    monitored run's final value is directly comparable to a batch one.
+    """
+    with ph.container():
+        st.caption(
+            "整體預測 · prequential accuracy"
+            + ("" if preq_acc is None else f" · 目前 {preq_acc:.3f}"),
+            help=HELP_PANEL_PREQ,
+        )
+        if not preq_hist:
+            return
+        df = pd.DataFrame(list(preq_hist)).set_index("t")
+        st.line_chart(df[["acc"]], height=120)
 
 
 def draw_chart(
@@ -786,16 +823,20 @@ def main() -> None:
     pipe = build_pipeline(opts)
 
     ph_head = st.empty()
+    ph_preq = st.empty()
     col_l, col_r = st.columns(2)
     ph_chart, ph_buffer, ph_duel = col_l.empty(), col_l.empty(), col_l.empty()
     ph_pool, ph_events = col_r.empty(), col_r.empty()
 
     hist: deque = deque(maxlen=HIST_POINTS)
+    preq_hist: deque = deque(maxlen=HIST_POINTS)
     duel_hist: deque = deque(maxlen=HIST_POINTS)
     events: List[Dict[str, Any]] = []
     correct: deque = deque(maxlen=500)  # rolling accuracy window
     warn_win: deque = deque(maxlen=200)  # rolling windows for the signal lines
     drift_win: deque = deque(maxlen=200)
+    n_correct_total = 0  # cumulative, never evicted -- matches
+    n_seen_total = 0     # run_ecpf_uq_experiment's `prequential_accuracy`
     last_swaps = 0
     last_warn_active = False
     t0 = time.perf_counter()
@@ -804,8 +845,10 @@ def main() -> None:
         ecpf = pipe._ecpf
         pool = pool_snapshot(ecpf)
         acc = (sum(correct) / len(correct)) if correct else None
+        preq_acc = (n_correct_total / n_seen_total) if n_seen_total else None
         draw_header(ph_head, t, n_total, acc, len(pool), len(events),
                     time.perf_counter() - t0)
+        draw_prequential(ph_preq, preq_hist, preq_acc)
         draw_chart(ph_chart, hist, events, gt_times,
                    opts["warning_signal"], opts["drift_signal"])
         draw_buffer(ph_buffer, pipe, t, events)
@@ -814,7 +857,10 @@ def main() -> None:
         draw_events(ph_events, events)
 
     for t, y_true, y_pred, dets, drift in pipe.run_stream(X, y, int(warm_start)):
-        correct.append(1 if y_pred == y_true else 0)
+        is_correct = 1 if y_pred == y_true else 0
+        correct.append(is_correct)
+        n_correct_total += is_correct
+        n_seen_total += 1
         ecpf = pipe._ecpf
 
         # ECPFAdwinFamilyDetector.stats is (re)written on every update_values
@@ -840,6 +886,7 @@ def main() -> None:
                     "drift_val": (sum(drift_win) / len(drift_win)) if drift_win else None,
                 }
             )
+            preq_hist.append({"t": t, "acc": n_correct_total / n_seen_total})
         if ecpf is not None and ecpf.new_model is not None:
             duel_hist.append(
                 {"t": t, "leader": ecpf.curr_correct, "shadow": ecpf.new_correct}
