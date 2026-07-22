@@ -549,10 +549,15 @@ def draw_buffer(ph, pipe: Any, t: int, events: List[Dict[str, Any]]) -> None:
                 f"（winner_initial={d.get('winner_initial')}），全新模型轉為 shadow "
                 f"進入 ④ 的 in-control 對決。"
             )
-        # S9 in the HTML manual also showed precision / recall / F1, but those
-        # were labelled 示意 -- per-class detail is not stored at the event
-        # layer, so there is nothing real to plot here.
-        st.caption("註：precision / recall / F1 未存於事件層，故不提供。")
+        # S9 in the HTML manual also showed precision / recall / F1 here, but
+        # those were labelled 示意 (simulated from acc) -- per-class detail
+        # for the trained model is not stored at the event layer, so there is
+        # nothing real to plot in this panel.
+        st.caption(
+            "註：new_model 逐類別的 precision / recall / F1 未存於事件層，"
+            "此面板不提供。漂移偵測（TP/FP/FN）層級的 precision/recall/F1 "
+            "在下方 ⑧ 事件報告面板。"
+        )
 
 
 def draw_duel(ph, ecpf: Any, duel_hist: deque) -> None:
@@ -624,6 +629,28 @@ def draw_report(events: List[Dict[str, Any]], gt_times: List[int]) -> None:
     cols[3].metric("平均偵測延遲", f"{delay:.0f}",
                    help=f"每個真漂移到最近偵測的平均距離；未配對者以 {GT_TOLERANCE} 計"
                         "（同 run_ecpf_uq_experiment._detection_delay）")
+
+    # Drift-detection precision/recall/F1 -- computable from the TP/FP/FN
+    # counts above (all real, scored against ground truth). Not to be
+    # confused with per-class classification precision/recall on panel ②,
+    # which really is unavailable (see the comment there / ECPF_MONITOR_PLAN
+    # §"不提供 precision / recall / F1").
+    n_fn = len(missed)
+    precision = n_tp / (n_tp + n_fp) if (n_tp + n_fp) else 0.0
+    recall = n_tp / (n_tp + n_fn) if (n_tp + n_fn) else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
+
+    cols = st.columns(3)
+    cols[0].metric("precision", f"{precision:.3f}",
+                   help="TP / (TP + FP)：確認過的漂移裡，有幾成真的對到 ground truth。")
+    cols[1].metric("recall", f"{recall:.3f}",
+                   help="TP / (TP + FN)：所有真漂移裡，有幾成被抓到了。")
+    cols[2].metric("F1", f"{f1:.3f}",
+                   help="precision 與 recall 的調和平均，兩者要同時不差才會高。")
+    st.caption(
+        "以上是漂移偵測層級（事件 vs. ground truth）的 precision/recall/F1，"
+        "非逐筆分類的 per-class 版本 —— 後者未存於事件層，見 ② 面板說明。"
+    )
 
     cols = st.columns(2)
     cols[0].metric(
