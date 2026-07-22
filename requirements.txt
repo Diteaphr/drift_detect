@@ -12,5 +12,6 @@ matplotlib>=3.5
 # Optional — only needed for model_type='xgb'
 # xgboost>=2.0
 
-# Optional — only needed for the live monitor (streamlit run monitor_app.py)
-# streamlit>=1.30
+# Live monitor / Streamlit Cloud deployment (streamlit run monitor_app.py)
+streamlit>=1.30
+altair>=5.0

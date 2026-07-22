@@ -32,20 +32,193 @@ from run_ecpf_uq_experiment import _detection_delay, _false_warning_rate
 
 SIGNAL_CHOICES = ["error", "uq_mi", "uq_vote", "uq_entropy", "uq_variance"]
 DETECTOR_CHOICES = ["adwin", "seed", "seqdrift2"]
-DATA_DIR = Path("data/recurring_drift")
+# Curated demo streams: a few files per drift type so the deployed selector
+# stays short (and the app stays snappy) instead of listing all ~40 files.
+# The loader (`load_recurring_stream_pair`) is generic -- it reads any CSV with
+# a `y` column and finds the sibling `_drift_times.txt` -- so every drift-type
+# folder works, not just recurring_drift.
+DEMO_DRIFT_DIRS = [
+    ("sudden", Path("data/sudden_drift")),
+    ("gradual", Path("data/gradual_drift")),
+    ("incremental", Path("data/incremental_drift")),
+    ("recurring", Path("data/recurring_drift")),
+]
+DEMO_PER_TYPE = 2  # how many files to expose per drift type
+
+
+def demo_streams() -> "List[tuple[str, Path]]":
+    """Return curated ``(drift_type_label, csv_path)`` pairs for the selector."""
+    out: List[tuple] = []
+    for label, d in DEMO_DRIFT_DIRS:
+        if d.is_dir():
+            for p in sorted(d.glob("*.csv"))[:DEMO_PER_TYPE]:
+                out.append((label, p))
+    return out
 
 # Ring-buffer depth for the signal chart, in sampled points (one per stride).
 # At STRIDE=50 this spans ~100k samples, i.e. a whole standard file.
 HIST_POINTS = 2000
+
+# ----------------------------------------------------------------------
+# Sidebar tooltips
+# ----------------------------------------------------------------------
+# Written for non-specialists: what the knob is, then what moving it does.
+# Keep the "調大/調小" contrast -- it is the part users actually act on.
+HELP_CSV = """
+要監控的資料串流檔案。
+
+每個檔案是一段依時間排序的資料，中途概念會改變（例如同樣的特徵，
+正確答案換了一套規則），系統的任務就是及時察覺這些變化。
+換檔案等於換一個題目，難易度和漂移次數都會不同。
+
+檔名前面的標籤是漂移型態：sudden（突變）、gradual（漸變）、
+incremental（緩慢累積）、recurring（舊概念會再回來）。
+每種型態各挑了幾份供展示。
+"""
+
+HELP_WARM_START = """
+暖身筆數：一開始先讓模型安靜地學這麼多筆資料，期間不判定漂移。
+
+模型剛開始什麼都不會，錯誤率天然就很高，這時去偵測「錯誤變多」
+只會得到假警報。
+**調大**：開頭更穩，但太大會讓第一次真實漂移被錯過。
+**調小**：更早開始監控，但開頭容易出現假漂移。
+"""
+
+HELP_MAX_STEPS = """
+這次最多跑幾筆資料，`0` 代表整個檔案跑完。
+
+**調小**：很快看到結果，適合先試參數；但只看到資料的前段，
+後面的漂移不會出現。
+**調大或設 0**：完整結果，但要等比較久。
+"""
+
+HELP_STRIDE = """
+畫面每隔幾筆資料重畫一次。只影響「看起來順不順」，不影響偵測結果。
+
+**調小**：畫面更即時、更細膩，但跑得比較慢。
+**調大**：跑得快，但線圖比較粗略。
+不管設多少，偵測到漂移或換模型時都會立刻重畫，不會漏看。
+"""
+
+HELP_SIGNAL_MODE = """
+偵測漂移的整體策略，決定「怎麼判斷資料變了」。
+
+- **detector**：最單純，用一組內建偵測器看錯誤率。想快速上手選這個。
+- **dual_adwin / dual_seed / dual_seqdrift2**：兩階段把關，先發預警、
+  再確認漂移，用的是三種不同的統計方法。誤報通常比較少。
+- **uq_warning**：先用模型的「不確定感」提早示警，再用錯誤率確認。
+  通常反應最快，但也最容易緊張。
+
+選了不同模式，下面的 signal / detector 欄位才會實際生效。
+"""
+
+HELP_WARNING_SIGNAL = """
+用哪個數值來發「預警」（可能要變了，先準備）。
+
+- **error**：看模型答錯的比例，最直觀也最穩。
+- **uq_*** 開頭：看模型自己有多猶豫（不同的猶豫算法）。
+  模型往往在真正答錯之前就先開始猶豫，所以能更早示警，
+  代價是有時候只是虛驚一場。
+"""
+
+HELP_DRIFT_SIGNAL = """
+用哪個數值來「確認」漂移真的發生、該換模型了。
+
+選項意義同 warning_signal。這是最後拍板的依據，
+建議留 **error**：確認階段求穩，用實際答錯率最不會誤判。
+"""
+
+HELP_WARNING_DETECTOR = """
+預警階段使用的統計方法（留空 `None` 表示交給 signal_mode 預設決定）。
+
+三種方法都在問「最近的表現是不是和之前明顯不同」，只是算法不同：
+**adwin** 反應快、最常用；**seed** 較節省記憶體；
+**seqdrift2** 對緩慢的變化較敏感。不確定就留空。
+"""
+
+HELP_DRIFT_DETECTOR = """
+確認階段使用的統計方法（留空 `None` 表示交給 signal_mode 預設決定）。
+
+選項意義同 warning_detector。與預警用不同方法可以互相把關，
+減少兩者同時看走眼的機會。
+"""
+
+HELP_DELTA = """
+確認漂移的敏感度（給 drift_detector 用）。
+
+**調大**（如 0.1）：比較神經質，漂移抓得早，但假警報變多，
+模型會被頻繁換掉。
+**調小**（如 0.01）：比較保守，只有很確定才認定漂移，
+假警報少但反應慢。
+0.05 是常用的折衷值。
+"""
+
+HELP_DELTA_W = """
+預警的敏感度（給 warning_detector 用）。
+
+意義同 detector_delta，但作用在「提早示警」這一關。
+通常設得比 detector_delta 大（預設 0.1 對 0.05），
+意思是預警寧可寬鬆一點、早點注意，真正的把關留給確認階段。
+"""
+
+HELP_MIN_INSTANCES = """
+偵測器至少要看過幾筆資料才允許報漂移。
+
+**調大**：判斷根據更充足，開頭和剛換模型後不會亂報，
+但反應變慢。
+**調小**：反應更快，但樣本太少時容易被幾筆倒楣的資料誤導。
+"""
+
+HELP_MAX_POOL_SIZE = """
+最多保留幾個舊模型備用。
+
+這套系統的重點是「概念會重複出現」：今天的狀況可能和上個月一樣。
+留著舊模型，之後遇到相同狀況就能直接調回來用，不必從零學起。
+**調大**：更多歷史狀況能被重複利用，但佔用較多記憶體。
+**調小**：省資源，但舊模型會被淘汰，重複出現的概念得重學。
+"""
+
+HELP_MODEL_TYPE = """
+底層預測模型。
+
+- **ht**（單棵決策樹）：輕量、快。
+- **hf**（一片樹林）：多棵樹一起投票，較準，也才能算出「不確定感」。
+
+注意：只要 signal 選了任何 `uq_*` 選項，系統會自動改用 **hf**，
+因為單棵樹算不出不確定感。
+"""
+
+# Tooltip for panel ① (the signal time-series chart).
+HELP_PANEL_SIGNAL = """
+這張圖把系統每一步監看的數值畫成隨時間變化的曲線。由後往前疊三層：
+
+**彩色曲線（會上下起伏）** — 主角，是實際被監看的訊號值。
+- 🟢 **warning signal**（淺綠線）：左欄 `warning_signal` 選的訊號，
+  負責「提早示警」。線越高代表錯誤率或不確定感越高。
+- 🟢 **drift signal**（深綠線）：`drift_signal` 選的訊號，負責「確認漂移」。
+- 兩者若選同一個訊號，只會有一條綠線，圖例直接標該訊號的名字（如 `error`）。
+
+**灰色背景（不會動）** — 對照用的標準答案。
+- 灰色色帶：真實漂移點的容許窗（±500）。
+- 灰色虛線：真正發生漂移的確切時間。
+
+**紅色直線** — 系統實際偵測並確認漂移的時刻。
+
+看法：綠線衝高後，理想上緊接著出現一條落在灰帶裡的紅線，
+就代表這次漂移被準確抓到；紅線在灰帶外＝誤報，灰帶內沒紅線＝漏抓。
+"""
 
 # Half-width of the ground-truth band drawn behind the signal chart. A drift
 # confirmed inside the band counts as a true positive -- same tolerance the
 # batch runner scores with (`run_ecpf_uq_experiment._detection_delay`).
 GT_TOLERANCE = 500
 
-# Chart palette: categorical slots 1-3 for the three signals, a reserved status
-# colour for drift rules, muted ink for the recessive ground-truth band.
-SERIES_1, SERIES_2, SERIES_3 = "#2a78d6", "#eb6834", "#1baf7a"
+# Chart palette: warning signal (light green) and drift signal (dark green) --
+# two shades so the two signals read as a family yet stay distinguishable by
+# lightness. Both kept clear of the muted-ink ground-truth band and the reserved
+# red drift rule.
+SIG_WARNING, SIG_DRIFT = "#6fc99a", "#0d7a4f"
 STATUS_CRITICAL = "#d03b3b"
 INK_MUTED = "#52514e"
 
@@ -134,7 +307,7 @@ def draw_chart(
     ±GT_TOLERANCE rule the batch runner scores with.
     """
     with ph.container():
-        st.caption("① 訊號時序 · err / warning / drift")
+        st.caption("① 訊號時序 · warning / drift signal", help=HELP_PANEL_SIGNAL)
         if not hist:
             st.info("等待資料…")
             return
@@ -148,12 +321,14 @@ def draw_chart(
         # Collapse them into one honestly-named series instead.
         same_signal = warn_name == drift_name
         if same_signal:
+            # One signal feeds both roles, so there is a single line -- label it
+            # by the signal name alone; "warning + drift" would imply two lines.
             df = df.drop(columns=["warn_val"]).rename(
-                columns={"drift_val": f"warn=drift ({drift_name})"}
+                columns={"drift_val": drift_name}
             )
         else:
-            df = df.rename(columns={"warn_val": f"warning ({warn_name})",
-                                    "drift_val": f"drift ({drift_name})"})
+            df = df.rename(columns={"warn_val": f"warning signal ({warn_name})",
+                                    "drift_val": f"drift signal ({drift_name})"})
         value_cols = [c for c in df.columns if c != "t"]
         long = df.melt("t", value_vars=value_cols,
                        var_name="signal", value_name="value").dropna()
@@ -189,7 +364,7 @@ def draw_chart(
                     "signal:N", title=None,
                     scale=alt.Scale(
                         domain=value_cols,
-                        range=[SERIES_1, SERIES_2, SERIES_3][: len(value_cols)],
+                        range=[SIG_WARNING, SIG_DRIFT][: len(value_cols)],
                     ),
                     legend=alt.Legend(orient="top"),
                 ),
@@ -425,33 +600,47 @@ def main() -> None:
     st.set_page_config(page_title="ECPF 即時監控台", layout="wide")
     st.title("ECPF 即時監控台")
 
-    files = sorted(DATA_DIR.glob("*.csv")) if DATA_DIR.is_dir() else []
+    streams = demo_streams()
+    stream_labels = {p: f"{label} · {p.name}" for label, p in streams}
 
     with st.sidebar:
         st.header("設定")
-        if not files:
-            st.error(f"找不到資料：{DATA_DIR}/*.csv")
+        if not streams:
+            dirs = "、".join(str(d) for _, d in DEMO_DRIFT_DIRS)
+            st.error(f"找不到資料：請確認 {dirs} 內有 *.csv")
             st.stop()
-        csv_path = st.selectbox("資料檔", files, format_func=lambda p: p.name)
-        warm_start = st.number_input("warm_start", 0, 10_000, 200, step=50)
-        max_steps = st.number_input("max_steps（0 = 全部）", 0, 200_000, 20_000, step=1000)
-        stride = st.slider("重繪間隔 STRIDE", 10, 500, 50, step=10,
-                           help="每幾筆重繪一次；漂移與換將一律立即重繪")
+        csv_path = st.selectbox("資料檔", [p for _, p in streams],
+                                format_func=lambda p: stream_labels[p],
+                                help=HELP_CSV)
+        warm_start = st.number_input("warm_start", 0, 10_000, 200, step=50,
+                                     help=HELP_WARM_START)
+        max_steps = st.number_input("max_steps（0 = 全部）", 0, 200_000, 20_000, step=1000,
+                                    help=HELP_MAX_STEPS)
+        stride = st.slider("重繪間隔 STRIDE", 10, 500, 50, step=10, help=HELP_STRIDE)
         st.divider()
         signal_mode = st.selectbox(
             "signal_mode",
             ["detector", "dual_adwin", "dual_seqdrift2", "dual_seed", "uq_warning"],
+            help=HELP_SIGNAL_MODE,
         )
-        warning_signal = st.selectbox("warning_signal", SIGNAL_CHOICES)
-        drift_signal = st.selectbox("drift_signal", SIGNAL_CHOICES)
-        warning_detector = st.selectbox("warning_detector", [None] + DETECTOR_CHOICES)
-        drift_detector = st.selectbox("drift_detector", [None] + DETECTOR_CHOICES)
+        warning_signal = st.selectbox("warning_signal", SIGNAL_CHOICES,
+                                      help=HELP_WARNING_SIGNAL)
+        drift_signal = st.selectbox("drift_signal", SIGNAL_CHOICES,
+                                    help=HELP_DRIFT_SIGNAL)
+        warning_detector = st.selectbox("warning_detector", [None] + DETECTOR_CHOICES,
+                                        help=HELP_WARNING_DETECTOR)
+        drift_detector = st.selectbox("drift_detector", [None] + DETECTOR_CHOICES,
+                                      help=HELP_DRIFT_DETECTOR)
         st.divider()
-        detector_delta = st.number_input("detector_delta", 0.0, 1.0, 0.05, step=0.01, format="%.3f")
-        detector_delta_w = st.number_input("detector_delta_w", 0.0, 1.0, 0.1, step=0.01, format="%.3f")
-        detector_min_instances = st.number_input("detector_min_instances", 1, 1000, 30, step=10)
-        max_pool_size = st.number_input("ecpf_max_pool_size", 1, 50, 10)
-        model_type = st.selectbox("model_type", ["ht", "hf"])
+        detector_delta = st.number_input("detector_delta", 0.0, 1.0, 0.05, step=0.01,
+                                         format="%.3f", help=HELP_DELTA)
+        detector_delta_w = st.number_input("detector_delta_w", 0.0, 1.0, 0.1, step=0.01,
+                                           format="%.3f", help=HELP_DELTA_W)
+        detector_min_instances = st.number_input("detector_min_instances", 1, 1000, 30,
+                                                 step=10, help=HELP_MIN_INSTANCES)
+        max_pool_size = st.number_input("ecpf_max_pool_size", 1, 50, 10,
+                                        help=HELP_MAX_POOL_SIZE)
+        model_type = st.selectbox("model_type", ["ht", "hf"], help=HELP_MODEL_TYPE)
         start = st.button("▶ 開始監控", type="primary", width="stretch")
 
     if not start:

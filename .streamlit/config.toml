@@ -1,0 +1,11 @@
+[theme]
+base = "light"
+
+[server]
+# The ECPF pipeline runs in-process and can be memory-hungry on the 100k-row
+# files; raise the upload cap is irrelevant here (no uploads), but keep the
+# message queue generous so long runs don't drop frames.
+maxMessageSize = 200
+
+[browser]
+gatherUsageStats = false
