@@ -198,6 +198,40 @@ HELP_PANEL_POOL = """
 進度條長度＝該 slot 的 fade 分數相對於目前最高分的比例，只是視覺化，不代表百分比。
 """
 
+# Tooltip for panel ② (warning buffer + new_model training).
+HELP_PANEL_BUFFER = """
+warning 期間收集資料、拿去訓練一個全新模型的過程。
+
+- **🟡 warning 開啟中**：目前正在收樣本進 buffer，累積筆數與已持續步數。
+  這個階段還沒有結果，純粹在等 buffer 長大或漂移被確認。
+- **⚪ 目前無 warning**：沒有在收，等下一次訊號衝高再開始。
+- 一旦漂移確認，buffer 會整批拿去訓練一個「全新 new_model」，
+  同時系統會把 buffer 拿去跟現有模型池裡的舊模型比對，
+  找出「最佳重用」的那個（見下方三個數字）。
+- **現任 leader / 最佳重用 / 全新 new_model**：三者都是在同一份 buffer 上
+  算出來的準確率，用來比較「繼續用舊的」「調回池裡某個舊模型」
+  「重新訓練一個」哪個比較好。
+- 不論這三個數字誰贏，ECPF **一律先把「最佳重用」模型裝成新 leader**；
+  剛訓練好的 new_model 不會馬上上任，而是轉去當 shadow，
+  進入 ④ 的 in-control 對決繼續觀察，之後若持續勝出才會換將。
+"""
+
+# Tooltip for panel ⑤ (drift event stream).
+HELP_PANEL_EVENTS = """
+每一次「漂移被確認」都會在這裡留一筆紀錄，最新的排最上面。
+
+- **t=...**：warning 開始的時間點（`warning_t`），
+  不是確認時間點，是為了跟批次腳本計分口徑一致
+  （對照 ① 圖上的紅線）。
+- **source**：哪個偵測器 / 訊號模式觸發了這次確認。
+- **drift_type**：系統判斷出的漂移型態，例如
+  `sudden`（突然）、`gradual`（漸進）、`incremental`（漸變累積）、
+  `recurring`（舊概念重現，對到模型池裡的舊模型）。
+- 點開展開項可看完整細節 JSON，
+  包含 buffer 筆數、各模型在 buffer 上的準確率、最終勝出者等
+  （即 ② 面板算出來的那些數字）。
+"""
+
 # Half-width of the ground-truth band drawn behind the signal chart. A drift
 # confirmed inside the band counts as a true positive -- same tolerance the
 # batch runner scores with (`run_ecpf_uq_experiment._detection_delay`).
@@ -406,7 +440,7 @@ def draw_buffer(ph, pipe: Any, t: int, events: List[Dict[str, Any]]) -> None:
     training curve to show, only its result.
     """
     with ph.container():
-        st.caption("② 警告緩衝 · new_model 訓練")
+        st.caption("② 警告緩衝 · new_model 訓練", help=HELP_PANEL_BUFFER)
 
         active = getattr(pipe, "_ecpf_warning_active", False)
         if active:
@@ -478,7 +512,7 @@ def draw_duel(ph, ecpf: Any, duel_hist: deque) -> None:
 
 def draw_events(ph, events: List[Dict[str, Any]]) -> None:
     with ph.container():
-        st.caption(f"⑤ 漂移事件流 · {len(events)} 筆")
+        st.caption(f"⑤ 漂移事件流 · {len(events)} 筆", help=HELP_PANEL_EVENTS)
         if not events:
             st.info("尚無漂移事件")
             return
