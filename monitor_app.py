@@ -184,6 +184,20 @@ HELP_PANEL_SIGNAL = """
 就代表這次漂移被準確抓到；紅線在灰帶外＝誤報，灰帶內沒紅線＝漏抓。
 """
 
+# Tooltip for panel ③ (the model pool).
+HELP_PANEL_POOL = """
+系統目前留著的所有模型快照，最多 `max_pool_size` 個。
+
+- **slot**：模型在池裡的編號，只是位置代號，跟訓練順序或好壞無關。
+- **fade**：這個模型有多「新鮮」。當它是 leader 時每輪 +15 分，
+  被冷落的其他 slot 每輪 -1 分，歸零就會被移除。
+  分數越高＝越常被選中、越不容易被淘汰；池滿時會優先踢掉分數最低的。
+- **🟢 leader**：目前正在做預測的那個模型，其他都是備用。
+  漂移確認時，勝出的模型會被安裝成新 leader（見 ② 的比較結果）。
+
+進度條長度＝該 slot 的 fade 分數相對於目前最高分的比例，只是視覺化，不代表百分比。
+"""
+
 # Half-width of the ground-truth band drawn behind the signal chart. A drift
 # confirmed inside the band counts as a true positive -- same tolerance the
 # batch runner scores with (`run_ecpf_uq_experiment._detection_delay`).
@@ -369,7 +383,7 @@ def draw_chart(
 
 def draw_pool(ph, pool: List[Dict[str, Any]], max_pool: int) -> None:
     with ph.container():
-        st.caption(f"③ 模型池 · {len(pool)} / {max_pool} slots")
+        st.caption(f"③ 模型池 · {len(pool)} / {max_pool} slots", help=HELP_PANEL_POOL)
         if not pool:
             st.info("池尚未建立")
             return
@@ -682,14 +696,13 @@ def main() -> None:
         # is sampled once per stride: at HIST_POINTS=2000 that spans the whole
         # 100k stream, so the ground-truth bands stay on screen instead of
         # scrolling off after 2000 samples.
-        # All three lines are rolling means. Raw values are unreadable at this
+        # Both lines are rolling means. Raw values are unreadable at this
         # density: with signal="error" they are a 0/1 spike train, and even
         # continuous UQ signals are heavily jittered per sample.
         if t % stride == 0 or drift:
             hist.append(
                 {
                     "t": t,
-                    "err": 1.0 - (sum(correct) / len(correct)),
                     "warn_val": (sum(warn_win) / len(warn_win)) if warn_win else None,
                     "drift_val": (sum(drift_win) / len(drift_win)) if drift_win else None,
                 }
