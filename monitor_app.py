@@ -179,6 +179,34 @@ HELP_MAX_POOL_SIZE = """
 **調小**：省資源，但舊模型會被淘汰，重複出現的概念得重學。
 """
 
+HELP_SIMILARITY_MARGIN = """
+兩個模型多常給出一樣的答案（一致度），達到這個門檻就合併成一個。
+
+池裡累積久了，常常會有兩個模型其實學到同一套規則，
+留著兩份沒有意義，白佔位置。系統會持續記錄每對模型的預測一致度，
+一旦 ≥ 這個門檻，就留下比較準的那個，把另一個淘汰、fade 分數併過去。
+**調高**：門檻更嚴，更少合併，池子留得較細、較大。
+**調低**：門檻更鬆，更常合併，池子更精簡但可能誤把不同概念併在一起。
+"""
+
+HELP_FADE_POINTS = """
+leader 每做一輪 +幾分、其他 slot 每輪 -1 分，分數見底就淘汰。
+
+這是模型池的「活體維護」機制：常被選中當 leader 的模型分數越滾越高，
+長期沒被選中的慢慢扣到 0 就被移除，騰出位置給新模型。
+**調大**：leader 加分更多，舊模型能撐更久才被淘汰，池子較滿。
+**調小**：淘汰更快，池子更精簡，但可能太快丟掉還有用的舊概念。
+"""
+
+HELP_FADE_ENABLED = """
+是否啟用上面的淡出淘汰機制。
+
+**開啟**（預設）：沒用的模型會被自動清掉，池子大小自我調節。
+**關閉**：fade 分數不再被更新（永遠停在剛加入時的分數），
+模型只會在池滿（達 `ecpf_max_pool_size`）時才被踢，
+且因為分數都沒在變，淘汰對象基本上等於隨機／先進先踢。
+"""
+
 HELP_MODEL_TYPE = """
 底層預測模型。
 
@@ -214,11 +242,15 @@ HELP_PANEL_POOL = """
 系統目前留著的所有模型快照，最多 `max_pool_size` 個。
 
 - **slot**：模型在池裡的編號，只是位置代號，跟訓練順序或好壞無關。
-- **fade**：這個模型有多「新鮮」。當它是 leader 時每輪 +15 分，
-  被冷落的其他 slot 每輪 -1 分，歸零就會被移除。
-  分數越高＝越常被選中、越不容易被淘汰；池滿時會優先踢掉分數最低的。
+- **fade**：這個模型有多「新鮮」。當它是 leader 時每輪
+  +`ecpf_fade_points`（左側可調，預設 15）分，被冷落的其他 slot 每輪 -1 分，
+  歸零就會被移除。分數越高＝越常被選中、越不容易被淘汰；
+  池滿時會優先踢掉分數最低的。這整套機制可用 `ecpf_fade_enabled` 關掉。
 - **🟢 leader**：目前正在做預測的那個模型，其他都是備用。
   漂移確認時，勝出的模型會被安裝成新 leader（見 ② 的比較結果）。
+- 另外系統會持續比對每對模型的預測一致度，一致度達
+  `ecpf_similarity_margin`（左側可調，預設 0.95）就合併成一個，
+  避免池子塞滿其實學到同一套規則的重複模型。
 
 進度條長度＝該 slot 的 fade 分數相對於目前最高分的比例，只是視覺化，不代表百分比。
 """
@@ -295,6 +327,9 @@ def build_pipeline(opts: Dict[str, Any]) -> ConceptDriftPipeline:
         ecpf_oracle_true_drift_times=None,
         ecpf_warning_length=60,
         ecpf_max_pool_size=opts["max_pool_size"],
+        ecpf_similarity_margin=opts["similarity_margin"],
+        ecpf_fade_points=opts["fade_points"],
+        ecpf_fade_enabled=opts["fade_enabled"],
         detector_delta=opts["detector_delta"],
         detector_delta_w=opts["detector_delta_w"],
         ecpf_detector_min_instances=opts["detector_min_instances"],
@@ -688,6 +723,12 @@ def main() -> None:
                                                  step=10, help=HELP_MIN_INSTANCES)
         max_pool_size = st.number_input("ecpf_max_pool_size", 1, 50, 10,
                                         help=HELP_MAX_POOL_SIZE)
+        similarity_margin = st.slider("ecpf_similarity_margin", 0.80, 1.0, 0.95,
+                                      step=0.01, help=HELP_SIMILARITY_MARGIN)
+        fade_points = st.number_input("ecpf_fade_points", 1, 60, 15,
+                                      help=HELP_FADE_POINTS)
+        fade_enabled = st.checkbox("ecpf_fade_enabled", value=True,
+                                   help=HELP_FADE_ENABLED)
         model_type = st.selectbox("model_type", ["ht", "hf"], help=HELP_MODEL_TYPE)
         start = st.button("▶ 開始監控", type="primary", width="stretch")
 
@@ -702,7 +743,10 @@ def main() -> None:
         drift_detector=drift_detector, detector_delta=detector_delta,
         detector_delta_w=detector_delta_w,
         detector_min_instances=detector_min_instances,
-        max_pool_size=max_pool_size, model_type=model_type,
+        max_pool_size=max_pool_size,
+        similarity_margin=similarity_margin,
+        fade_points=fade_points, fade_enabled=fade_enabled,
+        model_type=model_type,
     )
 
     X, y, gt_times = load_recurring_stream_pair(str(csv_path))
