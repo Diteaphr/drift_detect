@@ -6,8 +6,8 @@ scipy>=1.7.0
 river>=0.21
 matplotlib>=3.5
 
-# Optional — only needed for model_type='gru'
-# torch>=2.0
+# Required for Type-LDD FAN ProtoNet (src/type_ldd) and optional model_type='gru'
+torch>=2.0
 
 # Optional — only needed for model_type='xgb'
 # xgboost>=2.0
