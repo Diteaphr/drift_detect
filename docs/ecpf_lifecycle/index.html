@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECPF 資料流 × 模型池生命週期</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: #F2F1EC; color: #1E222A; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #CFCDC4; border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  @keyframes ecpfPulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+  @keyframes ecpfFadeOut { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: .12; transform: translateY(7px); } }
+  @keyframes ecpfBlink { 0%, 100% { box-shadow: 0 0 0 0 rgba(46,148,96,0); } 50% { box-shadow: 0 0 0 4px rgba(46,148,96,.18); } }
+</style>
+<script src="ecpf_data.js"></script>
+</head>
+<body>
+<div id="app"></div>
+
+<template id="dc-tpl">
+<div style="min-height:100vh; padding-bottom:60px;">
+
+  <!-- ============ STICKY CONTROL BAR ============ -->
+  <div style="position:sticky; top:0; z-index:50; background:rgba(242,241,236,.92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid #E0DED5;">
+    <div style="max-width:1360px; margin:0 auto; padding:9px 22px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; letter-spacing:.04em; color:#1A7A4A; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:5px; padding:3px 8px; flex:0 0 auto;">ECPF · live</span>
+
+      <!-- event selector -->
+      <div style="position:relative; flex:0 0 auto;">
+        <button onClick="{{ toggleDropdown }}" style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #D6D4CB; border-radius:8px; padding:6px 11px; cursor:pointer; font-family:inherit; font-size:13px; color:#1E222A; min-width:300px; text-align:left;">
+          <sc-if value="{{ ev.isStar }}" hint-placeholder-val="{{ false }}"><span style="color:#C8941A;">★</span></sc-if>
+          <span style="width:9px; height:9px; border-radius:50%; background:{{ selCfgColor }}; flex:0 0 auto;"></span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">{{ ev.fileShort }} · w{{ warningT }}→c{{ confT }}</span>
+          <span style="color:#949AA4; flex:0 0 auto;">▾</span>
+        </button>
+
+        <sc-if value="{{ dropdownOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:calc(100% + 7px); left:0; width:430px; max-width:90vw; background:#fff; border:1px solid #D2D0C7; border-radius:12px; box-shadow:0 16px 44px rgba(40,38,30,.20); z-index:70; overflow:hidden;">
+            <div style="padding:11px 12px 9px; border-bottom:1px solid #EEEDE6;">
+              <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="搜尋 file · config · event_id…" style="width:100%; box-sizing:border-box; border:1px solid #D6D4CB; border-radius:7px; padding:8px 10px; font-family:'IBM Plex Mono',monospace; font-size:12px; outline:none; background:#FAFAF7;" />
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:7px; font-size:11px; color:#8A909A;">
+                <span>符合 <b style="color:#1A7A4A;">{{ listCount }}</b> / {{ totalCount }} 筆</span>
+                <span style="color:#C8941A;">★ = TP 且新模型在 buffer 較準</span>
+              </div>
+            </div>
+            <div style="max-height:48vh; overflow:auto; padding:6px;">
+              <sc-for list="{{ eventList }}" as="e" hint-placeholder-count="7">
+                <button onClick="{{ e.onClick }}" style="{{ e.rowStyle }}">
+                  <span style="width:8px; height:8px; border-radius:50%; background:{{ e.cfgColor }}; flex:0 0 auto;"></span>
+                  <span style="flex:1; min-width:0; text-align:left;">
+                    <span style="display:block; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#1E222A; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ e.star }}{{ e.label }}</span>
+                    <span style="display:block; font-size:10.5px; color:#9298A2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ e.sub }}</span>
+                  </span>
+                  <span style="{{ e.gtStyle }}">{{ e.gt }}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{ listTruncated }}" hint-placeholder-val="{{ false }}">
+                <div style="text-align:center; font-size:11px; color:#9298A2; padding:8px;">僅顯示前 {{ shownCount }} 筆 — 請輸入搜尋縮小範圍</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <!-- prev / next -->
+      <div style="display:flex; gap:5px; flex:0 0 auto;">
+        <button onClick="{{ prev }}" style="width:32px; height:32px; border:1px solid #D6D4CB; background:#fff; border-radius:7px; cursor:pointer; font-size:15px; color:#5C626C;">‹</button>
+        <button onClick="{{ next }}" style="width:32px; height:32px; border:1px solid #D6D4CB; background:#fff; border-radius:7px; cursor:pointer; font-size:15px; color:#5C626C;">›</button>
+      </div>
+
+      <div style="flex:1;"></div>
+
+      <!-- config + gt filters -->
+      <div style="display:flex; gap:5px; flex-wrap:wrap; flex:0 0 auto;">
+        <sc-for list="{{ cfgPills }}" as="p" hint-placeholder-count="4">
+          <button onClick="{{ p.onClick }}" style="{{ p.style }}">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:5px; flex:0 0 auto;">
+        <sc-for list="{{ gtPills }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.onClick }}" style="{{ p.style }}">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ isMock }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size:11px; font-weight:600; color:#9A6A0E; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:5px; padding:3px 8px;">示範資料</span>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="max-width:1360px; margin:0 auto; padding:0 22px;">
+
+    <!-- ============ HERO ============ -->
+    <header style="padding:30px 0 18px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.12em; color:#1A7A4A; font-weight:600; text-transform:uppercase;">Evolving Concept-Pool Framework</div>
+      <h1 style="font-family:'Noto Serif TC',serif; font-weight:700; font-size:31px; line-height:1.25; margin:8px 0 0; color:#1A1D24; max-width:980px;">ECPF 資料流 × 模型池活體維護 · 整合流程圖</h1>
+      <p style="margin:11px 0 0; font-size:14.5px; line-height:1.7; color:#5C626C; max-width:880px;">從冷啟動建第一專家，到逐筆推論 → 訊號 → 偵測 → 警告緩衝 → on_drift(含池維護)→ in-control 對決。<b style="color:#1E222A;">實線=真的餵給下一步或真的改寫池</b>；虛線=只進 log 的診斷；獨立區塊=離線事後分析。選一個真實漂移事件，所有「事件層有資料」的節點即時亮出該事件數值。</p>
+
+      <!-- legend -->
+      <div style="display:flex; gap:11px; flex-wrap:wrap; align-items:stretch; margin-top:18px;">
+        <div style="display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #E2E0D8; border-radius:9px; padding:9px 13px;">
+          <svg width="36" height="12" style="flex:0 0 auto;"><line x1="1" y1="6" x2="30" y2="6" stroke="#2E9460" stroke-width="3"></line><polygon points="35,6 27,1.5 27,10.5" fill="#2E9460"></polygon></svg>
+          <span style="font-size:12.5px; line-height:1.35;"><b style="color:#1A7A4A;">🟢 實線</b><br><span style="color:#6B7079; font-size:11.5px;">真資料流 / 真池狀態變更</span></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #E2E0D8; border-radius:9px; padding:9px 13px;">
+          <svg width="36" height="12" style="flex:0 0 auto;"><line x1="1" y1="6" x2="30" y2="6" stroke="#C89A3C" stroke-width="2.4" stroke-dasharray="4 3"></line><polygon points="35,6 27,1.5 27,10.5" fill="#C89A3C"></polygon></svg>
+          <span style="font-size:12.5px; line-height:1.35;"><b style="color:#9A6A0E;">🟡 虛線分叉</b><br><span style="color:#6B7079; font-size:11.5px;">診斷值 → logging(不回饋決策)</span></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #E2E0D8; border-radius:9px; padding:9px 13px;">
+          <span style="width:30px; height:13px; border-radius:3px; background:#EBEFF4; border:1.5px dashed #9FB0C4; flex:0 0 auto;"></span>
+          <span style="font-size:12.5px; line-height:1.35;"><b style="color:#41506A;">⚪ 獨立區塊</b><br><span style="color:#6B7079; font-size:11.5px;">離線分析(無回饋箭頭)</span></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #E2E0D8; border-radius:9px; padding:9px 13px;">
+          <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:5px; padding:2px 7px; flex:0 0 auto;">⚙ 池維護</span>
+          <span style="font-size:12.5px; line-height:1.35;"><b style="color:#4A3FB5;">機制節點</b><br><span style="color:#6B7079; font-size:11.5px;">每漂移/每步改變池(CSV 多半無欄位)</span></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ KPI BAR ============ -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin:6px 0 8px;">
+      <div style="background:#fff; border:1px solid #E2E0D8; border-radius:11px; padding:14px 16px;">
+        <div style="font-size:12px; color:#8A909A; font-weight:500;">總漂移事件</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:27px; font-weight:600; color:#1A1D24; line-height:1.1; margin-top:3px;">{{ total }}</div>
+        <div style="font-size:11px; color:#9298A2; margin-top:2px;">3 configs × 10 檔串流</div>
+      </div>
+      <div style="background:#fff; border:1px solid #E2E0D8; border-radius:11px; padding:14px 16px;">
+        <div style="font-size:12px; color:#8A909A; font-weight:500;">TP · 真漂移</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:27px; font-weight:600; color:#1A7A4A; line-height:1.1; margin-top:3px;">{{ tp }}</div>
+        <div style="font-size:11px; color:#9298A2; margin-top:2px;">約 {{ tpPct }}% · 含 ★ {{ stars }} 筆新模型較準</div>
+      </div>
+      <div style="background:#fff; border:1px solid #E2E0D8; border-radius:11px; padding:14px 16px;">
+        <div style="font-size:12px; color:#8A909A; font-weight:500;">FP · 誤報</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:27px; font-weight:600; color:#6B7C95; line-height:1.1; margin-top:3px;">{{ fp }}</div>
+        <div style="font-size:11px; color:#9298A2; margin-top:2px;">需 ground truth 事後判定</div>
+      </div>
+      <sc-for list="{{ configMeta }}" as="c" hint-placeholder-count="3">
+        <div style="background:#fff; border:1px solid #E2E0D8; border-radius:11px; padding:14px 16px; border-top:3px solid {{ c.color }};">
+          <div style="font-size:12px; color:#5C626C; font-weight:600; font-family:'IBM Plex Mono',monospace; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ c.label }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; color:#1A1D24; line-height:1.1; margin-top:4px;">{{ c.n }}<span style="font-size:12px; color:#9298A2; font-weight:400;"> 事件</span></div>
+          <div style="font-size:11px; color:#9298A2; margin-top:2px;">TP {{ c.tp }} · {{ c.tpPct }}%</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- ============ MAIN GRID: spine + diagnostic ============ -->
+    <div style="display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:20px; align-items:start; margin-top:22px;">
+      <div id="__SPINE__">
+
+  <!-- ZONE 0 HEADER -->
+  <div style="display:flex; align-items:center; gap:10px; margin:4px 0 14px;">
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#1A7A4A; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:6px; padding:4px 10px;">⓪ BOOTSTRAP</span>
+    <span style="font-size:13px; color:#5C626C;">生命週期初始化 — 進入逐筆主迴圈前<b style="color:#1E222A;">只跑一次</b></span>
+  </div>
+
+  <!-- 0a -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:12px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">0a</div>
+      <div style="width:2px; flex:1; min-height:14px; background:#9FCDB3; margin:3px 0;"></div>
+    </div>
+    <div style="flex:1; min-width:0; background:#fff; border:1px solid #E2E0D8; border-left:3px solid #2E9460; border-radius:10px; padding:13px 15px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <h3 style="margin:0; font-size:14.5px; font-weight:700; color:#1A1D24;">warm_start / cold-start 閘門</h3>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#A0A6AE;">src/pipeline.py:267–276, 310–340</span>
+      </div>
+      <p style="margin:6px 0 0; font-size:12.5px; line-height:1.6; color:#5C626C;">前 update_batch_size 筆為暖機;進階模型 test-then-train 從第 1 筆、sklearn 路徑批次蒐集後 fit;<b style="color:#1E222A;">滿額才 _warm=True</b>。</p>
+      <div style="display:flex; align-items:flex-start; gap:7px; margin-top:9px; padding:7px 10px; background:#F4F8F5; border-radius:7px; border:1px solid #E3EDE6;"><span style="color:#2E9460; font-weight:700;">→</span><span style="font-size:12px; color:#37503F; line-height:1.5;"><b>output</b> 暖機完成的 prediction_model(_warm=True)</span></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:9px; align-items:center;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5; background:#F1EFFB; border:1px solid #DDD8F4; border-radius:4px; padding:2px 7px;">update_batch_size = 100</span>
+        <span style="font-size:11.5px; color:#7C8089; background:#F0EFEB; border:1px dashed #D5D3CB; border-radius:6px; padding:3px 9px;">機制節點 · 未存事件層</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 0b -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:12px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">0b</div>
+      <div style="width:2px; flex:1; min-height:14px; background:#9FCDB3; margin:3px 0;"></div>
+    </div>
+    <div style="flex:1; min-width:0; background:#fff; border:1px solid #E2E0D8; border-left:3px solid #2E9460; border-radius:10px; padding:13px 15px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <h3 style="margin:0; font-size:14.5px; font-weight:700; color:#1A1D24;">bootstrap_first_expert</h3>
+        <span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:2px 6px;">⚙ 池維護</span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#A0A6AE;">src/ecpf.py:104–113</span>
+      </div>
+      <p style="margin:6px 0 0; font-size:12.5px; line-height:1.6; color:#5C626C;">把暖機好的模型存成 slot 0 → slots=[clone]、slot_stats=[_SlotStats()]、fade_scores={0: 15}、current_idx=0、new_model=None、對決計數歸零。</p>
+      <div style="display:flex; align-items:flex-start; gap:7px; margin-top:9px; padding:7px 10px; background:#F4F8F5; border-radius:7px; border:1px solid #E3EDE6;"><span style="color:#2E9460; font-weight:700;">→</span><span style="font-size:12px; color:#37503F; line-height:1.5;"><b>output · 模型池起點</b> slots=[clone₀]、current_idx=0 — 主鏈不可從第 1 筆就假設已有現成 Hoeffding Forest</span></div>
+      <div style="margin-top:9px;"><span style="font-size:11.5px; color:#7C8089; background:#F0EFEB; border:1px dashed #D5D3CB; border-radius:6px; padding:3px 9px;">機制節點 · 生命週期初始化(未存事件層)</span></div>
+    </div>
+  </div>
+
+  <!-- ZONE RUNTIME HEADER -->
+  <div style="display:flex; align-items:center; gap:10px; margin:18px 0 14px;">
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#fff; background:#1A7A4A; border-radius:6px; padding:4px 10px;">🟢 RUNTIME 主鏈</span>
+    <span style="font-size:13px; color:#5C626C;">實線:每段 output 真的餵給下一段,最後<b style="color:#1E222A;">就地改寫同一個 prediction_model</b> 並改變模型池</span>
+  </div>
+
+  <!-- 1 -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:14px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">1</div>
+      <div style="width:2px; flex:1; min-height:14px; background:#2E9460; margin:3px 0;"></div>
+    </div>
+    <div style="flex:1; min-width:0; background:#fff; border:1px solid #E2E0D8; border-left:3px solid #2E9460; border-radius:10px; padding:13px 15px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <h3 style="margin:0; font-size:14.5px; font-weight:700; color:#1A1D24;">輸入 (x, y) · 鎖定期倒數</h3>
+      </div>
+      <p style="margin:6px 0 0; font-size:12.5px; line-height:1.6; color:#5C626C;">每筆樣本 (x, y)。<span style="font-family:'IBM Plex Mono',monospace; font-size:12px;">step()</span> 開頭:若 _lock_out&gt;0 則 _lock_out −= 1(鎖定期倒數)。</p>
+      <div style="display:flex; align-items:flex-start; gap:7px; margin-top:9px; padding:7px 10px; background:#F4F8F5; border-radius:7px; border:1px solid #E3EDE6;"><span style="color:#2E9460; font-weight:700;">→</span><span style="font-size:12px; color:#37503F; line-height:1.5;"><b>output</b> (x, y) 進入主鏈;_lock_out 遞減</span></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:9px; align-items:center;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5; background:#F1EFFB; border:1px solid #DDD8F4; border-radius:4px; padding:2px 7px;">_lock_out_duration = 100 · 硬寫</span>
+        <span style="font-size:11.5px; color:#7C8089; background:#F0EFEB; border:1px dashed #D5D3CB; border-radius:6px; padding:3px 9px;">機制節點 · 鎖定期語意見節點 8</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:14px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">2</div>
+      <div style="width:2px; flex:1; min-height:14px; background:#2E9460; margin:3px 0;"></div>
+    </div>
+    <div style="flex:1; min-width:0; background:#fff; border:1px solid #E2E0D8; border-left:3px solid #2E9460; border-radius:10px; padding:13px 15px; margin-bottom:10px;">
+      <h3 style="margin:0; font-size:14.5px; font-weight:700; color:#1A1D24;">Hoeffding Forest 預測</h3>
+      <p style="margin:6px 0 0; font-size:12.5px; line-height:1.6; color:#5C626C;">預測 → y_pred、proba_matrix(每棵樹每類別機率);self.buffer.append;err=|y_true − y_pred|;同步把 (x, y, index) 推入 _ecpf_ring。</p>
+      <div style="display:flex; align-items:flex-start; gap:7px; margin-top:9px; padding:7px 10px; background:#F4F8F5; border-radius:7px; border:1px solid #E3EDE6;"><span style="color:#2E9460; font-weight:700;">→</span><span style="font-size:12px; color:#37503F; line-height:1.5;"><b>output</b> y_pred · proba_matrix · err → 餵給 extract_signal;(x,y,index) → _ecpf_ring</span></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:9px; align-items:center;">
+        <span style="font-size:11.5px; color:#7C8089; background:#F0EFEB; border:1px dashed #D5D3CB; border-radius:6px; padding:3px 9px;">y_pred · proba_matrix(逐筆,未存事件層)</span>
+        <span style="font-size:11.5px; color:#7C8089; background:#F0EFEB; border:1px dashed #D5D3CB; border-radius:6px; padding:3px 9px;">_ecpf_ring:deque maxlen 5000 · 僅 meta_retro_60 回讀</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:14px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">3</div>
+      <div style="width:2px; flex:1; min-height:14px; background:#2E9460; margin:3px 0;"></div>
+    </div>
+    <div style="flex:1; min-width:0; background:#fff; border:1px solid #E2E0D8; border-left:3px solid #2E9460; border-radius:10px; padding:13px 15px; margin-bottom:10px;">
+      <h3 style="margin:0; font-size:14.5px; font-weight:700; color:#1A1D24;">extract_signal 抽訊號</h3>
+      <p style="margin:6px 0 0; font-size:12.5px; line-height:1.6; color:#5C626C;">→ warning_value / drift_value(UQ 組合來源是 proba_matrix;預設 <span style="font-family:'IBM Plex Mono',monospace; font-size:12px;">signal='error'</span>)。</p>
+      <div style="display:flex; align-items:flex-start; gap:7px; margin-top:9px; padding:7px 10px; background:#F4F8F5; border-radius:7px; border:1px solid #E3EDE6;"><span style="color:#2E9460; font-weight:700;">→</span><span style="font-size:12px; color:#37503F; line-height:1.5;"><b>output(live)</b> warning_value · drift_value(逐筆,在 stage1,未存本事件表)</span></div>
+      <div style="margin-top:11px; font-size:11.5px; color:#9A6A0E; font-weight:600;">事件層僅有離線摘要(prewarn,事後由 stage1 逐筆訊號算):</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+        <div style="display:flex; flex-direction:column; gap:1px; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#9A6A0E; font-weight:500;">prewarn_slope</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13.5px; font-weight:600; color:#9A6A0E;">{{ prewarnSlope }}</span></div>
+        <div style="display:flex; flex-direction:column; gap:1px; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#9A6A0E; font-weight:500;">prewarn_peak</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13.5px; font-weight:600; color:#9A6A0E;">{{ prewarnPeak }}</span></div>
+        <div style="display:flex; flex-direction:column; gap:1px; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#9A6A0E; font-weight:500;">prewarn_mean</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13.5px; font-weight:600; color:#9A6A0E;">{{ prewarnMean }}</span></div>
+        <span style="align-self:center; font-size:10.5px; color:#B0894A; font-weight:600; background:#FCF6E6; border:1px dashed #E3CE92; border-radius:4px; padding:2px 7px;">離線摘要</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:14px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">4</div>
+      <div style="width:2px; flex:1; min-height:14px; background:#2E9460; margin:3px 0;"></div>
+    </div>
+    <div style="flex:1; min-width:0; background:#fff; border:1px solid #E2E0D8; border-left:3px solid #2E9460; border-radius:10px; padding:13px 15px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <h3 style="margin:0; font-size:14.5px; font-weight:700; color:#1A1D24;">ADWIN 偵測器 update_values</h3>
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:600; color:#9A6A0E; background:#FBF2DC; border:1px dashed #D9B96A; border-radius:4px; padding:1px 7px;">⤍ 診斷 log(detector stats)</span>
+      </div>
+      <p style="margin:6px 0 0; font-size:12.5px; line-height:1.6; color:#5C626C;">→ is_warning / is_drift;<span style="font-family:'IBM Plex Mono',monospace; font-size:12px;">tracer.log_signal(...)</span> 為 observer-only(預設 NullTracer,單向不回饋)。</p>
+      <div style="display:flex; align-items:flex-start; gap:7px; margin-top:9px; padding:7px 10px; background:#F4F8F5; border-radius:7px; border:1px solid #E3EDE6;"><span style="color:#2E9460; font-weight:700;">→</span><span style="font-size:12px; color:#37503F; line-height:1.5;"><b>output</b> is_warning · is_drift → 餵給警告狀態機</span></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:9px; align-items:center;">
+        <div style="display:flex; flex-direction:column; gap:1px; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">source</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#1A7A4A;">{{ source }}</span></div>
+        <span style="align-self:center; font-size:11.5px; font-weight:600; color:#1A7A4A; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:6px; padding:4px 10px;">本事件 = 確認漂移 · is_warning ✓ → is_drift ✓</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:14px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">5</div>
+      <div style="width:2px; flex:1; min-height:14px; background:#2E9460; margin:3px 0;"></div>
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="background:#fff; border:1px solid #E2E0D8; border-left:3px solid #2E9460; border-radius:10px; padding:13px 15px; margin-bottom:9px;">
+        <h3 style="margin:0; font-size:14.5px; font-weight:700; color:#1A1D24;">warning 狀態機</h3>
+        <p style="margin:6px 0 0; font-size:12.5px; line-height:1.6; color:#5C626C;">開啟警告時記 warning_start_idx、收集 _ecpf_buffer (x, y)。</p>
+        <div style="display:flex; align-items:flex-start; gap:7px; margin-top:9px; padding:7px 10px; background:#F4F8F5; border-radius:7px; border:1px solid #E3EDE6;"><span style="color:#2E9460; font-weight:700;">→</span><span style="font-size:12px; color:#37503F; line-height:1.5;"><b>output</b> warning buffer(x, y)→ 供 on_drift 在其上算 acc / error bitset</span></div>
+        <div style="display:flex; gap:7px; flex-wrap:wrap; margin-top:10px;">
+          <div style="display:flex; flex-direction:column; gap:1px; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">warning_t</span><span style="font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600; color:#1A7A4A;">{{ warningT }}</span></div>
+          <div style="align-self:center; color:#9FCDB3; font-weight:700;">→</div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">confirmation_t</span><span style="font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600; color:#1A7A4A;">{{ confT }}</span></div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">age(warning_to_confirm)</span><span style="font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600; color:#1A7A4A;">{{ age }}</span></div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">buffer_len</span><span style="font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600; color:#1A7A4A;">{{ bufferLen }}</span></div>
+        </div>
+        <div style="margin-top:9px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5; background:#F1EFFB; border:1px solid #DDD8F4; border-radius:4px; padding:2px 7px;">ecpf_warning_length = 60(配置 L)· buffer_len 為當次警告→確認實收</span></div>
+      </div>
+      <!-- 5a alternate exit -->
+      <div style="background:#FCFBF7; border:1px dashed #C9C6BB; border-radius:10px; padding:11px 14px; margin-bottom:10px; margin-left:18px; position:relative;">
+        <div style="position:absolute; left:-18px; top:-4px; width:18px; height:26px; border-left:2px solid #C9A24A; border-bottom:2px solid #C9A24A; border-bottom-left-radius:8px;"></div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; color:#9A6A0E;">5a</span>
+          <h4 style="margin:0; font-size:13px; font-weight:700; color:#7A5A1E;">替代出口 · 警告逾時 / 誤報取消</h4>
+          <span style="font-size:10.5px; font-weight:600; color:#9A6A0E; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:4px; padding:1px 7px;">warning → 無漂移 → 中止</span>
+        </div>
+        <p style="margin:6px 0 0; font-size:12px; line-height:1.6; color:#6B645A;">uq_warning 模式 age ≥ ecpf_uq_warning_timeout(1000)仍未確認漂移 → <b style="color:#1E222A;">丟棄 buffer、重置 UQ 偵測器</b>。並非每個 warning 都通往 confirm。</p>
+        <div style="margin-top:8px;"><span style="font-size:11.5px; color:#7C8089; background:#F0EFEB; border:1px dashed #D5D3CB; border-radius:6px; padding:3px 9px;">機制節點 · 未存事件層</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 on_drift container -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:14px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">6</div>
+      <div style="width:2px; flex:1; min-height:14px; background:#2E9460; margin:3px 0;"></div>
+    </div>
+    <div style="flex:1; min-width:0; background:#fff; border:1px solid #DDE6E0; border-left:3px solid #2E9460; border-radius:10px; padding:14px 16px; margin-bottom:10px; box-shadow:0 1px 0 rgba(46,148,96,.04);">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <h3 style="margin:0; font-size:15px; font-weight:700; color:#1A1D24;">on_drift(確認漂移時呼叫)</h3>
+        <span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:2px 6px;">⚙ 池維護</span>
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:600; color:#9A6A0E; background:#FBF2DC; border:1px dashed #D9B96A; border-radius:4px; padding:1px 7px;">⤍ 診斷 log</span>
+        <span style="font-size:11px; color:#8A909A;">6a–6k 為<b style="color:#1E222A;">有序</b>子步驟</span>
+      </div>
+
+      <!-- substeps -->
+      <div style="margin-top:11px; border:1px solid #EDEBE3; border-radius:9px; overflow:hidden;">
+        <div style="display:flex; gap:11px; padding:9px 12px; background:#FBFCFB;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6a</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">凍結現役 leader <span style="display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:1px 5px; margin-left:3px;">⚙</span></div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">slots[current_idx] = deep_clone(prediction_model) — 先把學到的定格,之後比較的是凍結複本,不是還在變動的物件</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6b</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">更新該 slot 的終身統計 slot_stats <span style="display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:1px 5px; margin-left:3px;">⚙</span></div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">n_inst += total_inst、n_correct += curr_correct(終身準確率)→ 稍後當「合併淘汰誰」的 tie-break</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6c</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">計算 alive 集合;空池 → bootstrap 重新播種 <span style="display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:1px 5px; margin-left:3px;">⚙</span></div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">若池全空 → bootstrap_first_expert(空池保護)</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6d</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">每個 alive slot 在 buffer 上算 error bitset</div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">wrong_bits 與<b style="color:#9A6A0E;">第一版 acc_on_buffer(合併前 · 稍後被覆寫丟棄)</b></div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6e</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">相似度累積(paper §3.1)<span style="display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:1px 5px; margin-left:3px;">⚙</span></div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">每對 alive slot wrong_bits XOR,agreed = len(buffer) − diff.sum(),累加到 _pair_seen / _pair_agreed(跨所有漂移的累積一致度 → 合併門檻輸入)</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:10px 12px; border-top:1px solid #EFEEE8; background:#FAF7FC;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:11.5px; color:#4A3FB5; padding-top:1px;">6f</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#3A2F8F;">★ 相似度合併 _merge_models <span style="display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:1px 5px; margin-left:3px;">⚙ 改變池</span></div><div style="font-size:11.5px; color:#5C626C; line-height:1.55; margin-top:2px;">對每對 seen&gt;0 且 agreed/seen ≥ m(0.95)→ 判定<b style="color:#1E222A;">概念等價</b> → 淘汰「終身準確率較低」slot(由 6b 決定,平手保留 i),勝者繼承敗者 fade,model_merges += 1,敗者 _remove_slot;回傳 removed → details['merged']</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6g</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">current_idx 修正</div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">若 current_idx 的 slot 在合併中被刪 → 修正到第一個倖存者</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:10px 12px; border-top:1px solid #EFEEE8; background:#F4F8F5;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6h</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#1A7A4A;">★ 重算 acc_on_buffer(合併後版)— load-bearing</div><div style="font-size:11.5px; color:#5C626C; line-height:1.55; margin-top:2px;">重算倖存者 alive,並重算 acc_on_buffer。<b style="color:#1E222A;">兩段 acc_on_buffer:第一段(6d)丟棄、第二段(合併後)才驅動 best_idx 並寫進 details</b></div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6i</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">訓練新影子 new_model</div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">_fresh_model() 後在「整個 warning buffer」上批次 fit(這是 acc_new 的來源)</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:10px 12px; border-top:1px solid #EFEEE8; background:#F4F8F5;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6j</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#1A7A4A;">★ 選 best_idx = argmax(合併後 acc_on_buffer)</div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">reuse 候選;驅動者是合併後的 acc_on_buffer,<b style="color:#1E222A;">不是 acc_best / acc_current,也不是合併前那版</b></div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">6k</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">clone(best) → append 成新 slot <span style="display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:1px 5px; margin-left:3px;">⚙ 池長大</span></div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">slots.append、slot_stats.append、fade_scores.setdefault(new_idx, 0)、current_idx = new_idx(原 best 仍留池中存檔)</div></div>
+        </div>
+      </div>
+
+      <!-- snapshot 6h/6j/7 -->
+      <div style="margin-top:12px; background:#F4F8F5; border:1px solid #D6E6DC; border-radius:9px; padding:12px 13px;">
+        <div style="font-size:11.5px; font-weight:700; color:#1A7A4A; margin-bottom:9px;">本事件快照 · 節點 6h/6j → 7(事件層真有存)</div>
+        <div style="display:flex; gap:7px; flex-wrap:wrap; margin-bottom:11px;">
+          <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #B9DEC9; border-radius:7px; padding:6px 12px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">best_idx</span><span style="font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:600; color:#1A7A4A;">{{ bestIdx }}</span></div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #B9DEC9; border-radius:7px; padding:6px 12px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">current_idx</span><span style="font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:600; color:#1A7A4A;">{{ currentIdx }}</span></div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #B9DEC9; border-radius:7px; padding:6px 12px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">collection_size</span><span style="font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:600; color:#1A7A4A;">{{ collectionSize }}</span></div>
+          <span style="align-self:center; font-size:10.5px; color:#5E8870;">collection_size 受合併/淡出/池上限影響(≤ 10)</span>
+        </div>
+        <div style="font-size:10.5px; color:#7C8089; margin-bottom:6px;">三條 acc 橫條(0.85–1.0 映射)— acc_best 驅動 best_idx;<b style="color:#9A6A0E;">acc_new 算了但不選 leader</b></div>
+        <div style="margin-bottom:9px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#3A4048;">acc_current_on_warning</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:#6B7C95;">{{ accCurPct }}</span></div><div style="height:8px; background:#E7E9EC; border-radius:5px; overflow:hidden;"><div style="height:100%; border-radius:5px; background:#8896AB; width: {{ accCurW }}%;"></div></div></div>
+        <div style="margin-bottom:9px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#3A4048;">acc_best_on_warning</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:#1A7A4A;">{{ accBestPct }}</span></div><div style="height:8px; background:#E3EFE8; border-radius:5px; overflow:hidden;"><div style="height:100%; border-radius:5px; background:#2E9460; width: {{ accBestW }}%;"></div></div></div>
+        <div style="margin-bottom:2px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#3A4048;">acc_new_on_warning</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:#9A6A0E;">{{ accNewPct }}</span></div><div style="height:8px; background:#F2EEE2; border-radius:5px; overflow:hidden;"><div style="height:100%; border-radius:5px; background:#D8AE55; width: {{ accNewW }}%;"></div></div></div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:11px; align-items:center;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5; background:#F1EFFB; border:1px solid #DDD8F4; border-radius:4px; padding:2px 7px;">m = 0.95</span>
+        <span style="font-size:11.5px; color:#7C8089; background:#F0EFEB; border:1px dashed #D5D3CB; border-radius:6px; padding:3px 9px;">⚙ 相似度/合併/累積:每漂移執行、改變池 · 事件層僅 collection_size / merged 間接反映</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:14px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">7</div>
+      <div style="width:2px; flex:1; min-height:14px; background:#2E9460; margin:3px 0;"></div>
+    </div>
+    <div style="flex:1; min-width:0; background:#fff; border:1px solid #DDE6E0; border-left:3px solid #2E9460; border-radius:10px; padding:14px 16px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <h3 style="margin:0; font-size:15px; font-weight:700; color:#1A1D24;">★ _copy_model_into · 就地換 leader</h3>
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:600; color:#9A6A0E; background:#FBF2DC; border:1px dashed #D9B96A; border-radius:4px; padding:1px 7px;">⤍ 診斷 log</span>
+      </div>
+      <p style="margin:7px 0 0; font-size:12.5px; line-height:1.6; color:#5C626C;">就地把 best 複本寫入現役 prediction_model(model / scaler / _scaler_fitted;進階路徑複製 get_model())。<b style="color:#1E222A;">無條件就地換 leader</b>(winner_initial="reused_copy",ECPF / MOA 既定設計)。</p>
+      <div style="display:flex; align-items:flex-start; gap:7px; margin-top:9px; padding:8px 11px; background:#EAF4EE; border-radius:7px; border:1px solid #C7E2D2;"><span style="color:#1A7A4A; font-weight:700;">→</span><span style="font-size:12.5px; color:#1A5C39; line-height:1.5;"><b>現役 prediction_model 現在就是 best 複本</b> — 改變之後每一筆預測</span></div>
+
+      <div style="margin-top:12px; border:1px solid #EDEBE3; border-radius:9px; overflow:hidden;">
+        <div style="display:flex; gap:11px; padding:10px 12px; background:#FAF7FC;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:11.5px; color:#4A3FB5; padding-top:1px;">7a</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#3A2F8F;">★ 淡出 FADING _fade_models <span style="display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:1px 5px; margin-left:3px;">⚙ 改變池</span></div><div style="font-size:11.5px; color:#5C626C; line-height:1.55; margin-top:2px;">current_idx + fade_points(+15);其餘每個 alive slot −1;分數 ≤ 0 直接從池移除。⇒ 從未被重用的專家約 <b style="color:#1E222A;">15 次漂移後淘汰</b>;新 leader 雖以 0 起,但因是 current_idx 立刻 +15</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:10px 12px; border-top:1px solid #EFEEE8; background:#FAF7FC;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:11.5px; color:#4A3FB5; padding-top:1px;">7b</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#3A2F8F;">★ 池上限 _enforce_pool_cap <span style="display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:4px; padding:1px 5px; margin-left:3px;">⚙ 改變池</span></div><div style="font-size:11.5px; color:#5C626C; line-height:1.55; margin-top:2px;">alive slot 數 &gt; max_pool_size(10)→ 反覆驅逐「fade 分數最低的<b style="color:#1E222A;">非 leader</b> slot」(leader 永不被驅逐)直到 ≤ 上限</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">7c</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">重置對決計數</div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">curr_correct = new_correct = total_inst = 0;model_reuses += 1</div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">7d</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">組裝並回傳 details</div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">collection_size、current_idx、best_idx、acc_current/best/new_on_warning、winner_initial、acc_on_buffer、merged → <span style="color:#9A6A0E;">虛線分叉到 logging</span></div></div>
+        </div>
+        <div style="display:flex; gap:11px; padding:9px 12px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 26px; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; color:#1A7A4A; padding-top:1px;">7e</span>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:600; color:#1E222A;">漂移後管線重置(_handle_ecpf_drift 呼叫端)</div><div style="font-size:11.5px; color:#5C626C; line-height:1.5; margin-top:1px;">關閉警告、清 _ecpf_buffer、meta_detector.reset()、清 batch、重建 StreamBuffer;uq 模式另重置兩個 UQ 偵測器</div></div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:11px; align-items:center;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5; background:#F1EFFB; border:1px solid #DDD8F4; border-radius:4px; padding:2px 7px;">fade_points = 15</span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5; background:#F1EFFB; border:1px solid #DDD8F4; border-radius:4px; padding:2px 7px;">max_pool_size = 10</span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5; background:#F1EFFB; border:1px solid #DDD8F4; border-radius:4px; padding:2px 7px;">StreamBuffer max_len = 3000</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <div style="display:flex; gap:14px;">
+    <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 38px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:#1A7A4A; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:14px; box-shadow:0 2px 5px rgba(26,122,74,.28); flex:0 0 auto;">8</div>
+    </div>
+    <div style="flex:1; min-width:0; background:#fff; border:1px solid #E2E0D8; border-left:3px solid #2E9460; border-radius:10px; padding:14px 16px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <h3 style="margin:0; font-size:15px; font-weight:700; color:#1A1D24;">in-control 對決(stage④)</h3>
+        <span style="font-size:10.5px; font-weight:600; color:#1A7A4A; background:#E8F4ED; border:1px solid #B9DEC9; border-radius:4px; padding:1px 7px;">stage④ · 已量測 ✓</span>
+      </div>
+      <p style="margin:7px 0 0; font-size:12.5px; line-height:1.6; color:#5C626C;">每步 on_stream_instance 對 leader 與 new_model 都 _train_one;累計 curr_correct / new_correct;每 model_check_freq 步 _compare_classifiers;當 <b style="color:#1E222A;">curr_correct &lt; new_correct(影子嚴格較準)才換將</b> — 換將同時對調 model 權重 + scaler + _scaler_fitted,並把換好的 leader 重新凍結進 slot,改變之後每一筆預測。</p>
+      <div style="margin-top:9px; padding:8px 11px; background:#F6F7F9; border:1px solid #E6E9EE; border-radius:7px; font-size:11.5px; color:#5C626C; line-height:1.55;"><b style="color:#41506A;">鎖定期語意</b> · _lock_out&gt;0 時 step() 仍跑 on_stream_instance(leader + 影子持續訓練/對決),但<b style="color:#1E222A;">跳過 meta-detector 與漂移確認</b>(保護剛換的模型不被漂移後雜訊誤觸)。純 ECPF 警告模式(oracle_60 / adwin-family / meta_ecpf_* / uq_warning)其實不設 lock-out;僅 meta_retro_60 與非 ECPF 路徑會設。</div>
+      <div style="margin-top:9px; padding:8px 11px; background:#F6F7F9; border:1px solid #E6E9EE; border-radius:7px; font-size:11.5px; color:#5C626C; line-height:1.55;">new_model 只在「兩次漂移之間的視窗」存在,故對決僅在漂移後 in-control 期運作。</div>
+      <!-- stage4 measured snapshot -->
+      <div style="margin-top:11px; background:#F4F8F5; border:1px solid #D6E6DC; border-radius:9px; padding:12px 13px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-bottom:9px;">
+          <span style="font-size:11.5px; font-weight:700; color:#1A7A4A;">本事件對決結果 · 事件層已存(🟢 真實)</span>
+          <span style="{{ duelWinnerBadge }}">{{ duelWinnerTxt }}</span>
+        </div>
+        <div style="display:flex; gap:7px; flex-wrap:wrap;">
+          <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">n_leader_swaps</span><span style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:#1A7A4A;">{{ nSwaps }}</span></div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">duel_final_margin</span><span style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:#1A7A4A;">{{ duelMargin }}</span></div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">duel_segment_len</span><span style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:#1A7A4A;">{{ duelSeg }}</span></div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">fresh_ever_led</span><span style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:#1A7A4A;">{{ freshLedTxt }}</span></div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #B9DEC9; border-radius:7px; padding:6px 11px;"><span style="font-size:10px; color:#5E8870; font-weight:500;">reuse_survived</span><span style="font-family:'IBM Plex Mono',monospace; font-size:15px; font-weight:600; color:#1A7A4A;">{{ reuseSurvTxt }}</span></div>
+        </div>
+      </div>
+      <!-- honest snapshot-vs-duel -->
+      <div style="{{ snapNodeStyle }}">
+        <span style="font-size:11.5px; font-weight:700;">buffer 表象 vs 對決 · snapshot_matched_duel = {{ snapMatchVal }}</span>
+        <div style="font-size:11.5px; margin-top:4px; line-height:1.55;">{{ snapNodeNote }}</div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5; background:#F1EFFB; border:1px solid #DDD8F4; border-radius:4px; padding:2px 7px;">model_check_freq = 1</span>
+        <span style="font-size:11px; color:#5C626C; background:#F4F8F5; border:1px solid #D6E6DC; border-radius:6px; padding:3px 9px; line-height:1.5;">全庫 TP:收盤 leader 為新模型 <b style="color:#9A6A0E;">101</b> / 重用 <b style="color:#1A7A4A;">63</b>;buffer 表象與對決一致率僅 <b>38%</b>(全庫 62%)</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+      <div id="__DIAG__" style="position:sticky; top:64px;">
+  <div style="background:#FCFAF4; border:1.5px dashed #D9B96A; border-radius:13px; padding:15px 16px;">
+    <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap;">
+      <span style="font-size:13px; font-weight:700; color:#9A6A0E;">🟡 診斷分支 · logging</span>
+    </div>
+    <div style="font-size:11.5px; color:#A07B30; margin-top:3px; line-height:1.5;">DriftDetection.details — 從節點 <b>4 · 6h/6j · 7</b> 虛線分叉而來</div>
+    <div style="display:inline-flex; align-items:center; gap:5px; margin-top:8px; font-size:10.5px; font-weight:600; color:#9A6A0E; background:#FBF2DC; border:1px dashed #D9B96A; border-radius:5px; padding:3px 8px;">⤍ observer-only · 不回饋 runtime 決策</div>
+
+    <div style="height:1px; background:#EADFC2; margin:13px 0;"></div>
+
+    <div style="font-size:11px; font-weight:700; color:#7A5A1E; margin-bottom:8px;">本事件診斷值</div>
+
+    <div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#5C626C;">acc_current_on_warning</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600; color:#6B7C95;">{{ accCurPct }}</span></div><div style="height:6px; background:#EFECE3; border-radius:4px; overflow:hidden;"><div style="height:100%; border-radius:4px; background:#8896AB; width: {{ accCurW }}%;"></div></div></div>
+    <div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#5C626C;">acc_best_on_warning</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600; color:#1A7A4A;">{{ accBestPct }}</span></div><div style="height:6px; background:#EFECE3; border-radius:4px; overflow:hidden;"><div style="height:100%; border-radius:4px; background:#2E9460; width: {{ accBestW }}%;"></div></div></div>
+    <div style="margin-bottom:6px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#5C626C;">acc_new_on_warning</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600; color:#9A6A0E;">{{ accNewPct }}</span></div><div style="height:6px; background:#EFECE3; border-radius:4px; overflow:hidden;"><div style="height:100%; border-radius:4px; background:#D8AE55; width: {{ accNewW }}%;"></div></div></div>
+
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+      <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #E6DCC2; border-radius:6px; padding:5px 9px;"><span style="font-size:9.5px; color:#A07B30;">collection_size</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#7A5A1E;">{{ collectionSize }}</span></div>
+      <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #E6DCC2; border-radius:6px; padding:5px 9px;"><span style="font-size:9.5px; color:#A07B30;">detector stats</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:500; color:#A8A092;">未存事件 CSV</span></div>
+      <div style="display:flex; flex-direction:column; gap:1px; background:#fff; border:1px solid #E6DCC2; border-radius:6px; padding:5px 9px;"><span style="font-size:9.5px; color:#A07B30;">merged</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:500; color:#A8A092;">未存事件 CSV</span></div>
+    </div>
+
+    <div style="margin-top:12px; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:8px; padding:9px 11px;">
+      <div style="font-size:11.5px; font-weight:700; color:#8A5E10; line-height:1.5;">acc_new_on_warning 算了但<span style="text-decoration:underline; text-decoration-color:#C89A3C;">不選 leader</span></div>
+      <div style="font-size:11px; color:#9A6A0E; margin-top:3px; line-height:1.55;">leader 一律是 best 複本(winner_initial="reused_copy");acc_new 不 gate 任何決策,僅作對決參考(stage④)。</div>
+    </div>
+
+    <div style="height:1px; background:#EADFC2; margin:13px 0;"></div>
+
+    <div style="font-size:11px; font-weight:700; color:#7A5A1E; margin-bottom:7px;">計數類 · 只進 log,不在事件 CSV</div>
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#fff; border:1px solid #E6DCC2; border-radius:6px; padding:6px 10px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5C626C;">num_drifts</span><span style="font-size:10px; color:#A8A092; background:#F4F0E6; border-radius:4px; padding:2px 6px;">未存事件 CSV</span></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#fff; border:1px solid #E6DCC2; border-radius:6px; padding:6px 10px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5C626C;">model_reuses</span><span style="font-size:10px; color:#9A6A0E; background:#FBF2DC; border:1px solid #E8D6A6; border-radius:4px; padding:1px 6px;">每漂移 +1 · 印證 reused_copy</span></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#fff; border:1px solid #E6DCC2; border-radius:6px; padding:6px 10px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5C626C;">model_merges</span><span style="font-size:10px; color:#A8A092; background:#F4F0E6; border-radius:4px; padding:2px 6px;">量化合併次數</span></div>
+    </div>
+  </div>
+</div>
+    </div>
+
+    <!-- ============ OFFLINE PANEL ============ -->
+    <div id="__OFFLINE__" style="margin-top:30px;">
+  <!-- disconnect separator -->
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+    <div style="flex:1; height:0; border-top:2px dashed #C6CCD4;"></div>
+    <span style="font-size:11px; font-weight:600; color:#6E7886; background:#EBEFF4; border:1px solid #D2D9E2; border-radius:20px; padding:5px 13px; white-space:nowrap;">⚪ 無回饋箭頭連 runtime · 單向、事後</span>
+    <div style="flex:1; height:0; border-top:2px dashed #C6CCD4;"></div>
+  </div>
+
+  <div style="background:#F3F5F8; border:1px solid #DCE2EA; border-radius:14px; padding:18px 20px;">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span style="font-size:15px; font-weight:700; color:#384459;">⚪ 離線分析層</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6E7886; background:#E5EAF0; border:1px solid #D2D9E2; border-radius:5px; padding:3px 8px;">執行後 · analyze_stage_interactions.py 讀 trace + meta.json</span>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:14px; margin-top:16px;">
+
+      <!-- Group A: 對決事後判讀 -->
+      <div style="background:#fff; border:1px solid #DEE4EC; border-radius:11px; padding:14px;">
+        <div style="font-size:12px; font-weight:700; color:#41506A; margin-bottom:11px;">對決事後判讀 <span style="font-weight:400; color:#9298A2;">(衍生)</span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #F0F2F5;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#5C626C;">reuse_looked_better</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:{{ reuseChipColor }};">{{ reuseVal }}</span>
+        </div>
+        <div style="font-size:11px; color:#8A909A; padding:5px 0 9px; line-height:1.5;">{{ reuseLabel }}</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#5C626C;">acc_best_minus_new</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:{{ bmnColor }};">{{ accBestMinusNew }}</span>
+        </div>
+      </div>
+
+      <!-- Group B: ground-truth 對齊 -->
+      <div style="background:#fff; border:1px solid #DEE4EC; border-radius:11px; padding:14px;">
+        <div style="font-size:12px; font-weight:700; color:#41506A; margin-bottom:11px;">ground-truth 對齊 <span style="font-weight:400; color:#9298A2;">(需真值)</span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #F0F2F5;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#5C626C;">gt_match</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; padding:2px 9px; border-radius:5px; color:#fff; background:{{ gtBadgeBg }};">{{ gtMatch }}</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #F0F2F5;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#5C626C;">nearest_drift_start</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#384459;">{{ nearestDrift }}</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#5C626C;">confirmation_delay</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:{{ confDelayColor }};">{{ confDelay }}</span>
+        </div>
+      </div>
+
+      <!-- Group C: prewarn 事後 -->
+      <div style="background:#fff; border:1px solid #DEE4EC; border-radius:11px; padding:14px;">
+        <div style="font-size:12px; font-weight:700; color:#41506A; margin-bottom:11px;">prewarn 訊號事後 <span style="font-weight:400; color:#9298A2;">(stage1 逐筆算)</span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #F0F2F5;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#5C626C;">prewarn_slope</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:#384459;">{{ prewarnSlope }}</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid #F0F2F5;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#5C626C;">prewarn_peak</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#384459;">{{ prewarnPeak }}</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#5C626C;">prewarn_mean</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:#384459;">{{ prewarnMean }}</span>
+        </div>
+        <div style="font-size:10.5px; color:#9298A2; margin-top:6px; line-height:1.5;">prewarn_slope 可能為空 → 顯示「—」</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- ============ BONUS: scatter + lifecycle ============ -->
+    <div id="__BONUS__" style="margin-top:26px;">
+  <div style="display:grid; grid-template-columns:minmax(0, 440px) minmax(0, 1fr); gap:20px; align-items:start;">
+
+    <!-- SCATTER ③→④ -->
+    <div style="background:#fff; border:1px solid #E2E0D8; border-radius:14px; padding:16px 18px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <h3 style="margin:0; font-size:15px; font-weight:700; color:#1A1D24;">③→④ buffer 表象散點</h3>
+        <span style="font-size:10.5px; color:#6E7886; background:#EBEFF4; border:1px solid #D2D9E2; border-radius:5px; padding:2px 7px;">點一下載入該事件</span>
+      </div>
+      <p style="margin:6px 0 0; font-size:11.5px; color:#7C8089; line-height:1.55;">x = acc_best_on_warning,y = acc_new_on_warning。對角線 <b style="color:#5C626C;">y = x</b> 下方 = acc_new &gt; acc_best = <b style="color:#9A6A0E;">新模型在 buffer 看起來較準</b>。最終勝負由 stage④ 對決決定(見節點 8,已量測)。</p>
+
+      <svg viewBox="0 0 430 430" width="100%" style="display:block; margin-top:10px; overflow:visible;">
+        <sc-for list="{{ scatter.yticks }}" as="t" hint-placeholder-count="0">
+          <line x1="{{ t.x0 }}" y1="{{ t.y }}" x2="{{ t.x1 }}" y2="{{ t.y }}" stroke="#F0EFEA" stroke-width="1"></line>
+          <text x="42" y="{{ t.y }}" text-anchor="end" dominant-baseline="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#A8AEB6">{{ t.label }}</text>
+        </sc-for>
+        <sc-for list="{{ scatter.xticks }}" as="t" hint-placeholder-count="0">
+          <text x="{{ t.x }}" y="402" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#A8AEB6">{{ t.label }}</text>
+        </sc-for>
+        <line x1="{{ scatter.diagX1 }}" y1="{{ scatter.diagY1 }}" x2="{{ scatter.diagX2 }}" y2="{{ scatter.diagY2 }}" stroke="#B7BEC8" stroke-width="1.3" stroke-dasharray="5 4"></line>
+        <text x="360" y="64" font-family="IBM Plex Mono, monospace" font-size="10" fill="#9AA1AB" transform="rotate(-45 360 64)">y = x</text>
+        <line x1="50" y1="386" x2="416" y2="386" stroke="#D9D7CE" stroke-width="1.2"></line>
+        <line x1="50" y1="14" x2="50" y2="386" stroke="#D9D7CE" stroke-width="1.2"></line>
+        <sc-for list="{{ scatter.pts }}" as="p" hint-placeholder-count="0">
+          <sc-if value="{{ p.sel }}" hint-placeholder-val="{{ false }}"><circle cx="{{ p.cx }}" cy="{{ p.cy }}" r="9" fill="none" stroke="#1A1D24" stroke-width="1.6"></circle></sc-if>
+          <circle cx="{{ p.cx }}" cy="{{ p.cy }}" r="{{ p.r }}" fill="{{ p.fill }}" stroke="{{ p.stroke }}" stroke-width="{{ p.sw }}" onClick="{{ p.onClick }}" style="cursor:pointer;"></circle>
+        </sc-for>
+        <text x="233" y="422" text-anchor="middle" font-family="Noto Sans TC, sans-serif" font-size="11" fill="#6E7886">acc_best_on_warning →</text>
+        <text x="14" y="200" text-anchor="middle" font-family="Noto Sans TC, sans-serif" font-size="11" fill="#6E7886" transform="rotate(-90 14 200)">acc_new_on_warning →</text>
+      </svg>
+
+      <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:8px; font-size:11px; color:#5C626C;">
+        <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:#2E9460;"></span>reuse 較準(1)</span>
+        <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:#D8AE55;"></span>新模型較準(0)</span>
+        <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:#2E9460;"></span>實心 = TP</span>
+        <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; border:1.4px solid #B98A22; background:transparent;"></span>空心 = FP</span>
+      </div>
+      <div style="font-size:10.5px; color:#A8AEB6; margin-top:6px;">軸裁切於 0.80;{{ scatter.clipped }} 個點落在範圍外被夾邊。黑圈 = 目前選定事件。</div>
+    </div>
+
+    <!-- POOL LIFECYCLE LEGEND -->
+    <div style="background:#fff; border:1px solid #E2E0D8; border-radius:14px; padding:16px 18px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <h3 style="margin:0; font-size:15px; font-weight:700; color:#1A1D24;">模型池 · 活體維護(每漂移順序)</h3>
+        <span style="display:inline-flex; align-items:center; gap:3px; font-size:10.5px; font-weight:600; color:#4A3FB5; background:#ECEAFB; border:1px solid #CFC9F2; border-radius:5px; padding:2px 7px;">⚙ 池維護</span>
+      </div>
+      <p style="margin:6px 0 12px; font-size:11.5px; color:#7C8089; line-height:1.55;">池<b style="color:#1E222A;">不是靜態存檔架</b> — 每次漂移都會合併、淡出、超量驅逐。下列步驟<b style="color:#1E222A;">真的決定哪些專家存活、影響未來能重用誰</b>(故屬 🟢,非診斷或離線)。</p>
+
+      <div style="border:1px solid #EDEBE3; border-radius:11px; overflow:hidden;">
+        <!-- step 1 -->
+        <div style="display:flex; gap:12px; align-items:center; padding:11px 13px;">
+          <span style="flex:0 0 24px; height:24px; border-radius:50%; background:#1A7A4A; color:#fff; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">1</span>
+          <div style="flex:0 0 70px; display:flex; gap:4px; align-items:center;">
+            <span style="width:15px; height:15px; border-radius:4px; background:#2E9460; box-shadow:0 0 0 2px #BCE0CB;"></span>
+            <span style="font-size:13px;">🔒</span>
+          </div>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#1E222A;">凍結 snapshot</div><div style="font-size:11px; color:#5C626C; line-height:1.5;">deep_clone 現役 leader 定格進 slot — 之後比較的是複本</div></div>
+        </div>
+        <!-- step 2 -->
+        <div style="display:flex; gap:12px; align-items:center; padding:11px 13px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 24px; height:24px; border-radius:50%; background:#4A3FB5; color:#fff; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">2</span>
+          <div style="flex:0 0 70px; display:flex; gap:2px; align-items:center;">
+            <span style="width:14px; height:14px; border-radius:4px; background:#9B8FD6;"></span>
+            <span style="font-size:12px; color:#4A3FB5;">≈</span>
+            <span style="width:14px; height:14px; border-radius:4px; background:#9B8FD6;"></span>
+            <span style="font-size:12px; color:#9298A2;">→</span>
+            <span style="width:14px; height:14px; border-radius:4px; background:#6D5BB8;"></span>
+          </div>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#1E222A;">相似度合併 <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5;">m = 0.95</span></div><div style="font-size:11px; color:#5C626C; line-height:1.5;">概念等價 → 淘汰終身準確率較低者,勝者繼承 fade</div></div>
+        </div>
+        <!-- step 3 -->
+        <div style="display:flex; gap:12px; align-items:center; padding:11px 13px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 24px; height:24px; border-radius:50%; background:#1A7A4A; color:#fff; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">3</span>
+          <div style="flex:0 0 70px; display:flex; gap:3px; align-items:center;">
+            <span style="width:13px; height:13px; border-radius:4px; background:#9FCDB3;"></span>
+            <span style="width:13px; height:13px; border-radius:4px; background:#9FCDB3;"></span>
+            <span style="width:13px; height:13px; border-radius:4px; background:#2E9460; box-shadow:0 0 0 2px #BCE0CB;"></span>
+            <span style="font-size:11px; color:#1A7A4A; font-weight:700;">+1</span>
+          </div>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#1E222A;">clone(best) → append</div><div style="font-size:11px; color:#5C626C; line-height:1.5;">新 leader 入池,原 best 仍留存 — <b style="color:#1E222A;">池長大</b></div></div>
+        </div>
+        <!-- step 4 -->
+        <div style="display:flex; gap:12px; align-items:center; padding:11px 13px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 24px; height:24px; border-radius:50%; background:#4A3FB5; color:#fff; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">4</span>
+          <div style="flex:0 0 70px; display:flex; gap:3px; align-items:flex-end;">
+            <span style="display:flex; flex-direction:column; align-items:center; gap:1px;"><span style="font-size:8px; color:#1A7A4A; font-weight:700;">+15</span><span style="width:13px; height:13px; border-radius:4px; background:#2E9460;"></span></span>
+            <span style="display:flex; flex-direction:column; align-items:center; gap:1px;"><span style="font-size:8px; color:#9298A2;">−1</span><span style="width:13px; height:13px; border-radius:4px; background:#A9C9B6;"></span></span>
+            <span style="display:flex; flex-direction:column; align-items:center; gap:1px;"><span style="font-size:8px; color:#B85C5C;">≤0</span><span style="width:13px; height:13px; border-radius:4px; background:#D8B3B3; animation:ecpfFadeOut 2.4s ease-in-out infinite alternate;"></span></span>
+          </div>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#1E222A;">淡出 fade</div><div style="font-size:11px; color:#5C626C; line-height:1.5;">leader +15、其餘 −1、分數 ≤0 <b style="color:#B85C5C;">淘汰</b>(約 15 漂移未重用即出局)</div></div>
+        </div>
+        <!-- step 5 -->
+        <div style="display:flex; gap:12px; align-items:center; padding:11px 13px; border-top:1px solid #EFEEE8;">
+          <span style="flex:0 0 24px; height:24px; border-radius:50%; background:#4A3FB5; color:#fff; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">5</span>
+          <div style="flex:0 0 70px; display:flex; gap:2px; align-items:center; position:relative;">
+            <span style="width:11px; height:11px; border-radius:3px; background:#2E9460;"></span>
+            <span style="width:11px; height:11px; border-radius:3px; background:#A9C9B6;"></span>
+            <span style="width:11px; height:11px; border-radius:3px; background:#A9C9B6;"></span>
+            <span style="width:11px; height:11px; border-radius:3px; background:#D8B3B3; position:relative;">✕</span>
+            <span style="font-size:10px; color:#B85C5C; font-weight:700;">&gt;10</span>
+          </div>
+          <div style="flex:1; min-width:0;"><div style="font-size:12.5px; font-weight:700; color:#1E222A;">池上限 cap <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A3FB5;">max = 10</span></div><div style="font-size:11px; color:#5C626C; line-height:1.5;">超量 → 驅逐 fade 最低的<b style="color:#1E222A;">非 leader</b>(leader 永不被驅逐)</div></div>
+        </div>
+      </div>
+      <div style="margin-top:11px; padding:9px 12px; background:#F4F8F5; border:1px solid #D6E6DC; border-radius:9px; font-size:11px; color:#37503F; line-height:1.55;"><b>164 個 TP</b> 中,72%(118)是重用在 buffer 看起來較準、28%(46 ★)是新模型較準;on_drift 一律先以 best 複本當初始 leader,最終誰勝出由 stage④ 對決決定 — 全庫 TP 收盤 leader 為新模型 101 / 重用 63,buffer 表象與對決一致率僅 38%(見節點 8)。</div>
+    </div>
+  </div>
+</div>
+
+    <footer style="margin-top:34px; padding-top:18px; border-top:1px solid #E2E0D8; font-size:12px; color:#9298A2; line-height:1.7;">
+      資料來源 <span style="font-family:'IBM Plex Mono',monospace; color:#6B7079;">event_interactions.csv</span>(798 列 · 29 欄,含 stage④ 對決 7 欄)。超參數標註取自 <span style="font-family:'IBM Plex Mono',monospace; color:#6B7079;">src/config.py</span> 與 <span style="font-family:'IBM Plex Mono',monospace; color:#6B7079;">src/ecpf.py</span> 建構子。stage④ 對決已量測並存入事件 CSV(n_leader_swaps、fresh_ever_led、final_leader_origin、duel_final_margin、duel_segment_len、reuse_survived、snapshot_matched_duel);details['merged']、num_drifts、model_reuses、model_merges 僅進 log,不在事件 CSV。
+    </footer>
+
+  </div>
+</div>
+</template>
+
+<!-- ===== x-dc runtime (replaces support.js) ===== -->
+<script>
+// ============================================================================
+// dc-runtime — a tiny standalone reimplementation of the Claude Design (x-dc)
+// template runtime, enough to drive this page without support.js.
+//
+// Supports exactly the constructs the ECPF design uses:
+//   {{ dotted.path }}   interpolation in text nodes and attribute values
+//   <sc-if value="{{ cond }}">…</sc-if>
+//   <sc-for list="{{ arr }}" as="name">…</sc-for>
+//   onClick / onChange bindings  ->  addEventListener (function from vals)
+//   value="{{ x }}"              ->  input property (with focus preservation)
+//   SVG subtrees (created in the SVG namespace)
+//
+// State/lifecycle mirror the design's DCLogic: setState(patchOrFn, cb) merges
+// state and re-renders; mount() does the first render then componentDidMount().
+// ============================================================================
+(function () {
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function cssEsc(s) {
+    if (window.CSS && CSS.escape) return CSS.escape(s);
+    return String(s).replace(/["\\]/g, '\\$&');
+  }
+
+  // Resolve a dotted path against a stack of scope objects (innermost last).
+  function resolve(path, scopes) {
+    path = (path || '').trim();
+    if (path === 'true') return true;
+    if (path === 'false') return false;
+    if (path === 'null') return null;
+    if (/^-?\d+(\.\d+)?$/.test(path)) return Number(path);
+    var segs = path.split('.');
+    var base, found = false;
+    for (var i = scopes.length - 1; i >= 0; i--) {
+      var s = scopes[i];
+      if (s && typeof s === 'object' && (segs[0] in s)) { base = s[segs[0]]; found = true; break; }
+    }
+    if (!found) return undefined;
+    for (var k = 1; k < segs.length; k++) {
+      if (base == null) return undefined;
+      base = base[segs[k]];
+    }
+    return base;
+  }
+
+  // Replace every {{ … }} occurrence inside a string.
+  function interpolate(str, scopes) {
+    if (str.indexOf('{{') === -1) return str;
+    return str.replace(/\{\{([^}]*)\}\}/g, function (_, expr) {
+      var v = resolve(expr, scopes);
+      return (v == null) ? '' : String(v);
+    });
+  }
+
+  // Pull the inner expression out of a binding attribute value like "{{ p.onClick }}".
+  function bindExpr(v) {
+    if (v == null) return '';
+    var m = v.match(/\{\{([^}]*)\}\}/);
+    return m ? m[1].trim() : v.trim();
+  }
+
+  function processChildren(node, scopes, svg) {
+    var out = [];
+    var kids = node.childNodes;
+    for (var i = 0; i < kids.length; i++) {
+      var r = processNode(kids[i], scopes, svg);
+      for (var j = 0; j < r.length; j++) out.push(r[j]);
+    }
+    return out;
+  }
+
+  // Returns an array of DOM nodes produced from a template node.
+  function processNode(node, scopes, svg) {
+    // Element
+    if (node.nodeType === 1) {
+      var tag = node.tagName.toLowerCase();
+
+      if (tag === 'sc-if') {
+        var cond = resolve(bindExpr(node.getAttribute('value')), scopes);
+        return cond ? processChildren(node, scopes, svg) : [];
+      }
+
+      if (tag === 'sc-for') {
+        var list = resolve(bindExpr(node.getAttribute('list')), scopes) || [];
+        var asName = node.getAttribute('as') || 'item';
+        var out = [];
+        for (var idx = 0; idx < list.length; idx++) {
+          var scope = {};
+          scope[asName] = list[idx];
+          scope.$index = idx;
+          var kids = processChildren(node, scopes.concat([scope]), svg);
+          for (var m = 0; m < kids.length; m++) out.push(kids[m]);
+        }
+        return out;
+      }
+
+      var isSvg = svg || tag === 'svg';
+      var el = isSvg ? document.createElementNS(SVG_NS, tag) : document.createElement(tag);
+      var attrs = node.attributes;
+      for (var a = 0; a < attrs.length; a++) {
+        var name = attrs[a].name, val = attrs[a].value, lname = name.toLowerCase();
+        if (lname.indexOf('hint-placeholder') === 0) continue;
+
+        if (lname === 'onclick' || lname === 'onchange' || lname === 'oninput') {
+          var fn = resolve(bindExpr(val), scopes);
+          if (typeof fn === 'function') {
+            var evt = lname === 'onclick' ? 'click' : 'input';
+            el.addEventListener(evt, fn);
+          }
+          continue;
+        }
+
+        var out2 = interpolate(val, scopes);
+        if (lname === 'value' && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+          try { el.value = out2; } catch (e) {}
+          el.setAttribute('value', out2);
+          el.dataset.dcFocusKey = 'val:' + bindExpr(val);
+          continue;
+        }
+        el.setAttribute(name, out2);
+      }
+
+      var childNodes = processChildren(node, scopes, isSvg);
+      for (var c = 0; c < childNodes.length; c++) el.appendChild(childNodes[c]);
+      return [el];
+    }
+
+    // Text
+    if (node.nodeType === 3) {
+      return [document.createTextNode(interpolate(node.nodeValue, scopes))];
+    }
+
+    // Comments / everything else: drop.
+    return [];
+  }
+
+  function renderTemplate(tplContent, vals) {
+    var scopes = [vals];
+    var frag = document.createDocumentFragment();
+    var kids = tplContent.childNodes;
+    for (var i = 0; i < kids.length; i++) {
+      var r = processNode(kids[i], scopes, false);
+      for (var j = 0; j < r.length; j++) frag.appendChild(r[j]);
+    }
+    return frag;
+  }
+
+  // --- Base class mirroring the design's DCLogic ------------------------------
+  function DCLogic(props) {
+    this.props = props || {};
+    this.state = {};
+    this._app = null;
+    this._tpl = null;
+  }
+  DCLogic.prototype.setState = function (patch, cb) {
+    var next = (typeof patch === 'function') ? patch(this.state) : patch;
+    this.state = Object.assign({}, this.state, next);
+    this._render();
+    if (cb) cb();
+  };
+  DCLogic.prototype.mount = function (appEl, tplContent) {
+    this._app = appEl;
+    this._tpl = tplContent;
+    this._render();
+    if (this.componentDidMount) this.componentDidMount();
+  };
+  DCLogic.prototype._render = function () {
+    var vals = this.renderVals();
+
+    // Preserve focus + caret across the full re-render (search box typing).
+    var ae = document.activeElement, fk = null, ss = null, se = null;
+    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA') &&
+        ae.dataset && ae.dataset.dcFocusKey && this._app.contains(ae)) {
+      fk = ae.dataset.dcFocusKey; ss = ae.selectionStart; se = ae.selectionEnd;
+    }
+
+    var frag;
+    if (!vals || !vals.ready) {
+      frag = document.createDocumentFragment();
+      var d = document.createElement('div');
+      d.style.cssText = 'padding:80px 24px; text-align:center; color:#9298A2; font-size:14px;';
+      d.textContent = '載入 ECPF 事件資料中…';
+      frag.appendChild(d);
+    } else {
+      frag = renderTemplate(this._tpl, vals);
+    }
+    this._app.replaceChildren(frag);
+
+    if (fk) {
+      var back = this._app.querySelector('[data-dc-focus-key="' + cssEsc(fk) + '"]');
+      if (back) { back.focus(); try { back.setSelectionRange(ss, se); } catch (e) {} }
+    }
+  };
+
+  // Expose to the ported design logic + bootstrap (same closure).
+  window.__DC = { DCLogic: DCLogic };
+})();
+</script>
+
+<!-- ===== ported design logic (verbatim from the .dc.html) + bootstrap ===== -->
+<script>
+(function () {
+  var DCLogic = window.__DC.DCLogic;
+
+  class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      events: null,
+      isMock: false,
+      selIdx: 0,
+      search: '',
+      fConfig: 'all',
+      fGt: 'all',
+      dropdownOpen: false,
+    };
+    this._cfg = {
+      uq_entropy_adwin:      { label: 'entropy · adwin',      short: 'entropy',  color: '#2C7A7B' },
+      uq_variance_seqdrift2: { label: 'variance · seqdrift2', short: 'variance', color: '#6D5BB8' },
+      uq_vote_seqdrift2:     { label: 'vote · seqdrift2',     short: 'vote',     color: '#B85C7A' },
+    };
+    this._order = ['uq_entropy_adwin', 'uq_variance_seqdrift2', 'uq_vote_seqdrift2'];
+  }
+
+  componentDidMount() { this._tryLoad(0); }
+
+  _tryLoad(n) {
+    if (typeof window !== 'undefined' && window.__ECPF_DATA && window.__ECPF_DATA.length) {
+      this.setState({ events: window.__ECPF_DATA, isMock: false }, () => this._initSel());
+    } else if (n < 50) {
+      setTimeout(() => this._tryLoad(n + 1), 50);
+    } else {
+      this.setState({ events: this._mock(), isMock: true }, () => this._initSel());
+    }
+  }
+
+  _initSel() {
+    const evs = this.state.events || [];
+    let i = evs.findIndex(e => e.isStar);
+    if (i < 0) i = evs.findIndex(e => e.gt_match === 'TP');
+    if (i < 0) i = 0;
+    this.setState({ selIdx: i });
+  }
+
+  _cfgLabel(c) { return (this._cfg[c] || {}).label || c; }
+  _cfgShort(c) { return (this._cfg[c] || {}).short || c; }
+  _cfgColor(c) { return (this._cfg[c] || {}).color || '#888'; }
+
+  _mock() {
+    const out = [];
+    const specs = [
+      { c: 'uq_entropy_adwin',      n: 5,  tp: .41, age: 3981, b: .956, nw: .949, src: 'ecpf_detector_dual_adwin' },
+      { c: 'uq_variance_seqdrift2', n: 18, tp: .20, age: 2092, b: .963, nw: .945, src: 'ecpf_detector_dual_seqdrift2' },
+      { c: 'uq_vote_seqdrift2',     n: 17, tp: .19, age: 2062, b: .960, nw: .947, src: 'ecpf_detector_dual_seqdrift2' },
+    ];
+    let k = 0;
+    specs.forEach(s => {
+      for (let j = 0; j < s.n; j++) {
+        const isTP = Math.random() < s.tp;
+        const wt = Math.floor(2000 + Math.random() * 70000);
+        const age = Math.floor(s.age * (0.3 + Math.random() * 1.6));
+        const accBest = Math.min(0.999, s.b + (Math.random() - 0.5) * 0.06);
+        const accNew = Math.min(0.999, s.nw + (Math.random() - 0.5) * 0.06);
+        const reuse = accBest >= accNew ? 1 : 0;
+        const cs = 2 + Math.floor(Math.random() * 8);
+        out.push({
+          idx: k, event_id: 'MOCK::' + s.c + '::' + k, config_id: s.c,
+          fileShort: 'mock_stream_g' + String(j % 10).padStart(2, '0'),
+          warning_t: wt, confirmation_t: wt + age, age,
+          source: s.src, best_idx: Math.max(0, cs - 2), current_idx: cs - 1, collection_size: cs,
+          acc_current: accBest - Math.random() * 0.03, acc_best: accBest, acc_new: accNew,
+          buffer_len: age + 1, reuse_looked_better: reuse, acc_best_minus_new: accBest - accNew,
+          gt_match: isTP ? 'TP' : 'FP', nearest_drift_start: wt + Math.floor((Math.random() - 0.5) * 6000),
+          confirmation_delay: Math.floor((Math.random() - 0.3) * 4000),
+          prewarn_slope: Math.random() < 0.5 ? null : (Math.random() - 0.5) * 4e-4,
+          prewarn_peak: Math.random() < 0.5 ? null : 0.999 - Math.random() * 0.01,
+          prewarn_mean: Math.random() < 0.5 ? null : 0.55 + Math.random() * 0.18,
+          isStar: isTP && reuse === 0,
+        });
+        k++;
+      }
+    });
+    return out;
+  }
+
+  renderVals() {
+    const evs = this.state.events;
+    if (!evs || !evs.length) return { ready: false };
+
+    const fnum = (v) => (v === null || v === undefined) ? '—' : Number(v).toLocaleString('en-US');
+    const fpct = (v) => (v === null || v === undefined) ? '—' : (v * 100).toFixed(1) + '%';
+    const accW = (v) => (v === null || v === undefined) ? 0 : Math.max(0, Math.min(1, (v - 0.85) / 0.15)) * 100;
+
+    // ---- KPI / meta ----
+    const total = evs.length;
+    const tp = evs.filter(e => e.gt_match === 'TP').length;
+    const fp = total - tp;
+    const stars = evs.filter(e => e.isStar).length;
+    const configMeta = this._order.map(c => {
+      const list = evs.filter(e => e.config_id === c);
+      const t = list.filter(e => e.gt_match === 'TP').length;
+      return { id: c, label: this._cfgLabel(c), color: this._cfgColor(c), n: list.length, tp: t, tpPct: list.length ? Math.round(100 * t / list.length) : 0 };
+    });
+
+    // ---- filtered selector list ----
+    const q = (this.state.search || '').toLowerCase().trim();
+    const filtered = evs.filter(e => {
+      if (this.state.fConfig !== 'all' && e.config_id !== this.state.fConfig) return false;
+      if (this.state.fGt !== 'all' && e.gt_match !== this.state.fGt) return false;
+      if (q) {
+        const hay = (e.event_id + ' ' + e.fileShort + ' ' + e.config_id).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    const CAP = 250;
+    const shown = filtered.slice(0, CAP);
+    const rowBase = 'display:flex; align-items:center; gap:9px; width:100%; padding:7px 9px; border:none; border-radius:7px; cursor:pointer; font-family:inherit; margin-bottom:1px;';
+    const gtChip = (gt) => 'flex:0 0 auto; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; padding:2px 6px; border-radius:4px;' +
+      (gt === 'TP' ? 'color:#1A7A4A; background:#E8F4ED;' : 'color:#6B7C95; background:#EBEFF4;');
+    const eventList = shown.map(e => ({
+      idx: e.idx,
+      label: e.fileShort,
+      star: e.isStar ? '★ ' : '',
+      sub: 'w' + fnum(e.warning_t) + ' → c' + fnum(e.confirmation_t) + ' · age ' + fnum(e.age) + ' · best ' + e.best_idx + '/cur ' + e.current_idx,
+      cfgColor: this._cfgColor(e.config_id),
+      gt: e.gt_match,
+      gtStyle: gtChip(e.gt_match),
+      rowStyle: rowBase + (e.idx === this.state.selIdx ? 'background:#E8F4ED; outline:1px solid #B9DEC9;' : 'background:#fff;'),
+      onClick: () => this.setState({ selIdx: e.idx, dropdownOpen: false }),
+    }));
+
+    // ---- selected event ----
+    const ev = evs[this.state.selIdx] || evs[0];
+
+    // ---- acc bars (shared node 6/7 + diagnostic box) ----
+    const accBars = [
+      { key: 'cur', label: 'acc_current_on_warning', desc: '凍結前的現役 leader', v: ev.acc_current, pct: fpct(ev.acc_current), w: accW(ev.acc_current), color: '#6B7C95', fill: '#8896AB' },
+      { key: 'best', label: 'acc_best_on_warning', desc: '重用候選 — 合併後此版驅動 best_idx', v: ev.acc_best, pct: fpct(ev.acc_best), w: accW(ev.acc_best), color: '#1A7A4A', fill: '#2E9460' },
+      { key: 'new', label: 'acc_new_on_warning', desc: '新影子 — 算了但不選 leader', v: ev.acc_new, pct: fpct(ev.acc_new), w: accW(ev.acc_new), color: '#C89A3C', fill: '#D8AE55' },
+    ];
+
+    // ---- pills ----
+    const pill = (active, accent) => 'border:1px solid ' + (active ? accent : '#D6D4CB') + '; background:' + (active ? accent : '#fff') + '; color:' + (active ? '#fff' : '#5C626C') + '; border-radius:7px; padding:5px 11px; cursor:pointer; font-family:inherit; font-size:12px; font-weight:500;';
+    const cfgPills = [{ id: 'all', label: '全部 config', color: '#5C626C' }].concat(
+      this._order.map(c => ({ id: c, label: this._cfgShort(c), color: this._cfgColor(c) }))
+    ).map(p => ({ label: p.label, style: pill(this.state.fConfig === p.id, p.color), onClick: () => this.setState({ fConfig: p.id }) }));
+    const gtPills = [{ id: 'all', label: '全部' }, { id: 'TP', label: 'TP' }, { id: 'FP', label: 'FP' }].map(p => {
+      const ac = p.id === 'TP' ? '#1A7A4A' : (p.id === 'FP' ? '#6B7C95' : '#5C626C');
+      return { label: p.label, style: pill(this.state.fGt === p.id, ac), onClick: () => this.setState({ fGt: p.id }) };
+    });
+
+    // ---- stage④ duel (measured) ----
+    const endFresh = ev.final_leader_origin === 'fresh';
+    const snapMatch = ev.snapshot_matched_duel === 1;
+
+    // ---- scatter (③→④) ----
+    const scatter = this._scatter(evs, ev, accW);
+
+    return {
+      ready: true,
+      isMock: this.state.isMock,
+      ev,
+      // KPI
+      total, tp, fp, stars, tpPct: Math.round(100 * tp / total), configMeta,
+      // selector
+      eventList, listCount: filtered.length, totalCount: total, shownCount: shown.length,
+      listTruncated: filtered.length > CAP, search: this.state.search, dropdownOpen: this.state.dropdownOpen,
+      cfgPills, gtPills,
+      selCfgColor: this._cfgColor(ev.config_id), selCfgLabel: this._cfgLabel(ev.config_id),
+      // node values
+      warningT: fnum(ev.warning_t), confT: fnum(ev.confirmation_t), age: fnum(ev.age), bufferLen: fnum(ev.buffer_len),
+      source: ev.source, bestIdx: ev.best_idx, currentIdx: ev.current_idx, collectionSize: ev.collection_size,
+      accBars, accCurPct: fpct(ev.acc_current), accBestPct: fpct(ev.acc_best), accNewPct: fpct(ev.acc_new),
+      accCurW: accW(ev.acc_current), accBestW: accW(ev.acc_best), accNewW: accW(ev.acc_new),
+      prewarnSlope: ev.prewarn_slope === null ? '—' : Number(ev.prewarn_slope).toExponential(2),
+      prewarnPeak: ev.prewarn_peak === null ? '—' : ev.prewarn_peak.toFixed(4),
+      prewarnMean: ev.prewarn_mean === null ? '—' : ev.prewarn_mean.toFixed(4),
+      // selected chip
+      gtMatch: ev.gt_match, isTP: ev.gt_match === 'TP', isStar: ev.isStar,
+      reuseBetter: ev.reuse_looked_better === 1,
+      reuseTxt: ev.reuse_looked_better === 1 ? '重用較準' : '新模型較準',
+      // offline
+      reuseVal: ev.reuse_looked_better, reuseLabel: ev.reuse_looked_better === 1 ? '1 · 重用在 buffer 看起來較準' : '0 · 新模型在 buffer 看起來較準',
+      accBestMinusNew: ev.acc_best_minus_new === null ? '—' : (ev.acc_best_minus_new >= 0 ? '+' : '') + ev.acc_best_minus_new.toFixed(4),
+      bmnPos: ev.acc_best_minus_new >= 0,
+      nearestDrift: fnum(ev.nearest_drift_start), confDelay: fnum(ev.confirmation_delay), confDelayNeg: ev.confirmation_delay < 0,
+      reuseChipColor: ev.reuse_looked_better === 1 ? '#1A7A4A' : '#9A6A0E',
+      bmnColor: (ev.acc_best_minus_new === null) ? '#384459' : (ev.acc_best_minus_new >= 0 ? '#1A7A4A' : '#9A6A0E'),
+      gtBadgeBg: ev.gt_match === 'TP' ? '#1A7A4A' : '#6B7C95',
+      confDelayColor: ev.confirmation_delay < 0 ? '#9A6A0E' : '#384459',
+      // handlers
+      toggleDropdown: () => this.setState(s => ({ dropdownOpen: !s.dropdownOpen })),
+      onSearch: (e) => this.setState({ search: e.target.value }),
+      prev: () => this.setState(s => ({ selIdx: Math.max(0, s.selIdx - 1) })),
+      next: () => this.setState(s => ({ selIdx: Math.min(evs.length - 1, s.selIdx + 1) })),
+      scatter,
+      // stage④
+      duelWinnerTxt: endFresh ? '🌱 新模型 fresh 勝出' : '🔁 重用 reused 勝出',
+      duelWinnerBadge: 'font-size:10.5px; font-weight:700; border-radius:5px; padding:2px 9px; ' + (endFresh ? 'color:#8A5E10; background:#FBF2DC; border:1px solid #E8D6A6;' : 'color:#1A7A4A; background:#E8F4ED; border:1px solid #B9DEC9;'),
+      nSwaps: fnum(ev.n_leader_swaps), duelMargin: fnum(ev.duel_final_margin), duelSeg: fnum(ev.duel_segment_len),
+      freshLedTxt: ev.fresh_ever_led === 1 ? '1 · 是' : '0 · 否',
+      reuseSurvTxt: ev.reuse_survived === 1 ? '1 · 是' : '0 · 否',
+      snapMatchVal: ev.snapshot_matched_duel === 1 ? '1' : '0',
+      snapNodeStyle: 'margin-top:9px; padding:9px 12px; border-radius:8px; line-height:1.55; ' + (snapMatch ? 'background:#EAF4EE; border:1px solid #C7E2D2; color:#1A5C39;' : 'background:#FBF2DC; border:1px solid #E8D6A6; color:#8A5E10;'),
+      snapNodeNote: snapMatch
+        ? '警告當下 buffer 判讀(' + (ev.reuse_looked_better === 1 ? '重用較準' : '新模型較準') + ')與對決期間領先權走向一致 ✓ — 此次快照表象靠得住。'
+        : '警告當下 buffer 判讀(' + (ev.reuse_looked_better === 1 ? '重用較準' : '新模型較準') + ')與對決期間領先權走向相反 ✕ — 印證「buffer 表象不是定論」,實際較量看 stage④。',
+    };
+  }
+
+  _scatter(evs, sel, accW) {
+    const W = 430, H = 430, pad = { l: 50, r: 14, t: 14, b: 44 };
+    const lo = 0.80, hi = 1.0;
+    const sx = (v) => pad.l + ((Math.min(Math.max(v, lo), hi) - lo) / (hi - lo)) * (W - pad.l - pad.r);
+    const sy = (v) => (H - pad.b) - ((Math.min(Math.max(v, lo), hi) - lo) / (hi - lo)) * (H - pad.t - pad.b);
+    const pts = evs.map(e => ({
+      idx: e.idx,
+      cx: +sx(e.acc_best).toFixed(1),
+      cy: +sy(e.acc_new).toFixed(1),
+      r: e.idx === sel.idx ? 6 : (e.gt_match === 'TP' ? 4 : 3),
+      fill: e.gt_match === 'TP' ? (e.reuse_looked_better === 1 ? '#2E9460' : '#D8AE55') : 'transparent',
+      stroke: e.reuse_looked_better === 1 ? '#1A7A4A' : '#B98A22',
+      sw: e.gt_match === 'TP' ? 1 : 1.3,
+      sel: e.idx === sel.idx,
+      onClick: () => this.setState({ selIdx: e.idx }),
+    }));
+    const ticks = [0.80, 0.85, 0.90, 0.95, 1.00];
+    const xticks = ticks.map(t => ({ x: +sx(t).toFixed(1), label: t.toFixed(2), y0: pad.t, y1: H - pad.b }));
+    const yticks = ticks.map(t => ({ y: +sy(t).toFixed(1), label: t.toFixed(2), x0: pad.l, x1: W - pad.r }));
+    const clipped = evs.filter(e => e.acc_best < lo || e.acc_new < lo).length;
+    return {
+      W, H,
+      pts,
+      diagX1: +sx(lo).toFixed(1), diagY1: +sy(lo).toFixed(1), diagX2: +sx(hi).toFixed(1), diagY2: +sy(hi).toFixed(1),
+      xticks, yticks,
+      axisX: H - pad.b, axisY: pad.l, axisXend: W - pad.r, axisYend: H - pad.b, axisYtop: pad.t,
+      xlabel_x: pad.l + (W - pad.l - pad.r) / 2, xlabel_y: H - 6,
+      clipped,
+    };
+  }
+}
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var app = document.getElementById('app');
+    var tpl = document.getElementById('dc-tpl');
+    new Component({}).mount(app, tpl.content);
+  });
+})();
+</script>
+</body>
+</html>
