@@ -144,6 +144,21 @@ class ECPFAdwinFamilyDetector:
         self._warn.reset()
         self._drift.reset()
 
+    def reset_drift(self) -> None:
+        """Re-baseline only the confirmation arm.
+
+        Used by the pipeline's direction gate: after suppressing an
+        improvement-direction confirmation, the drift detector must restart
+        from the new (lower) error level or the same slow decline immediately
+        refires. The warning arm is left untouched -- its lifecycle is managed
+        separately (see the warning timeout).
+        """
+        self._drift.reset()
+
+    def reset_warning(self) -> None:
+        """Re-baseline only the warning arm (used by the warning timeout)."""
+        self._warn.reset()
+
     def update(self, err: float) -> Tuple[bool, bool]:
         return self.update_values(err, err)
 

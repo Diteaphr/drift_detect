@@ -197,8 +197,8 @@ class StageTracer:
     def log_duel(
         self,
         t: int,
-        curr_correct: int,
-        new_correct: int,
+        curr_correct: float,
+        new_correct: float,
         total_inst: int,
         swapped: bool = False,
         current_idx: Optional[int] = None,
@@ -210,6 +210,11 @@ class StageTracer:
         leader vs the shadow ``new_model`` since the last drift; ``swapped`` is
         True on the step a leader-swap fired. No-op until a drift has opened a
         segment and a shadow exists.
+
+        These are typed ``float`` rather than ``int`` because under a regression
+        task ECPF accumulates ``1 - normalized_residual`` per instance instead of
+        counting hits. Truncating to int there would silently discard the
+        fractional part of every duel score and corrupt ``duel_final_margin``.
         """
         seg = self._duel_open
         if seg is None or not has_shadow:
@@ -221,8 +226,8 @@ class StageTracer:
             seg["samples"].append(
                 {
                     "t": int(t),
-                    "curr_correct": int(curr_correct),
-                    "new_correct": int(new_correct),
+                    "curr_correct": float(curr_correct),
+                    "new_correct": float(new_correct),
                     "total_inst": int(total_inst),
                 }
             )

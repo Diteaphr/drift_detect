@@ -66,13 +66,24 @@ class UQWarningDetector:
         delta: float = 0.01,
         grace_period: int = 50,
         smoothing_alpha: float = 0.1,
+        num_classes: Optional[int] = None,
+        normalize_scale: bool = False,
     ) -> None:
         self.uq_mode = uq_mode
         self.delta = float(delta)
         self.grace_period = int(grace_period)
         self.smoothing_alpha = float(max(0.01, min(1.0, smoothing_alpha)))
 
-        self._extractor = UQExtractor(mode=uq_mode)
+        # Unlike the ADWIN-family path -- where detectors/meta_ecpf/signal_routing.py
+        # rescales the UQ scalar before it reaches a detector -- nothing normalizes
+        # this stream, so ``delta`` is implicitly tied to the class count: the
+        # entropy modes span [0, log2(K)] and vote/variance span [0, 1 - 1/K].
+        # ``normalize_scale`` maps the scalar into [0, 1] for any K so one delta
+        # transfers. Off by default because at K=2 it would rescale
+        # vote_disagreement and variance_eu, changing existing binary results.
+        self._extractor = UQExtractor(
+            mode=uq_mode, num_classes=num_classes, normalize_scale=normalize_scale
+        )
         self._adwin = drift.ADWIN(delta=self.delta, grace_period=self.grace_period)
 
         # EMA state

@@ -53,14 +53,23 @@ class ECPFGDDMDetector:
         seed = getattr(config, "recurring_random_seed", 42)
         self.rng = np.random.default_rng(seed)
         self.uq_mode = uq_mode
+        # This detector ranks its own signals, but the UQ scalar's range still
+        # depends on the class count (entropy spans [0, log2(K)], vote/variance
+        # span [0, 1 - 1/K]), so a mixed signal vector weights UQ differently at
+        # K=2 and K=5. ``ecpf_uq_normalize_scale`` maps it into [0, 1] for any K;
+        # off by default because it would rescale existing binary runs.
+        uq_kw = {
+            "num_classes": getattr(config, "n_classes", None),
+            "normalize_scale": bool(getattr(config, "ecpf_uq_normalize_scale", False)),
+        }
         self._uq_extractors = {
-            "mi_like": UQExtractor("mi_like"),
-            "vote_disagreement": UQExtractor("vote_disagreement"),
-            "predictive_entropy": UQExtractor("predictive_entropy"),
-            "variance_eu": UQExtractor("variance_eu"),
+            "mi_like": UQExtractor("mi_like", **uq_kw),
+            "vote_disagreement": UQExtractor("vote_disagreement", **uq_kw),
+            "predictive_entropy": UQExtractor("predictive_entropy", **uq_kw),
+            "variance_eu": UQExtractor("variance_eu", **uq_kw),
         }
         if uq_mode not in self._uq_extractors:
-            self._uq_extractors[uq_mode] = UQExtractor("mi_like")
+            self._uq_extractors[uq_mode] = UQExtractor("mi_like", **uq_kw)
 
         self.signal_history: Deque[np.ndarray] = deque(
             maxlen=self.reference_window + self.test_window
