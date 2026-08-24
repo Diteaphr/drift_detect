@@ -1,0 +1,7 @@
+dataset,drift_type,sensitivity,task,n_classes,config,model_type,warning_signal,drift_signal,status,n_events,tp,fp,n_intervals,cd_score,delay,false_warning_rate,quality_metric,quality_value,pool_size,secs,detail
+mc3_gradual_20k.csv,,,multiclass,3,all+fix,hf,error,error,ok,4,2,2,2,0.0,245.0,0.5,accuracy,0.8801,3,68.7,
+mc3_recurring_20k.csv,,,multiclass,3,all+fix,hf,error,error,ok,5,2,2,5,0.0,442.8,0.8,accuracy,0.6598,4,57.5,
+mc3_sudden_20k.csv,,,multiclass,3,all+fix,hf,error,error,ok,3,1,2,3,0.0,351.7,0.667,accuracy,0.7391,3,47.3,
+mc5_gradual_20k.csv,,,multiclass,5,all+fix,hf,error,error,ok,5,1,4,2,0.0,374.5,0.8,accuracy,0.6923,5,58.9,
+mc5_recurring_20k.csv,,,multiclass,5,all+fix,hf,error,error,ok,8,3,5,5,0.0,392.8,0.75,accuracy,0.6777,6,87.1,
+mc5_sudden_20k.csv,,,multiclass,5,all+fix,hf,error,error,ok,4,2,2,3,0.0,214.3,0.25,accuracy,0.7353,5,51.7,
