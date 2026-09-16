@@ -72,3 +72,7 @@ outputs/stage_trace_recurring_s4_run.log
 
 # Local-only planning blueprint (kept on disk, not shipped to the repo)
 docs/ECPF_FINAL_SELECTION_PLAN.md
+# 長版測試串流（57 MB）— 不入庫，需要時用
+# scripts/generate_long_sudden_stream.py 重新產生（固定 seed，可重現）。
+# 說明見 data/long_drift/README.md
+data/long_drift/*.csv
