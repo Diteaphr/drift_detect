@@ -608,11 +608,6 @@ def draw_buffer(ph, warning_active: bool, warning_start: Optional[int],
         # those were labelled 示意 (simulated from acc) -- per-class detail
         # for the trained model is not stored at the event layer, so there is
         # nothing real to plot in this panel.
-        st.caption(
-            "註：new_model 逐類別的 precision / recall / F1 未存於事件層，"
-            "此面板不提供。漂移偵測（TP/FP/FN）層級的 precision/recall/F1 "
-            "在下方 ⑧ 事件報告面板。"
-        )
 
 
 def draw_duel(ph, has_shadow: bool, leader_correct: int, shadow_correct: int,
@@ -768,7 +763,7 @@ def draw_report(events: List[Dict[str, Any]], gt_times: List[int]) -> None:
                    help="precision 與 recall 的調和平均，兩者要同時不差才會高。")
     st.caption(
         "以上是漂移偵測層級（事件 vs. ground truth）的 precision/recall/F1，"
-        "非逐筆分類的 per-class 版本 —— 後者未存於事件層，見 ② 面板說明。"
+        "非逐筆分類的 per-class 版本。"
     )
 
     cols = st.columns(2)
