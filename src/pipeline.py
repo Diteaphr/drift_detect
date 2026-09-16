@@ -31,7 +31,7 @@ from .ecpf_detector import ECPFWarningDriftDetector
 from .uq_warning_detector import UQWarningDetector
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
 from detectors.meta_ecpf.signal_routing import extract_signal
-from .drift_type_classifier_dtc_rf import classify_drift_type
+from .drift_type_classifier_type_ldd import classify_drift_type
 from .model_pool import ModelPool
 from .prediction_model import PredictionModel
 from .model_adapter import BaseModelAdapter, is_advanced_model_type
@@ -804,6 +804,13 @@ class ConceptDriftPipeline:
         merged_details = dict(detector_details or {})
         ecpf_details = self._ecpf.on_drift(self.prediction_model, buffer)
         merged_details.update(ecpf_details)
+
+        # Sidecar Type-LDD label (does NOT change ECPF model-pool logic above).
+        # Input: per-instance errors already collected in StreamBuffer during the
+        # current stream step() flow → 50-d relative gaps → FAN ProtoNet.
+        type_ldd = self._classify_type_ldd_at_confirmation()
+        merged_details["type_ldd_prediction"] = type_ldd.value
+
         self.tracer.on_event(
             warning_t=drift_ts,
             confirmation_t=self._trace_index,
@@ -814,13 +821,27 @@ class ConceptDriftPipeline:
         out_detections.append(
             DriftDetection(
                 timestamp=drift_ts,
-                drift_type=DriftType.SUDDEN,
+                drift_type=type_ldd,
                 detector_source=source,
                 raw_drift=True,
                 details=merged_details,
             )
         )
         self.detections.append(out_detections[-1])
+
+    def _classify_type_ldd_at_confirmation(self) -> DriftType:
+        """
+        Run Type-LDD at ECPF drift confirmation using errors from the live buffer.
+
+        This is annotation only: ECPF reuse/merge/fade already happened in on_drift().
+        No sudden/gradual reset handlers are invoked on this path.
+        """
+        errors_flat = self.buffer.get_errors()
+        if len(errors_flat) == 0:
+            return DriftType.SUDDEN
+        # Last buffer position = confirmation step (errors appended in step()).
+        err_idx = len(errors_flat) - 1
+        return classify_drift_type(errors_flat, err_idx)
 
     # ------------------------------------------------------------------
     # Post-alert FIFO (RCD-like sample collection)
