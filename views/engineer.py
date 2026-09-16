@@ -398,10 +398,14 @@ def draw_prequential(ph, preq_hist: List[Dict[str, Any]],
 
         layers.append(
             alt.Chart(df).mark_line(size=2, color=SIG_DRIFT).encode(
-                # Fixed to the whole stream: live, an auto-fitted axis rescales
-                # on every redraw and the line appears to stand still.
+                # Right edge pinned to the whole stream so the line grows into
+                # it; an auto-fitted axis rescales on every redraw and the line
+                # appears to stand still instead. The left edge follows the
+                # retained history rather than sitting at 0, because the series
+                # is a capped deque and slides once a run outruns HIST_POINTS.
                 x=alt.X("t:Q", title="t",
-                        scale=alt.Scale(domain=[0, n_total], nice=False)),
+                        scale=alt.Scale(domain=[int(df["t"].iloc[0]), n_total],
+                                        nice=False)),
                 y=alt.Y("preq:Q", title=None, axis=alt.Axis(format="%"),
                         scale=alt.Scale(domain=[lo, hi], nice=False, clamp=True)),
                 tooltip=["t:Q", alt.Tooltip("preq:Q", format=".2%")],
@@ -434,6 +438,7 @@ def draw_chart(
     gt_times: List[int],
     warn_name: str,
     drift_name: str,
+    n_total: int,
     show_gt: bool = True,
 ) -> None:
     """Signal time series over ground-truth bands, with drift markers.
@@ -471,8 +476,13 @@ def draw_chart(
         long = df.melt("t", value_vars=value_cols,
                        var_name="signal", value_name="value").dropna()
 
+        # Right edge pinned to the whole stream, matching ② and ④, so the line
+        # grows across the panel as the run proceeds. Fitted to `t_hi` instead
+        # it always spans the full width and rescales on every redraw, which
+        # reads as a line standing still. Left edge follows the retained
+        # history: the series is a capped deque that slides on long runs.
         x_axis = alt.X("t:Q", title="t",
-                       scale=alt.Scale(domain=[t_lo, t_hi], nice=False))
+                       scale=alt.Scale(domain=[t_lo, n_total], nice=False))
         layers = []
 
         # --- ground-truth bands (recessive, behind everything) ---
@@ -611,19 +621,63 @@ def draw_buffer(ph, warning_active: bool, warning_start: Optional[int],
 
 
 def draw_duel(ph, has_shadow: bool, leader_correct: int, shadow_correct: int,
-              leader_swaps: int, duel_hist: List[Dict[str, Any]]) -> None:
+              leader_swaps: int, duel_hist: List[Dict[str, Any]],
+              n_total: int) -> None:
+    """leader vs shadow, plotted as the gap the swap rule actually reads.
+
+    `ECPF.check_swap` swaps when `curr_correct < new_correct`, so
+    ``leader - shadow`` crossing below zero *is* the decision. Drawn as two
+    cumulative count lines instead, the pair runs nearly on top of itself and
+    the crossing -- the only moment that matters -- is unreadable.
+
+    The counters are per-duel, not per-run: a drift zeroes both
+    (`ecpf.py:304`) while a swap merely exchanges them, leaving their sum
+    intact. So each duel is drawn as its own line rather than joined across
+    the resets.
+    """
     with ph.container():
         st.caption("④ in-control 對決 · leader vs shadow")
-        if not has_shadow:
+        if not duel_hist:
             st.info("目前無 shadow model（非 lockout 期）")
             return
+
         cols = st.columns(3)
         cols[0].metric("leader", leader_correct)
         cols[1].metric("shadow", shadow_correct)
         cols[2].metric("換將次數", leader_swaps)
-        if duel_hist:
-            df = pd.DataFrame(duel_hist).set_index("t")
-            st.line_chart(df[["leader", "shadow"]], height=180)
+        if not has_shadow:
+            st.caption("目前非 lockout 期，以下為先前各場對決的紀錄。")
+
+        df = pd.DataFrame(duel_hist)
+        df["gap"] = df["leader"] - df["shadow"]
+        # A falling *total* marks a drift reset; a swap keeps the total and
+        # only flips the sign of the gap, so `leader` falling is not on its own
+        # the start of a new duel.
+        total = df["leader"] + df["shadow"]
+        df["duel"] = (total < total.shift(fill_value=0)).cumsum()
+
+        pad = max(1.0, float(df["gap"].abs().max()) * 0.1)
+        lo = min(0.0, float(df["gap"].min())) - pad
+        hi = max(0.0, float(df["gap"].max())) + pad
+
+        zero = (
+            alt.Chart(pd.DataFrame({"y": [0]}))
+            .mark_rule(color=INK_MUTED, strokeDash=[3, 3], size=1)
+            .encode(y="y:Q")
+        )
+        line = alt.Chart(df).mark_line(size=2, color=SIG_DRIFT).encode(
+            x=alt.X("t:Q", title="t",
+                    scale=alt.Scale(domain=[int(df["t"].iloc[0]), n_total],
+                                    nice=False)),
+            y=alt.Y("gap:Q", title="leader − shadow",
+                    scale=alt.Scale(domain=[lo, hi], nice=False, clamp=True)),
+            detail="duel:N",
+            tooltip=["t:Q", "leader:Q", "shadow:Q", "gap:Q"],
+        )
+        st.altair_chart(alt.layer(zero, line).properties(height=200),
+                        width="stretch")
+        st.caption("0 以上 = leader 仍領先；跌破 0 = shadow 較準，"
+                   "下次確認時換將 · 每場對決獨立一條線（漂移會把計數歸零）")
 
 
 def draw_events(ph, events: List[Dict[str, Any]]) -> None:
@@ -858,13 +912,14 @@ def _paint(panels: _Panels, s: Any, t: int, opts: Dict[str, Any],
         draw_prequential(panels.preq, s.preq_hist, s.preq_acc, s.events,
                          s.warning_spans, s.n_total)
         draw_chart(panels.chart, s.signal_hist, s.events, s.gt_times,
-                   opts["warning_signal"], opts["drift_signal"], show_gt)
+                   opts["warning_signal"], opts["drift_signal"], s.n_total,
+                   show_gt)
     draw_buffer(panels.buffer, s.warning_active, s.warning_start,
                 s.buffer_len, t, s.events)
     draw_pool(panels.pool, s.pool, opts["max_pool_size"])
     if charts:
         draw_duel(panels.duel, s.has_shadow, s.leader_correct,
-                  s.shadow_correct, s.leader_swaps, s.duel_hist)
+                  s.shadow_correct, s.leader_swaps, s.duel_hist, s.n_total)
     draw_events(panels.events, s.events)
 
 
