@@ -242,7 +242,7 @@ HELP_PANEL_PREQ = """
 """
 
 # Tooltip for panel ① (the signal time-series chart).
-HELP_PANEL_SIGNAL = """
+HELP_PANEL_SIGNAL = f"""
 這張圖把系統每一步監看的數值畫成隨時間變化的曲線。由後往前疊三層：
 
 **彩色曲線（會上下起伏）** — 主角，是實際被監看的訊號值。
@@ -251,11 +251,13 @@ HELP_PANEL_SIGNAL = """
 - 🟢 **drift signal**（深綠線）：`drift_signal` 選的訊號，負責「確認漂移」。
 - 兩者若選同一個訊號，只會有一條綠線，圖例直接標該訊號的名字（如 `error`）。
 
-**灰色背景（不會動）** — 對照用的標準答案。
-- 灰色色帶：真實漂移點的容許窗（±500）。
-- 灰色虛線：真正發生漂移的確切時間。
+**灰色背景（不會動）** — 對照用的標準答案（左側「① 圖疊 ground truth」可關）。
+- 灰帶：ground truth 漂移 ±{GT_TOLERANCE}，判定為 TP 的容許窗。
+- 灰虛線：真實漂移點。
 
-**紅色直線** — 系統實際偵測並確認漂移的時刻。
+**紅線** — 系統確認漂移的時刻（`confirmation_t`），也就是實際換模型的那一步。
+批次腳本計分用的是 warning 開始的時間（`warning_t`），所以紅線會比
+⑧ 報告裡同一個事件的位置晚幾十筆（即 ② 的「確認延遲」）。
 
 看法：綠線衝高後，理想上緊接著出現一條落在灰帶裡的紅線，
 就代表這次漂移被準確抓到；紅線在灰帶外＝誤報，灰帶內沒紅線＝漏抓。
@@ -407,10 +409,9 @@ def draw_prequential(ph, preq_hist: List[Dict[str, Any]],
         )
 
         if events:
-            # `confirmation_t`, not `timestamp`: this panel draws the warning
-            # bands, so the rule belongs on the band's right edge. Panel ①
-            # marks `timestamp` (warning_t) instead -- it has no bands and is
-            # scored against the batch runner, which keys on warning_t.
+            # `confirmation_t`, not `timestamp`: this chart and ① both mark
+            # when the system acted. The batch runner scores on `timestamp`
+            # (warning_t), which is what ⑧ reports against.
             marks = pd.DataFrame({"t": [e["confirmation_t"] for e in events]})
             layers.append(
                 alt.Chart(marks).mark_rule(color=STATUS_CRITICAL, size=2)
@@ -511,29 +512,24 @@ def draw_chart(
         )
 
         # --- confirmed drifts, on top ---
-        det_vis = [e["timestamp"] for e in events if t_lo <= e["timestamp"] <= t_hi]
+        # Drawn at `confirmation_t`: this chart is about when the system acted.
+        # The batch runner scores on `warning_t`, so a rule can sit a few dozen
+        # samples right of where the report counts the same event.
+        det_vis = [e["confirmation_t"] for e in events
+                   if t_lo <= e["confirmation_t"] <= t_hi]
         if det_vis:
             layers.append(
                 alt.Chart(pd.DataFrame({"t": det_vis}))
                 .mark_rule(color=STATUS_CRITICAL, size=2)
-                .encode(x="t:Q", tooltip=alt.Tooltip("t:Q", title="warning_t"))
+                .encode(x="t:Q", tooltip=alt.Tooltip("t:Q", title="confirmation_t"))
             )
 
+        # Legend for the bands / lines lives in HELP_PANEL_SIGNAL (the ⓘ next to
+        # the panel title), not under the chart.
         st.altair_chart(
             alt.layer(*layers).properties(height=280).interactive(),
             width="stretch",
         )
-        if show_gt:
-            st.caption(
-                f"灰帶 = ground truth 漂移 ±{GT_TOLERANCE}（判定為 TP 的容許窗）· "
-                f"灰虛線 = 真實漂移點 · 紅線 = 事件的 warning_t（非確認點，"
-                f"與批次腳本計分所用的時間一致）"
-            )
-        else:
-            st.caption(
-                "紅線 = 事件的 warning_t（非確認點，與批次腳本計分所用的時間一致）· "
-                "ground truth 疊圖已關閉（左側可開啟）"
-            )
 
 
 def draw_pool(ph, pool: List[Dict[str, Any]], max_pool: int) -> None:
