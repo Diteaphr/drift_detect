@@ -1002,7 +1002,7 @@ def _sidebar() -> Optional[Dict[str, Any]]:
 # Entry point
 # ----------------------------------------------------------------------
 def render() -> None:
-    st.title("ECPF 監控台 · 工程師介面")
+    st.title("ECPF Monitor")
     st.caption(
         "面板依因果分層：**訊號**（監看什麼數值）→ **偵測與確認**"
         "（誰在什麼時候拍板）→ **ECPF 模型管理**（拍板後模型怎麼換）。"
