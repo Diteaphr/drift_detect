@@ -13,5 +13,6 @@ torch>=2.0
 # xgboost>=2.0
 
 # Live monitor / Streamlit Cloud deployment (streamlit run monitor_app.py)
-streamlit>=1.30
+# monitor_app.py uses width="stretch"; verified working on 1.61.
+streamlit>=1.61
 altair>=5.0
