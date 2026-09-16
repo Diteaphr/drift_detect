@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from core import metrics
+from core import drift_type, metrics
 from core.run import (
     DETECTOR_CHOICES,
     GT_TOLERANCE,
@@ -302,13 +302,12 @@ HELP_PANEL_EVENTS = """
 每一次「漂移被確認」都會在這裡留一筆紀錄，最新的排最上面。
 
 - **t=...**：warning 開始的時間點（`warning_t`），
-  不是確認時間點，是為了跟批次腳本計分口徑一致
-  （對照 ① 圖上的紅線）。
+  不是確認時間點，是為了跟批次腳本計分口徑一致。
+  ① 圖上的紅線畫的是確認點，會比這個數字晚幾十筆。
 - **source**：哪個偵測器 / 訊號模式觸發了這次確認。
-- **drift_type**：事件物件上的原始欄位。注意 ECPF 路徑目前**沒有做型態分類**，
-  `_handle_ecpf_drift`（`src/pipeline.py`）一律寫死 `sudden`，所以這欄現在
-  不具判讀價值。真正的型態分類是一般使用者介面上的那一欄，見
-  `core/drift_type.py` 與 docs/DASHBOARD_TWO_VIEWS_PLAN.md §0。
+- **型態 badge**：ECPF 確認漂移時由 Type-LDD 分類器（`src/type_ldd`）在
+  誤差序列上判定的 sudden / gradual / incremental，同一個值也在細節 JSON 的
+  `type_ldd_prediction`（`core/drift_type.py`）。
 - 點開展開項可看完整細節 JSON，
   包含 buffer 筆數、各模型在 buffer 上的準確率、最終勝出者等
   （即 ② 面板算出來的那些數字）。
@@ -643,7 +642,11 @@ def draw_events(ph, events: List[Dict[str, Any]]) -> None:
             st.info("尚無漂移事件")
             return
         for e in reversed(events[-10:]):
-            label = f"t={e['timestamp']:,} · {e['source']} · {e['drift_type']}"
+            # `drift_type` is Type-LDD's label; render it as the same badge
+            # the operator view uses.
+            p = drift_type.predict(e)
+            label = (f"t={e['timestamp']:,} · {e['source']} · "
+                     f":{p.color}-badge[{p.text}]")
             with st.expander(label):
                 st.json(e["details"])
 

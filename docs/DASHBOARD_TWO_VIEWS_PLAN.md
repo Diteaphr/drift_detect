@@ -10,6 +10,13 @@
 
 ## 0. 先解掉的前提問題：drift type 從哪來
 
+> **現況（2026-09-16）**：下方建議的 v2 已到位 —— `src/pipeline.py` 在 ECPF 確認漂移時
+> 呼叫 Type-LDD FAN ProtoNet（`src/type_ldd`，權重在 `checkpoints/type_ldd`），
+> 把標籤寫進 `details["type_ldd_prediction"]`；`core/drift_type.py` 讀這個欄位，
+> 並以 ECPF 重用判定優先給出 recurring（即 §0.3 的四分類）。
+> 信心度尚未顯示：分類器的 softmax 在真實誤差序列上飽和到 0/1，校準前不能當信心用。
+> 以下為原始規劃，保留作為決策紀錄。
+
 一般使用者介面的核心欄位之一是「漂移型態」，但目前 **ECPF 路徑不會分類型態**：
 `src/pipeline.py:817` 的 `_handle_ecpf_drift` 一律寫死 `DriftType.SUDDEN`。
 真正的分類器在兩個地方，都沒有接進 ECPF：

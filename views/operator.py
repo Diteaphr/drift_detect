@@ -253,21 +253,21 @@ def _action_text(event: Dict[str, Any]) -> str:
     if acc_best is None or acc_new is None:
         return "重新調整了模型"
     if acc_best >= acc_new:
-        return f"切回第 {slot} 號舊模式"
-    return "重新訓練新模型接手"
+        return f"切回第 {slot} 號舊模型"
+    return "重新訓練新模型"
 
 
 def _type_badge(pred: drift_type.DriftTypePrediction) -> str:
     """The drift-type slot, as one inline phrase for the card header.
 
-    Only ``recurring`` is inferred today; the rest reads 待分類 until a
-    classifier is wired in (plan §0). What that means is said once in the
-    page footnote rather than on every card.
+    The Type-LDD classifier's own label -- sudden / gradual / incremental --
+    shown verbatim; 待分類 only when it did not answer. What the words mean is
+    said once in the page footnote rather than on every card.
     """
-    if pred.label is None:
-        return f"{pred.icon} 待分類"
+    # Markdown badge directive (Streamlit >= 1.45): a filled pill, so the type
+    # reads as a tag rather than as part of the title text next to it.
     conf = f"（信心 {pred.confidence_zh}）" if pred.confidence_zh else ""
-    return f"{pred.icon} {pred.label_zh}{conf}"
+    return f":{pred.color}-badge[{pred.text}{conf}]"
 
 
 def _draw_events(result: RunResult) -> None:
@@ -342,13 +342,14 @@ def _summary_markdown(result: RunResult, s: Dict[str, Any]) -> str:
             rec = ("尚未回復" if imp["recovery_steps"] is None
                    else f"{imp['recovery_steps']:,} 筆")
             lines.append(
-                f"| {i} | 第 {e['warning_t']:,} 筆 | {pred.label_zh} | "
+                f"| {i} | 第 {e['warning_t']:,} 筆 | {pred.text} | "
                 f"{pct(imp['acc_before'])} | {pct(imp['acc_trough'])} | {rec} | "
                 f"{_action_text(e)} |"
             )
 
-    lines += ["", f"> 型態分類器尚未接上，「待分類」為介面示意欄位"
-                  f"（docs/DASHBOARD_TWO_VIEWS_PLAN.md §0）。",
+    lines += ["", "> 型態：Type-LDD 分類器（src/type_ldd）的判定 —— "
+                  "sudden 突變 / gradual 漸變 / incremental 緩慢累積；"
+                  "信心度尚未校準，暫不顯示。",
               f"> 自然語言建議：{insights.PLACEHOLDER_NOTE}。"]
     return "\n".join(lines)
 
@@ -479,9 +480,10 @@ def render() -> None:
         _draw_events(result)
     _draw_export(result)
 
-    # Both placeholders (plan §0 型態分類 and §4 insight) are stated once here
-    # rather than repeated on every card.
+    # Where the type column comes from, and the remaining placeholder (plan §4
+    # insight), are stated once here rather than repeated on every card.
     st.caption(
-        "「待分類」是介面示意：型態分類器（突變 / 漸變 / 緩慢累積）尚未接上，"
-        "目前只有「舊概念重現」是真的判讀。每張卡片的建議文字待實作。"
+        "型態標籤是 Type-LDD 分類器的判定：sudden 突變 / gradual 漸變 / "
+        "incremental 緩慢累積（信心度尚未校準，暫不顯示）。"
+        "每張卡片的建議文字待實作。"
     )
