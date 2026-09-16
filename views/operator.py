@@ -276,36 +276,24 @@ def _draw_events(result: RunResult) -> None:
         st.info(f"這 {result.n_seen:,} 筆資料中沒有偵測到任何變化，模型穩定。")
         return
 
-    pct = lambda v: "—" if v is None else f"{v:.0%}"  # noqa: E731
     impacts = metrics.all_impacts(result)
 
-    # Three short lines per card: what/where, the damage, the response. The
-    # numbers used to be st.metric tiles, which made each event a screen tall
-    # for six numbers.
-    for i in range(len(result.events) - 1, -1, -1):  # newest first
-        e, imp = result.events[i], impacts[i]
-        with st.container(border=True):
-            st.markdown(
-                f"**#{i + 1}　第 {e['warning_t']:,} 筆**　"
-                f"{_type_badge(drift_type.predict(e))}"
-            )
-
-            # No "（-N 個百分點）" suffix: rounded to whole percents it
-            # contradicts the two endpoints it sits next to (92% → 91% with a
-            # 1.6-point drop reads as -2), and the arrow already says it.
-            bits = [f"準確率 {pct(imp['acc_before'])} → {pct(imp['acc_trough'])}"]
-            bits.append(
-                f"{imp['recovery_steps']:,} 筆後恢復"
-                if imp["recovery_steps"] is not None else "尚未回復"
-            )
-            # A warning can also confirm on the step it opens -- no observation
-            # window, and no amber band on the chart to point at.
-            gap = e["confirmation_t"] - e["warning_t"]
-            bits.append(f"確認花了 {gap:,} 筆" if gap else "立刻確認")
-            st.caption("　·　".join(bits))
-
-            advice = insights.event_insight(result, i, imp)
-            st.caption(f"→ {_action_text(e)}" + (f"　{advice}" if advice else ""))
+    # Two cards per row, each just the headline and the response. The impact
+    # numbers (accuracy drop, recovery, confirmation delay) are on the chart
+    # and in the summary; repeating them per card made the list a screen tall
+    # for six events.
+    order = list(range(len(result.events) - 1, -1, -1))  # newest first
+    for row in range(0, len(order), 2):
+        cols = st.columns(2)
+        for col, i in zip(cols, order[row:row + 2]):
+            e, imp = result.events[i], impacts[i]
+            with col, st.container(border=True):
+                st.markdown(
+                    f"**#{i + 1}　第 {e['warning_t']:,} 筆**　"
+                    f"{_type_badge(drift_type.predict(e))}"
+                )
+                advice = insights.event_insight(result, i, imp)
+                st.caption(f"→ {_action_text(e)}" + (f"　{advice}" if advice else ""))
 
 
 # ----------------------------------------------------------------------
