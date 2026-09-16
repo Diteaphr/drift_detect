@@ -41,6 +41,8 @@ from core.run import (
 # is guarded by `if __name__ == "__main__"`, so importing it is side-effect free.
 from run_ecpf_uq_experiment import _detection_delay, _false_warning_rate
 
+STRIDE = 50  # sampling grid for the recorded series; not user-facing
+
 # The three chart panels (② prequential, ① signal, ④ duel) each rebuild a full
 # Vega view every time they are drawn -- an order of magnitude costlier in the
 # browser than the metric/text panels. Redrawing them on every trigger is what
@@ -48,12 +50,16 @@ from run_ecpf_uq_experiment import _detection_delay, _false_warning_rate
 # ~30s, but it emits ~900 chart rebuilds and the browser falls minutes behind.
 # Raising STRIDE alone does not fix it, because drift / warning / leader-swap
 # triggers set a floor of ~90 redraws that STRIDE cannot reach past. So charts
-# get their own coarser cadence, with drift confirmations always punching
-# through so no event goes unseen.
-CHART_EVERY_DEFAULT = 10
-
-# through so no event goes unseen.
-CHART_EVERY_DEFAULT = 10
+# get their own cadence, derived per run from the stream length (as in the
+# operator view) so the browser cost stays flat whether the file is 20k rows or
+# 1M. Confirmed drifts always punch through, so no event goes unseen.
+#
+# Matched to the operator view so the line grows at the same pace: fewer
+# redraws than that reads as the chart jumping forward in chunks. Three charts
+# per redraw makes this 3x that view's rebuild count, which is affordable only
+# because the count no longer scales with the stream -- the old fixed interval
+# put a 1M-row run at ~6,000 rebuilds against this 360.
+TARGET_CHART_REDRAWS = 120
 
 # ----------------------------------------------------------------------
 # Sidebar tooltips
@@ -87,23 +93,6 @@ HELP_MAX_STEPS = """
 **調小**：很快看到結果，適合先試參數；但只看到資料的前段，
 後面的漂移不會出現。
 **調大或設 0**：完整結果，但要等比較久。
-"""
-
-HELP_STRIDE = """
-畫面每隔幾筆資料重畫一次。只影響「看起來順不順」，不影響偵測結果。
-
-**調小**：畫面更即時、更細膩，但跑得比較慢。
-**調大**：跑得快，但線圖比較粗略。
-不管設多少，偵測到漂移或換模型時都會立刻重畫，不會漏看。
-"""
-
-HELP_CHART_EVERY = """
-折線圖每隔幾次重繪才更新一次（數字、事件流仍照 STRIDE 的節奏更新）。
-
-圖表比數字面板貴很多，跑長資料時瀏覽器會被圖表拖垮（後端其實早就算完了）。
-**調大**：圖表更新較少、瀏覽器順很多，長資料（如 100k）建議 10 以上。
-**調小**：圖表更即時，但畫面容易卡住。
-設 1 等於每次都畫，即舊版行為。確認漂移時一律強制更新圖表，不會漏看事件。
 """
 
 HELP_SIGNAL_MODE = """
@@ -348,7 +337,6 @@ def draw_header(ph, t: int, n_total: int, acc: Optional[float], n_pool: int,
         cols[2].metric("模型池", n_pool)
         cols[3].metric("漂移事件", n_events)
         cols[4].metric("已耗時", f"{elapsed:.0f}s")
-        st.progress(min(1.0, t / n_total) if n_total else 0.0)
 
 
 def draw_prequential(ph, preq_hist: List[Dict[str, Any]],
@@ -884,6 +872,10 @@ class _Panels:
     def __init__(self) -> None:
         self.notice = st.empty()
         self.head = st.empty()
+        # Its own slot rather than the tail of `head`: dropping an element from
+        # a rewritten container leaves the old one on screen, but clearing a
+        # placeholder that holds only the bar removes it.
+        self.progress = st.empty()
         self.preq = st.empty()
         col_l, col_r = st.columns(2)
         with col_l:
@@ -900,26 +892,36 @@ class _Panels:
 
 
 def _paint(panels: _Panels, s: Any, t: int, opts: Dict[str, Any],
-           show_gt: bool, charts: bool = True) -> None:
+           show_gt: bool, running: bool = True) -> None:
     """Repaint the panels from a ``RunState`` (live) or ``RunResult`` (stored).
 
     Both carry the same field names for everything drawn here, which is the
     point of lifting the values out of the pipeline in ``core.run``.
+
+    Every panel is painted together. Splitting them -- cheap panels on every
+    tick, charts on a coarser cadence -- sends the browser several times more
+    deltas than it can apply, and the charts then land in bursts rather than
+    growing; the caller controls the rate by calling this less often instead.
     """
     draw_header(panels.head, t, s.n_total, s.roll_acc, len(s.pool),
                 len(s.events), s.elapsed)
-    if charts:
-        draw_prequential(panels.preq, s.preq_hist, s.preq_acc, s.events,
-                         s.warning_spans, s.n_total)
-        draw_chart(panels.chart, s.signal_hist, s.events, s.gt_times,
-                   opts["warning_signal"], opts["drift_signal"], s.n_total,
-                   show_gt)
+    # Parked at 100% the bar only repeats the 樣本 t metric above it, and a
+    # full-width red bar reads as a drift marker -- that is what the colour
+    # means in every other panel.
+    if running:
+        panels.progress.progress(min(1.0, t / s.n_total) if s.n_total else 0.0)
+    else:
+        panels.progress.empty()
+    draw_prequential(panels.preq, s.preq_hist, s.preq_acc, s.events,
+                     s.warning_spans, s.n_total)
+    draw_chart(panels.chart, s.signal_hist, s.events, s.gt_times,
+               opts["warning_signal"], opts["drift_signal"], s.n_total,
+               show_gt)
     draw_buffer(panels.buffer, s.warning_active, s.warning_start,
                 s.buffer_len, t, s.events)
     draw_pool(panels.pool, s.pool, opts["max_pool_size"])
-    if charts:
-        draw_duel(panels.duel, s.has_shadow, s.leader_correct,
-                  s.shadow_correct, s.leader_swaps, s.duel_hist, s.n_total)
+    draw_duel(panels.duel, s.has_shadow, s.leader_correct,
+              s.shadow_correct, s.leader_swaps, s.duel_hist, s.n_total)
     draw_events(panels.events, s.events)
 
 
@@ -942,9 +944,6 @@ def _sidebar() -> Optional[Dict[str, Any]]:
         # that one can be run end to end rather than truncated at 200k.
         max_steps = st.number_input("max_steps（0 = 全部）", 0, 1_000_000, 20_000,
                                     step=1000, help=HELP_MAX_STEPS)
-        stride = st.slider("重繪間隔 STRIDE", 10, 500, 50, step=10, help=HELP_STRIDE)
-        chart_every = st.slider("圖表重繪間隔（每 N 次）", 1, 50,
-                                CHART_EVERY_DEFAULT, help=HELP_CHART_EVERY)
         show_gt = st.checkbox("① 圖疊 ground truth", value=True, help=HELP_SHOW_GT)
         st.divider()
         signal_mode = st.selectbox(
@@ -983,8 +982,6 @@ def _sidebar() -> Optional[Dict[str, Any]]:
         stream_label=labels[csv_path],
         warm_start=int(warm_start),
         max_steps=int(max_steps),
-        stride=int(stride),
-        chart_every=int(chart_every),
         show_gt=bool(show_gt),
         start=bool(start),
         opts=dict(
@@ -1026,23 +1023,40 @@ def render() -> None:
     panels = _Panels()
 
     if cfg["start"]:
-        n_redraw = 0  # counts triggers, to thin out the chart panels
+        n_redraw = 0  # counts triggers, to thin out the repaints
+        redraw_every = None
+        last_warn = False
 
         def on_tick(s: RunState) -> None:
-            nonlocal n_redraw
+            nonlocal n_redraw, redraw_every, last_warn
             n_redraw += 1
-            # Offset by one so the *first* trigger paints the charts instead of
-            # leaving them blank until the chart_every-th one. A confirmed
-            # drift always forces them, whatever the cadence.
-            charts = s.drift or (n_redraw - 1) % cfg["chart_every"] == 0
-            _paint(panels, s, s.t, cfg["opts"], cfg["show_gt"], charts=charts)
+            if redraw_every is None:
+                # One tick per STRIDE samples, plus event triggers -- close
+                # enough to size the cadence off the stream length.
+                expected = max(1, s.n_total // STRIDE)
+                redraw_every = max(1, round(expected / TARGET_CHART_REDRAWS))
+            # A warning opening or closing repaints too, so ② does not sit on a
+            # stale buffer state between two scheduled frames.
+            warn_edge = s.warning_active != last_warn
+            last_warn = s.warning_active
+            # Offset by one so the *first* tick paints instead of leaving the
+            # panels blank until the redraw_every-th one. A confirmed drift
+            # always forces a frame, whatever the cadence.
+            if not (s.drift or warn_edge or (n_redraw - 1) % redraw_every == 0):
+                return
+            _paint(panels, s, s.t, cfg["opts"], cfg["show_gt"])
 
         result = run_and_collect(
             cfg["csv_path"], warm_start=cfg["warm_start"],
-            max_steps=cfg["max_steps"], opts=cfg["opts"], stride=cfg["stride"],
+            max_steps=cfg["max_steps"], opts=cfg["opts"], stride=STRIDE,
             stream_label=cfg["stream_label"], on_tick=on_tick,
         )
         st.session_state["run_result"] = result
+        # Repaint once the run is over: drops the progress bar, and settles the
+        # chart panels on the finished result rather than on whichever tick the
+        # redraw cadence happened to land on last.
+        _paint(panels, result, result.n_total - 1, result.opts,
+               cfg["show_gt"], running=False)
         st.success(
             f"完成：{result.n_total:,} 筆，{len(result.events)} 個漂移事件，"
             f"耗時 {result.elapsed:.1f}s"
@@ -1055,7 +1069,8 @@ def render() -> None:
             f"{result.n_seen:,} 筆 · {len(result.events)} 個漂移事件。"
             "改參數後按左側「開始監控」重跑。"
         )
-        _paint(panels, result, result.n_total - 1, result.opts, cfg["show_gt"])
+        _paint(panels, result, result.n_total - 1, result.opts,
+               cfg["show_gt"], running=False)
 
     draw_cost(result)
     draw_downloads(result)
