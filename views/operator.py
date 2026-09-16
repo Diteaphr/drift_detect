@@ -54,7 +54,6 @@ STATUS_EVERY = 10    # ticks between status/progress repaints (text is cheap)
 STATUS_MIN_DWELL = 1.0
 
 ACC_ROLL = "#0d7a4f"   # 近期準確率 -- the line that shows drops
-ACC_CUM = "#a8b0ab"    # 累積準確率 -- context, deliberately recessive
 DRIFT_RED = "#d03b3b"
 WARN_AMBER = "#e8b93b"
 
@@ -177,25 +176,23 @@ def _chart_body(result: Any) -> None:
         return
 
     df = pd.DataFrame(result.preq_hist)
-    # Skip the warm-up transient: at the very first samples both curves are
-    # averages over a handful of predictions and can sit near 0. Left in, one
+    # Skip the warm-up transient: at the very first samples the curve is an
+    # average over a handful of predictions and can sit near 0. Left in, one
     # such point drags the y axis down to zero and flattens the part that
     # matters (a few points of accuracy lost and regained).
     warm = df[df["t"] >= df["t"].iloc[0] + ROLL_WINDOW]
     if not warm.empty:
         df = warm
 
-    long = df.melt(
-        "t", value_vars=["roll", "preq"], var_name="series", value_name="acc"
-    ).dropna()
-    names = {"roll": f"近期準確率（最近 {ROLL_WINDOW} 筆）", "preq": "累積準確率"}
-    long["series"] = long["series"].map(names)
-    order = [names["roll"], names["preq"]]
+    # Only the rolling accuracy is drawn. The cumulative (prequential) value
+    # is what the 整體準確率 tile and the export report; as a second line it
+    # mostly restated that number and made the chart read as two signals.
+    line_df = df[["t", "roll"]].dropna()
 
     # Zoom the y axis to the data: anchored at 0 the whole story (a few points
     # of accuracy lost and regained) collapses into a flat line at the top.
-    lo = max(0.0, float(long["acc"].min()) - 0.03)
-    hi = min(1.0, float(long["acc"].max()) + 0.01)
+    lo = max(0.0, float(line_df["roll"].min()) - 0.03)
+    hi = min(1.0, float(line_df["roll"].max()) + 0.01)
 
     layers = []
 
@@ -208,18 +205,15 @@ def _chart_body(result: Any) -> None:
         )
 
     layers.append(
-        alt.Chart(long).mark_line(size=2).encode(
+        alt.Chart(line_df).mark_line(size=2, color=ACC_ROLL).encode(
             # Fixed to the whole stream: live, an auto-fitted axis rescales
             # on every redraw and the line appears to stand still.
             x=alt.X("t:Q", title="資料筆數",
                     scale=alt.Scale(domain=[0, result.n_total], nice=False)),
-            y=alt.Y("acc:Q", title="準確率", axis=alt.Axis(format="%"),
+            y=alt.Y("roll:Q", title=f"近期準確率（最近 {ROLL_WINDOW} 筆）",
+                    axis=alt.Axis(format="%"),
                     scale=alt.Scale(domain=[lo, hi], nice=False, clamp=True)),
-            color=alt.Color("series:N", title=None,
-                            scale=alt.Scale(domain=order,
-                                            range=[ACC_ROLL, ACC_CUM]),
-                            legend=alt.Legend(orient="top")),
-            tooltip=["t:Q", "series:N", alt.Tooltip("acc:Q", format=".1%")],
+            tooltip=["t:Q", alt.Tooltip("roll:Q", title="近期準確率", format=".1%")],
         )
     )
 
@@ -238,7 +232,7 @@ def _chart_body(result: Any) -> None:
     # Not `.interactive()`: pan/zoom is an engineer-view affordance, and a
     # scale bound to a zoom selection can override the y domain set above.
     st.altair_chart(alt.layer(*layers).properties(height=300), width="stretch")
-    st.caption("🟡 黃底 = 觀察期（左緣察覺、右緣 🔴 確認換模型）　深綠 = 近期　淺灰 = 累積")
+    st.caption("黃底為觀察期，紅線為確認 drift 處")
 
 
 # ----------------------------------------------------------------------
