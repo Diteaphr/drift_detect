@@ -265,7 +265,7 @@ def _type_badge(pred: drift_type.DriftTypePrediction) -> str:
 
 
 def _draw_events(result: RunResult) -> None:
-    st.markdown(f"##### 資料變化紀錄 · {len(result.events)} 次")
+    st.markdown("##### 漂移紀錄")
     if not result.events:
         st.info(f"這 {result.n_seen:,} 筆資料中沒有偵測到任何變化，模型穩定。")
         return
@@ -342,7 +342,7 @@ def _draw_summary(result: RunResult) -> None:
 
     cols = st.columns(4)
     cols[0].metric("檢查資料量", f"{s['n_seen']:,} 筆")
-    cols[1].metric("偵測到變化", f"{s['n_events']} 次")
+    cols[1].metric("漂移", f"{s['n_events']} 次")
     cols[2].metric(
         "平均恢復所需資料",
         "—" if s["mean_recovery"] is None else f"{s['mean_recovery']:,.0f} 筆",
