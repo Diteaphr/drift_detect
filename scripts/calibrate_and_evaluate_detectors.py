@@ -1,7 +1,7 @@
 """Calibrate detector sensitivity so N_detect ≈ N_actual, then measure detection delay.
 
-Calibration streams : data/recurring_drift/ g00–g04
-Evaluation streams  : data/recurring_drift/ g05–g09
+Calibration streams : data/old dataset/recurring_drift/ g00–g04
+Evaluation streams  : data/old dataset/recurring_drift/ g05–g09
 
 For each detector:
   1. Sweep one sensitivity parameter over a grid (calibration streams).
@@ -38,7 +38,7 @@ from src.metrics.correct_detection import (
 )
 from src.metrics.detection_evaluation import compute_count_score
 
-DATA_DIR = ROOT / "data" / "recurring_drift"
+DATA_DIR = ROOT / "data" / "old dataset" / "recurring_drift"
 OUT_DIR = ROOT / "outputs" / "calibration_comparison"
 WARM_START = 200
 TOLERANCE = DEFAULT_PERTURBATION_EXTENSION  # 2000 samples

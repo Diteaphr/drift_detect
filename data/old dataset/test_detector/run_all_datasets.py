@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def main() -> None:
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     python_bin = root / ".venv" / "bin" / "python"
     if not python_bin.exists():
         raise FileNotFoundError(f"Missing virtualenv python: {python_bin}")
@@ -19,7 +19,7 @@ def main() -> None:
 
     rows = []
     for group in groups:
-        data_dir = root / "data" / group
+        data_dir = root / "data" / "old dataset" / group
         for csv_path in sorted(data_dir.glob("*.csv")):
             dataset = csv_path.stem
             t0 = time.time()
@@ -59,7 +59,7 @@ def main() -> None:
             rows.append(row)
             print(f"[{group}] {dataset}: {line or '(no line found)'}")
 
-    out_dir = root / "data" / "test_detector"
+    out_dir = root / "data" / "old dataset" / "test_detector"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     csv_out = out_dir / "correct_detection_results.csv"

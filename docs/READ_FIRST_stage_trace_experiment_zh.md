@@ -25,7 +25,7 @@
 ## 2. 前置需求
 
 - Python 環境（與本專案一致；`numpy`、`pandas` 必需，`matplotlib` 選用，缺了只是不畫 timeline 圖）。
-- 資料已在 repo：`data/recurring_drift/recurring_sud_sea100k_g00..g09.csv`（含對應 `*_drift_times.txt`）。
+- 資料已在 repo：`data/old dataset/recurring_drift/recurring_sud_sea100k_g00..g09.csv`（含對應 `*_drift_times.txt`）。
 - 在專案根目錄執行以下指令。
 
 ---

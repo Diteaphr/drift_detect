@@ -33,14 +33,14 @@ from src.metrics.generate_window_labels import (
 
 # ── dataset selection ─────────────────────────────────────────────────────────
 TRIAL_DATASETS = [
-    "data/sudden_drift/recurring_sudden_sea100k_g00.csv",
-    "data/sudden_drift/recurring_sudden_sea100k_g01.csv",
-    "data/gradual_drift/recurring_gradual_sea100k_g00.csv",
-    "data/gradual_drift/recurring_gradual_sea100k_g01.csv",
-    "data/incremental_drift/incremental_hyperplane_100k_g00.csv",
-    "data/incremental_drift/incremental_hyperplane_100k_g01.csv",
-    "data/recurring_drift/recurring_sud_sea100k_g00.csv",
-    "data/recurring_drift/recurring_sud_sea100k_g01.csv",
+    "data/old dataset/sudden_drift/recurring_sudden_sea100k_g00.csv",
+    "data/old dataset/sudden_drift/recurring_sudden_sea100k_g01.csv",
+    "data/old dataset/gradual_drift/recurring_gradual_sea100k_g00.csv",
+    "data/old dataset/gradual_drift/recurring_gradual_sea100k_g01.csv",
+    "data/old dataset/incremental_drift/incremental_hyperplane_100k_g00.csv",
+    "data/old dataset/incremental_drift/incremental_hyperplane_100k_g01.csv",
+    "data/old dataset/recurring_drift/recurring_sud_sea100k_g00.csv",
+    "data/old dataset/recurring_drift/recurring_sud_sea100k_g01.csv",
 ]
 
 ROOT = Path(__file__).resolve().parents[1]

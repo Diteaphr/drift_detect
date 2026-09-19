@@ -3,7 +3,7 @@ Run ECPF on one recurring-drift CSV file.
 
 Example:
   python run_ecpf_recurring.py \
-    --csv data/recurring_drift/recurring_sud_sea100k_g00.csv \
+    --csv "data/old dataset/recurring_drift/recurring_sud_sea100k_g00.csv" \
     --warm-start 200
 
 --warning-detector adwin|seed|seqdrift2

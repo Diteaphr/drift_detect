@@ -42,28 +42,28 @@ MODEL_PATH = ROOT / "models" / "adaptive_window_rf.pkl"
 
 # ── trial data (detections from previous run) ─────────────────────────────────
 TRIAL_DATA = {
-    "data/sudden_drift/recurring_sudden_sea100k_g00.csv": {
+    "data/old dataset/sudden_drift/recurring_sudden_sea100k_g00.csv": {
         "detections": [36329],
         "optimal_ext": 3000,
         "predicted_ext": 3000,
         "score_fixed": 0.0,
         "score_adaptive": 0.0,
     },
-    "data/sudden_drift/recurring_sudden_sea100k_g01.csv": {
+    "data/old dataset/sudden_drift/recurring_sudden_sea100k_g01.csv": {
         "detections": [50859, 75818],
         "optimal_ext": 3000,
         "predicted_ext": 3000,
         "score_fixed": 0.0,
         "score_adaptive": 0.0,
     },
-    "data/gradual_drift/recurring_gradual_sea100k_g00.csv": {
+    "data/old dataset/gradual_drift/recurring_gradual_sea100k_g00.csv": {
         "detections": [34231, 93893],
         "optimal_ext": 2300,
         "predicted_ext": 2400,
         "score_fixed": 0.0,
         "score_adaptive": 42.9,
     },
-    "data/gradual_drift/recurring_gradual_sea100k_g01.csv": {
+    "data/old dataset/gradual_drift/recurring_gradual_sea100k_g01.csv": {
         "detections": [],
         "optimal_ext": 3000,
         "predicted_ext": 2700,

@@ -147,7 +147,7 @@ def run_one(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Batch run ECPF on recurring g00..g09.")
-    parser.add_argument("--data-dir", default="data/recurring_drift", help="Directory containing recurring CSV files.")
+    parser.add_argument("--data-dir", default="data/old dataset/recurring_drift", help="Directory containing recurring CSV files.")
     parser.add_argument("--warm-start", type=int, default=200)
     parser.add_argument("--max-steps", type=int, default=0)
     parser.add_argument(

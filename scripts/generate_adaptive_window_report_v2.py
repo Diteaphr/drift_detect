@@ -42,10 +42,10 @@ MODEL_PATH = ROOT / "models" / "adaptive_window_rf_v2.pkl"
 
 # Charts to draw: 2 sudden + 2 gradual (g00, g01 of each)
 CHART_DATASETS = [
-    ("sudden", "data/sudden_drift/recurring_sudden_sea100k_g00.csv"),
-    ("sudden", "data/sudden_drift/recurring_sudden_sea100k_g01.csv"),
-    ("gradual", "data/gradual_drift/recurring_gradual_sea100k_g00.csv"),
-    ("gradual", "data/gradual_drift/recurring_gradual_sea100k_g01.csv"),
+    ("sudden", "data/old dataset/sudden_drift/recurring_sudden_sea100k_g00.csv"),
+    ("sudden", "data/old dataset/sudden_drift/recurring_sudden_sea100k_g01.csv"),
+    ("gradual", "data/old dataset/gradual_drift/recurring_gradual_sea100k_g00.csv"),
+    ("gradual", "data/old dataset/gradual_drift/recurring_gradual_sea100k_g01.csv"),
 ]
 
 

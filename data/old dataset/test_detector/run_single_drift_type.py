@@ -174,18 +174,18 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     python_bin = root / ".venv" / "bin" / "python"
     if not python_bin.exists():
         raise FileNotFoundError(f"Missing virtualenv python: {python_bin}")
 
     group = args.group
-    data_dir = root / "data" / group
+    data_dir = root / "data" / "old dataset" / group
     datasets = sorted(data_dir.glob("*.csv"))
     if not datasets:
         raise FileNotFoundError(f"No csv found under: {data_dir}")
 
-    out_dir = root / "data" / "test_detector"
+    out_dir = root / "data" / "old dataset" / "test_detector"
     out_dir.mkdir(parents=True, exist_ok=True)
     plot_dir = out_dir / "plots" / group
     plot_dir.mkdir(parents=True, exist_ok=True)

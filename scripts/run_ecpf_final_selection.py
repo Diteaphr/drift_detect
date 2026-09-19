@@ -1121,7 +1121,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print selected configs and streams without running experiments.",
     )
-    parser.add_argument("--data-root", default=str(ROOT / "data"))
+    parser.add_argument("--data-root", default=str(ROOT / "data" / "old dataset"))
     parser.add_argument("--output-dir", default=str(ROOT / "outputs" / "ecpf_final_selection"))
     parser.add_argument("--groups", default=None, help="Comma-separated dataset groups.")
     parser.add_argument(

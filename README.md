@@ -36,7 +36,7 @@ Pipeline for detecting **sudden**, **gradual**, and **recurring** concept drift 
 python main.py [tsv|dwm|statistical|dwme]
 ```
 
-Loads `data/sudden_drift/recurring_sudden_sea100k_g03.csv`, runs the full pipeline, then prints Correct Detection score, precision/recall/F1, and prediction MAE.
+Loads `data/old dataset/sudden_drift/recurring_sudden_sea100k_g03.csv`, runs the full pipeline, then prints Correct Detection score, precision/recall/F1, and prediction MAE.
 
 **Optional: save a timeline plot after evaluation:**
 
@@ -57,7 +57,7 @@ Optional flags: `--meta tsv|dwm|statistical`, `--config-json`, `--ecpf`.
 
 ```bash
 python run_ecpf_recurring.py \
-  --csv data/recurring_drift/recurring_sud_sea100k_g00.csv \
+  --csv "data/old dataset/recurring_drift/recurring_sud_sea100k_g00.csv" \
   --signal-mode oracle_60
 ```
 
@@ -68,7 +68,7 @@ Prints a Correct Detection score at the end and saves an event log CSV and timel
 ```bash
 python run_ecpf_recurring_batch.py \
   --signal-mode oracle_60 \
-  --data-dir data/recurring_drift
+  --data-dir "data/old dataset/recurring_drift"
 ```
 
 Each row reports `cd(TP=…, FP=…, N=…, score=…%)`. The final summary prints the mean Correct Detection score across all files.

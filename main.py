@@ -140,7 +140,7 @@ def main():
     print(f"=== Using Meta Detector: {selected_meta_type} ===\n")
 
     # 1) Load the stream
-    data_dir = Path("data/sudden_drift")
+    data_dir = Path("data/old dataset/sudden_drift")
     dataset_name = "recurring_sudden_sea100k_g03"
     
     csv_path = data_dir / f"{dataset_name}.csv"

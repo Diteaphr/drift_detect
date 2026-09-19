@@ -1,6 +1,6 @@
 # recurring_sud_sea100k 資料集說明與誤報分析
 
-本文件說明 `data/recurring_drift/` 中 10 個 recurring sudden drift 資料集的實際結構，
+本文件說明 `data/old dataset/recurring_drift/` 中 10 個 recurring sudden drift 資料集的實際結構，
 以及為什麼在**非 groundtruth 的位置**會出現大量偵測到的 drift。
 
 分析日期：2026-08-13。所有數字皆由實測反推得出（腳本見文末「重現方式」）。
@@ -215,7 +215,7 @@ FP 從 6 降到 1，但 recall 從 5/8 掉到 2/8。這是低訊噪比的典型�
 
 ```python
 import pandas as pd, numpy as np, ast, pathlib
-D = pathlib.Path("data/recurring_drift")
+D = pathlib.Path("data/old dataset/recurring_drift")
 for i in range(10):
     df = pd.read_csv(D / f"recurring_sud_sea100k_g{i:02d}.csv")
     gt = [p[0] for p in ast.literal_eval(
