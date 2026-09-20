@@ -1,0 +1,100 @@
+{
+  "task": "binary",
+  "drift_type": "recurring",
+  "g_id": 9,
+  "stem": "recurring_gradual_sea100k_g09",
+  "seed": 4051098113,
+  "n_samples": 100000,
+  "chosen_drift_mode": "gradual",
+  "generator": "SEA+ConceptDriftStream",
+  "width": 1000,
+  "n_drifts": 5,
+  "drift_positions": [
+    5660,
+    23075,
+    46034,
+    60516,
+    88277
+  ],
+  "variant_pairs": [
+    [
+      0,
+      3
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "recurring": true,
+  "intervals": [
+    [
+      5160,
+      6160
+    ],
+    [
+      22575,
+      23575
+    ],
+    [
+      45534,
+      46534
+    ],
+    [
+      60016,
+      61016
+    ],
+    [
+      87777,
+      88777
+    ]
+  ],
+  "meta": {
+    "generator": "SEA+ConceptDriftStream",
+    "width": 1000,
+    "n_drifts": 5,
+    "drift_positions": [
+      5660,
+      23075,
+      46034,
+      60516,
+      88277
+    ],
+    "variant_pairs": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "recurring": true,
+    "chosen_drift_mode": "gradual"
+  }
+}

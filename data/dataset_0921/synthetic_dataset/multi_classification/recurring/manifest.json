@@ -1,0 +1,115 @@
+{
+  "task": "multi_classification",
+  "runs": [
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 0,
+      "stem": "recurring_incremental_rbf4_100k_g00",
+      "seed": 1648405238,
+      "n_samples": 100000,
+      "chosen_drift_mode": "incremental",
+      "n_drifts": 9,
+      "width": 1000
+    },
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 1,
+      "stem": "recurring_gradual_rbf4_100k_g01",
+      "seed": 1814594272,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "n_drifts": 5,
+      "width": 1000
+    },
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 2,
+      "stem": "recurring_incremental_rbf4_100k_g02",
+      "seed": 564442168,
+      "n_samples": 100000,
+      "chosen_drift_mode": "incremental",
+      "n_drifts": 8,
+      "width": 1000
+    },
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 3,
+      "stem": "recurring_gradual_rbf4_100k_g03",
+      "seed": 2986520700,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "n_drifts": 5,
+      "width": 1000
+    },
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 4,
+      "stem": "recurring_gradual_rbf4_100k_g04",
+      "seed": 3101876780,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "n_drifts": 8,
+      "width": 1000
+    },
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 5,
+      "stem": "recurring_gradual_rbf4_100k_g05",
+      "seed": 1227520943,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "n_drifts": 8,
+      "width": 1000
+    },
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 6,
+      "stem": "recurring_gradual_rbf4_100k_g06",
+      "seed": 4108501469,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "n_drifts": 6,
+      "width": 1000
+    },
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 7,
+      "stem": "recurring_sudden_rbf4_100k_g07",
+      "seed": 1939477419,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "n_drifts": 9,
+      "width": 50
+    },
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 8,
+      "stem": "recurring_sudden_rbf4_100k_g08",
+      "seed": 1317342031,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "n_drifts": 9,
+      "width": 50
+    },
+    {
+      "task": "multi_classification",
+      "drift_type": "recurring",
+      "g_id": 9,
+      "stem": "recurring_sudden_rbf4_100k_g09",
+      "seed": 3510141012,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "n_drifts": 6,
+      "width": 50
+    }
+  ]
+}

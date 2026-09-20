@@ -1,0 +1,14 @@
+{
+  "source": "sklearn.datasets.fetch_covtype (UCI Covertype)",
+  "url": "https://archive.ics.uci.edu/dataset/31/covertype",
+  "target": "cover_type remapped to 0..6 (original 1..7)",
+  "n_rows": 581012,
+  "n_features": 54,
+  "n_classes": 7,
+  "preprocessing": [
+    "shuffle=False to preserve original order",
+    "labels 1..7 -> 0..6",
+    "features named x0.."
+  ],
+  "prepared_date": "2026-09-20"
+}

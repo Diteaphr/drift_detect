@@ -1,0 +1,42 @@
+{
+  "source": "USP Insects stream (Souza et al. 2020)",
+  "url_paper": "https://arxiv.org/abs/2005.00113",
+  "url_repo": "https://sites.google.com/view/uspdsrepository",
+  "variant": "incremental_reoccurring_balanced",
+  "paper_name": "Incremental-reoccurring (bal.)",
+  "temperature_drift_description": "包含 3 個連續升降溫週期（20°C→40°C→20°C→40°C），在第 26,568 與 53,364 筆為平滑轉折點，無突發斷層。",
+  "task": "multi_classification",
+  "n_rows": 79986,
+  "n_features": 33,
+  "n_classes": 6,
+  "original_class_codes": [
+    2,
+    3,
+    4,
+    5,
+    11,
+    12
+  ],
+  "class_remap": {
+    "2": 0,
+    "3": 1,
+    "4": 2,
+    "5": 3,
+    "11": 4,
+    "12": 5
+  },
+  "change_points_paper_table2": [
+    26568,
+    53364
+  ],
+  "drift_times_format": "[[t, t], ...] from published change points; empty if continuous",
+  "has_groundtruth_drift": true,
+  "note": "Separated from data/real_dataset because Insects provides published concept-drift change points (Table 2). Balanced variants only (imbal. / out-of-control omitted).",
+  "preprocessing": [
+    "features + class from USP/River CSV (no header)",
+    "remap class labels to 0-based contiguous ids",
+    "rename features to x0..",
+    "write drift_times from Souza et al. 2020 Table 2"
+  ],
+  "prepared_date": "2026-09-20"
+}

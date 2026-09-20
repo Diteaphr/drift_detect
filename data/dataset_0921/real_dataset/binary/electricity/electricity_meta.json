@@ -1,0 +1,13 @@
+{
+  "source": "OpenML electricity (Elec2)",
+  "url": "https://www.openml.org/d/151",
+  "target": "class UP/DOWN -> 1/0",
+  "n_rows": 45312,
+  "n_features": 8,
+  "preprocessing": [
+    "map UP/DOWN to 1/0",
+    "coerce features numeric",
+    "rename features to x0.."
+  ],
+  "prepared_date": "2026-09-20"
+}

@@ -1,0 +1,33 @@
+{
+  "source_dataset": "gas_sensor_drift",
+  "source_path": "/Users/User/program file/drift_detect/data/real_dataset/multi_classification/gas_sensor_drift/gas_sensor_drift.csv",
+  "task": "multi_classification",
+  "paper": "Cerqueira et al. A Framework for Evaluating and Benchmarking Concept Drift Detection Methods (arXiv:2606.07789)",
+  "framework": "shuffle + Monte Carlo single-drift injection",
+  "g_id": 6,
+  "seed": 2415815248,
+  "method": "feature_filtering",
+  "abruptness": "gradual",
+  "n_input": 13910,
+  "n_output": 10793,
+  "drift_onset_input": 7263,
+  "drift_end_input": 8263,
+  "drift_width": 1000,
+  "drift_times_output": [
+    [
+      7263,
+      8011
+    ]
+  ],
+  "y_selected": null,
+  "y_swap": null,
+  "x_perm": null,
+  "x_filter_idx": 97,
+  "x_filter_tau": 3.006617,
+  "label_skip_proba": null,
+  "drift_region": [
+    0.5,
+    0.8
+  ],
+  "prepared_date": "2026-09-20"
+}

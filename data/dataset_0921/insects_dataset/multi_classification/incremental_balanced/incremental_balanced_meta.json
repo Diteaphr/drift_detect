@@ -1,0 +1,39 @@
+{
+  "source": "USP Insects stream (Souza et al. 2020)",
+  "url_paper": "https://arxiv.org/abs/2005.00113",
+  "url_repo": "https://sites.google.com/view/uspdsrepository",
+  "variant": "incremental_balanced",
+  "paper_name": "Incremental (bal.)",
+  "temperature_drift_description": "溫度由 20°C 平滑遞增至 40°C，特徵呈現連續且緩慢的遞增型飄移；貫穿整條數據串流，無離散 change point。",
+  "task": "multi_classification",
+  "n_rows": 57018,
+  "n_features": 33,
+  "n_classes": 6,
+  "original_class_codes": [
+    2,
+    3,
+    4,
+    5,
+    11,
+    12
+  ],
+  "class_remap": {
+    "2": 0,
+    "3": 1,
+    "4": 2,
+    "5": 3,
+    "11": 4,
+    "12": 5
+  },
+  "change_points_paper_table2": [],
+  "drift_times_format": "[[t, t], ...] from published change points; empty if continuous",
+  "has_groundtruth_drift": true,
+  "note": "Separated from data/real_dataset because Insects provides published concept-drift change points (Table 2). Balanced variants only (imbal. / out-of-control omitted).",
+  "preprocessing": [
+    "features + class from USP/River CSV (no header)",
+    "remap class labels to 0-based contiguous ids",
+    "rename features to x0..",
+    "write drift_times from Souza et al. 2020 Table 2"
+  ],
+  "prepared_date": "2026-09-20"
+}

@@ -1,0 +1,15 @@
+{
+  "source": "UCI Gas Sensor Array Drift Dataset (.dat batches)",
+  "url": "https://archive.ics.uci.edu/dataset/224/gas+sensor+array+drift+dataset",
+  "target": "gas class remapped 0..5 from [1, 2, 3, 4, 5, 6]",
+  "n_rows": 13910,
+  "n_features": 128,
+  "n_classes": 6,
+  "preprocessing": [
+    "concatenate batch1..batchN in filename order",
+    "parse libsvm .dat",
+    "remap labels to 0-based",
+    "rename features to x0.."
+  ],
+  "prepared_date": "2026-09-20"
+}

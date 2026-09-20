@@ -1,0 +1,75 @@
+{
+  "task": "binary",
+  "drift_type": "recurring",
+  "g_id": 6,
+  "stem": "recurring_incremental_hyperplane_100k_g06",
+  "seed": 3937048824,
+  "n_samples": 100000,
+  "chosen_drift_mode": "incremental",
+  "generator": "Hyperplane+ConceptDriftStream",
+  "width": 1000,
+  "n_drifts": 10,
+  "recurring": true,
+  "intervals": [
+    [
+      2485,
+      3485
+    ],
+    [
+      11945,
+      12945
+    ],
+    [
+      22327,
+      23327
+    ],
+    [
+      34899,
+      35899
+    ],
+    [
+      40991,
+      41991
+    ],
+    [
+      56456,
+      57456
+    ],
+    [
+      66652,
+      67652
+    ],
+    [
+      69853,
+      70853
+    ],
+    [
+      88039,
+      89039
+    ],
+    [
+      92146,
+      93146
+    ]
+  ],
+  "meta": {
+    "generator": "Hyperplane+ConceptDriftStream",
+    "width": 1000,
+    "n_drifts": 10,
+    "concept_keys": [
+      819329649,
+      764047527,
+      819329649,
+      764047527,
+      819329649,
+      764047527,
+      819329649,
+      764047527,
+      819329649,
+      764047527,
+      819329649
+    ],
+    "recurring": true,
+    "chosen_drift_mode": "incremental"
+  }
+}

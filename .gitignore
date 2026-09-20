@@ -76,3 +76,8 @@ docs/ECPF_FINAL_SELECTION_PLAN.md
 # scripts/generate_long_sudden_stream.py 重新產生（固定 seed，可重現）。
 # 說明見 data/long_drift/README.md
 data/long_drift/*.csv
+
+# Covertype full CSV (~132 MB) exceeds GitHub 100 MB limit — keep local only;
+# regenerate: cd data/dataset_0921/real_dataset/script && python3 prepare_all.py --datasets covertype
+**/covertype/covertype.csv
+data/dataset_0921/real_dataset/multi_classification/covertype/covertype.csv

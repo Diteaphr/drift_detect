@@ -1,0 +1,44 @@
+{
+  "task": "regression",
+  "drift_type": "recurring",
+  "g_id": 4,
+  "stem": "recurring_sudden_friedman_100k_g04",
+  "seed": 3265015548,
+  "n_samples": 100000,
+  "chosen_drift_mode": "sudden",
+  "n_drifts": 6,
+  "width": 50,
+  "intervals": [
+    [
+      3757,
+      3807
+    ],
+    [
+      22981,
+      23031
+    ],
+    [
+      35429,
+      35479
+    ],
+    [
+      52061,
+      52111
+    ],
+    [
+      72246,
+      72296
+    ],
+    [
+      89294,
+      89344
+    ]
+  ],
+  "meta": {
+    "generator": "manual_Friedman_sudden",
+    "width": 50,
+    "n_drifts": 6,
+    "recurring": true,
+    "chosen_drift_mode": "sudden"
+  }
+}

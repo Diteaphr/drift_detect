@@ -1,0 +1,33 @@
+{
+  "source_dataset": "ai4i2020",
+  "source_path": "/Users/User/program file/drift_detect/data/real_dataset/binary/ai4i2020/ai4i2020.csv",
+  "task": "binary",
+  "paper": "Cerqueira et al. A Framework for Evaluating and Benchmarking Concept Drift Detection Methods (arXiv:2606.07789)",
+  "framework": "shuffle + Monte Carlo single-drift injection",
+  "g_id": 9,
+  "seed": 128443115,
+  "method": "feature_filtering",
+  "abruptness": "gradual",
+  "n_input": 10000,
+  "n_output": 8350,
+  "drift_onset_input": 6446,
+  "drift_end_input": 6946,
+  "drift_width": 500,
+  "drift_times_output": [
+    [
+      6446,
+      6839
+    ]
+  ],
+  "y_selected": null,
+  "y_swap": null,
+  "x_perm": null,
+  "x_filter_idx": 5,
+  "x_filter_tau": 107.0,
+  "label_skip_proba": null,
+  "drift_region": [
+    0.5,
+    0.8
+  ],
+  "prepared_date": "2026-09-20"
+}

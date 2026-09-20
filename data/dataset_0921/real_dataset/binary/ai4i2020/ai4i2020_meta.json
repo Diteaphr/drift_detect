@@ -1,0 +1,14 @@
+{
+  "source": "UCI AI4I 2020 Predictive Maintenance (id=601)",
+  "url": "https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset",
+  "target": "Machine failure (0/1)",
+  "n_rows": 10000,
+  "n_features": 6,
+  "preprocessing": [
+    "drop id columns (UDI/Product ID)",
+    "drop failure-mode detail columns TWF/HDF/PWF/OSF/RNF",
+    "Type L/M/H -> ordinal 0/1/2",
+    "rename features to x0.."
+  ],
+  "prepared_date": "2026-09-20"
+}
