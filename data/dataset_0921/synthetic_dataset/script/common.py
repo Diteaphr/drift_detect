@@ -273,6 +273,23 @@ def incremental_monitor_windows(
     return intervals
 
 
+def causal_rolling_mean(y: np.ndarray, w: int) -> np.ndarray:
+    """Mean of previous up-to-w samples ending at t (no lookahead)."""
+    y = np.asarray(y, dtype=float)
+    n = len(y)
+    out = np.empty(n, dtype=float)
+    y0 = np.where(np.isfinite(y), y, 0.0)
+    valid = np.isfinite(y).astype(float)
+    csum = np.cumsum(y0)
+    ccnt = np.cumsum(valid)
+    for t in range(n):
+        s = max(0, t - w + 1)
+        total = csum[t] - (csum[s - 1] if s > 0 else 0.0)
+        cnt = ccnt[t] - (ccnt[s - 1] if s > 0 else 0.0)
+        out[t] = total / cnt if cnt > 0 else np.nan
+    return out
+
+
 def plot_stream_overview(
     csv_path: Path,
     drift_path: Path,
@@ -294,10 +311,8 @@ def plot_stream_overview(
     fig, ax = plt.subplots(figsize=(12, 3.2))
     if y_baseline is not None:
         yb = np.asarray(y_baseline, dtype=float)
-        # shared window based on max length so curves are comparable
         window = max(10, min(window, max(n, len(yb)) // 5 or 10))
-        kernel = np.ones(window) / window
-        roll_b = np.convolve(yb, kernel, mode="valid")
+        roll_b = causal_rolling_mean(yb, window)
         ax.plot(
             np.arange(len(roll_b)),
             roll_b,
@@ -306,16 +321,14 @@ def plot_stream_overview(
             label="no drift",
             alpha=0.9,
         )
-    else:
-        kernel = np.ones(window) / window
 
-    roll = np.convolve(y, kernel, mode="valid")
+    roll = causal_rolling_mean(y, window)
     if task == "regression":
         ax.plot(np.arange(len(roll)), roll, color="darkgreen", linewidth=0.9, label="with drift")
-        ax.set_ylabel(f"rolling mean y (w={window})")
+        ax.set_ylabel(f"causal rolling mean y (prev w={window})")
     else:
         ax.plot(np.arange(len(roll)), roll, color="steelblue", linewidth=0.9, label="with drift")
-        ax.set_ylabel(f"rolling mean label (w={window})")
+        ax.set_ylabel(f"causal rolling mean label (prev w={window})")
 
     for s, e in intervals:
         ax.axvspan(s, e, color="coral", alpha=0.25)
@@ -323,7 +336,7 @@ def plot_stream_overview(
 
     ax.set_title(title)
     ax.set_xlabel("t")
-    ax.set_xlim(0, n)
+    ax.set_xlim(0, max(n - 1, 1))
     ax.legend(loc="upper right", fontsize=8)
     fig.tight_layout()
     out_png.parent.mkdir(parents=True, exist_ok=True)

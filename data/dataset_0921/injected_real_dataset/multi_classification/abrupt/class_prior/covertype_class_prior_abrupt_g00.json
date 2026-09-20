@@ -9,23 +9,23 @@
   "method": "class_prior",
   "abruptness": "abrupt",
   "n_input": 100000,
-  "n_output": 94011,
-  "drift_onset_input": 77860,
-  "drift_end_input": 77860,
+  "n_output": 99282,
+  "drift_onset_input": 56847,
+  "drift_end_input": 56847,
   "drift_width": 0,
   "drift_times_output": [
     [
-      77860,
-      77860
+      56847,
+      56847
     ]
   ],
   "drift_times_input": [
     [
-      77860,
-      77860
+      56847,
+      56847
     ]
   ],
-  "y_selected": 0,
+  "y_selected": 3,
   "y_swap": 5,
   "x_perm": null,
   "x_filter_idx": null,
@@ -35,5 +35,5 @@
     0.5,
     0.8
   ],
-  "prepared_date": "2026-09-20"
+  "prepared_date": "2026-09-21"
 }

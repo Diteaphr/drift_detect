@@ -28,8 +28,8 @@
 - **用途**：真實世界串流，保留原始時間／列順序，供無 GT 或 proxy 評估。
 - **特色**：
   - **不**產生虛構 `drift_times`
-  - binary：ai4i2020、electricity  
-  - multi：gas_sensor_drift、covertype（**完整 CSV 不入 Git，需本機 prepare**）  
+  - binary：ai4i2020、electricity、airlines  
+  - multi：gas_sensor_drift、covertype（>100k 截前 10 萬筆）  
   - regression：metro_interstate_traffic、bike_sharing
 - **細節**：見 [`real_dataset/README.md`](./real_dataset/README.md)
 
@@ -48,7 +48,8 @@
 - **特色**：
   - 僅 **classification**（論文設定；不含 regression）
   - 四法：class_prior、label_swap、feature_permutation、feature_filtering × abrupt / gradual（width≤1000）
-  - 來源：ai4i2020、electricity、gas_sensor_drift、covertype（≤100k）；g00–g09
+  - 來源：ai4i2020、electricity、airlines、gas_sensor_drift、covertype；g00–g09
+  - 長串流來源已在 `real_dataset` 截為 ≤100k，避免單檔過大
   - 先 shuffle 再注入，以降低原始未知漂移干擾
 - **細節**：見 [`injected_real_dataset/README.md`](./injected_real_dataset/README.md)
 

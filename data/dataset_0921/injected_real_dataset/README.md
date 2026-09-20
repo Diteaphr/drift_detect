@@ -24,8 +24,9 @@
 |---|---|---|---|---|
 | `ai4i2020` | binary | 四種皆可 | 500 | |
 | `electricity` | binary | 四種皆可 | 1000 | |
+| `airlines` | binary | 四種皆可 | 1000 | 來源已截前 10 萬筆 |
 | `gas_sensor_drift` | multi | 四種皆可 | 1000 | |
-| `covertype` | multi | 四種皆可 | 1000 | 抽樣至 100k（論文 Table 3） |
+| `covertype` | multi | 四種皆可 | 1000 | 來源已截前 10 萬筆 |
 
 ## 檔案結構
 
@@ -47,14 +48,14 @@ data/injected_real_dataset/
 ## 重跑
 
 ```bash
-cd data/injected_real_dataset/script
+cd data/dataset_0921/injected_real_dataset/script
 
 # 快速檢查
 python3 generate_all.py --smoke
 
-# 完整：4 資料集 × 4 方法 × abrupt/gradual × g00–g09
+# 完整：5 資料集 × 4 方法 × abrupt/gradual × g00–g09
 python3 generate_all.py
 
 # 子集
-python3 generate_all.py --datasets electricity --methods class_prior,label_swap --g-ids 0,1
+python3 generate_all.py --datasets electricity,airlines --methods class_prior,label_swap --g-ids 0,1
 ```

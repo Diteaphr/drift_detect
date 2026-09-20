@@ -9,11 +9,13 @@ from typing import Callable
 
 import numpy as np
 import pandas as pd
-from sklearn.datasets import fetch_covtype, fetch_openml
+from sklearn.datasets import fetch_openml
 
 from common import (
+    MAX_STREAM_ROWS,
     RAW_DIR,
     ROOT,
+    cap_stream_rows,
     ensure_layout,
     plot_y,
     rolling_download,
@@ -31,6 +33,16 @@ def _save_bundle(
     df: pd.DataFrame,
     meta: dict,
 ) -> Path:
+    df, orig_n = cap_stream_rows(df, MAX_STREAM_ROWS)
+    if orig_n is not None:
+        meta = {
+            **meta,
+            "n_rows_original": int(orig_n),
+            "n_rows_capped": int(len(df)),
+            "cap_policy": f"keep first {MAX_STREAM_ROWS} rows (stream order; GitHub size)",
+        }
+        print(f"  capped {name}: {orig_n} -> {len(df)} rows")
+    meta = {**meta, "n_rows": int(len(df))}
     validate_df(df, task, name)
     out_dir = ROOT / task / name
     csv_path = out_dir / f"{name}.csv"
@@ -185,12 +197,76 @@ def prepare_electricity() -> Path:
             "source": "OpenML electricity (Elec2)",
             "url": "https://www.openml.org/d/151",
             "target": "class UP/DOWN -> 1/0",
-            "n_rows": int(len(out)),
             "n_features": int(out.shape[1] - 1),
             "preprocessing": [
                 "map UP/DOWN to 1/0",
                 "coerce features numeric",
                 "rename features to x0..",
+            ],
+        },
+    )
+
+
+def prepare_airlines() -> Path:
+    """Airlines delay stream (OpenML) — binary; keep first 100k if longer."""
+    raw_path = RAW_DIR / "airlines" / "airlines.csv"
+    if not raw_path.exists():
+        print("  fetching Airlines via OpenML (airlines / data_id=1169)")
+        try:
+            bunch = fetch_openml(name="airlines", version=1, as_frame=True, parser="auto")
+        except Exception:
+            bunch = fetch_openml(data_id=1169, as_frame=True, parser="auto")
+        frame = bunch.frame.copy()
+        raw_path.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_csv(raw_path, index=False)
+
+    raw = pd.read_csv(raw_path)
+    # Target: Delay / class / delayed
+    y_col = None
+    for cand in ("Delay", "delay", "class", "Delayed"):
+        if cand in raw.columns:
+            y_col = cand
+            break
+    if y_col is None:
+        y_col = raw.columns[-1]
+
+    y = raw[y_col]
+    if y.dtype == object or str(y.dtype) == "category":
+        # yes/no or 0/1 strings
+        mapping = {
+            "1": 1, "0": 0, "yes": 1, "no": 0, "true": 1, "false": 0,
+            "Y": 1, "N": 0, "delayed": 1, "ontime": 0,
+        }
+        y = y.map(lambda v: mapping.get(str(v).strip().lower(), v))
+    y = pd.to_numeric(y, errors="coerce")
+
+    feats = raw.drop(columns=[y_col])
+    # encode categoricals as codes (Airline, AirportFrom, AirportTo, …)
+    for c in list(feats.columns):
+        if feats[c].dtype == object or str(feats[c].dtype) == "category":
+            feats[c] = feats[c].astype("category").cat.codes.astype(float)
+        else:
+            feats[c] = pd.to_numeric(feats[c], errors="coerce")
+
+    out = feats.copy()
+    out["y"] = y.astype(int)
+    out = out.dropna().reset_index(drop=True)
+    out = to_x_columns(out)
+
+    return _save_bundle(
+        task="binary",
+        name="airlines",
+        df=out,
+        meta={
+            "source": "OpenML airlines (flight delay binary stream)",
+            "url": "https://www.openml.org/d/1169",
+            "target": "Delay 0/1",
+            "n_features": int(out.shape[1] - 1),
+            "preprocessing": [
+                "categorical columns -> category codes",
+                "coerce numeric features",
+                "rename features to x0..",
+                f"cap to first {MAX_STREAM_ROWS} rows if longer",
             ],
         },
     )
@@ -321,31 +397,47 @@ def prepare_gas_sensor_drift() -> Path:
 
 
 def prepare_covertype() -> Path:
-    print("  fetching Covertype via sklearn.fetch_covtype")
-    bunch = fetch_covtype(as_frame=False, shuffle=False)
-    X = bunch.data
-    y = bunch.target  # 1..7
-    # 0-based labels
-    y0 = y.astype(int) - 1
-    cols = {f"x{i}": X[:, i] for i in range(X.shape[1])}
-    cols["y"] = y0
-    out = pd.DataFrame(cols)
-    # Covertype is large (~581k); keep full stream (no shuffle)
+    """UCI / sklearn Covertype — 7-class; keep first 100k rows for GitHub size."""
+    from sklearn.datasets import fetch_covtype
+
+    raw_path = RAW_DIR / "covertype" / "covertype_raw.csv"
+    if not raw_path.exists():
+        print("  fetching Covertype via sklearn.fetch_covtype")
+        bunch = fetch_covtype(as_frame=True)
+        frame = bunch.frame.copy()
+        raw_path.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_csv(raw_path, index=False)
+
+    raw = pd.read_csv(raw_path)
+    # sklearn frame: feature columns + Cover_Type
+    y_col = "Cover_Type" if "Cover_Type" in raw.columns else raw.columns[-1]
+    y = pd.to_numeric(raw[y_col], errors="coerce")
+    # Cover_Type is 1..7 → remap to 0..6
+    classes = sorted(y.dropna().unique().tolist())
+    remap = {c: i for i, c in enumerate(classes)}
+    y0 = y.map(remap)
+
+    feats = raw.drop(columns=[y_col]).apply(pd.to_numeric, errors="coerce")
+    out = feats.copy()
+    out["y"] = y0.astype(int)
+    out = out.dropna().reset_index(drop=True)
+    out = to_x_columns(out)
+
     return _save_bundle(
         task="multi_classification",
         name="covertype",
         df=out,
         meta={
-            "source": "sklearn.datasets.fetch_covtype (UCI Covertype)",
+            "source": "sklearn/UCI Covertype (Blackard & Dean)",
             "url": "https://archive.ics.uci.edu/dataset/31/covertype",
-            "target": "cover_type remapped to 0..6 (original 1..7)",
-            "n_rows": int(len(out)),
+            "target": f"Cover_Type remapped 0..{len(classes)-1} from {classes}",
             "n_features": int(out.shape[1] - 1),
             "n_classes": int(out["y"].nunique()),
             "preprocessing": [
-                "shuffle=False to preserve original order",
-                "labels 1..7 -> 0..6",
-                "features named x0..",
+                "fetch_covtype as_frame",
+                "remap Cover_Type to contiguous 0-based ids",
+                "rename features to x0..",
+                f"cap to first {MAX_STREAM_ROWS} rows (full set ~581k exceeds GitHub 100MB)",
             ],
         },
     )
@@ -529,6 +621,7 @@ DATASETS: dict[str, dict[str, Callable[[], Path]]] = {
     "binary": {
         "ai4i2020": prepare_ai4i2020,
         "electricity": prepare_electricity,
+        "airlines": prepare_airlines,
     },
     "multi_classification": {
         "gas_sensor_drift": prepare_gas_sensor_drift,

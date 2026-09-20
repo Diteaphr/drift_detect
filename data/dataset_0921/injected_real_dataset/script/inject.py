@@ -57,9 +57,8 @@ def inject_stream(
     feat_cols = [c for c in df.columns if c != "y"]
     work = df[feat_cols + ["y"]].copy()
     if max_n is not None and len(work) > max_n:
-        # deterministic subsample then shuffle (paper Covtype uses 100k)
-        idx = rng.choice(len(work), size=max_n, replace=False)
-        work = work.iloc[idx].reset_index(drop=True)
+        # Keep first max_n rows of the (already stream-ordered) source; then shuffle.
+        work = work.iloc[:max_n].reset_index(drop=True)
 
     shuffle_idx = rng.permutation(len(work))
     work = work.iloc[shuffle_idx].reset_index(drop=True)

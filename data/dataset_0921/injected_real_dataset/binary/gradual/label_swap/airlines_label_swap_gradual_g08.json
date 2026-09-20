@@ -1,0 +1,39 @@
+{
+  "source_dataset": "airlines",
+  "source_path": "/Users/User/program file/drift_detect/data/dataset_0921/real_dataset/binary/airlines/airlines.csv",
+  "task": "binary",
+  "paper": "Cerqueira et al. A Framework for Evaluating and Benchmarking Concept Drift Detection Methods (arXiv:2606.07789)",
+  "framework": "shuffle + Monte Carlo single-drift injection",
+  "g_id": 8,
+  "seed": 3340152390,
+  "method": "label_swap",
+  "abruptness": "gradual",
+  "n_input": 100000,
+  "n_output": 100000,
+  "drift_onset_input": 75571,
+  "drift_end_input": 76571,
+  "drift_width": 1000,
+  "drift_times_output": [
+    [
+      75571,
+      76571
+    ]
+  ],
+  "drift_times_input": [
+    [
+      75571,
+      76571
+    ]
+  ],
+  "y_selected": 1,
+  "y_swap": 0,
+  "x_perm": null,
+  "x_filter_idx": null,
+  "x_filter_tau": null,
+  "label_skip_proba": null,
+  "drift_region": [
+    0.5,
+    0.8
+  ],
+  "prepared_date": "2026-09-21"
+}

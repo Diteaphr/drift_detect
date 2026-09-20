@@ -1,12 +1,18 @@
-# Covertype（本機產生，不入 Git）
+# covertype
 
-`covertype.csv` 約 **132 MB**，超過 GitHub 單檔 100 MB 上限，故 **不納入版本庫**。
+UCI / sklearn Covertype（7 類森林覆蓋）。
 
-本機若尚無此檔，請執行：
+| 項目 | 值 |
+|---|---|
+| 任務 | multi-class（7） |
+| 筆數 | 100,000（來源約 581k，保留前 10 萬，以符合 GitHub <100MB） |
+| 特徵 | 54（`x0`…） |
+| 目標 `y` | Cover_Type → 0…6 |
+| 來源 | https://archive.ics.uci.edu/dataset/31/covertype |
+
+重跑：
 
 ```bash
 cd data/dataset_0921/real_dataset/script
 python3 prepare_all.py --datasets covertype
 ```
-
-`covertype_meta.json` 仍會入庫；CSV 產生後會留在此目錄（已被 `.gitignore` 忽略）。

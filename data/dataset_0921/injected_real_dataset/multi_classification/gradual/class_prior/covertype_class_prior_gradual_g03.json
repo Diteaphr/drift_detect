@@ -1,6 +1,6 @@
 {
   "source_dataset": "covertype",
-  "source_path": "/Users/User/program file/drift_detect/data/real_dataset/multi_classification/covertype/covertype.csv",
+  "source_path": "/Users/User/program file/drift_detect/data/dataset_0921/real_dataset/multi_classification/covertype/covertype.csv",
   "task": "multi_classification",
   "paper": "Cerqueira et al. A Framework for Evaluating and Benchmarking Concept Drift Detection Methods (arXiv:2606.07789)",
   "framework": "shuffle + Monte Carlo single-drift injection",
@@ -9,18 +9,24 @@
   "method": "class_prior",
   "abruptness": "gradual",
   "n_input": 100000,
-  "n_output": 99559,
-  "drift_onset_input": 59555,
-  "drift_end_input": 60555,
+  "n_output": 99605,
+  "drift_onset_input": 77787,
+  "drift_end_input": 78787,
   "drift_width": 1000,
   "drift_times_output": [
     [
-      59555,
-      60548
+      77787,
+      78776
+    ]
+  ],
+  "drift_times_input": [
+    [
+      77787,
+      78787
     ]
   ],
   "y_selected": 4,
-  "y_swap": 6,
+  "y_swap": 3,
   "x_perm": null,
   "x_filter_idx": null,
   "x_filter_tau": null,
@@ -29,5 +35,5 @@
     0.5,
     0.8
   ],
-  "prepared_date": "2026-09-20"
+  "prepared_date": "2026-09-21"
 }

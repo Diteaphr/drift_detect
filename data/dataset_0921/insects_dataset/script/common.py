@@ -106,6 +106,22 @@ def adaptive_window(n: int, default: int = 500) -> int:
     return max(50, min(default, n // 20))
 
 
+def causal_rolling_mean(y: np.ndarray, w: int) -> np.ndarray:
+    y = np.asarray(y, dtype=float)
+    n = len(y)
+    out = np.empty(n, dtype=float)
+    y0 = np.where(np.isfinite(y), y, 0.0)
+    valid = np.isfinite(y).astype(float)
+    csum = np.cumsum(y0)
+    ccnt = np.cumsum(valid)
+    for t in range(n):
+        s = max(0, t - w + 1)
+        total = csum[t] - (csum[s - 1] if s > 0 else 0.0)
+        cnt = ccnt[t] - (ccnt[s - 1] if s > 0 else 0.0)
+        out[t] = total / cnt if cnt > 0 else np.nan
+    return out
+
+
 def plot_y_with_drifts(
     df: pd.DataFrame,
     intervals: list[list[int]],
@@ -120,15 +136,15 @@ def plot_y_with_drifts(
     fig, ax = plt.subplots(figsize=(12, 3.6))
     for c in classes:
         ind = (y == c).astype(float)
-        roll = np.convolve(ind, np.ones(w) / w, mode="valid")
+        roll = causal_rolling_mean(ind, w)
         ax.plot(np.arange(len(roll)), roll, linewidth=0.9, label=f"class {c}")
     for s, e in intervals:
         ax.axvspan(s, e, color="coral", alpha=0.25)
         ax.axvline(s, color="coral", linestyle="--", linewidth=0.9, alpha=0.9)
-    ax.set_ylabel(f"rolling class proportion (w={w})")
+    ax.set_ylabel(f"causal rolling class proportion (prev w={w})")
     ax.set_xlabel("t")
     ax.set_title(title)
-    ax.set_xlim(0, n)
+    ax.set_xlim(0, max(n - 1, 1))
     ax.set_ylim(-0.02, 1.02)
     ax.legend(loc="upper right", fontsize=8, ncol=min(3, len(classes)))
     fig.tight_layout()

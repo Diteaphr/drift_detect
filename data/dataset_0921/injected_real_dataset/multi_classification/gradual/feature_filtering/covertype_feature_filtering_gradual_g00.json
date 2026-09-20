@@ -9,31 +9,31 @@
   "method": "feature_filtering",
   "abruptness": "gradual",
   "n_input": 100000,
-  "n_output": 99784,
-  "drift_onset_input": 72052,
-  "drift_end_input": 73052,
+  "n_output": 99822,
+  "drift_onset_input": 64782,
+  "drift_end_input": 65782,
   "drift_width": 1000,
   "drift_times_output": [
     [
-      72052,
-      73046
+      64782,
+      65781
     ]
   ],
   "drift_times_input": [
     [
-      72052,
-      73052
+      64782,
+      65782
     ]
   ],
   "y_selected": null,
   "y_swap": null,
   "x_perm": null,
-  "x_filter_idx": 16,
+  "x_filter_idx": 11,
   "x_filter_tau": 0.0,
   "label_skip_proba": null,
   "drift_region": [
     0.5,
     0.8
   ],
-  "prepared_date": "2026-09-20"
+  "prepared_date": "2026-09-21"
 }

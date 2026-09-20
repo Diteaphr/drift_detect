@@ -31,7 +31,7 @@ def main() -> None:
     parser.add_argument(
         "--datasets",
         default=None,
-        help="Comma-separated dataset names, e.g. ai4i2020,covertype",
+        help="Comma-separated dataset names, e.g. ai4i2020,airlines,covertype",
     )
     args = parser.parse_args()
 

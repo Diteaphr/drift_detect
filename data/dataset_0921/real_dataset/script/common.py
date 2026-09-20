@@ -15,10 +15,13 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = SCRIPT_DIR.parent
 RAW_DIR = ROOT / "_raw"
 
+# Cap long streams so CSV stays under GitHub's ~100MB single-file limit.
+MAX_STREAM_ROWS = 100_000
+
 
 def ensure_layout() -> None:
     for task, names in {
-        "binary": ["ai4i2020", "electricity"],
+        "binary": ["ai4i2020", "electricity", "airlines"],
         "multi_classification": ["gas_sensor_drift", "covertype"],
         "regression": ["metro_interstate_traffic", "bike_sharing"],
     }.items():
@@ -26,6 +29,14 @@ def ensure_layout() -> None:
         for name in names:
             (ROOT / task / name).mkdir(parents=True, exist_ok=True)
     RAW_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def cap_stream_rows(df: pd.DataFrame, max_n: int = MAX_STREAM_ROWS) -> tuple[pd.DataFrame, int | None]:
+    """Keep the first max_n rows (preserve stream order). Returns (df, original_n or None)."""
+    n = len(df)
+    if n <= max_n:
+        return df.reset_index(drop=True), None
+    return df.iloc[:max_n].reset_index(drop=True), n
 
 
 def to_x_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -75,6 +86,23 @@ def adaptive_window(n: int, default: int = 500) -> int:
     return max(50, min(default, n // 20))
 
 
+def causal_rolling_mean(y: np.ndarray, w: int) -> np.ndarray:
+    """Mean of the previous up-to-w samples ending at t (no lookahead)."""
+    y = np.asarray(y, dtype=float)
+    n = len(y)
+    out = np.empty(n, dtype=float)
+    y0 = np.where(np.isfinite(y), y, 0.0)
+    valid = np.isfinite(y).astype(float)
+    csum = np.cumsum(y0)
+    ccnt = np.cumsum(valid)
+    for t in range(n):
+        s = max(0, t - w + 1)
+        total = csum[t] - (csum[s - 1] if s > 0 else 0.0)
+        cnt = ccnt[t] - (ccnt[s - 1] if s > 0 else 0.0)
+        out[t] = total / cnt if cnt > 0 else np.nan
+    return out
+
+
 def plot_y(df: pd.DataFrame, out_png: Path, *, task: str, title: str) -> None:
     y = df["y"].to_numpy(dtype=float)
     n = len(y)
@@ -87,23 +115,25 @@ def plot_y(df: pd.DataFrame, out_png: Path, *, task: str, title: str) -> None:
         show = classes if len(classes) <= 8 else classes[:8]
         for c in show:
             ind = (df["y"].to_numpy() == c).astype(float)
-            kernel = np.ones(w) / w
-            roll = np.convolve(ind, kernel, mode="valid")
+            roll = causal_rolling_mean(ind, w)
             ax.plot(np.arange(len(roll)), roll, linewidth=0.9, label=f"class {c}")
-        ax.set_ylabel(f"rolling class proportion (w={w})")
+        ax.set_ylabel(f"causal rolling class proportion (prev w={w})")
         ax.legend(loc="upper right", fontsize=8, ncol=min(4, len(show)))
         ax.set_ylim(-0.02, 1.02)
     else:
-        kernel = np.ones(w) / w
-        roll = np.convolve(y, kernel, mode="valid")
+        roll = causal_rolling_mean(y, w)
         color = "darkgreen" if task == "regression" else "steelblue"
         ax.plot(np.arange(len(roll)), roll, color=color, linewidth=0.8)
-        ylab = f"rolling mean y (w={w})" if task == "regression" else f"rolling mean label (w={w})"
+        ylab = (
+            f"causal rolling mean y (prev w={w})"
+            if task == "regression"
+            else f"causal rolling mean label (prev w={w})"
+        )
         ax.set_ylabel(ylab)
 
     ax.set_title(title)
     ax.set_xlabel("t")
-    ax.set_xlim(0, max(n - w, 1))
+    ax.set_xlim(0, max(n - 1, 1))
     fig.tight_layout()
     out_png.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_png, dpi=120)

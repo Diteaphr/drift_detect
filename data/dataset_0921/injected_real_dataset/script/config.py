@@ -36,6 +36,7 @@ TASKS = ("binary", "multi_classification")
 
 # Source datasets under data/real_dataset (classification only; paper is classification)
 # drift_width: gradual transition length (hard-capped by GRADUAL_WIDTH_MAX)
+# max_n: safety cap (real_dataset already keeps ≤100k for long streams)
 DATASETS: dict[str, dict] = {
     "ai4i2020": {
         "task": "binary",
@@ -51,6 +52,13 @@ DATASETS: dict[str, dict] = {
         "drift_width": 1000,
         "max_n": None,
     },
+    "airlines": {
+        "task": "binary",
+        "path": REAL_ROOT / "binary" / "airlines" / "airlines.csv",
+        "methods": list(DRIFT_METHODS),
+        "drift_width": 1000,
+        "max_n": 100_000,
+    },
     "gas_sensor_drift": {
         "task": "multi_classification",
         "path": REAL_ROOT / "multi_classification" / "gas_sensor_drift" / "gas_sensor_drift.csv",
@@ -63,7 +71,6 @@ DATASETS: dict[str, dict] = {
         "path": REAL_ROOT / "multi_classification" / "covertype" / "covertype.csv",
         "methods": list(DRIFT_METHODS),
         "drift_width": 1000,
-        # Paper Table 3 uses 100k for Covtype
         "max_n": 100_000,
     },
 }

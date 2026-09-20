@@ -9,24 +9,24 @@
   "method": "class_prior",
   "abruptness": "gradual",
   "n_input": 100000,
-  "n_output": 98634,
-  "drift_onset_input": 68688,
-  "drift_end_input": 69688,
+  "n_output": 99390,
+  "drift_onset_input": 61725,
+  "drift_end_input": 62725,
   "drift_width": 1000,
   "drift_times_output": [
     [
-      68688,
-      69666
+      61725,
+      62717
     ]
   ],
   "drift_times_input": [
     [
-      68688,
-      69688
+      61725,
+      62725
     ]
   ],
   "y_selected": 2,
-  "y_swap": 0,
+  "y_swap": 1,
   "x_perm": null,
   "x_filter_idx": null,
   "x_filter_tau": null,
@@ -35,5 +35,5 @@
     0.5,
     0.8
   ],
-  "prepared_date": "2026-09-20"
+  "prepared_date": "2026-09-21"
 }
