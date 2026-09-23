@@ -19,6 +19,7 @@ import pandas as pd
 import streamlit as st
 
 from core import drift_type, insights, metrics
+from views.charts import type_pie
 from core.run import (
     DEFAULT_OPTS,
     ROLL_WINDOW,
@@ -61,55 +62,28 @@ WARN_AMBER = "#e8b93b"
 # ----------------------------------------------------------------------
 # Status
 # ----------------------------------------------------------------------
-def _status(result: RunResult) -> Dict[str, str]:
-    return _status_at(result.events, result.n_total - 1, result.warning_active,
-                      result.roll_acc, result.n_seen)
-
-
 def _status_at(events: List[Dict[str, Any]], now: int, warning_active: bool,
-               acc: Optional[float], n_seen: int) -> Dict[str, str]:
-    """🟢 穩定 / 🟡 觀察中 / 🔴 剛發生漂移 + a one-line conclusion (plan §2.1).
+               warning_start: Optional[int]) -> Dict[str, str]:
+    """🟢 / 🟡 / 🔴 plus a terse English line, for the live light only.
 
-    Takes loose values rather than a ``RunResult`` so the same wording drives
-    the live light mid-run and the final one.
+    The light is a mid-run element: once the run is over the summary block
+    carries the totals and the light is removed, so there is no "final"
+    wording here. Takes loose values rather than a ``RunState`` so it is
+    trivially testable.
     """
-    end = now
-    acc_txt = "—" if acc is None else f"{acc:.0%}"
-    # warning_t is the canonical event time everywhere in this project (it is
-    # what the batch runner scores against), so the two views point at the
-    # same sample when they say "第 X 筆".
-    last = max((e["warning_t"] for e in events), default=None)
-
-    if last is not None and end - last <= RECENT_WINDOW:
-        return {
-            "level": "error",
-            "icon": "🔴",
-            "title": "剛發生資料變化",
-            # No canned "已換上更合適的模型" claim here: what actually happened
-            # differs per event and is on the card.
-            "line": f"最近一次變化在第 {last:,} 筆，近期準確率 {acc_txt}。",
-        }
+    last = max((e["confirmation_t"] for e in events), default=None)
+    if last is not None and now - last <= RECENT_WINDOW:
+        # Confirmation, not warning_t: the light says "confirmed", and the red
+        # rule on the chart sits at the same sample.
+        return {"level": "error", "text": f"🔴 #{last} drift confirmed"}
     if warning_active:
-        return {
-            "level": "warning",
-            "icon": "🟡",
-            "title": "觀察中",
-            "line": f"偵測到疑似變化，正在蒐集資料確認中。近期準確率 {acc_txt}。",
-        }
+        at = f"#{warning_start} " if warning_start is not None else ""
+        return {"level": "warning", "text": f"🟡 {at}warning raised, buffering"}
     if not events:
-        return {
-            "level": "success",
-            "icon": "🟢",
-            "title": "運作正常",
-            "line": f"這 {n_seen:,} 筆沒有偵測到變化，近期準確率 {acc_txt}。",
-        }
-    return {
-        "level": "success",
-        "icon": "🟢",
-        "title": "運作正常",
-        "line": (f"{len(events)} 次變化都已處理完畢，"
-                 f"近期準確率 {acc_txt}。"),
-    }
+        return {"level": "success", "text": "🟢 stable, no drift so far"}
+    n = len(events)
+    return {"level": "success",
+            "text": f"🟢 stable, {n} drift{'s' if n != 1 else ''} handled"}
 
 
 class _StatusLight:
@@ -149,10 +123,11 @@ class _StatusLight:
 
 
 def _draw_status(ph, status: Dict[str, str]) -> None:
+    # One line in a coloured box, no heading: a live indicator, not a banner.
     with ph.container():
         box = {"success": st.success, "warning": st.warning,
                "error": st.error}[status["level"]]
-        box(f"### {status['icon']} {status['title']}\n\n{status['line']}")
+        box(status["text"])
 
 
 # ----------------------------------------------------------------------
@@ -295,14 +270,12 @@ def _draw_events(result: RunResult) -> None:
 # ----------------------------------------------------------------------
 def _summary_markdown(result: RunResult, s: Dict[str, Any]) -> str:
     """One-page summary for download (plan §2.1.5). Same facts as the page."""
-    status = _status(result)
     pct = lambda v: "—" if v is None else f"{v:.1%}"  # noqa: E731
 
     lines = [
         "# 模型健康狀態摘要",
         "",
         f"- 資料：{result.stream_label}",
-        f"- 狀態：{status['icon']} {status['title']} — {status['line']}",
         f"- 檢查資料量：{s['n_seen']:,} 筆",
         f"- 偵測到變化：{s['n_events']} 次",
         f"- 整體準確率：{pct(s['preq_acc'])}　近期準確率：{pct(s['roll_acc'])}",
@@ -340,19 +313,38 @@ def _draw_summary(result: RunResult) -> None:
     st.markdown("##### 本次總結")
     s = metrics.run_summary(result)
 
+    # Four tiles, units in the label: a value like "19,800 筆" in a fifth
+    # column truncates to "19,…" at ~1000px, and st.metric gives no way to
+    # wrap it. Short values in four columns hold down to tablet width.
     cols = st.columns(4)
-    cols[0].metric("檢查資料量", f"{s['n_seen']:,} 筆")
-    cols[1].metric("漂移", f"{s['n_events']} 次")
+    cols[0].metric("檢查資料量（筆）", f"{s['n_seen']:,}")
+    cols[1].metric("漂移（次）", f"{s['n_events']}")
     cols[2].metric(
-        "平均恢復所需資料",
-        "—" if s["mean_recovery"] is None else f"{s['mean_recovery']:,.0f} 筆",
-        help=f"只計算已回復的 {s['n_recovered']} 次變化",
+        "平均恢復（筆）",
+        "—" if s["mean_recovery"] is None else f"{s['mean_recovery']:,.0f}",
+        help=f"準確率回到漂移前 95% 所需的資料量；只計算已回復的 {s['n_recovered']} 次",
     )
     cols[3].metric(
         "整體準確率",
         "—" if s["preq_acc"] is None else f"{s['preq_acc']:.1%}",
         help="從頭到尾累積的總成績",
     )
+
+    # Second row: type donut on the left, the 模型成本 slot on the right. The
+    # slot (core.metrics.operator_cost) is here so the layout and the demo
+    # already have the place; filling it later touches only core.
+    left, right = st.columns([2, 1])
+    with left:
+        if result.events:
+            st.caption("漂移型態")
+            st.altair_chart(type_pie(metrics.type_counts(result.events)),
+                            width="stretch")
+    with right:
+        cost = metrics.operator_cost(result)
+        if cost is None:
+            st.metric("模型成本", "—", help=metrics.OPERATOR_COST_NOTE)
+        else:
+            st.metric("模型成本", cost["value"], help=cost.get("help"))
 
     note = insights.run_insight(result)
     if note:
@@ -376,7 +368,7 @@ def _draw_export(result: RunResult) -> None:
 # Entry point
 # ----------------------------------------------------------------------
 def render() -> None:
-    st.title("模型健康狀態")
+    st.title("ECPF Monitor")
 
     streams = demo_streams()
     with st.sidebar:
@@ -392,7 +384,7 @@ def render() -> None:
         # takes over a minute.
         n_label = st.selectbox("檢查多少筆", list(RUN_LENGTHS))
         start = st.button("▶ 開始檢查", type="primary", width="stretch")
-        st.caption("偵測參數已預設好，不需調整。要調參數請切換到工程師介面。")
+        st.caption("偵測參數已預設好，欲調整請切換至工程師介面。")
 
     result: Optional[RunResult] = st.session_state.get("run_result")
     if not start and result is None:
@@ -433,8 +425,7 @@ def render() -> None:
                 # `s.elapsed` is the run's own monotonic clock, so the dwell is
                 # measured against the same time base everywhere.
                 light.update(
-                    _status_at(s.events, s.t, s.warning_active,
-                               s.roll_acc, s.n_seen),
+                    _status_at(s.events, s.t, s.warning_active, s.warning_start),
                     now=s.elapsed,
                 )
                 bar.progress(
@@ -454,7 +445,8 @@ def render() -> None:
         st.session_state["run_result"] = result
 
     ph_caption.caption(f"資料：{result.stream_label} · 共檢查 {result.n_seen:,} 筆")
-    _draw_status(ph_status, _status(result))
+    # The light is for the run in progress; finished, the summary says it all.
+    ph_status.empty()
     with ph_summary.container():
         _draw_summary(result)
     _draw_chart(ph_chart, result)

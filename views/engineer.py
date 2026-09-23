@@ -24,6 +24,7 @@ import pandas as pd
 import streamlit as st
 
 from core import drift_type, metrics
+from views.charts import pool_rings, type_pie
 from core.run import (
     DETECTOR_CHOICES,
     GT_TOLERANCE,
@@ -34,6 +35,7 @@ from core.run import (
     RunState,
     demo_streams,
     run_and_collect,
+    stream_length,
 )
 
 # Scored with the batch runner's own definitions so the monitor's report and a
@@ -88,7 +90,7 @@ HELP_WARM_START = """
 """
 
 HELP_MAX_STEPS = """
-這次最多跑幾筆資料，`0` 代表整個檔案跑完。
+這次最多跑幾筆資料。預設是所選檔案的總筆數（換檔會跟著變），`0` 也代表整個檔案跑完。
 
 **調小**：很快看到結果，適合先試參數；但只看到資料的前段，
 後面的漂移不會出現。
@@ -157,11 +159,17 @@ HELP_DELTA_W = """
 """
 
 HELP_MIN_INSTANCES = """
-偵測器至少要看過幾筆資料才允許報漂移。
+ADWIN 的靜默期（River `grace_period`）：偵測器**每次重置後**至少要看過這麼多筆
+才允許再報變化。開頭算一次，之後每次漂移確認都會重置 warning 和 drift 兩個偵測器、
+重新計時 —— 所以它實際上是「確認漂移後的冷卻時間」。
 
-**調大**：判斷根據更充足，開頭和剛換模型後不會亂報，
-但反應變慢。
-**調小**：反應更快，但樣本太少時容易被幾筆倒楣的資料誤導。
+**只有大於相鄰警報的間距才有作用。** 在 sudden_sea100k_g00 上事件最短相隔 ~600 筆，
+30 或 300 都攔不到任何一個；設到 3000 才把換模型後的餘震誤報從 15 個壓到 11 個，
+真漂移一個沒漏（它們至少相隔 5,000 多筆）。
+
+**調大**：砍掉確認後不久的重複警報；但靜默期內若真的又漂移，會直接漏掉。
+**調小**：反應快，餘震照報。
+預設 30 是全專案共用的 `PipelineConfig` 值，批次腳本也用它。
 """
 
 HELP_MAX_POOL_SIZE = """
@@ -241,7 +249,7 @@ HELP_PANEL_SIGNAL = f"""
 - 兩者若選同一個訊號，只會有一條綠線，圖例直接標該訊號的名字（如 `error`）。
 
 **灰色背景（不會動）** — 對照用的標準答案（左側「① 圖疊 ground truth」可關）。
-- 灰帶：ground truth 漂移 ±{GT_TOLERANCE}，判定為 TP 的容許窗。
+- 灰帶：ground truth 漂移 ± `gt_tolerance`（左側可調，預設 {GT_TOLERANCE}），判定為 TP 的容許窗。
 - 灰虛線：真實漂移點。
 
 **紅線** — 系統確認漂移的時刻（`confirmation_t`），也就是實際換模型的那一步。
@@ -267,7 +275,8 @@ HELP_PANEL_POOL = """
   `ecpf_similarity_margin`（左側可調，預設 0.95）就合併成一個，
   避免池子塞滿其實學到同一套規則的重複模型。
 
-進度條長度＝該 slot 的 fade 分數相對於目前最高分的比例，只是視覺化，不代表百分比。
+圓環填滿的比例＝該 slot 的 fade 分數相對於目前最高分，只是視覺化，不代表百分比；
+中間的數字是 fade 分數本身，空心圓環是還沒用到的 slot。
 """
 
 # Tooltip for panel ② (warning buffer + new_model training).
@@ -305,6 +314,17 @@ HELP_PANEL_EVENTS = """
 """
 
 
+
+HELP_GT_TOLERANCE = f"""
+判定「抓對」的容許窗：事件的 warning_t 落在某個真漂移的 ± 這個範圍內就算 TP，
+否則算 FP。只影響 ① 的灰帶和 ⑧ 報告的計分，**不影響偵測本身**，
+改了不用重跑，報告會直接用新值重算。
+
+**調大**：延遲較久的偵測也算抓到，TP 變多、FP 變少；太大會把不相干的誤報也算進去。
+**調小**：只認很快的偵測；這批資料的偵測延遲中位數約 400–700，
+低於 1000 會讓不少真的抓到被記成一個 FP 加一個 FN。
+預設 {GT_TOLERANCE}；批次腳本 `run_ecpf_uq_experiment.py` 用的是它自己的預設。
+"""
 
 HELP_SHOW_GT = """
 在 ① 訊號時序圖上疊出 ground truth（真實漂移點與 ±500 容許窗）。
@@ -428,14 +448,15 @@ def draw_chart(
     drift_name: str,
     n_total: int,
     show_gt: bool = True,
+    tolerance: int = GT_TOLERANCE,
 ) -> None:
     """Signal time series over ground-truth bands, with drift markers.
 
     Three layers, back to front: ground-truth tolerance bands, the signal
     lines, then a red rule per confirmed drift. A detection landing inside a
     band is a true positive, outside it a false positive -- the same
-    ±GT_TOLERANCE rule the batch runner scores with. The bands are the only
-    part that needs ground truth, so `show_gt` drops just that layer.
+    ±tolerance rule ⑧ scores with. The bands are the only part that needs
+    ground truth, so `show_gt` drops just that layer.
     """
     with ph.container():
         st.caption("① 訊號時序 · warning / drift signal", help=HELP_PANEL_SIGNAL)
@@ -474,12 +495,12 @@ def draw_chart(
         layers = []
 
         # --- ground-truth bands (recessive, behind everything) ---
-        gt_vis = ([g for g in gt_times if t_lo - GT_TOLERANCE <= g <= t_hi + GT_TOLERANCE]
+        gt_vis = ([g for g in gt_times if t_lo - tolerance <= g <= t_hi + tolerance]
                   if show_gt else [])
         if gt_vis:
             band = pd.DataFrame(
-                {"lo": [g - GT_TOLERANCE for g in gt_vis],
-                 "hi": [g + GT_TOLERANCE for g in gt_vis]}
+                {"lo": [g - tolerance for g in gt_vis],
+                 "hi": [g + tolerance for g in gt_vis]}
             )
             layers.append(
                 alt.Chart(band).mark_rect(color=INK_MUTED, opacity=0.13)
@@ -536,13 +557,9 @@ def draw_pool(ph, pool: List[Dict[str, Any]], max_pool: int) -> None:
         if not pool:
             st.info("池尚未建立")
             return
-        # fade score drives the bar; leader is flagged rather than sorted first
-        # so a slot keeps a stable visual position across redraws.
-        fade_max = max((p["fade"] for p in pool), default=1) or 1
-        for p in pool:
-            tag = "🟢 leader" if p["is_leader"] else "　"
-            st.write(f"`slot {p['slot']:>2}` {tag}　fade **{p['fade']}**")
-            st.progress(min(1.0, max(0.0, p["fade"] / fade_max)))
+        # One ring per slot in slot order, so a slot keeps a stable position
+        # across redraws; the leader is flagged, not sorted first.
+        st.altair_chart(pool_rings(pool, max_pool), width="content")
 
 
 def draw_buffer(ph, warning_active: bool, warning_start: Optional[int],
@@ -595,13 +612,9 @@ def draw_buffer(ph, warning_active: bool, warning_start: Optional[int],
             f"{acc_new:.3f}",
             delta=None if acc_best is None else f"{acc_new - acc_best:+.3f}",
         )
-        if acc_best is not None:
-            verdict = "重用勝出" if acc_best >= acc_new else "全新勝出"
-            st.caption(
-                f"buffer 上的對比：{verdict}。ECPF 一律先安裝最佳重用副本為 leader"
-                f"（winner_initial={d.get('winner_initial')}），全新模型轉為 shadow "
-                f"進入 ④ 的 in-control 對決。"
-            )
+        # What ECPF does with the comparison (best reuse becomes leader, the
+        # fresh model goes to ④ as shadow) is in HELP_PANEL_BUFFER, not
+        # repeated under the numbers; `winner_initial` is in the ⑤ JSON.
         # S9 in the HTML manual also showed precision / recall / F1 here, but
         # those were labelled 示意 (simulated from acc) -- per-class detail
         # for the trained model is not stored at the event layer, so there is
@@ -743,7 +756,8 @@ def draw_downloads(result: RunResult) -> None:
     )
 
 
-def draw_report(events: List[Dict[str, Any]], gt_times: List[int]) -> None:
+def draw_report(events: List[Dict[str, Any]], gt_times: List[int],
+                tolerance: int = GT_TOLERANCE) -> None:
     """⑧ Offline event report -- scored against ground truth after the run.
 
     This is the offline layer: it needs the ground-truth drift schedule, so
@@ -760,15 +774,15 @@ def draw_report(events: List[Dict[str, Any]], gt_times: List[int]) -> None:
     det_times = [e["timestamp"] for e in events]
 
     def is_tp(e: Dict[str, Any]) -> bool:
-        return any(abs(e["timestamp"] - g) <= GT_TOLERANCE for g in gt_times)
+        return any(abs(e["timestamp"] - g) <= tolerance for g in gt_times)
 
     n_tp = sum(1 for e in events if is_tp(e))
     n_fp = len(events) - n_tp
     missed = [g for g in gt_times
-              if not any(abs(d - g) <= GT_TOLERANCE for d in det_times)]
+              if not any(abs(d - g) <= tolerance for d in det_times)]
 
-    delay = _detection_delay(gt_times, det_times, GT_TOLERANCE)
-    fw_rate = _false_warning_rate(det_times, gt_times, GT_TOLERANCE)
+    delay = _detection_delay(gt_times, det_times, tolerance)
+    fw_rate = _false_warning_rate(det_times, gt_times, tolerance)
     conf_delays = [e["confirmation_t"] - e["warning_t"] for e in events]
     reuse_better = [
         e for e in events
@@ -777,13 +791,31 @@ def draw_report(events: List[Dict[str, Any]], gt_times: List[int]) -> None:
             and e["details"]["acc_best_on_warning"] >= e["details"]["acc_new_on_warning"])
     ]
 
+    # Type distribution first: what the classifier said, and -- the part an
+    # engineer wants next to it -- how many of each type were real drifts.
+    counts = metrics.type_counts(events)
+    left, right = st.columns([1, 1])
+    with left:
+        st.caption("型態分布 · Type-LDD")
+        st.altair_chart(type_pie(counts), width="stretch")
+    with right:
+        st.caption("各型態的 TP / FP")
+        by_type = {}
+        for e in events:
+            label = drift_type.predict(e).text
+            row = by_type.setdefault(label, {"TP": 0, "FP": 0})
+            row["TP" if is_tp(e) else "FP"] += 1
+        rows = [{"型態": k, "次數": counts.get(k, 0), "TP": v["TP"], "FP": v["FP"]}
+                for k, v in by_type.items()]
+        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+
     cols = st.columns(4)
     cols[0].metric("TP · 真漂移", n_tp)
     cols[1].metric("FP · 誤報", n_fp, delta=f"誤報率 {fw_rate:.0%}",
                    delta_color="inverse")
     cols[2].metric("漏報 · 未偵測到", len(missed), f"/ {len(gt_times)} 個真漂移")
     cols[3].metric("平均偵測延遲", f"{delay:.0f}",
-                   help=f"每個真漂移到最近偵測的平均距離；未配對者以 {GT_TOLERANCE} 計"
+                   help=f"每個真漂移到最近偵測的平均距離；未配對者以 {tolerance} 計"
                         "（同 run_ecpf_uq_experiment._detection_delay）")
 
     # Drift-detection precision/recall/F1 -- computable from the TP/FP/FN
@@ -854,7 +886,7 @@ def draw_report(events: List[Dict[str, Any]], gt_times: List[int]) -> None:
     )
     st.caption(
         f"**離線層**：需 ground truth 才能算，執行後產生，與 runtime 無回饋箭頭。"
-        f"TP/FP 以 warning_t 與最近真漂移相距 ≤ {GT_TOLERANCE} 判定，"
+        f"TP/FP 以 warning_t 與最近真漂移相距 ≤ {tolerance} 判定，"
         f"計分函式直接取自 `run_ecpf_uq_experiment`，故與批次報表一致。"
     )
 
@@ -877,10 +909,14 @@ class _Panels:
         # placeholder that holds only the bar removes it.
         self.progress = st.empty()
         self.preq = st.empty()
+        # Layer 1 spans the page: the signal chart is a time series on the
+        # same t axis as the prequential chart above it, and at half width
+        # its ground-truth bands and drift rules were too cramped to read
+        # against that one.
+        st.markdown("##### 第 1 層 · 訊號")
+        self.chart = st.empty()
         col_l, col_r = st.columns(2)
         with col_l:
-            st.markdown("##### 第 1 層 · 訊號")
-            self.chart = st.empty()
             st.markdown("##### 第 2 層 · 偵測與確認")
             self.buffer = st.empty()
         with col_r:
@@ -892,7 +928,8 @@ class _Panels:
 
 
 def _paint(panels: _Panels, s: Any, t: int, opts: Dict[str, Any],
-           show_gt: bool, running: bool = True) -> None:
+           show_gt: bool, running: bool = True,
+           tolerance: int = GT_TOLERANCE) -> None:
     """Repaint the panels from a ``RunState`` (live) or ``RunResult`` (stored).
 
     Both carry the same field names for everything drawn here, which is the
@@ -916,7 +953,7 @@ def _paint(panels: _Panels, s: Any, t: int, opts: Dict[str, Any],
                      s.warning_spans, s.n_total)
     draw_chart(panels.chart, s.signal_hist, s.events, s.gt_times,
                opts["warning_signal"], opts["drift_signal"], s.n_total,
-               show_gt)
+               show_gt, tolerance)
     draw_buffer(panels.buffer, s.warning_active, s.warning_start,
                 s.buffer_len, t, s.events)
     draw_pool(panels.pool, s.pool, opts["max_pool_size"])
@@ -940,11 +977,18 @@ def _sidebar() -> Optional[Dict[str, Any]]:
                                 format_func=lambda p: labels[p], help=HELP_CSV)
         warm_start = st.number_input("warm_start", 0, 10_000, 200, step=50,
                                      help=HELP_WARM_START)
-        # Cap follows the longest shipped stream (the 1M long_drift file), so
-        # that one can be run end to end rather than truncated at 200k.
-        max_steps = st.number_input("max_steps（0 = 全部）", 0, 1_000_000, 20_000,
-                                    step=1000, help=HELP_MAX_STEPS)
+        # Default is the selected file's own length, so a run covers the whole
+        # stream unless the user trims it. Keyed by file: a number_input keeps
+        # its value across reruns, so without a per-file key switching from a
+        # 100k file to the 1M one would silently keep 100k.
+        n_rows = stream_length(csv_path)
+        max_steps = st.number_input(
+            "max_steps（0 = 全部）", 0, max(1_000_000, n_rows), n_rows,
+            step=1000, help=HELP_MAX_STEPS, key=f"max_steps:{csv_path}",
+        )
         show_gt = st.checkbox("① 圖疊 ground truth", value=True, help=HELP_SHOW_GT)
+        gt_tolerance = st.number_input("gt_tolerance（容許窗 ±）", 0, 10_000,
+                                       GT_TOLERANCE, step=100, help=HELP_GT_TOLERANCE)
         st.divider()
         signal_mode = st.selectbox(
             "signal_mode",
@@ -964,7 +1008,10 @@ def _sidebar() -> Optional[Dict[str, Any]]:
                                          format="%.3f", help=HELP_DELTA)
         detector_delta_w = st.number_input("detector_delta_w", 0.0, 1.0, 0.1, step=0.01,
                                            format="%.3f", help=HELP_DELTA_W)
-        detector_min_instances = st.number_input("detector_min_instances", 1, 1000, 30,
+        # Cap at 10k: the values that actually suppress post-swap aftershocks
+        # are in the thousands (see HELP_MIN_INSTANCES); the old 1,000 ceiling
+        # kept the useful range out of reach.
+        detector_min_instances = st.number_input("detector_min_instances", 1, 10_000, 30,
                                                  step=10, help=HELP_MIN_INSTANCES)
         max_pool_size = st.number_input("ecpf_max_pool_size", 1, 50, 10,
                                         help=HELP_MAX_POOL_SIZE)
@@ -983,6 +1030,7 @@ def _sidebar() -> Optional[Dict[str, Any]]:
         warm_start=int(warm_start),
         max_steps=int(max_steps),
         show_gt=bool(show_gt),
+        gt_tolerance=int(gt_tolerance),
         start=bool(start),
         opts=dict(
             signal_mode=signal_mode, warning_signal=warning_signal,
@@ -1044,7 +1092,8 @@ def render() -> None:
             # always forces a frame, whatever the cadence.
             if not (s.drift or warn_edge or (n_redraw - 1) % redraw_every == 0):
                 return
-            _paint(panels, s, s.t, cfg["opts"], cfg["show_gt"])
+            _paint(panels, s, s.t, cfg["opts"], cfg["show_gt"],
+                   tolerance=cfg["gt_tolerance"])
 
         result = run_and_collect(
             cfg["csv_path"], warm_start=cfg["warm_start"],
@@ -1056,7 +1105,7 @@ def render() -> None:
         # chart panels on the finished result rather than on whichever tick the
         # redraw cadence happened to land on last.
         _paint(panels, result, result.n_total - 1, result.opts,
-               cfg["show_gt"], running=False)
+               cfg["show_gt"], running=False, tolerance=cfg["gt_tolerance"])
         st.success(
             f"完成：{result.n_total:,} 筆，{len(result.events)} 個漂移事件，"
             f"耗時 {result.elapsed:.1f}s"
@@ -1070,8 +1119,8 @@ def render() -> None:
             "改參數後按左側「開始監控」重跑。"
         )
         _paint(panels, result, result.n_total - 1, result.opts,
-               cfg["show_gt"], running=False)
+               cfg["show_gt"], running=False, tolerance=cfg["gt_tolerance"])
 
     draw_cost(result)
     draw_downloads(result)
-    draw_report(result.events, result.gt_times)
+    draw_report(result.events, result.gt_times, cfg["gt_tolerance"])

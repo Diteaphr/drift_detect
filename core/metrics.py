@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
+from . import drift_type
 from .run import RunResult
 
 # An event's aftermath is measured up to this many samples past confirmation,
@@ -111,6 +112,43 @@ def run_summary(result: RunResult) -> Dict[str, Any]:
         "elapsed": result.elapsed,
         "throughput": result.throughput,
     }
+
+
+def type_counts(events: List[Dict[str, Any]]) -> Dict[str, int]:
+    """How many events the Type-LDD classifier put in each type.
+
+    Keys in display order: the three labels the classifier can emit, plus
+    ``drift_type.PENDING_LABEL`` only when some event has no label (so a
+    fully classified run shows three slices, not four).
+    """
+    counts = {label: 0 for label in drift_type.TYPE_LABELS}
+    pending = 0
+    for e in events:
+        p = drift_type.predict(e)
+        if p.label is None:
+            pending += 1
+        else:
+            counts[p.label] += 1
+    if pending:
+        counts[drift_type.PENDING_LABEL] = pending
+    return counts
+
+
+OPERATOR_COST_NOTE = "模型成本指標待定義（docs/DASHBOARD_TWO_VIEWS_PLAN.md §2.1）"
+
+
+def operator_cost(result: RunResult) -> Optional[Dict[str, Any]]:
+    """模型成本 for the operator view -- **placeholder**.
+
+    The raw counts exist (``cost_summary``: refits, samples refit on, pool
+    slots, wall time), but none of them is a number a non-specialist can
+    act on. What this should report -- and in what unit: seconds of compute,
+    samples relabelled, a cost model over both -- is not decided, so the view
+    shows a clearly marked pending tile until it is. Returns ``None`` until
+    defined; when it does return, ``value`` is the display string and
+    ``help`` the one-line explanation, and the view needs no change.
+    """
+    return None
 
 
 def cost_summary(result: RunResult) -> Dict[str, Any]:

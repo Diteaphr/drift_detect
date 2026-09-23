@@ -44,3 +44,12 @@ def test_badge_color_per_type():
     assert predict(_event(type_ldd_prediction="gradual")).color == "orange"
     assert predict(_event(type_ldd_prediction="incremental")).color == "blue"
     assert predict(_event()).color == "gray"
+
+
+def test_type_counts_orders_labels_and_hides_empty_pending():
+    from core.metrics import type_counts
+    evs = [_event(type_ldd_prediction="sudden"), _event(type_ldd_prediction="sudden"),
+           _event(type_ldd_prediction="incremental")]
+    assert type_counts(evs) == {"sudden": 2, "gradual": 0, "incremental": 1}
+    assert type_counts(evs + [_event()]) == {
+        "sudden": 2, "gradual": 0, "incremental": 1, "待分類": 1}

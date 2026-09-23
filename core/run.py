@@ -17,6 +17,7 @@ from __future__ import annotations
 import time
 from collections import deque
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -54,7 +55,7 @@ ROLL_WINDOW = 500
 # Half-width of the ground-truth tolerance window. A drift confirmed inside it
 # counts as a true positive -- the same tolerance the batch runner scores with
 # (`run_ecpf_uq_experiment._detection_delay`).
-GT_TOLERANCE = 500
+GT_TOLERANCE = 1500
 
 # What the operator view runs with: it exposes no parameters at all (plan §1),
 # so it needs one sane, fixed configuration.
@@ -83,6 +84,24 @@ def demo_streams() -> "List[Tuple[str, Path]]":
             for p in sorted(d.glob("*.csv"))[:DEMO_PER_TYPE]:
                 out.append((label, p))
     return out
+
+
+@lru_cache(maxsize=64)
+def _stream_length_cached(path: str, mtime_ns: int) -> int:
+    with open(path, "rb") as f:
+        n = sum(1 for _ in f)
+    return max(0, n - 1)  # header row
+
+
+def stream_length(csv_path: Any) -> int:
+    """Row count of a stream CSV (excluding the header), cached per file.
+
+    A line count, not a parse: the 1M-row long_drift file takes well under a
+    second this way, and it is what the sidebar needs to default
+    ``max_steps`` to "the whole file".
+    """
+    p = Path(csv_path)
+    return _stream_length_cached(str(p), p.stat().st_mtime_ns)
 
 
 def build_pipeline(opts: Dict[str, Any]) -> ConceptDriftPipeline:
