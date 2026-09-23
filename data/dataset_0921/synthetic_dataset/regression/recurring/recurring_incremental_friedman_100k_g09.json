@@ -1,0 +1,62 @@
+{
+  "task": "regression",
+  "drift_type": "recurring",
+  "g_id": 9,
+  "stem": "recurring_incremental_friedman_100k_g09",
+  "seed": 987464657,
+  "n_samples": 100000,
+  "chosen_drift_mode": "incremental",
+  "n_drifts": 10,
+  "width": 1000,
+  "intervals": [
+    [
+      5170,
+      6170
+    ],
+    [
+      17207,
+      18207
+    ],
+    [
+      19723,
+      20723
+    ],
+    [
+      32040,
+      33040
+    ],
+    [
+      46706,
+      47706
+    ],
+    [
+      53437,
+      54437
+    ],
+    [
+      60490,
+      61490
+    ],
+    [
+      75350,
+      76350
+    ],
+    [
+      86041,
+      87041
+    ],
+    [
+      94266,
+      95266
+    ]
+  ],
+  "meta": {
+    "generator": "manual_Friedman_incremental",
+    "width": 1000,
+    "n_drifts": 10,
+    "recurring": true,
+    "drift_policy": "persist_after_transition",
+    "annotation_width": 1000,
+    "chosen_drift_mode": "incremental"
+  }
+}

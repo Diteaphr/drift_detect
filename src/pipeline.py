@@ -1267,7 +1267,7 @@ def run_ecpf_on_recurring_csv(
     config: Optional[PipelineConfig] = None,
 ) -> Tuple[ConceptDriftPipeline, np.ndarray, np.ndarray]:
     """
-    Convenience runner for ``data/recurring_drift/*.csv`` with ECPF oracle mode.
+    Convenience runner for ``data/old dataset/recurring_drift/*.csv`` with ECPF oracle mode.
 
     Uses matched ``*_drift_times.txt`` by default and sets oracle drift starts at T.
     """

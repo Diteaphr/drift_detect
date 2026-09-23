@@ -56,7 +56,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--data-dir",
         type=str,
-        default="data/sudden_drift",
+        default="data/old dataset/sudden_drift",
         help="Directory that contains dataset csv and drift_times txt.",
     )
     parser.add_argument(

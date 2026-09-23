@@ -1,0 +1,17 @@
+{
+  "source": "UCI Metro Interstate Traffic Volume (id=492)",
+  "url": "https://archive.ics.uci.edu/dataset/492/metro+interstate+traffic+volume",
+  "target": "traffic_volume (hourly)",
+  "n_rows": 48204,
+  "n_features": 7,
+  "preprocessing": [
+    "sort by date_time (hourly stream order)",
+    "drop date_time from features",
+    "categorical holiday/weather_* -> category codes",
+    "y = traffic_volume",
+    "rename features to x0.."
+  ],
+  "sampling": "hourly (not high-frequency)",
+  "replaced": "gas_sensor_dynamic_mixtures (~100Hz subsampled)",
+  "prepared_date": "2026-09-20"
+}

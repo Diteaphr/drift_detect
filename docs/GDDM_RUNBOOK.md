@@ -180,7 +180,7 @@ Single dataset:
 
 ```bash
 MPLBACKEND=Agg python3 run_ecpf_recurring.py \
-  --csv data/recurring_drift/recurring_sud_sea100k_g00.csv \
+  --csv "data/old dataset/recurring_drift/recurring_sud_sea100k_g00.csv" \
   --signal-mode meta_ecpf_gddm \
   --uq-mode mi_like \
   --warm-start 200 \

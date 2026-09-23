@@ -1,0 +1,18 @@
+{
+  "source": "sklearn/UCI Covertype (Blackard & Dean)",
+  "url": "https://archive.ics.uci.edu/dataset/31/covertype",
+  "target": "Cover_Type remapped 0..6 from [1, 2, 3, 4, 5, 6, 7]",
+  "n_features": 54,
+  "n_classes": 7,
+  "preprocessing": [
+    "fetch_covtype as_frame",
+    "remap Cover_Type to contiguous 0-based ids",
+    "rename features to x0..",
+    "cap to first 100000 rows (full set ~581k exceeds GitHub 100MB)"
+  ],
+  "n_rows_original": 581012,
+  "n_rows_capped": 100000,
+  "cap_policy": "keep first 100000 rows (stream order; GitHub size)",
+  "n_rows": 100000,
+  "prepared_date": "2026-09-21"
+}

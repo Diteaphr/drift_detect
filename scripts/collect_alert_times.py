@@ -4,9 +4,9 @@ Collect drift alert timestamps for one or more CSV streams (no ground truth).
 
 Run from the **repository root**::
 
-    python scripts/collect_alert_times.py --csv data/sudden_drift/recurring_sudden_sea100k_g00.csv --out alerts.json
+    python scripts/collect_alert_times.py --csv "data/old dataset/sudden_drift/recurring_sudden_sea100k_g00.csv" --out alerts.json
 
-    python scripts/collect_alert_times.py --glob 'data/sudden_drift/*.csv' --setting myrun --out alerts.json
+    python scripts/collect_alert_times.py --glob 'data/old dataset/sudden_drift/*.csv' --setting myrun --out alerts.json
 
 By default this script uses :func:`src.alert_collection.default_pipeline_config`
 (**ECPF off**, meta+atom only) so alerts are actually recorded. Use ``--ecpf`` to
@@ -76,7 +76,7 @@ def main() -> None:
         action="append",
         default=[],
         metavar="PATTERN",
-        help="Glob pattern relative to cwd (repeatable), e.g. data/sudden_drift/*.csv",
+        help="Glob pattern relative to cwd (repeatable), e.g. 'data/old dataset/sudden_drift/*.csv'",
     )
     parser.add_argument(
         "--setting",

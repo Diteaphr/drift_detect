@@ -65,7 +65,7 @@ Note: in detector mode we currently use ADWIN dual (mainly `delta` / `delta_w`).
 
 ```bash
 python run_ecpf_recurring.py \
-  --csv data/recurring_drift/recurring_sud_sea100k_g00.csv \
+  --csv "data/old dataset/recurring_drift/recurring_sud_sea100k_g00.csv" \
   --warm-start 200 \
   --signal-mode detector \
   --detector-type adwin_dual
@@ -75,7 +75,7 @@ Compare against the DWM-style proxy-warning path:
 
 ```bash
 python run_ecpf_recurring.py \
-  --csv data/recurring_drift/recurring_sud_sea100k_g00.csv \
+  --csv "data/old dataset/recurring_drift/recurring_sud_sea100k_g00.csv" \
   --warm-start 200 \
   --signal-mode meta_ecpf_dwm \
   --uq-mode mi_like
@@ -85,7 +85,7 @@ Optional oracle baseline:
 
 ```bash
 python run_ecpf_recurring.py \
-  --csv data/recurring_drift/recurring_sud_sea100k_g00.csv \
+  --csv "data/old dataset/recurring_drift/recurring_sud_sea100k_g00.csv" \
   --warm-start 200 \
   --signal-mode oracle_60
 ```

@@ -124,10 +124,10 @@ def main():
     v3_rows = {r["dataset"]: r for r in v3["comparison"]}
 
     chart_targets = [
-        ("sudden_g00", "data/sudden_drift/recurring_sudden_sea100k_g00.csv"),
-        ("sudden_g01", "data/sudden_drift/recurring_sudden_sea100k_g01.csv"),
-        ("gradual_g00", "data/gradual_drift/recurring_gradual_sea100k_g00.csv"),
-        ("gradual_g01", "data/gradual_drift/recurring_gradual_sea100k_g01.csv"),
+        ("sudden_g00", "data/old dataset/sudden_drift/recurring_sudden_sea100k_g00.csv"),
+        ("sudden_g01", "data/old dataset/sudden_drift/recurring_sudden_sea100k_g01.csv"),
+        ("gradual_g00", "data/old dataset/gradual_drift/recurring_gradual_sea100k_g00.csv"),
+        ("gradual_g01", "data/old dataset/gradual_drift/recurring_gradual_sea100k_g01.csv"),
     ]
 
     print("\nGenerating 4 comparison charts...")

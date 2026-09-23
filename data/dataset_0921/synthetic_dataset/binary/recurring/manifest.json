@@ -1,0 +1,432 @@
+{
+  "task": "binary",
+  "runs": [
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 0,
+      "stem": "recurring_gradual_sea100k_g00",
+      "seed": 1863457759,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "generator": "SEA+ConceptDriftStream",
+      "width": 1000,
+      "n_drifts": 7,
+      "drift_positions": [
+        3213,
+        17193,
+        33968,
+        50171,
+        62130,
+        74014,
+        94396
+      ],
+      "variant_pairs": [
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "recurring": true
+    },
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 1,
+      "stem": "recurring_sudden_sea100k_g01",
+      "seed": 1349356010,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "generator": "SEA+ConceptDriftStream",
+      "width": 50,
+      "n_drifts": 5,
+      "drift_positions": [
+        5760,
+        22585,
+        45701,
+        63074,
+        85887
+      ],
+      "variant_pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "recurring": true
+    },
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 2,
+      "stem": "recurring_sudden_sea100k_g02",
+      "seed": 2602697659,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "generator": "SEA+ConceptDriftStream",
+      "width": 50,
+      "n_drifts": 8,
+      "drift_positions": [
+        3239,
+        21134,
+        33968,
+        40358,
+        51965,
+        62852,
+        75259,
+        93200
+      ],
+      "variant_pairs": [
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "recurring": true
+    },
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 3,
+      "stem": "recurring_incremental_hyperplane_100k_g03",
+      "seed": 2668624389,
+      "n_samples": 100000,
+      "chosen_drift_mode": "incremental",
+      "generator": "Hyperplane+ConceptDriftStream",
+      "width": 1000,
+      "n_drifts": 5,
+      "recurring": true
+    },
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 4,
+      "stem": "recurring_gradual_sea100k_g04",
+      "seed": 957372792,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "generator": "SEA+ConceptDriftStream",
+      "width": 1000,
+      "n_drifts": 5,
+      "drift_positions": [
+        634,
+        19986,
+        47153,
+        62721,
+        85287
+      ],
+      "variant_pairs": [
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "recurring": true
+    },
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 5,
+      "stem": "recurring_gradual_sea100k_g05",
+      "seed": 3302846370,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "generator": "SEA+ConceptDriftStream",
+      "width": 1000,
+      "n_drifts": 9,
+      "drift_positions": [
+        5875,
+        19175,
+        30981,
+        41651,
+        50585,
+        58118,
+        72146,
+        81158,
+        96654
+      ],
+      "variant_pairs": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "recurring": true
+    },
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 6,
+      "stem": "recurring_incremental_hyperplane_100k_g06",
+      "seed": 3937048824,
+      "n_samples": 100000,
+      "chosen_drift_mode": "incremental",
+      "generator": "Hyperplane+ConceptDriftStream",
+      "width": 1000,
+      "n_drifts": 10,
+      "recurring": true
+    },
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 7,
+      "stem": "recurring_sudden_sea100k_g07",
+      "seed": 2287926316,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "generator": "SEA+ConceptDriftStream",
+      "width": 50,
+      "n_drifts": 8,
+      "drift_positions": [
+        2019,
+        17378,
+        26542,
+        38803,
+        56877,
+        62953,
+        77444,
+        92277
+      ],
+      "variant_pairs": [
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "recurring": true
+    },
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 8,
+      "stem": "recurring_sudden_sea100k_g08",
+      "seed": 1895450661,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "generator": "SEA+ConceptDriftStream",
+      "width": 50,
+      "n_drifts": 6,
+      "drift_positions": [
+        7825,
+        22530,
+        36288,
+        50237,
+        74537,
+        90196
+      ],
+      "variant_pairs": [
+        [
+          3,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "recurring": true
+    },
+    {
+      "task": "binary",
+      "drift_type": "recurring",
+      "g_id": 9,
+      "stem": "recurring_gradual_sea100k_g09",
+      "seed": 4051098113,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "generator": "SEA+ConceptDriftStream",
+      "width": 1000,
+      "n_drifts": 5,
+      "drift_positions": [
+        5660,
+        23075,
+        46034,
+        60516,
+        88277
+      ],
+      "variant_pairs": [
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "recurring": true
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "source_dataset": "electricity",
+  "source_path": "/Users/User/program file/drift_detect/data/real_dataset/binary/electricity/electricity.csv",
+  "task": "binary",
+  "paper": "Cerqueira et al. A Framework for Evaluating and Benchmarking Concept Drift Detection Methods (arXiv:2606.07789)",
+  "framework": "shuffle + Monte Carlo single-drift injection",
+  "g_id": 3,
+  "seed": 4114554647,
+  "method": "feature_permutation",
+  "abruptness": "abrupt",
+  "n_input": 45312,
+  "n_output": 45312,
+  "drift_onset_input": 26147,
+  "drift_end_input": 26147,
+  "drift_width": 0,
+  "drift_times_output": [
+    [
+      26147,
+      26147
+    ]
+  ],
+  "y_selected": null,
+  "y_swap": null,
+  "x_perm": [
+    6,
+    4,
+    3,
+    0,
+    5,
+    7,
+    2,
+    1
+  ],
+  "x_filter_idx": null,
+  "x_filter_tau": null,
+  "label_skip_proba": null,
+  "drift_region": [
+    0.5,
+    0.8
+  ],
+  "prepared_date": "2026-09-20"
+}

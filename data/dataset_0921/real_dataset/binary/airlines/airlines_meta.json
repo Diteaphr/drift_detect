@@ -1,0 +1,17 @@
+{
+  "source": "OpenML airlines (flight delay binary stream)",
+  "url": "https://www.openml.org/d/1169",
+  "target": "Delay 0/1",
+  "n_features": 7,
+  "preprocessing": [
+    "categorical columns -> category codes",
+    "coerce numeric features",
+    "rename features to x0..",
+    "cap to first 100000 rows if longer"
+  ],
+  "n_rows_original": 539383,
+  "n_rows_capped": 100000,
+  "cap_policy": "keep first 100000 rows (stream order; GitHub size)",
+  "n_rows": 100000,
+  "prepared_date": "2026-09-21"
+}

@@ -17,8 +17,8 @@ Delta sensitivity direction:
   seqdrift2  : larger  delta  → more sensitive
 
 Streams:
-  Calibration : data/recurring_drift/recurring_sud_sea100k_g00~g04.csv
-  Evaluation  : data/recurring_drift/recurring_sud_sea100k_g05~g09.csv
+  Calibration : data/old dataset/recurring_drift/recurring_sud_sea100k_g00~g04.csv
+  Evaluation  : data/old dataset/recurring_drift/recurring_sud_sea100k_g05~g09.csv
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ from src.metrics.correct_detection import (
 )
 from src.metrics.detection_evaluation import compute_count_score
 
-DATA_DIR = ROOT / "data" / "recurring_drift"
+DATA_DIR = ROOT / "data" / "old dataset" / "recurring_drift"
 OUT_DIR = ROOT / "outputs" / "calibration_standalone"
 WARM_START = 200
 TOLERANCE = DEFAULT_PERTURBATION_EXTENSION  # 2000 samples

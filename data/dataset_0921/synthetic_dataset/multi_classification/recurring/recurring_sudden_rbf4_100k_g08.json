@@ -1,0 +1,70 @@
+{
+  "task": "multi_classification",
+  "drift_type": "recurring",
+  "g_id": 8,
+  "stem": "recurring_sudden_rbf4_100k_g08",
+  "seed": 1317342031,
+  "n_samples": 100000,
+  "chosen_drift_mode": "sudden",
+  "n_drifts": 9,
+  "width": 50,
+  "intervals": [
+    [
+      6726,
+      6776
+    ],
+    [
+      12121,
+      12171
+    ],
+    [
+      30486,
+      30536
+    ],
+    [
+      35368,
+      35418
+    ],
+    [
+      44822,
+      44872
+    ],
+    [
+      59873,
+      59923
+    ],
+    [
+      73962,
+      74012
+    ],
+    [
+      82614,
+      82664
+    ],
+    [
+      96776,
+      96826
+    ]
+  ],
+  "meta": {
+    "generator": "RandomRBFDrift+ConceptDriftStream",
+    "n_classes": 4,
+    "n_features": 10,
+    "width": 50,
+    "n_drifts": 9,
+    "concept_keys": [
+      51674349,
+      78917624,
+      51674349,
+      78917624,
+      51674349,
+      78917624,
+      51674349,
+      78917624,
+      51674349,
+      78917624
+    ],
+    "recurring": true,
+    "chosen_drift_mode": "sudden"
+  }
+}

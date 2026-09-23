@@ -1,0 +1,115 @@
+{
+  "task": "regression",
+  "runs": [
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 0,
+      "stem": "recurring_sudden_friedman_100k_g00",
+      "seed": 1477482174,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "n_drifts": 10,
+      "width": 50
+    },
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 1,
+      "stem": "recurring_incremental_friedman_100k_g01",
+      "seed": 3954289947,
+      "n_samples": 100000,
+      "chosen_drift_mode": "incremental",
+      "n_drifts": 7,
+      "width": 1000
+    },
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 2,
+      "stem": "recurring_incremental_friedman_100k_g02",
+      "seed": 996468934,
+      "n_samples": 100000,
+      "chosen_drift_mode": "incremental",
+      "n_drifts": 5,
+      "width": 1000
+    },
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 3,
+      "stem": "recurring_sudden_friedman_100k_g03",
+      "seed": 3192852881,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "n_drifts": 5,
+      "width": 50
+    },
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 4,
+      "stem": "recurring_sudden_friedman_100k_g04",
+      "seed": 3265015548,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "n_drifts": 6,
+      "width": 50
+    },
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 5,
+      "stem": "recurring_incremental_friedman_100k_g05",
+      "seed": 2635172417,
+      "n_samples": 100000,
+      "chosen_drift_mode": "incremental",
+      "n_drifts": 10,
+      "width": 1000
+    },
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 6,
+      "stem": "recurring_gradual_friedman_100k_g06",
+      "seed": 956931415,
+      "n_samples": 100000,
+      "chosen_drift_mode": "gradual",
+      "n_drifts": 6,
+      "width": 1000
+    },
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 7,
+      "stem": "recurring_incremental_friedman_100k_g07",
+      "seed": 1120548756,
+      "n_samples": 100000,
+      "chosen_drift_mode": "incremental",
+      "n_drifts": 7,
+      "width": 1000
+    },
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 8,
+      "stem": "recurring_sudden_friedman_100k_g08",
+      "seed": 2198159462,
+      "n_samples": 100000,
+      "chosen_drift_mode": "sudden",
+      "n_drifts": 10,
+      "width": 50
+    },
+    {
+      "task": "regression",
+      "drift_type": "recurring",
+      "g_id": 9,
+      "stem": "recurring_incremental_friedman_100k_g09",
+      "seed": 987464657,
+      "n_samples": 100000,
+      "chosen_drift_mode": "incremental",
+      "n_drifts": 10,
+      "width": 1000
+    }
+  ]
+}

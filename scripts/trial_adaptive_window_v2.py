@@ -44,10 +44,10 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # 5 datasets per type × 4 types = 20 datasets
 TRIAL_DATASETS = [
-    *(f"data/sudden_drift/recurring_sudden_sea100k_g0{i}.csv" for i in range(5)),
-    *(f"data/gradual_drift/recurring_gradual_sea100k_g0{i}.csv" for i in range(5)),
-    *(f"data/incremental_drift/incremental_hyperplane_100k_g0{i}.csv" for i in range(5)),
-    *(f"data/recurring_drift/recurring_sud_sea100k_g0{i}.csv" for i in range(5)),
+    *(f"data/old dataset/sudden_drift/recurring_sudden_sea100k_g0{i}.csv" for i in range(5)),
+    *(f"data/old dataset/gradual_drift/recurring_gradual_sea100k_g0{i}.csv" for i in range(5)),
+    *(f"data/old dataset/incremental_drift/incremental_hyperplane_100k_g0{i}.csv" for i in range(5)),
+    *(f"data/old dataset/recurring_drift/recurring_sud_sea100k_g0{i}.csv" for i in range(5)),
 ]
 
 

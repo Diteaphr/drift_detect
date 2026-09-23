@@ -10,7 +10,7 @@ Usage
 
     # Collect detection timestamps per dataset first (run your pipeline once)
     detection_results = {
-        "data/sudden_drift/recurring_sudden_sea100k_g00.csv": [3500, 22000, ...],
+        "data/old dataset/sudden_drift/recurring_sudden_sea100k_g00.csv": [3500, 22000, ...],
         ...
     }
     X, y, meta = build_training_data("data/", detection_results)
@@ -25,7 +25,7 @@ Usage
 
     estimator = AdaptiveWindowEstimator.load("models/adaptive_window_rf.pkl")
 
-    wf = WindowFeatures.from_csv("data/sudden_drift/my_stream.csv", drift_intervals)
+    wf = WindowFeatures.from_csv("data/old dataset/sudden_drift/my_stream.csv", drift_intervals)
     ext = estimator.predict_extension(wf.to_array())
     pert = build_perturbation_intervals(drift_intervals, extension=ext)
     result = compute_correct_detection(detection_timestamps, pert)

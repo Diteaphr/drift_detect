@@ -22,8 +22,8 @@
 
 | 用途 | Streams |
 |------|---------|
-| 校準（Phase 1） | `data/recurring_drift/recurring_sud_sea100k_g00~g04.csv` |
-| 評估（Phase 2） | `data/recurring_drift/recurring_sud_sea100k_g05~g09.csv` |
+| 校準（Phase 1） | `data/old dataset/recurring_drift/recurring_sud_sea100k_g00~g04.csv` |
+| 評估（Phase 2） | `data/old dataset/recurring_drift/recurring_sud_sea100k_g05~g09.csv` |
 
 - 每條 stream 對應同名 `*_drift_times.txt`
 - warm start：`200` samples

@@ -99,7 +99,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run 225 ECPF ADWIN-family detector/signal combinations."
     )
-    parser.add_argument("--data-dir", default="data/recurring_drift")
+    parser.add_argument("--data-dir", default="data/old dataset/recurring_drift")
     parser.add_argument("--warm-start", type=int, default=200)
     parser.add_argument("--max-steps", type=int, default=20000)
     parser.add_argument("--detector-delta", type=float, default=0.05)

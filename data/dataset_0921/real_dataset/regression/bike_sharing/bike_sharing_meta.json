@@ -1,0 +1,14 @@
+{
+  "source": "UCI Bike Sharing Dataset (hour.csv)",
+  "url": "https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset",
+  "target": "cnt (hourly rental count)",
+  "n_rows": 17379,
+  "n_features": 12,
+  "preprocessing": [
+    "use hour.csv; sort by instant (time order)",
+    "drop instant/dteday/casual/registered (leakage)",
+    "y = cnt",
+    "rename features to x0.."
+  ],
+  "prepared_date": "2026-09-20"
+}
