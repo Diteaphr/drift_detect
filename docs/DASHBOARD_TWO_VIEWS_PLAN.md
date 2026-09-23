@@ -37,7 +37,7 @@
    把「三分類器 + ECPF 重用訊號」合成四分類（sudden/gradual/incremental/recurring），
    比單靠任一邊更有說服力。
 
-**不要**用檔名或資料夾（`data/sudden_drift/…`）當型態來源 —— 那是 ground truth，
+**不要**用檔名或資料夾（`data/old dataset/sudden_drift/…`）當型態來源 —— 那是 ground truth，
 只能出現在離線報告裡當作對照，不能當成系統的輸出。
 
 ---

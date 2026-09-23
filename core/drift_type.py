@@ -24,7 +24,7 @@ every event, misfires included. Until the scores are calibrated the badge
 shows the label alone.
 
 Deliberately **not** used as a source: the file name / folder
-(``data/sudden_drift/…``). That is ground truth, not a system output.
+(``data/old dataset/sudden_drift/…``). That is ground truth, not a system output.
 """
 
 from __future__ import annotations

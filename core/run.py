@@ -32,13 +32,16 @@ DETECTOR_CHOICES = ["adwin", "seed", "seqdrift2"]
 # The loader (`load_recurring_stream_pair`) is generic -- it reads any CSV with
 # a `y` column and finds the sibling `_drift_times.txt` -- so every drift-type
 # folder works, not just recurring_drift.
+# The binary SEA / hyperplane streams moved here when the 0921 datasets
+# landed (upstream commit 77cba9e); the multi-class ones did not move.
+_OLD_DIR = Path("data/old dataset")
 _MULTI_CLASS_DIR = Path("data/synthetic_dataset_joe/multi classification")
 
 DEMO_DRIFT_DIRS = [
-    ("sudden", Path("data/sudden_drift")),
-    ("gradual", Path("data/gradual_drift")),
-    ("incremental", Path("data/incremental_drift")),
-    ("recurring", Path("data/recurring_drift")),
+    ("sudden", _OLD_DIR / "sudden_drift"),
+    ("gradual", _OLD_DIR / "gradual_drift"),
+    ("incremental", _OLD_DIR / "incremental_drift"),
+    ("recurring", _OLD_DIR / "recurring_drift"),
     # 10x-length stand-in for sudden g00, for runs long enough to watch
     # (see scripts/generate_long_sudden_stream.py).
     ("長版 ×10", Path("data/long_drift")),

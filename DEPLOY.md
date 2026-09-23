@@ -28,6 +28,7 @@ Streamlit Cloud 會自動讀 `requirements.txt` 安裝依賴。約 2–3 分鐘�
 
 ## 想調整展示的資料
 改 `core/run.py` 開頭的 `DEMO_DRIFT_DIRS`（有哪些 drift type）
-和 `DEMO_PER_TYPE`（每種列幾份），重推即可。repo 內四種型態各有 10 份可選。
+和 `DEMO_PER_TYPE`（每種列幾份），重推即可。repo 內四種型態各有 10 份可選，
+二元的四種型態自 0921 資料整併後改放在 `data/old dataset/` 底下。
 另外 `data/synthetic_dataset_joe/multi classification/` 有 4 類別版本
 （sudden / gradual / incremental，各分 low / medium / high 強度），選單目前列的是 high。
