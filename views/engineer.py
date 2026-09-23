@@ -147,14 +147,17 @@ HELP_DELTA = """
 模型會被頻繁換掉。
 **調小**（如 0.01）：比較保守，只有很確定才認定漂移，
 假警報少但反應慢。
-0.05 是常用的折衷值。
+
+預設 0.01。多類別 RBF 串流上掃過 0.05 / 0.01 / 0.002 / 0.0002：
+0.01 比論文的 0.05 少 4 次誤報、準確率高 0.7 個百分點，16 個真漂移一樣抓到 15 個；
+再收到 0.002 誤報雖降到 26 次，但會漏掉 3 個真漂移。
 """
 
 HELP_DELTA_W = """
 預警的敏感度（給 warning_detector 用）。
 
 意義同 detector_delta，但作用在「提早示警」這一關。
-通常設得比 detector_delta 大（預設 0.1 對 0.05），
+通常設得比 detector_delta 大（預設 0.1 對 0.01），
 意思是預警寧可寬鬆一點、早點注意，真正的把關留給確認階段。
 """
 
@@ -1004,7 +1007,7 @@ def _sidebar() -> Optional[Dict[str, Any]]:
         drift_detector = st.selectbox("drift_detector", [None] + DETECTOR_CHOICES,
                                       help=HELP_DRIFT_DETECTOR)
         st.divider()
-        detector_delta = st.number_input("detector_delta", 0.0, 1.0, 0.05, step=0.01,
+        detector_delta = st.number_input("detector_delta", 0.0, 1.0, 0.01, step=0.01,
                                          format="%.3f", help=HELP_DELTA)
         detector_delta_w = st.number_input("detector_delta_w", 0.0, 1.0, 0.1, step=0.01,
                                            format="%.3f", help=HELP_DELTA_W)
