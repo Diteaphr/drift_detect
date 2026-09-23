@@ -146,6 +146,15 @@ class PipelineConfig:
     ecpf_warning_value_range: float = 1.0
     ecpf_drift_value_range: float = 1.0
 
+    # Keep training the leader (and its shadow) while a warning is open.
+    #
+    # The warning period only exists to collect a buffer for the drift
+    # handler; freezing the learner for its duration is not part of ECPF.
+    # With the freeze, a warning that stays open for thousands of samples
+    # costs far more accuracy than the drift it is waiting for. Set False to
+    # reproduce runs made before this flag existed.
+    ecpf_learn_during_warning: bool = True
+
     # --- UQ Warning Layer (Hoeffding Forest uncertainty-based early warning) ---
     # UQ scalar extraction mode:
     # "mi_like" | "vote_disagreement" | "predictive_entropy" | "variance_eu"

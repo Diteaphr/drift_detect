@@ -144,6 +144,9 @@ def build_pipeline(opts: Dict[str, Any]) -> ConceptDriftPipeline:
         ecpf_drift_detector=opts["drift_detector"],
         ecpf_warning_signal=opts["warning_signal"],
         ecpf_drift_signal=opts["drift_signal"],
+        # Off reproduces runs made before the leader kept learning
+        # through an open warning window.
+        ecpf_learn_during_warning=opts.get("learn_during_warning", True),
     )
     return ConceptDriftPipeline(cfg)
 
