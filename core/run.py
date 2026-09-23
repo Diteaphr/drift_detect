@@ -32,6 +32,8 @@ DETECTOR_CHOICES = ["adwin", "seed", "seqdrift2"]
 # The loader (`load_recurring_stream_pair`) is generic -- it reads any CSV with
 # a `y` column and finds the sibling `_drift_times.txt` -- so every drift-type
 # folder works, not just recurring_drift.
+_MULTI_CLASS_DIR = Path("data/synthetic_dataset_joe/multi classification")
+
 DEMO_DRIFT_DIRS = [
     ("sudden", Path("data/sudden_drift")),
     ("gradual", Path("data/gradual_drift")),
@@ -40,6 +42,13 @@ DEMO_DRIFT_DIRS = [
     # 10x-length stand-in for sudden g00, for runs long enough to watch
     # (see scripts/generate_long_sudden_stream.py).
     ("長版 ×10", Path("data/long_drift")),
+    # 4-class RBF streams (labels 0-3). Each type has low / medium / high
+    # drift-strength subfolders; `high` is listed because its drifts are the
+    # easiest to see on the charts. The parent folder also holds a
+    # summary.csv that is not a stream, so point at the leaf folders.
+    ("多類別 sudden", _MULTI_CLASS_DIR / "sudden_drift" / "high"),
+    ("多類別 gradual", _MULTI_CLASS_DIR / "gradual_drift" / "high"),
+    ("多類別 incremental", _MULTI_CLASS_DIR / "incremental_drift" / "high"),
 ]
 DEMO_PER_TYPE = 2  # how many files to expose per drift type
 
