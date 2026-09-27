@@ -25,7 +25,10 @@ ARMS = {"E1": {"ecpf_adwin_one_sided": True},
         "E2k0": {"ecpf_reference_signal": True},
         "E2k500": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500},
         # E6 (docs/ECPF_E6_疊加_預註冊.md): E2-k500 plus the one-sided gate on the reference's loss
-        "E6": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_adwin_one_sided": True}}
+        "E6": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_adwin_one_sided": True},
+        # E7 (docs/ECPF_E7_δ校準_預註冊.md): E2-k500 with ADWIN's usual delta (warning/drift ratio kept at 2)
+        "E7": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500,
+               "detector_delta": 0.002, "detector_delta_w": 0.004}}
 P3 = {"ecpf_normalizer_reset_on_drift": True}  # the regression baseline (htr-nr / hfr-nr) has it on
 REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
@@ -117,9 +120,9 @@ def runs_table():
     return pd.DataFrame(recs)
 
 
-def rescore(exts=(1000, 3000)) -> None:
+def rescore(exts=(1000, 3000), show: bool = True):
     """Relabel every run with wider scoring windows -- classify() itself, only PERTURBATION changes.
-    ext=1000 must reproduce the stored labels exactly (checked)."""
+    ext=1000 must reproduce the stored labels exactly (checked). Returns one row per (run, ext)."""
     import diagnose_regression_fp as drf
     recs, gt = [], {}
     for fam, arm, path, ds, cfg, g, sig in iter_runs():
@@ -129,19 +132,25 @@ def rescore(exts=(1000, 3000)) -> None:
         dets = list(zip(g["warning_t"].astype(int), g["confirmation_t"].astype(int)))
         for ext in exts:
             drf.PERTURBATION = ext
-            labels = [r["label"] for r in drf.classify(dets, gt[key], sig, [], len(sig))]
-            recs.append({"family": fam, "arm": arm, "ext": ext, "tp": labels.count("hit"),
-                         "fp": sum(lab in FP for lab in labels),
+            rows = drf.classify(dets, gt[key], sig, [], len(sig))
+            labels = [r["label"] for r in rows]
+            recs.append({"family": fam, "arm": arm, "ext": ext, "dataset": ds, "learner": learner(cfg),
+                         "tp": labels.count("hit"), "fp": sum(lab in FP for lab in labels),
+                         "delays": [float(r["gap_prev_gt"]) for r in rows if r["label"] == "hit"],
+                         "fp_t": [r["confirmation_t"] for r in rows if r["label"] in FP],
+                         "conf_t": [r["confirmation_t"] for r in rows],
                          "stored_tp": int((g["label"] == "hit").sum()), "stored_fp": int(g["label"].isin(FP).sum())})
     drf.PERTURBATION = 1000
     df = pd.DataFrame(recs)
     chk = df[df["ext"] == 1000]
     bad = int(((chk["tp"] != chk["stored_tp"]) | (chk["fp"] != chk["stored_fp"])).sum())
+    if not show:
+        return None if bad else df
     print("## Rescore (classify() with scoring window = GT start + ext)")
     print("validity: runs where ext=1000 differs from stored labels = %d" % bad)
     if bad:
         print("RESCORE INVALID")
-        return
+        return None
     t = df.groupby(["family", "arm", "ext"])[["tp", "fp"]].sum().unstack("ext")
     t.columns = ["%s@%d" % c for c in t.columns]
     print(t.to_string())
@@ -150,7 +159,45 @@ def rescore(exts=(1000, 3000)) -> None:
     print()
     print("all families:")
     print(tot.to_string())
-    df.to_csv(os.path.join(OUT, "rescore.csv"), index=False)
+    df.drop(columns=["delays", "fp_t", "conf_t"]).to_csv(os.path.join(OUT, "rescore.csv"), index=False)
+    return df
+
+
+def analyze_delta() -> None:
+    """E7 verdict (docs/ECPF_E7_δ校準_預註冊.md): 3000-step window is primary."""
+    df = rescore(show=False)
+    if df is None:
+        print("RESCORE INVALID -- no verdict")
+        return
+    q = runs_table().groupby(["family", "arm"])["quality"].mean()
+    w = df[df["ext"] == 3000]
+    e7 = {(r.family, r.dataset, r.learner): r.conf_t for r in w[w["arm"] == "E7"].itertuples()}
+    base_fp = [((r.family, r.dataset, r.learner), t) for r in w[w["arm"] == "E2k500"].itertuples() for t in r.fp_t]
+    mech = float(np.mean([all(abs(c - t) > MATCH for c in e7.get(k, [])) for k, t in base_fp])) if base_fp else np.nan
+    med = lambda s: float(np.median(sum(s, []))) if sum(s, []) else np.nan
+    print("## E7 vs E2-k500 (primary: 3000-step window; quality = accuracy, or MAE for REG)")
+    ok2 = ok3 = True
+    done = [f for f in CELLS if (f, "E7") in q.index]
+    w = w[w["family"].isin(done)]
+    for f in CELLS:
+        if f not in done:
+            print("%-8s E7 missing" % f)
+            continue
+        b, e = (w[(w["family"] == f) & (w["arm"] == a)] for a in ("E2k500", "E7"))
+        b1, e1 = (df[(df["ext"] == 1000) & (df["family"] == f) & (df["arm"] == a)] for a in ("E2k500", "E7"))
+        qb, qe = q[(f, "E2k500")], q[(f, "E7")]
+        q_ok = qe <= 1.02 * qb if f.startswith("REG") else qe >= qb - 0.005
+        ok2 &= b["tp"].sum() - e["tp"].sum() <= 1
+        ok3 &= bool(q_ok)
+        print("%-8s FP@3000 %d->%d  TP@3000 %d->%d  delay %.0f->%.0f  quality %.4f->%.4f (%s)  | @1000 TP %d->%d FP %d->%d"
+              % (f, b["fp"].sum(), e["fp"].sum(), b["tp"].sum(), e["tp"].sum(), med(b["delays"]), med(e["delays"]),
+                 qb, qe, "ok" if q_ok else "WORSE", b1["tp"].sum(), e1["tp"].sum(), b1["fp"].sum(), e1["fp"].sum()))
+    fp_b, fp_e = int(w[w["arm"] == "E2k500"]["fp"].sum()), int(w[w["arm"] == "E7"]["fp"].sum())
+    ok1 = fp_e <= 0.70 * fp_b
+    print("mechanism: E2-k500 FP@3000 gone in E7 = %.2f (n=%d) -> %s" % (mech, len(base_fp), "PASS" if mech >= 0.50 else "not met"))
+    print("adopt E7: FP@3000 %d->%d (need <=%.1f): %s | TP@3000 loss <=1 per family: %s | quality: %s  ->  %s" % (
+        fp_b, fp_e, 0.70 * fp_b, ok1, ok2, ok3,
+        "E7 REPLACES E2-k500" if ok1 and ok2 and ok3 else "keep E2-k500; E7 reported as ablation"))
 
 
 def gone(events: pd.DataFrame, runs: pd.DataFrame, arm: str) -> float:
@@ -302,6 +349,7 @@ if __name__ == "__main__":
     ap.add_argument("--premise", action="store_true", help="E6 premise replay on the E2-k500 traces")
     ap.add_argument("--analyze-stack", action="store_true", help="E6 vs E2-k500 verdict")
     ap.add_argument("--rescore", action="store_true", help="relabel all runs with 1000/3000-step windows")
+    ap.add_argument("--analyze-delta", action="store_true", help="E7 vs E2-k500 verdict")
     a = ap.parse_args()
     self_check()
     if a.family and a.arm:
@@ -314,3 +362,5 @@ if __name__ == "__main__":
         analyze_stack()
     if a.rescore:
         rescore()
+    if a.analyze_delta:
+        analyze_delta()
