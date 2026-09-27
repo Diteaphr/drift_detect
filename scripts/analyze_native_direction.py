@@ -66,15 +66,23 @@ def rerun() -> None:
         pd.DataFrame(rows).to_csv(os.path.join(d, "detections.csv"), index=False)
 
 
-def replay(sig: pd.DataFrame):
-    """Replay both arms (+ an M1 shadow warning arm with clock=1) on the logged err."""
-    err, ts = sig["err"].to_numpy(float), sig["t"].to_numpy(int)
+def replay(sig: pd.DataFrame, col: str = "err"):
+    """Replay both arms (+ an M1 shadow warning arm with clock=1) on the logged detector input.
+
+    col="ref_err" replays the frozen-reference arms (E2/E6): a reference switch rebuilds
+    both arms before that step's update (`_switch_reference` runs before `update_values`).
+    """
+    err, ts = sig[col].to_numpy(float), sig["t"].to_numpy(int)
     lw, ld = sig["is_warning"].to_numpy(bool), sig["is_drift"].to_numpy(bool)
+    switch = sig["ref_switch"].fillna(0).to_numpy(bool) if "ref_switch" in sig else np.zeros(len(sig), bool)
     mk = lambda delta, clock=32: drift.ADWIN(delta=delta, grace_period=GRACE, clock=clock)
     arms, start = {"w": mk(DELTA_W), "d": mk(DELTA_D)}, {"w": 0, "d": 0}
     shadow, shadow_first = mk(DELTA_W, 1), None
     fires, shadow_at, bad_fire, bad_width = {}, {}, 0, 0
     for i, x in enumerate(err):
+        if switch[i]:
+            arms, start = {"w": mk(DELTA_W), "d": mk(DELTA_D)}, {"w": i, "d": i}
+            shadow, shadow_first = mk(DELTA_W, 1), None
         fired = {}
         for a, det in arms.items():
             eb, wb = det.estimation, det.width
@@ -102,8 +110,8 @@ def direction(rec) -> str:
     return "inc" if rec[1] > rec[0] else "dec"  # MOA: change only if the estimate rose
 
 
-def analyse_run(fam: str, sig: pd.DataFrame, dets: pd.DataFrame):
-    fires, shadow_at, bad_fire, bad_width = replay(sig)
+def analyse_run(fam: str, sig: pd.DataFrame, dets: pd.DataFrame, col: str = "err"):
+    fires, shadow_at, bad_fire, bad_width = replay(sig, col)
     pos = {t: i for i, t in enumerate(sig["t"].to_numpy(int))}
     raw = sig["raw"].to_numpy(float)
     confirmed = set(dets["confirmation_t"].astype(int))

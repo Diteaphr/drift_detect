@@ -23,7 +23,9 @@ from src.metrics import build_perturbation_intervals  # noqa: E402
 OUT, E0 = "outputs/e1_e2", "outputs/e0_native_direction"
 ARMS = {"E1": {"ecpf_adwin_one_sided": True},
         "E2k0": {"ecpf_reference_signal": True},
-        "E2k500": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500}}
+        "E2k500": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500},
+        # E6 (docs/ECPF_E6_疊加_預註冊.md): E2-k500 plus the one-sided gate on the reference's loss
+        "E6": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_adwin_one_sided": True}}
 P3 = {"ecpf_normalizer_reset_on_drift": True}  # the regression baseline (htr-nr / hfr-nr) has it on
 REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
@@ -189,15 +191,82 @@ def analyze() -> None:
         "keep two-phase" if keep else "k=0 suffices"))
 
 
+def premise() -> None:
+    """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
+    from analyze_native_direction import analyse_run
+    rows, bad_fire, bad_width = [], 0, 0
+    for fam, (paths, _, configs, _) in CELLS.items():
+        d = os.path.join(OUT, fam, "E2k500")
+        det = pd.read_csv(os.path.join(d, "detections.csv"))
+        for path in paths:
+            ds = dataset_key(path)
+            for base_label, _, _ in configs:
+                cfg = base_label.replace("/", "-E2k500/")
+                sig = pd.read_csv(os.path.join(d, "signals", sig_name(ds, cfg)))
+                r, _, bf, bw, _ = analyse_run(fam, sig, det[(det["dataset"] == ds) & (det["config"] == cfg)], "ref_err")
+                rows, bad_fire, bad_width = rows + r, bad_fire + bf, bad_width + bw
+    df = pd.DataFrame(rows)
+    df.to_csv(os.path.join(OUT, "e6_premise.csv"), index=False)
+    missing = int((df["d_dir"] == "missing").sum() + (df["w_dir"] == "missing").sum())
+    print("## E6 premise (reference space, E2-k500 traces)")
+    print("validity: fire mismatches=%d  width=%d  unlinked=%d" % (bad_fire, bad_width, missing))
+    if bad_fire or bad_width or missing:
+        print("REPLAY INVALID -- no prediction registered")
+        return
+    is_fp = df["label"].isin(FP)
+    for f in CELLS:
+        g, gf = df[df["family"] == f], df[(df["family"] == f) & is_fp]
+        p = float((gf["d_dir"] == "dec").mean()) if len(gf) else float("nan")
+        tpd = int(((g["label"] == "hit") & (g["d_dir"] == "dec")).sum())
+        pred = "predicted ineffective" if len(gf) >= 3 and p < 0.50 else ("mechanism check applies" if len(gf) >= 3 else "FP<3, report only")
+        print("%-8s FP=%d  p_dec_ref=%.2f  TP=%d  TP_dec_ref=%d  -> %s" % (f, len(gf), p, int((g["label"] == "hit").sum()), tpd, pred))
+    n_dec = int((df.loc[is_fp, "d_dir"] == "dec").sum())
+    print("absorbable FP = %d of %d  -> %s" % (n_dec, int(is_fp.sum()), "PREDICTED NOT ADOPTED (<30%)"
+                                              if n_dec < 0.30 * is_fp.sum() else "adoption possible"))
+
+
+def analyze_stack() -> None:
+    runs = runs_table()
+    prem = pd.read_csv(os.path.join(OUT, "e6_premise.csv"))
+    fa = runs.groupby(["family", "arm"]).agg(
+        tp=("tp", "sum"), fp=("fp", "sum"), quality=("quality", "mean"),
+        delay=("delay", lambda s: float(np.nanmedian(sum(s, []))) if sum(s, []) else np.nan))
+    print("## E6 vs E2-k500 (quality = accuracy, or MAE for REG)")
+    ok2 = ok3 = True
+    fp_b = fp_e = 0
+    for f in CELLS:
+        b, e = fa.loc[(f, "E2k500")], fa.loc[(f, "E6")]
+        dec = prem[(prem["family"] == f) & prem["label"].isin(FP) & (prem["d_dir"] == "dec")]
+        n_fp = int(prem[(prem["family"] == f) & prem["label"].isin(FP)].shape[0])
+        mech = gone(dec, runs, "E6")
+        check = n_fp >= 3 and len(dec) >= 0.50 * n_fp
+        ok2 &= b.tp - e.tp <= 1
+        ok3 &= not (e.delay - b.delay > 100)
+        fp_b, fp_e = fp_b + b.fp, fp_e + e.fp
+        print("%-8s FP %d->%d  TP %d->%d  delay %+.0f  quality %.4f->%.4f  dec-FPs gone %s" % (
+            f, b.fp, e.fp, b.tp, e.tp, e.delay - b.delay, b.quality, e.quality,
+            ("%.2f (%s)" % (mech, "PASS" if mech >= 0.70 else "not met")) if check else "n/a"))
+    ok1 = fp_e <= 0.70 * fp_b
+    print("adopt E6: FP %d->%d (need <=%.0f): %s | TP loss <=1 per family: %s | delay +<=100: %s  ->  %s" % (
+        fp_b, fp_e, 0.70 * fp_b, ok1, ok2, ok3,
+        "E6 REPLACES E2-k500" if ok1 and ok2 and ok3 else "keep E2-k500; E6 reported as ablation"))
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--family", choices=list(CELLS))
     ap.add_argument("--arm", choices=list(ARMS))
     ap.add_argument("--analyze", action="store_true")
     ap.add_argument("--check", action="store_true", help="run the E1 self-check only")
+    ap.add_argument("--premise", action="store_true", help="E6 premise replay on the E2-k500 traces")
+    ap.add_argument("--analyze-stack", action="store_true", help="E6 vs E2-k500 verdict")
     a = ap.parse_args()
     self_check()
     if a.family and a.arm:
         run_cell(a.family, a.arm)
     if a.analyze:
         analyze()
+    if a.premise:
+        premise()
+    if a.analyze_stack:
+        analyze_stack()
