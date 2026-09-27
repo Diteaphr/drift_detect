@@ -1,0 +1,6 @@
+REG-syn E6 reg_gradual_20k.csv htr-E6/error detections=2 swaps=2
+REG-syn E6 reg_gradual_20k.csv hfr-E6/error detections=2 swaps=2
+REG-syn E6 reg_recurring_20k.csv htr-E6/error detections=5 swaps=3
+REG-syn E6 reg_recurring_20k.csv hfr-E6/error detections=5 swaps=5
+REG-syn E6 reg_sudden_20k.csv htr-E6/error detections=3 swaps=9
+REG-syn E6 reg_sudden_20k.csv hfr-E6/error detections=3 swaps=3

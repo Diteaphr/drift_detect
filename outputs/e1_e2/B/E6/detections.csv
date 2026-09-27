@@ -1,0 +1,13 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+3911,3911,0,hit,642,17510,,0.1,0.05,-0.05,fall,0.1,0.05,-0.5,,,0,sudden/-/sudden_sea100k_g00.csv,ht-E6/error,data/sudden_drift/sudden_sea100k_g00.csv
+22842,22842,0,orphan,1421,,18931,0.076,0.078,0.002,flat,0.076,0.078,0.0263,,17092,0,sudden/-/sudden_sea100k_g00.csv,ht-E6/error,data/sudden_drift/sudden_sea100k_g00.csv
+4007,4071,64,hit,738,17414,,0.074,0.058,-0.016,flat,0.074,0.058,-0.2162,masked_fall,,0,sudden/-/sudden_sea100k_g00.csv,hf10-E6/error,data/sudden_drift/sudden_sea100k_g00.csv
+13831,14471,640,orphan,13831,8127,,0.022,0.014,-0.008,flat,0.022,0.014,-0.3636,masked_fall,,0,gradual/-/gradual_sea100k_g00.csv,ht-E6/error,data/gradual_drift/gradual_sea100k_g00.csv
+23898,24058,160,hit,1940,,10067,0.046,0.032,-0.014,flat,0.046,0.032,-0.3043,masked_fall,,0,gradual/-/gradual_sea100k_g00.csv,ht-E6/error,data/gradual_drift/gradual_sea100k_g00.csv
+28845,28973,128,echo_inwin,6887,,4947,0.108,0.026,-0.082,fall,0.108,0.026,-0.7593,,,0,gradual/-/gradual_sea100k_g00.csv,ht-E6/error,data/gradual_drift/gradual_sea100k_g00.csv
+12487,12647,160,orphan,12487,9471,,0.018,0.028,0.01,flat,0.018,0.028,0.5556,,,0,gradual/-/gradual_sea100k_g00.csv,hf10-E6/error,data/gradual_drift/gradual_sea100k_g00.csv
+21018,25434,4416,orphan,21018,940,8531,0.046,0.102,0.056,rise,0.046,0.102,1.2174,,,0,gradual/-/gradual_sea100k_g00.csv,hf10-E6/error,data/gradual_drift/gradual_sea100k_g00.csv
+29837,29869,32,hit,7879,,8819,0.08,0.0534,-0.0266,fall,0.08,0.0534,-0.3321,,365,1,gradual/-/gradual_sea100k_g00.csv,hf10-E6/error,data/gradual_drift/gradual_sea100k_g00.csv
+22567,22727,160,orphan,2267,2142,,0.038,0.012,-0.026,fall,0.038,0.012,-0.6842,,,0,recurring/-/recurring_sud_sea100k_g00.csv,ht-E6/error,data/recurring_drift/recurring_sud_sea100k_g00.csv
+15591,21415,5824,orphan,1115,4709,,0.07,0.04,-0.03,fall,0.07,0.04,-0.4286,,,0,recurring/-/recurring_sud_sea100k_g00.csv,hf10-E6/error,data/recurring_drift/recurring_sud_sea100k_g00.csv
+27546,27546,0,orphan,2837,,11955,0.05,0.066,0.016,flat,0.05,0.066,0.32,,,0,recurring/-/recurring_sud_sea100k_g00.csv,hf10-E6/error,data/recurring_drift/recurring_sud_sea100k_g00.csv

@@ -77,39 +77,80 @@ def run_cell(family: str, arm: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-def runs_table():
-    """One row per (family, arm, dataset, learner): hits, FP, delay, accuracy/MAE, detection times.
+def iter_runs():
+    """Yield (family, arm, path, dataset, config, detections, signals) for every run in the matrix.
 
     Runs are enumerated from the matrix, not from detections.csv: a run with zero
-    confirmations has no rows there but still counts (TP=FP=0, its accuracy/MAE).
+    confirmations has no rows there but still counts.
     """
-    recs = []
-
-    def add(fam, arm, det_csv, sig_dir, labels):
+    def runs_of(fam, arm, det_csv, sig_dir, labels):
         det = pd.read_csv(det_csv)
         for path in CELLS[fam][0]:
             ds = dataset_key(path)
             for cfg in labels:
-                g = det[(det["dataset"] == ds) & (det["config"] == cfg)]
-                sig = pd.read_csv(os.path.join(sig_dir, sig_name(ds, cfg)))
-                hits = g[g["label"] == "hit"]
-                recs.append({"family": fam, "arm": arm, "dataset": ds, "learner": learner(cfg),
-                             "tp": len(hits), "fp": int(g["label"].isin(FP).sum()),
-                             "delay": pd.to_numeric(hits["gap_prev_gt"], errors="coerce").tolist(),
-                             "quality": float(sig["raw"].mean() if fam.startswith("REG") else 1 - sig["err"].mean()),
-                             "conf_t": g["confirmation_t"].astype(int).tolist(), "path": path, "sig": sig})
+                yield (fam, arm, path, ds, cfg, det[(det["dataset"] == ds) & (det["config"] == cfg)],
+                       pd.read_csv(os.path.join(sig_dir, sig_name(ds, cfg))))
     for fam, (_, _, configs) in RERUN.items():  # baselines: E0 reruns and the regression archives
-        add(fam, "base", os.path.join(E0, fam, "detections.csv"), os.path.join(E0, fam, "signals"),
-            [c for c, _, _ in configs])
+        yield from runs_of(fam, "base", os.path.join(E0, fam, "detections.csv"), os.path.join(E0, fam, "signals"),
+                           [c for c, _, _ in configs])
     for fam, d, cfgs in ARCHIVED:
-        add(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"), sorted(cfgs))
+        yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
+                           sorted(cfgs))
     for fam, (_, _, configs, _) in CELLS.items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
-                add(fam, arm, os.path.join(d, "detections.csv"), os.path.join(d, "signals"),
-                    [c.replace("/", "-%s/" % arm) for c, _, _ in configs])
+                yield from runs_of(fam, arm, os.path.join(d, "detections.csv"), os.path.join(d, "signals"),
+                                   [c.replace("/", "-%s/" % arm) for c, _, _ in configs])
+
+
+def runs_table():
+    """One row per (family, arm, dataset, learner): hits, FP, delay, accuracy/MAE, detection times."""
+    recs = []
+    for fam, arm, path, ds, cfg, g, sig in iter_runs():
+        hits = g[g["label"] == "hit"]
+        recs.append({"family": fam, "arm": arm, "dataset": ds, "learner": learner(cfg),
+                     "tp": len(hits), "fp": int(g["label"].isin(FP).sum()),
+                     "delay": pd.to_numeric(hits["gap_prev_gt"], errors="coerce").tolist(),
+                     "quality": float(sig["raw"].mean() if fam.startswith("REG") else 1 - sig["err"].mean()),
+                     "conf_t": g["confirmation_t"].astype(int).tolist(), "path": path, "sig": sig})
     return pd.DataFrame(recs)
+
+
+def rescore(exts=(1000, 3000)) -> None:
+    """Relabel every run with wider scoring windows -- classify() itself, only PERTURBATION changes.
+    ext=1000 must reproduce the stored labels exactly (checked)."""
+    import diagnose_regression_fp as drf
+    recs, gt = [], {}
+    for fam, arm, path, ds, cfg, g, sig in iter_runs():
+        key = (path, CELLS[fam][1])
+        if key not in gt:
+            gt[key] = load_stream(path, CELLS[fam][1])[2]
+        dets = list(zip(g["warning_t"].astype(int), g["confirmation_t"].astype(int)))
+        for ext in exts:
+            drf.PERTURBATION = ext
+            labels = [r["label"] for r in drf.classify(dets, gt[key], sig, [], len(sig))]
+            recs.append({"family": fam, "arm": arm, "ext": ext, "tp": labels.count("hit"),
+                         "fp": sum(lab in FP for lab in labels),
+                         "stored_tp": int((g["label"] == "hit").sum()), "stored_fp": int(g["label"].isin(FP).sum())})
+    drf.PERTURBATION = 1000
+    df = pd.DataFrame(recs)
+    chk = df[df["ext"] == 1000]
+    bad = int(((chk["tp"] != chk["stored_tp"]) | (chk["fp"] != chk["stored_fp"])).sum())
+    print("## Rescore (classify() with scoring window = GT start + ext)")
+    print("validity: runs where ext=1000 differs from stored labels = %d" % bad)
+    if bad:
+        print("RESCORE INVALID")
+        return
+    t = df.groupby(["family", "arm", "ext"])[["tp", "fp"]].sum().unstack("ext")
+    t.columns = ["%s@%d" % c for c in t.columns]
+    print(t.to_string())
+    tot = df.groupby(["arm", "ext"])[["tp", "fp"]].sum().unstack("ext")
+    tot.columns = ["%s@%d" % c for c in tot.columns]
+    print()
+    print("all families:")
+    print(tot.to_string())
+    df.to_csv(os.path.join(OUT, "rescore.csv"), index=False)
 
 
 def gone(events: pd.DataFrame, runs: pd.DataFrame, arm: str) -> float:
@@ -260,6 +301,7 @@ if __name__ == "__main__":
     ap.add_argument("--check", action="store_true", help="run the E1 self-check only")
     ap.add_argument("--premise", action="store_true", help="E6 premise replay on the E2-k500 traces")
     ap.add_argument("--analyze-stack", action="store_true", help="E6 vs E2-k500 verdict")
+    ap.add_argument("--rescore", action="store_true", help="relabel all runs with 1000/3000-step windows")
     a = ap.parse_args()
     self_check()
     if a.family and a.arm:
@@ -270,3 +312,5 @@ if __name__ == "__main__":
         premise()
     if a.analyze_stack:
         analyze_stack()
+    if a.rescore:
+        rescore()

@@ -1,0 +1,6 @@
+B E6 sudden/-/sudden_sea100k_g00.csv ht-E6/error detections=2 swaps=12
+B E6 sudden/-/sudden_sea100k_g00.csv hf10-E6/error detections=1 swaps=7
+B E6 gradual/-/gradual_sea100k_g00.csv ht-E6/error detections=3 swaps=1
+B E6 gradual/-/gradual_sea100k_g00.csv hf10-E6/error detections=3 swaps=5
+B E6 recurring/-/recurring_sud_sea100k_g00.csv ht-E6/error detections=1 swaps=0
+B E6 recurring/-/recurring_sud_sea100k_g00.csv hf10-E6/error detections=2 swaps=0
