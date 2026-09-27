@@ -82,6 +82,12 @@ class ErrorNormalizer:
         self._m2 = 0.0
         self.warmup = int(warmup)
 
+    def reset(self) -> None:
+        """Forget the running statistics (prescription 3: re-baseline per era)."""
+        self._n = 0
+        self._mean = 0.0
+        self._m2 = 0.0
+
     def update(self, value: float) -> float:
         """Observe *value*, then return its normalized position in [0, 1]."""
         v = float(value)

@@ -14,6 +14,7 @@ class ECPFWarningDriftDetector(ECPFAdwinFamilyDetector):
         min_num_instances: int = 30,
         delta: float = 0.05,
         delta_w: float = 0.1,
+        one_sided: bool = False,
     ) -> None:
         super().__init__(
             warning_detector_type="adwin",
@@ -21,4 +22,5 @@ class ECPFWarningDriftDetector(ECPFAdwinFamilyDetector):
             min_num_instances=min_num_instances,
             delta=delta,
             delta_w=delta_w,
+            one_sided=one_sided,
         )

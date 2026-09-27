@@ -34,7 +34,7 @@ from detectors import (
     ConceptMemory,
     detect_recurring_drift,
 )
-from .ecpf import ECPFMetaLearner, load_drift_times_file, load_drift_intervals_file
+from .ecpf import ECPFMetaLearner, _deep_clone, load_drift_times_file, load_drift_intervals_file
 from .ecpf_detector import ECPFWarningDriftDetector
 from .uq_warning_detector import UQWarningDetector
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
@@ -193,6 +193,14 @@ class ConceptDriftPipeline:
         self._ecpf_oracle_started: set = set()
         self._ecpf_ring: deque = deque(maxlen=5000)
         self._ecpf_cooldown_left = 0   # steps left in the post-confirmation cooldown
+        self._ecpf_pending_confirm = False  # drift arm fired, buffer still < ecpf_min_warning_age
+        # Frozen-reference detector input (see config.ecpf_reference_signal).
+        self._ref_model = None              # frozen copy the detectors are fed with
+        self._ref_norm = ErrorNormalizer()  # the reference's own normalizer
+        self._ref_frozen_at = None          # index at which the current reference was frozen
+        self._ref_switch_due = None         # secondary arm: index at which to re-freeze
+        self._ref_shadow = None             # previous reference, shadow-run after a switch
+        self._ref_shadow_until = None
         # Rolling drift-signal history for the direction gate; only fed when the
         # gate is enabled, so disabled runs are untouched.
         self._gate_hist: deque = deque(
@@ -213,6 +221,7 @@ class ConceptDriftPipeline:
                     min_num_instances=self.config.ecpf_detector_min_instances,
                     delta=self.config.detector_delta,
                     delta_w=self.config.detector_delta_w,
+                    one_sided=self.config.ecpf_adwin_one_sided,
                 )
             else:
                 self._ecpf_detector = ECPFAdwinFamilyDetector(
@@ -224,6 +233,7 @@ class ConceptDriftPipeline:
                     random_seed=self.config.recurring_random_seed,
                     warning_value_range=self.config.ecpf_warning_value_range,
                     drift_value_range=self.config.ecpf_drift_value_range,
+                    one_sided=self.config.ecpf_adwin_one_sided,
                 )
 
         # UQ Warning Layer: UQ-only warning + error-based drift confirmation
@@ -608,6 +618,30 @@ class ConceptDriftPipeline:
         self.buffer.append(y_true, y_pred, index, x=x_flat, err=err)
         errors = self.buffer.get_errors()
 
+        # Frozen reference: the ADWIN-family detectors read a frozen copy's
+        # residual instead of the learner's. Nothing else reads ref_* -- the
+        # ADWIN-family branch swaps its input, the tracer logs it, that is all.
+        ref_extra = None
+        det_pred = y_pred   # classification's "error" signal is recomputed from this
+        if self.config.ecpf_reference_signal:
+            if self._ref_model is None:
+                self._freeze_reference(index)   # end of warm-up: first reference
+            switch_info = None
+            if self._ref_switch_due is not None and index >= self._ref_switch_due:
+                switch_info = self._switch_reference(index)
+            det_pred = self._model_predict(self._ref_model, x_)
+            ref_raw = self._ref_loss(y_true, det_pred)
+            ref_err = self._ref_norm.update(ref_raw) if self.task.is_regression else ref_raw
+            ref_extra = {"ref_err": ref_err, "ref_raw": ref_raw,
+                         "ref_age": int(index) - int(self._ref_frozen_at)}
+            if self._ref_shadow is not None:
+                if index <= self._ref_shadow_until:
+                    ref_extra["shadow_raw"] = self._ref_loss(y_true, self._model_predict(self._ref_shadow, x_))
+                else:
+                    self._ref_shadow = None
+            if switch_info:
+                ref_extra.update(switch_info)
+
         new_detections: List[DriftDetection] = []
         ecf_warn = bool(self.config.use_ecpf and self._ecpf_warning_active)
 
@@ -657,6 +691,9 @@ class ConceptDriftPipeline:
                     return y_pred, [], False
             elif self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES and self._ecpf_detector is not None:
                 proba_matrix, pred_matrix = self._uq_inputs(x_)
+                # The "error" signal the detectors consume: the frozen reference's
+                # residual when enabled, otherwise the learner's own (unchanged).
+                det_err = ref_extra["ref_err"] if ref_extra is not None else err
                 # The unbounded regression UQ variance must be normalized against
                 # one scale shared by both signals, and the running statistics must
                 # advance exactly once per instance -- hence live-then-frozen.
@@ -664,8 +701,8 @@ class ConceptDriftPipeline:
                 warning_value = extract_signal(
                     self.config.ecpf_warning_signal,
                     y_true=y_true,
-                    y_pred=y_pred,
-                    err=err,
+                    y_pred=det_pred,
+                    err=det_err,
                     proba_matrix=proba_matrix,
                     num_classes=self._uq_num_classes(),
                     is_regression=self.task.is_regression,
@@ -675,8 +712,8 @@ class ConceptDriftPipeline:
                 drift_value = extract_signal(
                     self.config.ecpf_drift_signal,
                     y_true=y_true,
-                    y_pred=y_pred,
-                    err=err,
+                    y_pred=det_pred,
+                    err=det_err,
                     proba_matrix=proba_matrix,
                     num_classes=self._uq_num_classes(),
                     is_regression=self.task.is_regression,
@@ -709,6 +746,7 @@ class ConceptDriftPipeline:
                 self.tracer.log_signal(
                     index, y_true, y_pred, err,
                     warning_value, drift_value, is_warning, is_drift,
+                    extra=ref_extra,
                 )
 
                 # Warning timeout: an unconfirmed warning that stays open for
@@ -731,6 +769,7 @@ class ConceptDriftPipeline:
                     self._ecpf_warning_active = False
                     self._ecpf_warning_start_idx = None
                     self._ecpf_buffer = []
+                    self._ecpf_pending_confirm = False
                     # Deliberately KEEP self._gate_baseline. Clearing it here made
                     # the timeout degrade the gate's anchor back into a sliding
                     # baseline on wide gradual transitions: each re-opened warning
@@ -765,7 +804,19 @@ class ConceptDriftPipeline:
                         (np.asarray(x_.ravel(), dtype=np.float64).copy(), float(y_true))
                     )
 
+                # Minimum warning age: hold the confirmation until the warning
+                # buffer has k instances, otherwise the reuse decision is made
+                # on a 1-instance buffer whenever both arms fire on the same
+                # step. The scored timestamp (warning start) does not move.
+                k = int(self.config.ecpf_min_warning_age)
+                if k > 0 and self._ecpf_warning_active:
+                    if is_drift and len(self._ecpf_buffer) < k:
+                        self._ecpf_pending_confirm = True
+                        is_drift = False
+                    elif self._ecpf_pending_confirm and len(self._ecpf_buffer) >= k:
+                        is_drift = True
                 if is_drift and self._ecpf_warning_active and self._ecpf_buffer:
+                    self._ecpf_pending_confirm = False
                     self._handle_ecpf_drift(
                         self._ecpf_buffer[:],
                         int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
@@ -783,6 +834,19 @@ class ConceptDriftPipeline:
                     self._ecpf_buffer = []
                     self._gate_baseline = None
                     self.meta_detector.reset()
+                    # Prescription 3: re-baseline the residual normalizer on the
+                    # new era together with the detectors (see config).
+                    if self.config.ecpf_normalizer_reset_on_drift and self.task.is_regression:
+                        self.task.normalizer.reset()
+                    if self.config.ecpf_reference_signal:
+                        # k=0: the just-installed clone becomes the reference right
+                        # now; k>0 additionally schedules a re-freeze from the
+                        # adapted leader (secondary arm).
+                        self._freeze_reference(index)
+                        self._ref_switch_due = (
+                            int(index) + int(self.config.ecpf_reference_warmup)
+                            if self.config.ecpf_reference_warmup > 0 else None
+                        )
                     # Optional echo suppression (both default off; see config).
                     if self.config.ecpf_detector_reset_on_drift:
                         # Drop the windows that still describe the OLD leader's
@@ -1120,6 +1184,48 @@ class ConceptDriftPipeline:
             return {}
         stats = uq_entry.get("stats", {})
         return dict(stats) if isinstance(stats, dict) else {}
+
+    # ------------------------------------------------------------------
+    # Frozen reference: detector input decoupled from the adaptive learner
+    # ------------------------------------------------------------------
+    def _model_predict(self, model: Any, x_: np.ndarray) -> float:
+        if self._use_advanced:
+            return float(model.predict_one(x_))
+        return float(model.predict(x_)[0])
+
+    def _ref_loss(self, y_true: float, pred: float) -> float:
+        """Raw loss of a reference prediction: |residual|, or 0/1 for classification."""
+        if self.task.is_regression:
+            return abs(float(y_true) - pred)
+        return 1.0 if int(round(pred)) != int(round(float(y_true))) else 0.0
+
+    def _freeze_reference(self, index: int) -> None:
+        """Freeze a copy of the current leader as the detectors' reference."""
+        self._ref_model = _deep_clone(self.prediction_model)
+        self._ref_norm.reset()
+        self._ref_frozen_at = int(index)
+
+    def _switch_reference(self, index: int) -> dict:
+        """Secondary arm: re-freeze from the adapted leader (a switch reset).
+
+        The detectors' input steps down here, so both arms restart, an open
+        warning is closed and its buffer dropped; the previous reference
+        shadow-runs 500 steps so both can be compared on the same data.
+        """
+        age = (
+            int(index) - int(self._ecpf_warning_start_idx)
+            if self._ecpf_warning_active and self._ecpf_warning_start_idx is not None
+            else -1
+        )
+        self._ref_shadow, self._ref_shadow_until = self._ref_model, int(index) + 500
+        self._freeze_reference(index)
+        self._ref_switch_due = None
+        self._ecpf_detector.reset()
+        self._ecpf_warning_active = False
+        self._ecpf_warning_start_idx = None
+        self._ecpf_buffer = []
+        self._ecpf_pending_confirm = False
+        return {"ref_switch": 1, "switch_warning_age": age}
 
     def _handle_ecpf_drift(
         self,

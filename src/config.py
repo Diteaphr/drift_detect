@@ -181,6 +181,44 @@ class PipelineConfig:
     # Both default OFF so every existing (binary) run is byte-identical.
     ecpf_detector_reset_on_drift: bool = False
     ecpf_detector_cooldown: int = 0
+    # Minimum warning age (ADWIN-family modes). On one signal the warning and
+    # drift ADWINs often fire on the SAME step for a sharp change, so the reuse
+    # decision is made on a 1-instance warning buffer (measured: 42-57% of hits
+    # on both multi-class and regression streams). With k > 0 a confirmation
+    # whose buffer holds fewer than k instances is held until it does; the
+    # scored timestamp (warning start) does not move. 0 = off, byte-identical.
+    ecpf_min_warning_age: int = 0
+    # Prescription 3 (regression). The online residual normalizer is a global
+    # Welford mean/sd that never resets; when the residual scale changes across
+    # concepts it keeps catching up for tens of thousands of steps, turning a
+    # flat raw residual into a slow ramp the two-sided ADWIN cuts (fixed-scale
+    # counterfactual on Joe sudden: forest FP 21 -> 10). With this on, the
+    # normalizer re-baselines together with the detectors at every ECPF
+    # confirmation (the duel credit is then neutral, 0.5, for the normalizer's
+    # 30-instance warm-up). Classification never uses the normalizer, so binary
+    # runs are byte-identical either way; default off.
+    ecpf_normalizer_reset_on_drift: bool = False
+    # Frozen-reference detector input (regression). The two-sided ADWIN reads
+    # the adaptive leader's own improvement (learning curve, duel swaps, a bad
+    # reuse being re-learnt) as drift. With this on, the detectors are fed the
+    # residual of a FROZEN copy of the model installed at the last confirmation
+    # (own normalizer, reset at every freeze); the leader keeps learning as
+    # usual and still supplies predictions, accuracy, duel credit and buffer
+    # scoring. warmup=0: freeze the just-installed clone and keep it until the
+    # next confirmation (no warm-up, no switch). warmup=k>0 (secondary arm):
+    # re-freeze from the adapted leader k steps after each confirmation, with
+    # a switch reset (detectors, open warning, buffer, reference normalizer);
+    # the previous reference then shadow-runs 500 steps for diagnostics only.
+    # Classification (E2, docs/ECPF_E1E2_預註冊.md): the detectors read the frozen
+    # copy's 0/1 loss. Default-off runs are byte-identical.
+    ecpf_reference_signal: bool = False
+    ecpf_reference_warmup: int = 0
+
+    # E1 (docs/ECPF_E1E2_預註冊.md): MOA ADWINChangeDetector semantics on both ADWIN
+    # arms -- a cut counts only if the error estimate rose; a suppressed cut keeps
+    # its post-cut window. river's ADWIN is two-sided, MOA's wrapper has been
+    # increase-only since 2017. Default OFF; binary runs unchanged.
+    ecpf_adwin_one_sided: bool = False
 
     # --- Direction gate on drift confirmations (ADWIN-family modes) ---
     # ADWIN is two-sided: it fires on error DROPS as readily as rises. In ECPF

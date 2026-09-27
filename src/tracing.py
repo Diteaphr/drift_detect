@@ -151,19 +151,23 @@ class StageTracer:
         drift_value: Any,
         is_warning: bool = False,
         is_drift: bool = False,
+        extra: Optional[Dict[str, Any]] = None,
     ) -> None:
-        self._signals.append(
-            {
-                "t": int(t),
-                "y_true": _f(y_true),
-                "y_pred": _f(y_pred),
-                "err": _f(err),
-                "warning_value": _f(warning_value),
-                "drift_value": _f(drift_value),
-                "is_warning": int(bool(is_warning)),
-                "is_drift": int(bool(is_drift)),
-            }
-        )
+        row = {
+            "t": int(t),
+            "y_true": _f(y_true),
+            "y_pred": _f(y_pred),
+            "err": _f(err),
+            "warning_value": _f(warning_value),
+            "drift_value": _f(drift_value),
+            "is_warning": int(bool(is_warning)),
+            "is_drift": int(bool(is_drift)),
+        }
+        if extra:
+            # Passive per-step diagnostics (e.g. the frozen reference's residual);
+            # never read back by the pipeline.
+            row.update(extra)
+        self._signals.append(row)
 
     def on_event(
         self,
