@@ -1,0 +1,3 @@
+setting,prequential_accuracy,detection_delay,false_warning_rate,reuse_precision,avg_collection_size,runtime_s
+E_var_ecpf_dwm,0.9099999999999999,0.0,0.0,,1.0,0.4367922499999999
+H_hf_meta_ecpf_hcdt,0.9026666666666667,0.0,0.3,0.5,1.1646666666666667,0.23618462999999998

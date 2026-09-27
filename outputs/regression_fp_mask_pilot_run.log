@@ -1,0 +1,77 @@
+C:\Users\chenp\anaconda3\lib\site-packages\pandas\core\computation\expressions.py:21: UserWarning: Pandas requires version '2.8.4' or newer of 'numexpr' (version '2.8.3' currently installed).
+  from pandas.core.computation.check import NUMEXPR_INSTALLED
+C:\Users\chenp\anaconda3\lib\site-packages\pandas\core\arrays\masked.py:61: UserWarning: Pandas requires version '1.3.6' or newer of 'bottleneck' (version '1.3.5' currently installed).
+  from pandas.core import (
+3 streams x 2 configs
+
+reg_gradual_20k.csv  hfr/error  gt=[5750, 12750]  swaps=10  MAE=2.766  (37s)
+   tp=2 fp=2 cd=0.0 | hit=2 echo_inwin=3 echo=0 orphan=2 | dropped=0
+     6055..6055   hit        norm 0.550->0.639 (rise)  raw 3.52->5.12  swap_gap=
+     6567..6567   echo_inwin norm 0.634->0.535 (fall)  raw 5.03->3.24  swap_gap=324
+    10151..10151  orphan     norm 0.503->0.495 (flat)  raw 2.84->2.72  swap_gap=3908
+    13063..13063  hit        norm 0.560->0.610 (rise)  raw 4.36->4.83  swap_gap=6820
+    13511..13511  echo_inwin norm 0.609->0.531 (fall)  raw 4.92->3.48  swap_gap=427
+    13767..13991  echo_inwin norm 0.547->0.494 (fall)  raw 3.71->2.85  swap_gap=255
+    16327..17063  orphan     norm 0.459->0.457 (flat)  raw 2.30->2.22  swap_gap=2334
+
+reg_gradual_20k.csv  hfr-all/error  gt=[5750, 12750]  swaps=20  MAE=1.493  (56s)
+   tp=2 fp=4 cd=0.0 | hit=2 echo_inwin=4 echo=2 orphan=2 | dropped=0
+     1223..1223   orphan     norm 0.434->0.446 (flat)  raw 1.56->1.44  swap_gap=
+     5959..5991   hit        norm 0.465->0.683 (rise)  raw 1.53->5.00  swap_gap=4733
+     6375..6407   echo_inwin norm 0.679->0.567 (fall)  raw 5.26->2.59  swap_gap=178
+     6855..6887   echo_inwin norm 0.574->0.477 (fall)  raw 2.67->1.35  swap_gap=447
+     8583..8679   echo       norm 0.447->0.442 (flat)  raw 0.89->0.81  swap_gap=1690
+    12935..12935  hit        norm 0.471->0.735 (rise)  raw 1.35->7.76  swap_gap=6042
+    13447..13447  echo_inwin norm 0.729->0.565 (fall)  raw 7.62->2.62  swap_gap=180
+    14023..14343  echo_inwin norm 0.550->0.528 (fall)  raw 2.37->2.07  swap_gap=756
+    15399..15495  echo       norm 0.499->0.489 (flat)  raw 1.59->1.43  swap_gap=1055
+    17639..17735  orphan     norm 0.466->0.467 (flat)  raw 1.06->1.07  swap_gap=3295
+
+reg_recurring_20k.csv  hfr/error  gt=[3333, 6666, 9999, 13332, 16665]  swaps=10  MAE=3.224  (40s)
+   tp=4 fp=3 cd=20.0 | hit=4 echo_inwin=2 echo=1 orphan=2 | dropped=0
+     3399..3431   hit        norm 0.543->0.541 (flat)  raw 3.60->3.37  swap_gap=
+     4647..5223   echo       norm 0.505->0.514 (flat)  raw 2.87->3.02  swap_gap=1215
+     6727..6759   hit        norm 0.538->0.529 (flat)  raw 3.69->3.45  swap_gap=1503
+     7527..7527   echo_inwin norm 0.498->0.478 (fall)  raw 2.93->2.61  swap_gap=767
+    10055..10055  hit        norm 0.525->0.518 (flat)  raw 3.58->3.21  swap_gap=3295
+    10471..13447  echo_inwin norm 0.565->0.692 (rise)  raw 4.24->7.31  swap_gap=413
+    14983..14983  orphan     norm 0.624->0.505 (fall)  raw 5.92->3.52  swap_gap=1529
+    15431..15431  orphan     norm 0.521->0.468 (fall)  raw 3.84->2.78  swap_gap=406
+    16743..16743  hit        norm 0.507->0.456 (fall)  raw 3.81->2.54  swap_gap=1718
+
+reg_recurring_20k.csv  hfr-all/error  gt=[3333, 6666, 9999, 13332, 16665]  swaps=5  MAE=1.675  (51s)
+   tp=5 fp=3 cd=40.0 | hit=5 echo_inwin=3 echo=2 orphan=1 | dropped=0
+     1991..3399   orphan     norm 0.446->0.740 (rise)  raw 1.19->7.45  swap_gap=
+     3975..4295   hit        norm 0.723->0.446 (fall)  raw 7.22->1.52  swap_gap=574
+     6023..6087   echo       norm 0.425->0.427 (flat)  raw 0.82->0.77  swap_gap=1727
+     6695..6695   hit        norm 0.453->0.563 (rise)  raw 1.51->3.53  swap_gap=2399
+     7143..7143   echo_inwin norm 0.567->0.554 (flat)  raw 3.82->3.41  swap_gap=444
+     7655..7719   echo_inwin norm 0.549->0.479 (fall)  raw 3.28->1.93  swap_gap=509
+     9511..9575   echo       norm 0.453->0.512 (rise)  raw 1.38->2.85  swap_gap=2365
+    10055..10055  hit        norm 0.511->0.444 (fall)  raw 2.83->1.19  swap_gap=2909
+    13383..13383  hit        norm 0.474->0.431 (fall)  raw 1.84->0.77  swap_gap=6237
+    16711..16711  hit        norm 0.467->0.563 (rise)  raw 1.72->2.84  swap_gap=9565
+    17095..17095  echo_inwin norm 0.592->0.474 (fall)  raw 3.81->1.33  swap_gap=383
+
+reg_sudden_20k.csv  hfr/error  gt=[5000, 10000, 15000]  swaps=7  MAE=2.679  (37s)
+   tp=3 fp=2 cd=33.3 | hit=3 echo_inwin=1 echo=2 orphan=0 | dropped=0
+     5095..5095   hit        norm 0.556->0.568 (flat)  raw 3.47->3.51  swap_gap=
+     5383..5479   echo_inwin norm 0.609->0.531 (fall)  raw 4.36->2.95  swap_gap=284
+    10119..10151  hit        norm 0.571->0.532 (fall)  raw 4.51->3.28  swap_gap=4639
+    11079..11207  echo       norm 0.497->0.520 (rise)  raw 2.76->3.09  swap_gap=927
+    12871..14375  echo       norm 0.492->0.483 (flat)  raw 2.68->2.54  swap_gap=1660
+    15047..15079  hit        norm 0.517->0.477 (fall)  raw 3.31->2.48  swap_gap=669
+
+reg_sudden_20k.csv  hfr-all/error  gt=[5000, 10000, 15000]  swaps=18  MAE=1.277  (53s)
+   tp=3 fp=4 cd=0.0 | hit=3 echo_inwin=2 echo=2 orphan=2 | dropped=0
+     2247..2247   orphan     norm 0.433->0.444 (flat)  raw 1.23->1.22  swap_gap=
+     5031..5063   hit        norm 0.479->0.585 (rise)  raw 1.54->2.44  swap_gap=2780
+     5511..5511   echo_inwin norm 0.626->0.475 (fall)  raw 3.29->1.29  swap_gap=447
+     6663..6759   echo       norm 0.449->0.430 (flat)  raw 1.00->0.77  swap_gap=1150
+    10055..10055  hit        norm 0.479->0.657 (rise)  raw 1.93->3.28  swap_gap=4542
+    10311..10439  echo_inwin norm 0.616->0.583 (fall)  raw 3.59->2.30  swap_gap=254
+    11463..11463  echo       norm 0.532->0.515 (flat)  raw 1.75->1.58  swap_gap=1000
+    13575..13735  orphan     norm 0.487->0.476 (flat)  raw 1.27->1.14  swap_gap=2109
+    15047..15047  hit        norm 0.507->0.462 (fall)  raw 2.16->0.99  swap_gap=1309
+
+wrote outputs/regression_fp_mask_pilot\detections.csv outputs/regression_fp_mask_pilot\summary.csv outputs/regression_fp_mask_pilot\segment_levels.csv

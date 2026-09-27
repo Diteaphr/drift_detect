@@ -1,0 +1,40 @@
+{
+  "stage": "uqdet_stageb",
+  "warm_start": 200,
+  "max_steps": 50000,
+  "limit_files": 0,
+  "groups": [
+    "recurring"
+  ],
+  "split": "all",
+  "config_count": 1,
+  "configs": [
+    {
+      "config_id": "uq_entropy_seqdrift2",
+      "family": "UQ_detector_matrix",
+      "description": "predictive_entropy warning signal with SeqDrift2 warning/error-confirmation detectors.",
+      "model_type": "hf",
+      "signal_mode": "hybrid_adwin_family",
+      "uq_mode": "predictive_entropy",
+      "warning_detector": "seqdrift2",
+      "drift_detector": "seqdrift2",
+      "warning_signal": "uq_entropy",
+      "drift_signal": "error",
+      "detector_delta": 0.05,
+      "detector_delta_w": 0.1,
+      "detector_min_instances": 30,
+      "uq_num_classes": 2,
+      "warning_value_range": 1.0,
+      "drift_value_range": 1.0,
+      "ecpf_warning_length": 60,
+      "ecpf_max_pool_size": 10,
+      "ecpf_similarity_margin": 0.95,
+      "ecpf_fade_points": 15,
+      "ecpf_fade_enabled": true,
+      "ecpf_uq_delta": 0.01,
+      "ecpf_uq_smoothing_alpha": 0.1,
+      "ecpf_uq_warning_timeout": 1000,
+      "extra_attrs": {}
+    }
+  ]
+}

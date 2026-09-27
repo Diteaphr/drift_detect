@@ -1,0 +1,16 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+3911,3911,0,hit,642,17510,,0.1,0.05,-0.05,fall,0.1,0.05,-0.5,,,0,sudden/-/sudden_sea100k_g00.csv,ht-E2k0/error,data/sudden_drift/sudden_sea100k_g00.csv
+23783,23815,32,orphan,2362,,19872,0.074,0.078,0.004,flat,0.074,0.078,0.0541,,18033,0,sudden/-/sudden_sea100k_g00.csv,ht-E2k0/error,data/sudden_drift/sudden_sea100k_g00.csv
+4007,4071,64,hit,738,17414,,0.074,0.058,-0.016,flat,0.074,0.058,-0.2162,masked_fall,,0,sudden/-/sudden_sea100k_g00.csv,hf10-E2k0/error,data/sudden_drift/sudden_sea100k_g00.csv
+19431,26599,7168,orphan,16162,1990,15424,0.02,0.052,0.032,rise,0.02,0.052,1.6,,3495,0,sudden/-/sudden_sea100k_g00.csv,hf10-E2k0/error,data/sudden_drift/sudden_sea100k_g00.csv
+13831,14471,640,orphan,13831,8127,,0.022,0.014,-0.008,flat,0.022,0.014,-0.3636,masked_fall,,0,gradual/-/gradual_sea100k_g00.csv,ht-E2k0/error,data/gradual_drift/gradual_sea100k_g00.csv
+23303,23591,288,hit,1345,,9472,0.044,0.05,0.006,flat,0.044,0.05,0.1364,,,0,gradual/-/gradual_sea100k_g00.csv,ht-E2k0/error,data/gradual_drift/gradual_sea100k_g00.csv
+28199,28647,448,echo_inwin,6241,,4896,0.08,0.056,-0.024,fall,0.08,0.056,-0.3,,4538,0,gradual/-/gradual_sea100k_g00.csv,ht-E2k0/error,data/gradual_drift/gradual_sea100k_g00.csv
+12487,12647,160,orphan,12487,9471,,0.018,0.028,0.01,flat,0.018,0.028,0.5556,,,0,gradual/-/gradual_sea100k_g00.csv,hf10-E2k0/error,data/gradual_drift/gradual_sea100k_g00.csv
+24935,25063,128,hit,2977,,12448,0.072,0.054,-0.018,flat,0.072,0.054,-0.25,masked_fall,,0,gradual/-/gradual_sea100k_g00.csv,hf10-E2k0/error,data/gradual_drift/gradual_sea100k_g00.csv
+29159,29159,0,echo_inwin,7201,,4224,0.144,0.09,-0.054,fall,0.144,0.09,-0.375,,,0,gradual/-/gradual_sea100k_g00.csv,hf10-E2k0/error,data/gradual_drift/gradual_sea100k_g00.csv
+18183,19303,1120,orphan,3707,2117,,0.058,0.05,-0.008,flat,0.058,0.05,-0.1379,masked_fall,,0,recurring/-/recurring_sud_sea100k_g00.csv,ht-E2k0/error,data/recurring_drift/recurring_sud_sea100k_g00.csv
+29543,29543,0,orphan,4834,,11360,0.04,0.0503,0.0103,flat,0.04,0.0503,0.2582,,9525,0,recurring/-/recurring_sud_sea100k_g00.csv,ht-E2k0/error,data/recurring_drift/recurring_sud_sea100k_g00.csv
+7271,16487,9216,orphan,,7205,,0.026,0.056,0.03,rise,0.026,0.056,1.1538,,,0,recurring/-/recurring_sud_sea100k_g00.csv,hf10-E2k0/error,data/recurring_drift/recurring_sud_sea100k_g00.csv
+22631,22823,192,orphan,2331,2078,15360,0.064,0.016,-0.048,fall,0.064,0.016,-0.75,,6135,0,recurring/-/recurring_sud_sea100k_g00.csv,hf10-E2k0/error,data/recurring_drift/recurring_sud_sea100k_g00.csv
+25287,25927,640,hit,578,,2656,0.07,0.058,-0.012,flat,0.07,0.058,-0.1714,masked_fall,8791,0,recurring/-/recurring_sud_sea100k_g00.csv,hf10-E2k0/error,data/recurring_drift/recurring_sud_sea100k_g00.csv

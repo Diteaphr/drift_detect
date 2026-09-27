@@ -1,0 +1,10 @@
+sudden_sea100k_g00.csv  ht  gt=[3269, 21421]  confirmations=3
+   all      n= 3  buf==1: 0.33  median=129  buf<=10: 0.33  lens=[2913, 1, 129]
+   hits     n=0
+   non-hit  n= 3  buf==1: 0.33  median=129  buf<=10: 0.33  lens=[2913, 1, 129]
+
+sudden_sea100k_g00.csv  hf10  gt=[3269, 21421]  confirmations=4
+   all      n= 4  buf==1: 0.25  median=193  buf<=10: 0.25  lens=[225, 1, 161, 4449]
+   hits     n= 1  buf==1: 0.00  median=161  buf<=10: 0.00  lens=[161]
+   non-hit  n= 3  buf==1: 0.33  median=225  buf<=10: 0.33  lens=[225, 1, 4449]
+

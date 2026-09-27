@@ -1,0 +1,10 @@
+recurring_sud_sea100k_g00.csv  ht  gt=[14476, 20300, 24709]  confirmations=2
+   all      n= 2  buf==1: 0.50  median=33  buf<=10: 0.50  lens=[1, 65]
+   hits     n= 1  buf==1: 0.00  median=65  buf<=10: 0.00  lens=[65]
+   non-hit  n= 1  buf==1: 1.00  median=1  buf<=10: 1.00  lens=[1]
+
+recurring_sud_sea100k_g00.csv  hf10  gt=[14476, 20300, 24709]  confirmations=3
+   all      n= 3  buf==1: 0.33  median=65  buf<=10: 0.33  lens=[577, 1, 65]
+   hits     n= 1  buf==1: 1.00  median=1  buf<=10: 1.00  lens=[1]
+   non-hit  n= 2  buf==1: 0.00  median=321  buf<=10: 0.00  lens=[577, 65]
+

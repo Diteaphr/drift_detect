@@ -1,0 +1,10 @@
+gradual_sea100k_g00.csv  ht  gt=[0, 21958]  confirmations=2
+   all      n= 2  buf==1: 0.00  median=273  buf<=10: 0.00  lens=[289, 257]
+   hits     n=0
+   non-hit  n= 2  buf==1: 0.00  median=273  buf<=10: 0.00  lens=[289, 257]
+
+gradual_sea100k_g00.csv  hf10  gt=[0, 21958]  confirmations=4
+   all      n= 4  buf==1: 0.25  median=161  buf<=10: 0.25  lens=[1, 129, 193, 449]
+   hits     n=0
+   non-hit  n= 4  buf==1: 0.25  median=161  buf<=10: 0.25  lens=[1, 129, 193, 449]
+

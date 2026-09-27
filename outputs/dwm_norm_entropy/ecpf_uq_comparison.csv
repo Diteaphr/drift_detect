@@ -1,0 +1,11 @@
+file,samples,gt_drift_count,detected_drifts,prequential_accuracy,detection_delay,false_warning_rate,reuse_precision,avg_collection_size,runtime_s,setting,label
+recurring_sud_sea100k_g00.csv,100000,10,0,0.9328757515030061,500.0,0.0,,1.0,369.36012139999997,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM
+recurring_sud_sea100k_g01.csv,100000,8,3,0.9503807615230461,500.0,1.0,0.3333333333333333,3.0527054108216434,241.44514880000003,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM
+recurring_sud_sea100k_g02.csv,100000,8,3,0.9390981963927856,500.0,1.0,0.0,3.194619238476954,262.2504986,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM
+recurring_sud_sea100k_g03.csv,100000,12,1,0.944619238476954,500.0,1.0,0.0,1.9063426853707415,300.39881120000007,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM
+recurring_sud_sea100k_g04.csv,100000,6,3,0.9174849699398797,500.0,1.0,0.6666666666666666,2.3890380761523047,224.03688089999991,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM
+recurring_sud_sea100k_g05.csv,100000,8,10,0.8950701402805611,491.75,0.8,0.6,5.100090180360722,281.45864859999983,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM
+recurring_sud_sea100k_g06.csv,100000,8,8,0.9207114228456914,500.0,1.0,0.5,3.9129158316633266,236.74998890000006,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM
+recurring_sud_sea100k_g07.csv,100000,8,4,0.9495290581162324,500.0,1.0,0.5,2.722685370741483,246.9957391999999,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM
+recurring_sud_sea100k_g08.csv,100000,6,0,0.91750501002004,500.0,0.0,,1.0,333.06018600000016,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM
+recurring_sud_sea100k_g09.csv,100000,8,3,0.9162825651302605,500.0,1.0,0.3333333333333333,3.2617935871743486,257.1218593999997,E_entropy_ecpf_dwm,ECPF+HF+UQ(entropy)+DWM

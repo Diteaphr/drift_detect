@@ -1,0 +1,5 @@
+setting,prequential_accuracy,detection_delay,false_warning_rate,reuse_precision,avg_collection_size,runtime_s
+E_entropy_ecpf_dwm,0.9099999999999999,0.0,0.0,,1.0,0.42427739
+E_meta_ecpf_dwm,0.9099999999999999,0.0,0.0,,1.0,0.4749901899999999
+E_var_ecpf_dwm,0.9099999999999999,0.0,0.0,,1.0,0.4978050400000004
+E_vote_ecpf_dwm,0.9099999999999999,0.0,0.0,,1.0,0.46262992000000003
