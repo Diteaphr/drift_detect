@@ -1,0 +1,5 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+24218,24677,459,orphan,2797,,,0.058,0.066,0.008,flat,0.058,0.066,0.1379,,,0,sudden/-/sudden_sea100k_g00.csv,ht-E9h/error,data/sudden_drift/sudden_sea100k_g00.csv
+23262,23567,305,orphan,1841,,,0.074,0.072,-0.002,flat,0.074,0.072,-0.027,,,0,sudden/-/sudden_sea100k_g00.csv,hf10-E9h/error,data/sudden_drift/sudden_sea100k_g00.csv
+27968,28365,397,hit,6010,,,0.09,0.07,-0.02,flat,0.09,0.07,-0.2222,masked_fall,,0,gradual/-/gradual_sea100k_g00.csv,ht-E9h/error,data/gradual_drift/gradual_sea100k_g00.csv
+27891,28235,344,hit,5933,,,0.082,0.092,0.01,flat,0.082,0.092,0.122,,,0,gradual/-/gradual_sea100k_g00.csv,hf10-E9h/error,data/gradual_drift/gradual_sea100k_g00.csv

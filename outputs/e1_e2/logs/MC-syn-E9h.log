@@ -1,0 +1,12 @@
+MC-syn E9h mc3_gradual_20k.csv hf10sqrt-E9h/error detections=3 swaps=8
+MC-syn E9h mc3_gradual_20k.csv hf10all-E9h/error detections=4 swaps=2
+MC-syn E9h mc3_recurring_20k.csv hf10sqrt-E9h/error detections=6 swaps=3
+MC-syn E9h mc3_recurring_20k.csv hf10all-E9h/error detections=7 swaps=9
+MC-syn E9h mc3_sudden_20k.csv hf10sqrt-E9h/error detections=3 swaps=2
+MC-syn E9h mc3_sudden_20k.csv hf10all-E9h/error detections=3 swaps=2
+MC-syn E9h mc5_gradual_20k.csv hf10sqrt-E9h/error detections=4 swaps=2
+MC-syn E9h mc5_gradual_20k.csv hf10all-E9h/error detections=3 swaps=16
+MC-syn E9h mc5_recurring_20k.csv hf10sqrt-E9h/error detections=6 swaps=7
+MC-syn E9h mc5_recurring_20k.csv hf10all-E9h/error detections=8 swaps=10
+MC-syn E9h mc5_sudden_20k.csv hf10sqrt-E9h/error detections=3 swaps=2
+MC-syn E9h mc5_sudden_20k.csv hf10all-E9h/error detections=5 swaps=9

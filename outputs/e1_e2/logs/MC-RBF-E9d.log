@@ -1,0 +1,12 @@
+MC-RBF E9d gradual/high/recurring_gradual_rbf4_100k_g00.csv hf10sqrt-E9d/error detections=0 swaps=0
+MC-RBF E9d gradual/high/recurring_gradual_rbf4_100k_g00.csv hf10all-E9d/error detections=1 swaps=2
+MC-RBF E9d gradual/low/recurring_gradual_rbf4_100k_g00.csv hf10sqrt-E9d/error detections=0 swaps=0
+MC-RBF E9d gradual/low/recurring_gradual_rbf4_100k_g00.csv hf10all-E9d/error detections=0 swaps=0
+MC-RBF E9d gradual/medium/recurring_gradual_rbf4_100k_g00.csv hf10sqrt-E9d/error detections=1 swaps=19
+MC-RBF E9d gradual/medium/recurring_gradual_rbf4_100k_g00.csv hf10all-E9d/error detections=0 swaps=0
+MC-RBF E9d sudden/high/recurring_sudden_rbf4_100k_g00.csv hf10sqrt-E9d/error detections=2 swaps=9
+MC-RBF E9d sudden/high/recurring_sudden_rbf4_100k_g00.csv hf10all-E9d/error detections=2 swaps=12
+MC-RBF E9d sudden/low/recurring_sudden_rbf4_100k_g00.csv hf10sqrt-E9d/error detections=2 swaps=10
+MC-RBF E9d sudden/low/recurring_sudden_rbf4_100k_g00.csv hf10all-E9d/error detections=2 swaps=2
+MC-RBF E9d sudden/medium/recurring_sudden_rbf4_100k_g00.csv hf10sqrt-E9d/error detections=2 swaps=5
+MC-RBF E9d sudden/medium/recurring_sudden_rbf4_100k_g00.csv hf10all-E9d/error detections=2 swaps=6
