@@ -35,7 +35,7 @@ from detectors import (
     detect_recurring_drift,
 )
 from .ecpf import ECPFMetaLearner, _deep_clone, load_drift_times_file, load_drift_intervals_file
-from .ecpf_detector import ECPFWarningDriftDetector
+from .ecpf_detector import ECPFWarningDriftDetector, ECPFZoneDetector
 from .uq_warning_detector import UQWarningDetector
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
 from detectors.meta_ecpf.signal_routing import extract_signal, normalize_signal_name
@@ -214,7 +214,11 @@ class ConceptDriftPipeline:
         # rbf gradual/low went from 7 events to 0).
         self._gate_baseline: Optional[float] = None
         self._ecpf_detector: Optional[ECPFAdwinFamilyDetector] = None
-        if self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES:
+        if (self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES
+                and self.config.ecpf_zone_detector):
+            # E9: the official-ECPF single detector replaces the dual ADWIN.
+            self._ecpf_detector = ECPFZoneDetector(self.config.ecpf_zone_detector)
+        elif self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES:
             warning_detector, drift_detector = self._resolve_ecpf_adwin_family_detectors()
             if warning_detector == "adwin" and drift_detector == "adwin":
                 self._ecpf_detector = ECPFWarningDriftDetector(
@@ -798,6 +802,19 @@ class ConceptDriftPipeline:
                         index,
                         self._ecpf_detector.combo_name,
                     )
+
+                if (
+                    self._ecpf_warning_active
+                    and getattr(self._ecpf_detector, "zone", False)
+                    and not is_warning
+                    and not is_drift
+                ):
+                    # Official ECPF (E9): leaving the detector's warning zone without a
+                    # drift ends the warning and drops its buffer.
+                    self._ecpf_warning_active = False
+                    self._ecpf_warning_start_idx = None
+                    self._ecpf_buffer = []
+                    self._ecpf_pending_confirm = False
 
                 if self._ecpf_warning_active:
                     self._ecpf_buffer.append(

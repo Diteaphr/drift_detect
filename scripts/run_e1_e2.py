@@ -28,7 +28,10 @@ ARMS = {"E1": {"ecpf_adwin_one_sided": True},
         "E6": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_adwin_one_sided": True},
         # E7 (docs/ECPF_E7_δ校準_預註冊.md): E2-k500 with ADWIN's usual delta (warning/drift ratio kept at 2)
         "E7": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500,
-               "detector_delta": 0.002, "detector_delta_w": 0.004}}
+               "detector_delta": 0.002, "detector_delta_w": 0.004},
+        # E9 (docs/ECPF_V1E9_預註冊.md): official-ECPF single detector on the leader's 0/1 error
+        "E9d": {"ecpf_zone_detector": "ddm"},
+        "E9h": {"ecpf_zone_detector": "hddm_a"}}
 P3 = {"ecpf_normalizer_reset_on_drift": True}  # the regression baseline (htr-nr / hfr-nr) has it on
 REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
@@ -71,6 +74,25 @@ def self_check() -> None:
     assert fires(drift.ADWIN(delta=0.05, grace_period=30), down) >= 1   # two-sided fires on a drop
     assert fires(_OneSidedADWIN(delta=0.05, grace_period=30), down) == 0
     assert fires(_OneSidedADWIN(delta=0.05, grace_period=30), up) >= 1
+    # E9 zone detectors: a 0.1 -> 0.5 error jump must give warning then drift; a drop must never fire
+    import random
+    from src.ecpf_detector import ECPFZoneDetector
+    rng = random.Random(0)
+    jump = [int(rng.random() < 0.1) for _ in range(2000)] + [int(rng.random() < 0.5) for _ in range(600)]
+    drop = [int(rng.random() < 0.5) for _ in range(2000)] + [int(rng.random() < 0.1) for _ in range(2000)]
+    for kind in ("ddm", "hddm_a"):
+        z, warned, first = ECPFZoneDetector(kind), False, None
+        for i, x in enumerate(jump):
+            w, dr = z.update_values(x, x)
+            if i >= 2000 and first is None:
+                warned = warned or (w and not dr)
+                if dr:
+                    first = i
+        assert first is not None and first < 2600 and warned, kind
+        z, fired = ECPFZoneDetector(kind), 0
+        for i, x in enumerate(drop):
+            fired += (z.update_values(x, x)[1] and i >= 2000)
+        assert fired == 0, kind
 
 
 def run_cell(family: str, arm: str) -> None:
@@ -339,6 +361,47 @@ def analyze_e8() -> None:
     print("E8 verdict: %s" % verdict)
 
 
+def analyze_e9() -> None:
+    """E9 verdict (docs/ECPF_V1E9_預註冊.md): official-ECPF single detectors vs base / E1 / E2-k500."""
+    df = rescore(show=False)
+    if df is None:
+        print("RESCORE INVALID -- no verdict")
+        return
+    runs = runs_table()
+    q = runs.groupby(["family", "arm"])["quality"].mean()
+    cls, arms = ["B", "MC-syn", "MC-RBF"], ["base", "E1", "E2k500", "E9d", "E9h"]
+    med = lambda s: float(np.median(sum(s, []))) if sum(s, []) else np.nan
+    print("## E9: official-ECPF detectors (classification families)")
+    print("%-8s %-7s %8s %8s %8s %8s %8s %9s" % ("family", "arm", "FP@1000", "TP@1000", "FP@3000", "TP@3000",
+                                                "delay", "accuracy"))
+    for f in cls:
+        for a in arms:
+            if (f, a) not in q.index:
+                continue
+            g1 = df[(df["ext"] == 1000) & (df["family"] == f) & (df["arm"] == a)]
+            g3 = df[(df["ext"] == 3000) & (df["family"] == f) & (df["arm"] == a)]
+            print("%-8s %-7s %8d %8d %8d %8d %8.0f %9.4f" % (f, a, g1["fp"].sum(), g1["tp"].sum(), g3["fp"].sum(),
+                                                            g3["tp"].sum(), med(g1["delays"]), q[(f, a)]))
+    grad = runs[(runs["family"] == "MC-RBF") & runs["dataset"].str.startswith("gradual")].groupby("arm")["tp"].sum()
+    print("MC-RBF gradual hits @1000: %s" % {a: int(grad.get(a, 0)) for a in arms})
+    base_fp = int(df[(df["ext"] == 1000) & df["family"].isin(cls) & (df["arm"] == "base")]["fp"].sum())
+    p2 = {}
+    for det in ("E9d", "E9h"):
+        fp = int(df[(df["ext"] == 1000) & df["family"].isin(cls) & (df["arm"] == det)]["fp"].sum())
+        p1 = fp <= 0.5 * base_fp
+        g = int(grad.get(det, 0))
+        p2[det] = (g <= 8, g, p1)
+        print("%s: P1 FP@1000 %d vs base %d (need <=%.1f): %s | P2 MC-RBF gradual hits %d (need <=8): %s" % (
+            det, fp, base_fp, 0.5 * base_fp, p1, g, g <= 8))
+    if all(v[0] for v in p2.values()):
+        verdict = "CLAIM SUPPORTED: switching the detector algorithm does not fix the masked gradual drifts"
+    elif any(v[1] >= 11 and v[2] for v in p2.values()):
+        verdict = "CLAIM REFUTED: a detector alone recovers the gradual drifts with low FP"
+    else:
+        verdict = "mixed: report as is, no conclusion"
+    print("E9 verdict: %s" % verdict)
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -411,6 +474,7 @@ if __name__ == "__main__":
     ap.add_argument("--rescore", action="store_true", help="relabel all runs with 1000/3000-step windows")
     ap.add_argument("--analyze-delta", action="store_true", help="E7 vs E2-k500 verdict")
     ap.add_argument("--analyze-e8", action="store_true", help="E8 held-out verdict (task-specific delta)")
+    ap.add_argument("--analyze-e9", action="store_true", help="E9 verdict (official-ECPF detectors)")
     a = ap.parse_args()
     self_check()
     if a.family and a.arm:
@@ -427,3 +491,5 @@ if __name__ == "__main__":
         analyze_delta()
     if a.analyze_e8:
         analyze_e8()
+    if a.analyze_e9:
+        analyze_e9()

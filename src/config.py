@@ -220,6 +220,11 @@ class PipelineConfig:
     # increase-only since 2017. Default OFF; binary runs unchanged.
     ecpf_adwin_one_sided: bool = False
 
+    # E9 (docs/ECPF_V1E9_預註冊.md): official-ECPF single detector ("ddm" | "hddm_a",
+    # river defaults = MOA defaults) in place of the dual ADWIN, with the official
+    # warning-zone semantics. Classification only. "" = off; binary runs unchanged.
+    ecpf_zone_detector: str = ""
+
     # --- Direction gate on drift confirmations (ADWIN-family modes) ---
     # ADWIN is two-sided: it fires on error DROPS as readily as rises. In ECPF
     # the error stream between drifts falls by design (duel leader swaps, the
