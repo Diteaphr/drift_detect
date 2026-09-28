@@ -1,0 +1,12 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+12807,12839,32,orphan,,1545,,0.54,0.004,-0.536,fall,1.162,0.008,-0.9931,,,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+14375,14375,0,hit,23,5125,1568,0.044,0.444,0.4,rise,0.092,1.24,12.4783,,1535,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+15111,15111,0,echo_inwin,759,4389,736,0.52,0.444,-0.076,fall,1.36,1.152,-0.1529,,732,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+16103,16103,0,echo,1751,3397,992,0.452,0.544,0.092,rise,1.118,1.538,0.3757,,986,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+17383,17383,0,orphan,3031,2117,1280,0.516,0.586,0.07,rise,1.186,1.732,0.4604,,1270,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+19559,19591,32,hit,59,13681,2176,0.12,0.402,0.282,rise,0.208,1.046,4.0288,,2175,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+28135,28167,32,orphan,8635,5105,8576,0.396,0.35,-0.046,fall,1.08,0.672,-0.3778,,4899,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+33383,33383,0,hit,143,5299,5248,0.384,0.486,0.102,rise,0.758,1.26,0.6623,,5199,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+38823,38855,32,hit,141,687,5440,0.404,0.454,0.05,rise,0.78,1.266,0.6231,,5388,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+46919,46919,0,orphan,7409,,8096,0.414,0.204,-0.21,fall,0.926,0.55,-0.406,,3578,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv
+52071,52071,0,orphan,12561,,5152,0.152,0.004,-0.148,fall,0.384,0.008,-0.9792,,3715,0,abrupt_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv

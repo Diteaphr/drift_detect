@@ -1,0 +1,12 @@
+INJ-elec-ff E2k500 electricity_feature_filtering_abrupt_g00.csv ht-E2k500/error detections=1 swaps=0
+INJ-elec-ff E2k500 electricity_feature_filtering_abrupt_g00.csv hf10-E2k500/error detections=2 swaps=4
+INJ-elec-ff E2k500 electricity_feature_filtering_abrupt_g01.csv ht-E2k500/error detections=0 swaps=0
+INJ-elec-ff E2k500 electricity_feature_filtering_abrupt_g01.csv hf10-E2k500/error detections=0 swaps=0
+INJ-elec-ff E2k500 electricity_feature_filtering_abrupt_g02.csv ht-E2k500/error detections=0 swaps=0
+INJ-elec-ff E2k500 electricity_feature_filtering_abrupt_g02.csv hf10-E2k500/error detections=0 swaps=0
+INJ-elec-ff E2k500 electricity_feature_filtering_gradual_g00.csv ht-E2k500/error detections=1 swaps=0
+INJ-elec-ff E2k500 electricity_feature_filtering_gradual_g00.csv hf10-E2k500/error detections=0 swaps=0
+INJ-elec-ff E2k500 electricity_feature_filtering_gradual_g01.csv ht-E2k500/error detections=1 swaps=3
+INJ-elec-ff E2k500 electricity_feature_filtering_gradual_g01.csv hf10-E2k500/error detections=1 swaps=2
+INJ-elec-ff E2k500 electricity_feature_filtering_gradual_g02.csv ht-E2k500/error detections=1 swaps=0
+INJ-elec-ff E2k500 electricity_feature_filtering_gradual_g02.csv hf10-E2k500/error detections=0 swaps=0

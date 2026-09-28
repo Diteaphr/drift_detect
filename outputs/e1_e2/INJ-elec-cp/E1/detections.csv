@@ -1,0 +1,5 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+2823,35015,32192,orphan,,30540,,0.254,0.316,0.062,rise,0.254,0.316,0.2441,,,0,electricity_class_prior_abrupt_g02.csv,ht-E1/error,data/dataset_0921/injected_real_dataset/binary\abrupt\class_prior\electricity_class_prior_abrupt_g02.csv
+1223,2279,1056,orphan,,34034,,0.304,0.226,-0.078,fall,0.304,0.226,-0.2566,,,0,electricity_class_prior_gradual_g01.csv,ht-E1/error,data/dataset_0921/injected_real_dataset/binary\gradual\class_prior\electricity_class_prior_gradual_g01.csv
+1863,27847,25984,orphan,,22389,,0.3,0.226,-0.074,fall,0.3,0.226,-0.2467,,,0,electricity_class_prior_gradual_g02.csv,ht-E1/error,data/dataset_0921/injected_real_dataset/binary\gradual\class_prior\electricity_class_prior_gradual_g02.csv
+5575,26343,20768,orphan,,18677,,0.276,0.26,-0.016,flat,0.276,0.26,-0.058,masked_fall,,0,electricity_class_prior_gradual_g02.csv,hf10-E1/error,data/dataset_0921/injected_real_dataset/binary\gradual\class_prior\electricity_class_prior_gradual_g02.csv

@@ -1,0 +1,5 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+1159,1607,448,orphan,,,,0.56,0.468,-0.092,fall,1.464,1.048,-0.2842,,,0,incremental_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/incremental_balanced/incremental_balanced.csv
+7431,7463,32,orphan,,,6272,0.514,0.484,-0.03,fall,1.214,1.164,-0.0412,fake_fall,4475,0,incremental_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/incremental_balanced/incremental_balanced.csv
+53031,53095,64,orphan,,,45600,0.336,0.318,-0.018,flat,0.784,0.768,-0.0204,,25103,0,incremental_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/incremental_balanced/incremental_balanced.csv
+56679,56679,0,orphan,,,3648,0.406,0.4218,0.0158,flat,1.048,0.9971,-0.0486,,28751,0,incremental_balanced.csv,hf10sqrt-E1/error,data/dataset_0921/insects_dataset/multi_classification/incremental_balanced/incremental_balanced.csv

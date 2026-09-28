@@ -1,0 +1,12 @@
+INJ-elec-cp base electricity_class_prior_abrupt_g00.csv ht-base/error detections=1 swaps=2
+INJ-elec-cp base electricity_class_prior_abrupt_g00.csv hf10-base/error detections=4 swaps=4
+INJ-elec-cp base electricity_class_prior_abrupt_g01.csv ht-base/error detections=3 swaps=17
+INJ-elec-cp base electricity_class_prior_abrupt_g01.csv hf10-base/error detections=4 swaps=26
+INJ-elec-cp base electricity_class_prior_abrupt_g02.csv ht-base/error detections=2 swaps=8
+INJ-elec-cp base electricity_class_prior_abrupt_g02.csv hf10-base/error detections=2 swaps=1
+INJ-elec-cp base electricity_class_prior_gradual_g00.csv ht-base/error detections=2 swaps=9
+INJ-elec-cp base electricity_class_prior_gradual_g00.csv hf10-base/error detections=4 swaps=3
+INJ-elec-cp base electricity_class_prior_gradual_g01.csv ht-base/error detections=1 swaps=13
+INJ-elec-cp base electricity_class_prior_gradual_g01.csv hf10-base/error detections=2 swaps=2
+INJ-elec-cp base electricity_class_prior_gradual_g02.csv ht-base/error detections=3 swaps=7
+INJ-elec-cp base electricity_class_prior_gradual_g02.csv hf10-base/error detections=2 swaps=0

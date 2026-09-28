@@ -1,0 +1,12 @@
+INJ-elec-fp base electricity_feature_permutation_abrupt_g00.csv ht-base/error detections=3 swaps=8
+INJ-elec-fp base electricity_feature_permutation_abrupt_g00.csv hf10-base/error detections=5 swaps=14
+INJ-elec-fp base electricity_feature_permutation_abrupt_g01.csv ht-base/error detections=1 swaps=5
+INJ-elec-fp base electricity_feature_permutation_abrupt_g01.csv hf10-base/error detections=3 swaps=2
+INJ-elec-fp base electricity_feature_permutation_abrupt_g02.csv ht-base/error detections=2 swaps=5
+INJ-elec-fp base electricity_feature_permutation_abrupt_g02.csv hf10-base/error detections=1 swaps=1
+INJ-elec-fp base electricity_feature_permutation_gradual_g00.csv ht-base/error detections=1 swaps=20
+INJ-elec-fp base electricity_feature_permutation_gradual_g00.csv hf10-base/error detections=2 swaps=2
+INJ-elec-fp base electricity_feature_permutation_gradual_g01.csv ht-base/error detections=3 swaps=19
+INJ-elec-fp base electricity_feature_permutation_gradual_g01.csv hf10-base/error detections=4 swaps=2
+INJ-elec-fp base electricity_feature_permutation_gradual_g02.csv ht-base/error detections=3 swaps=7
+INJ-elec-fp base electricity_feature_permutation_gradual_g02.csv hf10-base/error detections=2 swaps=2

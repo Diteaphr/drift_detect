@@ -1,0 +1,12 @@
+INJ-elec-ls E2k500 electricity_label_swap_abrupt_g00.csv ht-E2k500/error detections=2 swaps=22
+INJ-elec-ls E2k500 electricity_label_swap_abrupt_g00.csv hf10-E2k500/error detections=1 swaps=0
+INJ-elec-ls E2k500 electricity_label_swap_abrupt_g01.csv ht-E2k500/error detections=1 swaps=1
+INJ-elec-ls E2k500 electricity_label_swap_abrupt_g01.csv hf10-E2k500/error detections=1 swaps=1
+INJ-elec-ls E2k500 electricity_label_swap_abrupt_g02.csv ht-E2k500/error detections=1 swaps=3
+INJ-elec-ls E2k500 electricity_label_swap_abrupt_g02.csv hf10-E2k500/error detections=2 swaps=1
+INJ-elec-ls E2k500 electricity_label_swap_gradual_g00.csv ht-E2k500/error detections=1 swaps=1
+INJ-elec-ls E2k500 electricity_label_swap_gradual_g00.csv hf10-E2k500/error detections=1 swaps=1
+INJ-elec-ls E2k500 electricity_label_swap_gradual_g01.csv ht-E2k500/error detections=1 swaps=1
+INJ-elec-ls E2k500 electricity_label_swap_gradual_g01.csv hf10-E2k500/error detections=1 swaps=1
+INJ-elec-ls E2k500 electricity_label_swap_gradual_g02.csv ht-E2k500/error detections=1 swaps=2
+INJ-elec-ls E2k500 electricity_label_swap_gradual_g02.csv hf10-E2k500/error detections=1 swaps=1

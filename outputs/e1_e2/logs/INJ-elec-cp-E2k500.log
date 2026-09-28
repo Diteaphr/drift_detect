@@ -1,0 +1,12 @@
+INJ-elec-cp E2k500 electricity_class_prior_abrupt_g00.csv ht-E2k500/error detections=1 swaps=5
+INJ-elec-cp E2k500 electricity_class_prior_abrupt_g00.csv hf10-E2k500/error detections=1 swaps=0
+INJ-elec-cp E2k500 electricity_class_prior_abrupt_g01.csv ht-E2k500/error detections=1 swaps=3
+INJ-elec-cp E2k500 electricity_class_prior_abrupt_g01.csv hf10-E2k500/error detections=1 swaps=0
+INJ-elec-cp E2k500 electricity_class_prior_abrupt_g02.csv ht-E2k500/error detections=1 swaps=10
+INJ-elec-cp E2k500 electricity_class_prior_abrupt_g02.csv hf10-E2k500/error detections=3 swaps=38
+INJ-elec-cp E2k500 electricity_class_prior_gradual_g00.csv ht-E2k500/error detections=1 swaps=2
+INJ-elec-cp E2k500 electricity_class_prior_gradual_g00.csv hf10-E2k500/error detections=0 swaps=0
+INJ-elec-cp E2k500 electricity_class_prior_gradual_g01.csv ht-E2k500/error detections=2 swaps=29
+INJ-elec-cp E2k500 electricity_class_prior_gradual_g01.csv hf10-E2k500/error detections=1 swaps=11
+INJ-elec-cp E2k500 electricity_class_prior_gradual_g02.csv ht-E2k500/error detections=2 swaps=6
+INJ-elec-cp E2k500 electricity_class_prior_gradual_g02.csv hf10-E2k500/error detections=1 swaps=6
