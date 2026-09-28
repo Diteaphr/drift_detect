@@ -152,7 +152,10 @@ def iter_runs(held: bool = False):
     confirmations has no rows there but still counts.
     """
     def runs_of(fam, arm, det_csv, sig_dir, labels):
-        det = pd.read_csv(det_csv)
+        try:
+            det = pd.read_csv(det_csv)
+        except pd.errors.EmptyDataError:  # a cell with zero confirmations in every run writes an empty file
+            det = pd.DataFrame(columns=["dataset", "config", "warning_t", "confirmation_t", "label", "gap_prev_gt"])
         for path in ALL[fam][0]:
             ds = dataset_key(path)
             for cfg in labels:
