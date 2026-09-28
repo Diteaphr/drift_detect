@@ -1,0 +1,6 @@
+INJgas35-ff E2k500 gas_sensor_drift_feature_filtering_abrupt_g03.csv hf10sqrt-E2k500/error detections=0 swaps=0
+INJgas35-ff E2k500 gas_sensor_drift_feature_filtering_abrupt_g04.csv hf10sqrt-E2k500/error detections=1 swaps=0
+INJgas35-ff E2k500 gas_sensor_drift_feature_filtering_abrupt_g05.csv hf10sqrt-E2k500/error detections=1 swaps=1
+INJgas35-ff E2k500 gas_sensor_drift_feature_filtering_gradual_g03.csv hf10sqrt-E2k500/error detections=1 swaps=0
+INJgas35-ff E2k500 gas_sensor_drift_feature_filtering_gradual_g04.csv hf10sqrt-E2k500/error detections=1 swaps=1
+INJgas35-ff E2k500 gas_sensor_drift_feature_filtering_gradual_g05.csv hf10sqrt-E2k500/error detections=1 swaps=0

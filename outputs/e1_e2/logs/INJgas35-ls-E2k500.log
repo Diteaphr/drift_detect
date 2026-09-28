@@ -1,0 +1,6 @@
+INJgas35-ls E2k500 gas_sensor_drift_label_swap_abrupt_g03.csv hf10sqrt-E2k500/error detections=1 swaps=1
+INJgas35-ls E2k500 gas_sensor_drift_label_swap_abrupt_g04.csv hf10sqrt-E2k500/error detections=1 swaps=6
+INJgas35-ls E2k500 gas_sensor_drift_label_swap_abrupt_g05.csv hf10sqrt-E2k500/error detections=1 swaps=1
+INJgas35-ls E2k500 gas_sensor_drift_label_swap_gradual_g03.csv hf10sqrt-E2k500/error detections=1 swaps=1
+INJgas35-ls E2k500 gas_sensor_drift_label_swap_gradual_g04.csv hf10sqrt-E2k500/error detections=1 swaps=0
+INJgas35-ls E2k500 gas_sensor_drift_label_swap_gradual_g05.csv hf10sqrt-E2k500/error detections=1 swaps=0

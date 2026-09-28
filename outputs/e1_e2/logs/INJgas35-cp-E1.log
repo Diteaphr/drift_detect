@@ -1,0 +1,6 @@
+INJgas35-cp E1 gas_sensor_drift_class_prior_abrupt_g03.csv hf10sqrt-E1/error detections=0 swaps=0
+INJgas35-cp E1 gas_sensor_drift_class_prior_abrupt_g04.csv hf10sqrt-E1/error detections=0 swaps=0
+INJgas35-cp E1 gas_sensor_drift_class_prior_abrupt_g05.csv hf10sqrt-E1/error detections=0 swaps=0
+INJgas35-cp E1 gas_sensor_drift_class_prior_gradual_g03.csv hf10sqrt-E1/error detections=0 swaps=0
+INJgas35-cp E1 gas_sensor_drift_class_prior_gradual_g04.csv hf10sqrt-E1/error detections=0 swaps=0
+INJgas35-cp E1 gas_sensor_drift_class_prior_gradual_g05.csv hf10sqrt-E1/error detections=0 swaps=0

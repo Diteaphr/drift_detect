@@ -1,0 +1,9 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+6991,7407,416,orphan,1256,15569,,0.056,0.044,-0.012,flat,0.056,0.044,-0.2143,masked_fall,,0,recurring_sudden_sea100k_g01.csv,ht-E10a/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g01.csv
+46234,46234,0,hit,558,16815,39243,0.072,0.074,0.002,flat,0.072,0.074,0.0278,,29217,0,recurring_sudden_sea100k_g01.csv,ht-E10a/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g01.csv
+64069,64101,32,hit,1020,21793,17835,0.078,0.012,-0.066,fall,0.078,0.012,-0.8462,,16500,0,recurring_sudden_sea100k_g01.csv,ht-E10a/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g01.csv
+86168,86200,32,hit,306,,22099,0.058,0.076,0.018,flat,0.058,0.076,0.3103,,38599,0,recurring_sudden_sea100k_g01.csv,ht-E10a/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g01.csv
+6991,7407,416,orphan,1256,15569,,0.078,0.078,0.0,flat,0.078,0.078,0.0,,,0,recurring_sudden_sea100k_g01.csv,hf10-E10a/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g01.csv
+36746,47242,10496,orphan,14186,8930,29755,0.04,0.076,0.036,rise,0.04,0.076,0.9,,11515,0,recurring_sudden_sea100k_g01.csv,hf10-E10a/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g01.csv
+66325,66325,0,orphan,3276,19537,29579,0.074,0.042,-0.032,fall,0.074,0.042,-0.4324,,19046,0,recurring_sudden_sea100k_g01.csv,hf10-E10a/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g01.csv
+86432,86432,0,hit,570,,20107,0.108,0.116,0.008,flat,0.108,0.116,0.0741,,39153,0,recurring_sudden_sea100k_g01.csv,hf10-E10a/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g01.csv

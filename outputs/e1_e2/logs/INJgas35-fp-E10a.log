@@ -1,0 +1,6 @@
+INJgas35-fp E10a gas_sensor_drift_feature_permutation_abrupt_g03.csv hf10sqrt-E10a/error detections=1 swaps=6
+INJgas35-fp E10a gas_sensor_drift_feature_permutation_abrupt_g04.csv hf10sqrt-E10a/error detections=1 swaps=2
+INJgas35-fp E10a gas_sensor_drift_feature_permutation_abrupt_g05.csv hf10sqrt-E10a/error detections=1 swaps=0
+INJgas35-fp E10a gas_sensor_drift_feature_permutation_gradual_g03.csv hf10sqrt-E10a/error detections=1 swaps=0
+INJgas35-fp E10a gas_sensor_drift_feature_permutation_gradual_g04.csv hf10sqrt-E10a/error detections=1 swaps=0
+INJgas35-fp E10a gas_sensor_drift_feature_permutation_gradual_g05.csv hf10sqrt-E10a/error detections=1 swaps=0

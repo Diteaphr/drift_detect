@@ -1,0 +1,6 @@
+INJgas35-ls E10b gas_sensor_drift_label_swap_abrupt_g03.csv hf10sqrt-E10b/error detections=1 swaps=1
+INJgas35-ls E10b gas_sensor_drift_label_swap_abrupt_g04.csv hf10sqrt-E10b/error detections=1 swaps=7
+INJgas35-ls E10b gas_sensor_drift_label_swap_abrupt_g05.csv hf10sqrt-E10b/error detections=1 swaps=1
+INJgas35-ls E10b gas_sensor_drift_label_swap_gradual_g03.csv hf10sqrt-E10b/error detections=1 swaps=1
+INJgas35-ls E10b gas_sensor_drift_label_swap_gradual_g04.csv hf10sqrt-E10b/error detections=2 swaps=3
+INJgas35-ls E10b gas_sensor_drift_label_swap_gradual_g05.csv hf10sqrt-E10b/error detections=1 swaps=0

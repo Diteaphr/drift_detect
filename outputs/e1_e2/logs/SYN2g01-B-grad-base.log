@@ -1,0 +1,2 @@
+SYN2g01-B-grad base gradual_sea100k_g01.csv ht-base/error detections=14 swaps=24
+SYN2g01-B-grad base gradual_sea100k_g01.csv hf10-base/error detections=12 swaps=12

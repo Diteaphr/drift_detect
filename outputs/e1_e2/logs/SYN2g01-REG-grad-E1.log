@@ -1,0 +1,2 @@
+SYN2g01-REG-grad E1 gradual_friedman_100k_g01.csv htr-E1/error detections=5 swaps=18
+SYN2g01-REG-grad E1 gradual_friedman_100k_g01.csv hfr-E1/error detections=5 swaps=90

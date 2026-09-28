@@ -1,0 +1,2 @@
+SYN2g01-REG-rec E1 recurring_incremental_friedman_100k_g01.csv htr-E1/error detections=4 swaps=8
+SYN2g01-REG-rec E1 recurring_incremental_friedman_100k_g01.csv hfr-E1/error detections=5 swaps=16
