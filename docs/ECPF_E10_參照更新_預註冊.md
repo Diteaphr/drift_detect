@@ -54,6 +54,7 @@ E2-k500 只在確認漂移後 500 步重新凍結參照，所以有兩個後果�
 
 - 家族結構、學習器與步數都和 A2 相同，只換成沒用過的 g。
 - GT 規則同 A2：起點落在暖機（前 200 步）內的 GT 不計分。
+- **勘誤（執行前發現，2026-09-29）：** Joe 的 recurring 串流是隨機混合的，所以 g01 的 recurring 子型別和 g00 不同。上表 recurring 那三欄照抄了 A2 的 g00 名稱，實際的 g01 檔是 SYN2-B `recurring_sudden_sea100k_g01`、SYN2-MC `recurring_gradual_rbf4_100k_g01`、SYN2-REG `recurring_incremental_friedman_100k_g01`。登記時 commit 的資料本來就是這些 g01 檔，判準不受影響。
 
 ## 計分
 
