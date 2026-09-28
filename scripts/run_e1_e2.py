@@ -33,7 +33,10 @@ ARMS = {"E1": {"ecpf_adwin_one_sided": True},
         "E9d": {"ecpf_zone_detector": "ddm"},
         "E9h": {"ecpf_zone_detector": "hddm_a"},
         # new-data validation (A1+): the plain baseline has to be run there too
-        "base": {}}
+        "base": {},
+        # E10 (docs/ECPF_E10_參照更新_預註冊.md): E2-k500 plus an age cap / a one-sided leader guard
+        "E10a": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_reference_max_age": 5000},
+        "E10b": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_leader_guard": True}}
 P3 = {"ecpf_normalizer_reset_on_drift": True}  # the regression baseline (htr-nr / hfr-nr) has it on
 REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
@@ -73,15 +76,26 @@ A2 = {  # A2 (docs/ECPF_A2_新資料驗證_預註冊.md); one sub-family per str
        for k, m in (("cp", "class_prior"), ("ls", "label_swap"), ("fp", "feature_permutation"),
                     ("ff", "feature_filtering"))},
 }
-ALL = {**CELLS, **HELD, **A1, **A2}
+E10 = {  # E10 judges on fresh data only: synthetic v2 g01 and gas g03-g05, same layout as A2
+    **{"SYN2g01-%s-%s" % (g, k): (sorted(glob.glob(_SYN.replace("g00", "g01").format(t=t, d=d))), 0, cfg, g == "REG")
+       for g, t, cfg in (("B", "binary", RERUN["B"][2]), ("MC", "multi_classification", [RERUN["MC-syn"][2][0]]),
+                         ("REG", "regression", REG_LEARNERS))
+       for k, d in (("sud", "sudden"), ("grad", "gradual"), ("inc", "incremental"), ("rec", "recurring"))},
+    **{"INJgas35-" + k: (sorted(glob.glob(_GAS.replace("g0[0-2]", "g0[3-5]").format(m=m))), 0,
+                         [RERUN["MC-syn"][2][0]], False)
+       for k, m in (("cp", "class_prior"), ("ls", "label_swap"), ("fp", "feature_permutation"),
+                    ("ff", "feature_filtering"))},
+}
+ALL = {**CELLS, **HELD, **A1, **A2, **E10}
 
 
 def scored_gt(fam: str, intervals):
     """A2 rule (prereg): GT intervals that start inside the warm-up are not scored."""
-    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 else intervals
+    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 else intervals
 FP = ("echo", "orphan")
 MATCH = 500
-SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age"]
+SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age",
+            "ref_refresh", "guard_drift"]
 
 
 def learner(config: str) -> str:
@@ -122,6 +136,42 @@ def self_check() -> None:
         for i, x in enumerate(drop):
             fired += (z.update_values(x, x)[1] and i >= 2000)
         assert fired == 0, kind
+
+
+def check_e10() -> None:
+    """E10 gates (docs/ECPF_E10_參照更新_預註冊.md), through the pipeline itself; run with --check before launching."""
+    from src.config import PipelineConfig
+    from src.pipeline import ConceptDriftPipeline
+
+    class Flat:  # a reference detector that never fires: only the E10b guard can confirm
+        zone, combo_name, stats = False, "flat", {}
+
+        def update_values(self, w, d):
+            return False, False
+
+        def reset(self):
+            pass
+
+    def pipe_run(X, y, flags, flat_ref=False):
+        pipe = ConceptDriftPipeline(PipelineConfig(
+            model_type="ht", use_ecpf=True, ecpf_signal_mode="dual_adwin", ecpf_warning_signal="error",
+            ecpf_drift_signal="error", ecpf_detector_min_instances=30, trace_enabled=True, **flags))
+        if flat_ref:
+            pipe._ecpf_detector = Flat()
+        dets = [(int(d.timestamp), i) for i, _, _, ds, _ in pipe.run_stream(X, y, warm_start_samples=WARM_START)
+                for d in ds]
+        return pd.DataFrame(pipe.tracer._signals), dets
+    rng = np.random.default_rng(0)
+    X = rng.random((5000, 2))
+    easy = (X[:, 0] > 0.5).astype(int)
+    sig, dets = pipe_run(X, easy, {**ARMS["E10a"], "ecpf_reference_max_age": 1000})
+    assert not dets and sig["is_warning"].sum() == 0, "E10a check needs a warning-free stream"
+    assert sig["ref_age"].max() < 1000 and sig["ref_refresh"].sum() >= 4       # E10a: age capped at R
+    t = np.arange(5000)
+    _, dets = pipe_run(X, np.where(t < 2500, easy, 1 - easy), ARMS["E10b"], flat_ref=True)
+    assert any(c >= 2500 for _, c in dets)                                      # leader error up: guard confirms
+    _, dets = pipe_run(X, np.where(t < 2500, rng.integers(0, 2, 5000), easy), ARMS["E10b"], flat_ref=True)
+    assert not any(w >= 2500 for w, _ in dets)                                  # leader error down: guard quiet
 
 
 def run_cell(family: str, arm: str) -> None:
@@ -167,7 +217,7 @@ def iter_runs(held: bool = False):
     for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in (A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
+    for fam, (_, _, configs, _) in (E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -494,21 +544,22 @@ def analyze_a1() -> None:
         "HOLDS" if ok["E2k500"] else "does NOT hold", "HOLDS" if ok["E1"] else "does NOT hold"))
 
 
-def analyze_a2() -> None:
-    """A2 verdict (docs/ECPF_A2_新資料驗證_預註冊.md): base vs E1 vs E2-k500 on synthetic v2 and injected gas."""
-    df = rescore(show=False, held="a2")
+def new_data_criteria(label: str, held: str, groups, arms, judged):
+    """Per-group tables and the new-data criteria P1-P4 that A2 and E10 share.
+    groups = [B, MC, REG, gas] family groups (a family is group + '-' + suffix). Returns (ok, df, runs), or None."""
+    df = rescore(show=False, held=held)
     if df is None:
         print("RESCORE INVALID -- no verdict")
-        return
-    runs = runs_table(held="a2")
-    arms, grp = ["base", "E1", "E2k500"], lambda f: f.rsplit("-", 1)[0]   # SYN2-B-sud -> SYN2-B
+        return None
+    runs = runs_table(held=held)
+    grp = lambda f: f.rsplit("-", 1)[0]   # SYN2-B-sud -> SYN2-B
     df["group"], runs["group"] = df["family"].map(grp), runs["family"].map(grp)
     med = lambda s: float(np.median(sum(s, []))) if sum(s, []) else np.nan
     q, qf = runs.groupby(["group", "arm"])["quality"].mean(), runs.groupby(["family", "arm"])["quality"].mean()
     d1, d3 = df[df["ext"] == 1000], df[df["ext"] == 3000]
     tot = lambda d, g, a, c: int(d[(d["group"] == g) & (d["arm"] == a)][c].sum())
-    groups = ["SYN2-B", "SYN2-MC", "SYN2-REG", "INJ-gas"]
-    print("## A2 per group (quality = accuracy, or MAE for SYN2-REG; delay = median hit delay at 3000)")
+    B, MC, REG, gas = groups
+    print("## %s per group (quality = accuracy, or MAE for %s; delay = median hit delay at 3000)" % (label, REG))
     print("%-9s %-7s %8s %8s %8s %8s %7s %9s" % ("group", "arm", "TP@1000", "FP@1000", "TP@3000", "FP@3000", "delay",
                                                "quality"))
     for g in groups:
@@ -516,26 +567,26 @@ def analyze_a2() -> None:
             print("%-9s %-7s %8d %8d %8d %8d %7.0f %9.4f" % (
                 g, a, tot(d1, g, a, "tp"), tot(d1, g, a, "fp"), tot(d3, g, a, "tp"), tot(d3, g, a, "fp"),
                 med(d3[(d3["group"] == g) & (d3["arm"] == a)]["delays"]), q[(g, a)]))
-    print("\n## INJ-gas per injection method (6 streams each, one drift per stream)")
+    print("\n## %s per injection method (6 streams each, one drift per stream)" % gas)
     print("%-6s %-7s %6s %8s %8s %8s %8s %9s" % ("method", "arm", "preFP", "TP@1000", "TP@3000", "FP@1000", "FP@3000",
                                               "accuracy"))
     for k in ("cp", "ls", "fp", "ff"):
         for a in arms:
-            f = "INJ-gas-" + k
+            f = gas + "-" + k
             g1, g3 = (d[(d["family"] == f) & (d["arm"] == a)] for d in (d1, d3))
             print("%-6s %-7s %6d %8d %8d %8d %8d %9.4f" % (k, a, g1["pre"].sum(), g1["tp"].sum(), g3["tp"].sum(),
                                                          g1["fp"].sum(), g3["fp"].sum(), qf[(f, a)]))
 
     print("\n## Criteria")
-    pre, tpg = ({a: tot(d3, "INJ-gas", a, c) for a in arms} for c in ("pre", "tp"))
-    ok = {"E1": {}, "E2k500": {}}
+    pre, tpg = ({a: tot(d3, gas, a, c) for a in arms} for c in ("pre", "tp"))
+    ok = {a: {} for a in judged}
     for a in ok:
         ok[a]["P1"] = pre["base"] >= 10 and pre[a] <= 0.30 * pre["base"]
         ok[a]["P2"] = tpg[a] >= 0.90 * tpg["base"]
         print("%s: P1 pre-drift FP %d vs base %d (need <=%.1f, base>=10): %s | P2 TP@3000 %d vs base %d (need >=%.1f): %s"
               % (a, pre[a], pre["base"], 0.3 * pre["base"], ok[a]["P1"], tpg[a], tpg["base"], 0.9 * tpg["base"],
                  ok[a]["P2"]))
-        for g in ("SYN2-B", "SYN2-MC", "SYN2-REG"):
+        for g in (B, MC, REG):
             bfp, btp, efp, etp = (tot(d3, g, arm, c) for arm in ("base", a) for c in ("fp", "tp"))
             fp_ok = efp <= 0.5 * bfp if bfp >= 6 else None          # None: FP part not evaluable
             tp_ok = etp >= 0.9 * btp
@@ -545,8 +596,19 @@ def analyze_a2() -> None:
                 etp, btp, 0.9 * btp, tp_ok, ok[a]["P3-" + g]))
         for g in groups:
             qb, qe = q[(g, "base")], q[(g, a)]
-            ok[a]["P4-" + g] = qe <= 1.02 * qb if g == "SYN2-REG" else qe >= qb - 0.01
+            ok[a]["P4-" + g] = qe <= 1.02 * qb if g == REG else qe >= qb - 0.01
             print("%s: P4 %s quality %.4f vs base %.4f: %s" % (a, g, qe, qb, ok[a]["P4-" + g]))
+    return ok, df, runs
+
+
+def analyze_a2() -> None:
+    """A2 verdict (docs/ECPF_A2_新資料驗證_預註冊.md): base vs E1 vs E2-k500 on synthetic v2 and injected gas."""
+    arms, grp = ["base", "E1", "E2k500"], lambda f: f.rsplit("-", 1)[0]
+    res = new_data_criteria("A2", "a2", ["SYN2-B", "SYN2-MC", "SYN2-REG", "INJ-gas"], arms, ["E1", "E2k500"])
+    if res is None:
+        return
+    ok, df, runs = res
+    d3 = df[df["ext"] == 3000]
     sub = d3[d3["dataset"].str.contains("gradual|incremental")]
     p5 = {a: int(sub[sub["arm"] == a]["tp"].sum()) for a in arms}
     print("P5 gradual+incremental TP@3000 %s -> E2k500 >= E1: %s" % (p5, p5["E2k500"] >= p5["E1"]))
@@ -575,6 +637,65 @@ def analyze_a2() -> None:
     print(st.groupby("group")["max_age"].max().to_string())
     long = st[st["tail"] >= 5000]
     print(long.round(4).to_string(index=False) if len(long) else "no run has a tail >= 5000 steps")
+
+
+def analyze_e10() -> None:
+    """E10 verdict (docs/ECPF_E10_參照更新_預註冊.md): E10a / E10b on fresh data; E1 and E2-k500 are references."""
+    groups, arms = ["SYN2g01-B", "SYN2g01-MC", "SYN2g01-REG", "INJgas35"], ["base", "E1", "E2k500", "E10a", "E10b"]
+    res = new_data_criteria("E10", "e10", groups, arms, ["E10a", "E10b"])
+    if res is None:
+        return
+    ok, df, runs = res
+    B, MC, REG, gas = groups
+    d3 = df[df["ext"] == 3000]
+    tp = lambda a, gs: int(d3[(d3["arm"] == a) & d3["group"].isin(gs)]["tp"].sum())
+    sub = d3[d3["dataset"].str.contains("gradual|incremental")]
+    print("gradual+incremental TP@3000 %s" % {a: int(sub[sub["arm"] == a]["tp"].sum()) for a in arms})
+    for task, keys, gs in (("classification", ["P1", "P2", "P3-" + B, "P3-" + MC, "P4-" + B, "P4-" + MC, "P4-" + gas],
+                            [B, MC, gas]), ("regression", ["P3-" + REG, "P4-" + REG], [REG])):
+        passed = [a for a in ok if all(ok[a][k] for k in keys)]
+        if len(passed) == 2:   # both pass: more TP@3000 wins; within 2 hits, the simpler E10a
+            pick = "E10b" if tp("E10b", gs) - tp("E10a", gs) > 2 else "E10a"
+        else:
+            pick = passed[0] if passed else None
+        print("E10 verdict %s: passed %s; TP@3000 E10a %d, E10b %d -> %s" % (
+            task, passed or "none", tp("E10a", gs), tp("E10b", gs),
+            "ADOPT " + pick if pick else "neither adopted: E2-k500's long-stream recall problem remains"))
+
+    print("\n## Mechanism (reported, not judged)")
+    rows, gts = [], {}
+    for (f, ds, lr), g in runs.groupby(["family", "dataset", "learner"]):
+        r = {x.arm: x for x in g.itertuples()}
+        path = r["E2k500"].path
+        if path not in gts:
+            gts[path] = scored_gt(f, load_stream(path, ALL[f][1])[2])
+        age = r["E2k500"].sig.set_index("t")["ref_age"]
+        sel = d3[(d3["family"] == f) & (d3["dataset"] == ds) & (d3["learner"] == lr)]
+        warn = {a: sel[sel["arm"] == a]["warn_t"].iloc[0] for a in arms}
+        for s, e in gts[path]:
+            rows.append({"age": int(age.get(s, -1)), **{a: any(s <= w <= e + 3000 for w in warn[a]) for a in arms}})
+    m = pd.DataFrame(rows)
+    stale = m[~m["E2k500"] & (m["age"] >= 10000)]
+    print("GT drifts missed by E2-k500 with its reference >= 10k steps old: %d; hit by base %d, E1 %d, E10a %d, E10b %d"
+          % (len(stale), stale["base"].sum(), stale["E1"].sum(), stale["E10a"].sum(), stale["E10b"].sum()))
+    e10a, e10b = runs[runs["arm"] == "E10a"], runs[runs["arm"] == "E10b"]
+    print("E10a reference refreshes: %d" % sum(int(x.sig["ref_refresh"].sum()) for x in e10a.itertuples()
+                                               if "ref_refresh" in x.sig.columns))
+    n_guard = sum(int(x.sig.set_index("t")["guard_drift"].reindex(x.conf_t).fillna(0).sum()) for x in e10b.itertuples())
+    print("E10b confirmations %d, of which the leader guard fired the drift: %d" % (
+        sum(len(x.conf_t) for x in e10b.itertuples()), n_guard))
+    ages = runs[runs["arm"].isin(["E2k500", "E10a", "E10b"])].copy()
+    ages["max_age"] = [int(x["ref_age"].max()) for x in ages["sig"]]
+    print("max reference age:\n%s" % ages.groupby(["group", "arm"])["max_age"].max().unstack().to_string())
+
+    ins = runs_table(held="a1")
+    ins = ins[ins["family"] == "INS-abrupt"]
+    print("\n## Development check, INSECTS abrupt (not judged): accuracy, TP@1000, FP@1000, confirmations")
+    for a in arms:
+        x = ins[ins["arm"] == a]
+        if len(x):
+            print("%-7s %.4f %3d %3d %3d" % (a, x["quality"].mean(), x["tp"].sum(), x["fp"].sum(),
+                                            len(sum(x["conf_t"], []))))
 
 
 def premise() -> None:
@@ -643,7 +764,7 @@ if __name__ == "__main__":
     ap.add_argument("--family", choices=list(ALL))
     ap.add_argument("--arm", choices=list(ARMS))
     ap.add_argument("--analyze", action="store_true")
-    ap.add_argument("--check", action="store_true", help="run the E1 self-check only")
+    ap.add_argument("--check", action="store_true", help="run the self-checks only (incl. the E10 pipeline gates)")
     ap.add_argument("--premise", action="store_true", help="E6 premise replay on the E2-k500 traces")
     ap.add_argument("--analyze-stack", action="store_true", help="E6 vs E2-k500 verdict")
     ap.add_argument("--rescore", action="store_true", help="relabel all runs with 1000/3000-step windows")
@@ -652,8 +773,11 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-e9", action="store_true", help="E9 verdict (official-ECPF detectors)")
     ap.add_argument("--analyze-a1", action="store_true", help="A1 verdict (new data: injected electricity, INSECTS)")
     ap.add_argument("--analyze-a2", action="store_true", help="A2 verdict (new data: synthetic v2, injected gas)")
+    ap.add_argument("--analyze-e10", action="store_true", help="E10 verdict (reference refresh arms, fresh data)")
     a = ap.parse_args()
     self_check()
+    if a.check:
+        check_e10()
     if a.family and a.arm:
         run_cell(a.family, a.arm)
     if a.analyze:
@@ -674,3 +798,5 @@ if __name__ == "__main__":
         analyze_a1()
     if a.analyze_a2:
         analyze_a2()
+    if a.analyze_e10:
+        analyze_e10()

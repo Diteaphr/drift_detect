@@ -239,6 +239,15 @@ class ConceptDriftPipeline:
                     drift_value_range=self.config.ecpf_drift_value_range,
                     one_sided=self.config.ecpf_adwin_one_sided,
                 )
+        # E10b: E1's detector on the leader's own error, next to the reference detectors.
+        self._ecpf_guard: Optional[ECPFWarningDriftDetector] = None
+        if self._ecpf_detector is not None and self.config.ecpf_leader_guard:
+            self._ecpf_guard = ECPFWarningDriftDetector(
+                min_num_instances=self.config.ecpf_detector_min_instances,
+                delta=self.config.detector_delta,
+                delta_w=self.config.detector_delta_w,
+                one_sided=True,
+            )
 
         # UQ Warning Layer: UQ-only warning + error-based drift confirmation
         self._uq_warning_detector: Optional[UQWarningDetector] = None
@@ -633,6 +642,10 @@ class ConceptDriftPipeline:
             switch_info = None
             if self._ref_switch_due is not None and index >= self._ref_switch_due:
                 switch_info = self._switch_reference(index)
+            elif (self.config.ecpf_reference_max_age > 0 and not self._ecpf_warning_active
+                  and index - self._ref_frozen_at >= self.config.ecpf_reference_max_age):
+                # E10a: an old reference stops feeling drifts the leader feels -- refresh it.
+                switch_info = {**self._switch_reference(index), "ref_refresh": 1}
             det_pred = self._model_predict(self._ref_model, x_)
             ref_raw = self._ref_loss(y_true, det_pred)
             ref_err = self._ref_norm.update(ref_raw) if self.task.is_regression else ref_raw
@@ -728,6 +741,17 @@ class ConceptDriftPipeline:
                     warning_value,
                     drift_value,
                 )
+                if self._ecpf_guard is not None:
+                    # E10b: the leader's own error (never the reference's), one-sided;
+                    # either detector pair may open the warning or confirm.
+                    guard_value = extract_signal(
+                        "error", y_true=y_true, y_pred=y_pred, err=err, proba_matrix=None,
+                        is_regression=self.task.is_regression,
+                    )
+                    guard_w, guard_d = self._ecpf_guard.update_values(guard_value, guard_value)
+                    is_warning, is_drift = is_warning or guard_w, is_drift or guard_d
+                    if ref_extra is not None:
+                        ref_extra["guard_drift"] = int(guard_d)
                 # Echo suppression: a confirmation inside the cooldown window is
                 # the new leader's settling-in error being read as a second
                 # change. The detector still updates (its window keeps filling);
@@ -851,6 +875,11 @@ class ConceptDriftPipeline:
                     self._ecpf_buffer = []
                     self._gate_baseline = None
                     self.meta_detector.reset()
+                    if self._ecpf_guard is not None:
+                        # E10b: the leader just changed and the reference is re-frozen below,
+                        # so both detector pairs restart, whichever one confirmed.
+                        self._ecpf_guard.reset()
+                        self._ecpf_detector.reset()
                     # Prescription 3: re-baseline the residual normalizer on the
                     # new era together with the detectors (see config).
                     if self.config.ecpf_normalizer_reset_on_drift and self.task.is_regression:

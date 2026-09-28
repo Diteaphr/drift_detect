@@ -213,6 +213,15 @@ class PipelineConfig:
     # copy's 0/1 loss. Default-off runs are byte-identical.
     ecpf_reference_signal: bool = False
     ecpf_reference_warmup: int = 0
+    # E10 (docs/ECPF_E10_參照更新_預註冊.md): the reference is otherwise refreshed only
+    # after a confirmation, so one missed drift leaves it stale and later drifts go unseen.
+    # max_age>0 (E10a): once the reference is that old and no warning is open, re-freeze
+    # it from the leader (the same switch as warmup=k). leader_guard (E10b): an extra
+    # one-sided dual ADWIN (E1's) on the leader's own error; either detector pair opens a
+    # warning or confirms, and both restart at every confirmation. Default-off runs are
+    # byte-identical.
+    ecpf_reference_max_age: int = 0
+    ecpf_leader_guard: bool = False
 
     # E1 (docs/ECPF_E1E2_預註冊.md): MOA ADWINChangeDetector semantics on both ADWIN
     # arms -- a cut counts only if the error estimate rose; a suppressed cut keeps
