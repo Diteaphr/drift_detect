@@ -34,6 +34,19 @@ REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
          "REG-syn": (discover("synthetic", 2, False), 0, REG_LEARNERS, True),
          "REG-Joe": (discover("joe", 2, False), 0, REG_LEARNERS, True)}
+HELD = {  # E8 held-out streams (docs/ECPF_E8_按任務δ_預註冊.md): never used in E0-E7
+    "B-ho": (["data/sudden_drift/sudden_sea100k_g01.csv", "data/gradual_drift/gradual_sea100k_g01.csv",
+              "data/recurring_drift/recurring_sud_sea100k_g01.csv"], 30000, RERUN["B"][2], False),
+    "MC-syn-ho": (sorted(glob.glob("data/heldout_s1042/synthetic_multiclass/mc*_20k.csv")), 20000,
+                  RERUN["MC-syn"][2], False),
+    "MC-RBF-ho": (sorted(p for p in glob.glob("data/synthetic_dataset_joe/multi classification/*_drift/*/"
+                                              "recurring_*_rbf4_100k_g01.csv") if "incremental" not in p),
+                  20000, RERUN["MC-syn"][2], False),
+    "REG-syn-ho": (sorted(glob.glob("data/heldout_s1042/synthetic_regression/*.csv")), 0, REG_LEARNERS, True),
+    "REG-Joe-ho": (sorted(glob.glob("data/synthetic_dataset_joe/regression/sudden_drift/*/"
+                                    "recurring_sudden_friedman_100k_g0[23].csv")), 0, REG_LEARNERS, True),
+}
+ALL = {**CELLS, **HELD}
 FP = ("echo", "orphan")
 MATCH = 500
 SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age"]
@@ -61,7 +74,7 @@ def self_check() -> None:
 
 
 def run_cell(family: str, arm: str) -> None:
-    paths, max_steps, configs, is_reg = CELLS[family]
+    paths, max_steps, configs, is_reg = ALL[family]
     d = os.path.join(OUT, family, arm)
     os.makedirs(os.path.join(d, "signals"), exist_ok=True)
     rows = []
@@ -80,26 +93,27 @@ def run_cell(family: str, arm: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-def iter_runs():
-    """Yield (family, arm, path, dataset, config, detections, signals) for every run in the matrix.
+def iter_runs(held: bool = False):
+    """Yield (family, arm, path, dataset, config, detections, signals) for every run in the matrix
+    (held=True: only the E8 held-out families, which have no base arm).
 
     Runs are enumerated from the matrix, not from detections.csv: a run with zero
     confirmations has no rows there but still counts.
     """
     def runs_of(fam, arm, det_csv, sig_dir, labels):
         det = pd.read_csv(det_csv)
-        for path in CELLS[fam][0]:
+        for path in ALL[fam][0]:
             ds = dataset_key(path)
             for cfg in labels:
                 yield (fam, arm, path, ds, cfg, det[(det["dataset"] == ds) & (det["config"] == cfg)],
                        pd.read_csv(os.path.join(sig_dir, sig_name(ds, cfg))))
-    for fam, (_, _, configs) in RERUN.items():  # baselines: E0 reruns and the regression archives
+    for fam, (_, _, configs) in ({} if held else RERUN).items():  # baselines: E0 reruns + archives
         yield from runs_of(fam, "base", os.path.join(E0, fam, "detections.csv"), os.path.join(E0, fam, "signals"),
                            [c for c, _, _ in configs])
-    for fam, d, cfgs in ARCHIVED:
+    for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in CELLS.items():
+    for fam, (_, _, configs, _) in (HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -107,10 +121,10 @@ def iter_runs():
                                    [c.replace("/", "-%s/" % arm) for c, _, _ in configs])
 
 
-def runs_table():
+def runs_table(held: bool = False):
     """One row per (family, arm, dataset, learner): hits, FP, delay, accuracy/MAE, detection times."""
     recs = []
-    for fam, arm, path, ds, cfg, g, sig in iter_runs():
+    for fam, arm, path, ds, cfg, g, sig in iter_runs(held):
         hits = g[g["label"] == "hit"]
         recs.append({"family": fam, "arm": arm, "dataset": ds, "learner": learner(cfg),
                      "tp": len(hits), "fp": int(g["label"].isin(FP).sum()),
@@ -120,15 +134,15 @@ def runs_table():
     return pd.DataFrame(recs)
 
 
-def rescore(exts=(1000, 3000), show: bool = True):
+def rescore(exts=(1000, 3000), show: bool = True, held: bool = False):
     """Relabel every run with wider scoring windows -- classify() itself, only PERTURBATION changes.
     ext=1000 must reproduce the stored labels exactly (checked). Returns one row per (run, ext)."""
     import diagnose_regression_fp as drf
     recs, gt = [], {}
-    for fam, arm, path, ds, cfg, g, sig in iter_runs():
-        key = (path, CELLS[fam][1])
+    for fam, arm, path, ds, cfg, g, sig in iter_runs(held):
+        key = (path, ALL[fam][1])
         if key not in gt:
-            gt[key] = load_stream(path, CELLS[fam][1])[2]
+            gt[key] = load_stream(path, ALL[fam][1])[2]
         dets = list(zip(g["warning_t"].astype(int), g["confirmation_t"].astype(int)))
         for ext in exts:
             drf.PERTURBATION = ext
@@ -279,6 +293,52 @@ def analyze() -> None:
         "keep two-phase" if keep else "k=0 suffices"))
 
 
+def analyze_e8() -> None:
+    """E8 verdict on the held-out streams (docs/ECPF_E8_按任務δ_預註冊.md): E7 vs E2k500, 3000-step window."""
+    df = rescore(show=False, held=True)
+    if df is None:
+        print("RESCORE INVALID -- no verdict")
+        return
+    q = runs_table(held=True).groupby(["family", "arm"])["quality"].mean()
+    w = df[df["ext"] == 3000]
+    med = lambda s: float(np.median(sum(s, []))) if sum(s, []) else np.nan
+    cls, reg = ["B-ho", "MC-syn-ho", "MC-RBF-ho"], ["REG-syn-ho", "REG-Joe-ho"]
+    print("## E8 held-out: E7 (delta 0.002/0.004) vs E2k500 (0.05/0.1), 3000-step window")
+    tp_loss, qual_ok = {}, {}
+    for f in cls + reg:
+        b, e = (w[(w["family"] == f) & (w["arm"] == a)] for a in ("E2k500", "E7"))
+        b1, e1 = (df[(df["ext"] == 1000) & (df["family"] == f) & (df["arm"] == a)] for a in ("E2k500", "E7"))
+        qb, qe = q[(f, "E2k500")], q[(f, "E7")]
+        tp_loss[f] = int(b["tp"].sum() - e["tp"].sum())
+        qual_ok[f] = bool(qe <= 1.02 * qb if f in reg else qe >= qb - 0.005)
+        print("%-10s FP@3000 %d->%d  TP@3000 %d->%d  delay %.0f->%.0f  quality %.4f->%.4f  | @1000 TP %d->%d FP %d->%d"
+              % (f, b["fp"].sum(), e["fp"].sum(), b["tp"].sum(), e["tp"].sum(), med(b["delays"]), med(e["delays"]),
+                 qb, qe, b1["tp"].sum(), e1["tp"].sum(), b1["fp"].sum(), e1["fp"].sum()))
+    fp = lambda fams, arm: int(w[w["family"].isin(fams) & (w["arm"] == arm)]["fp"].sum())
+    # (a) classification replication
+    a1 = fp(cls, "E7") <= 0.70 * fp(cls, "E2k500")
+    a2 = all(tp_loss[f] <= 1 for f in cls)
+    a3 = all(qual_ok[f] for f in cls)
+    a_pass = a1 and a2 and a3
+    print("(a) classification: FP@3000 %d->%d (need <=%.1f): %s | TP loss <=1: %s | accuracy: %s  ->  %s" % (
+        fp(cls, "E2k500"), fp(cls, "E7"), 0.70 * fp(cls, "E2k500"), a1, a2, a3, "PASS" if a_pass else "FAIL"))
+    # (b) does regression really need the original delta?
+    split = any(tp_loss[f] > 1 for f in reg) or fp(reg, "E7") > fp(reg, "E2k500")
+    print("(b) regression: TP loss %s, FP@3000 %d->%d  ->  split %s" % (
+        {f: tp_loss[f] for f in reg}, fp(reg, "E2k500"), fp(reg, "E7"), "SUPPORTED" if split else "NOT supported"))
+    # mechanism (report only)
+    e7 = {(r.family, r.dataset, r.learner): r.conf_t for r in w[(w["arm"] == "E7") & w["family"].isin(cls)].itertuples()}
+    ev = [((r.family, r.dataset, r.learner), t) for r in w[(w["arm"] == "E2k500") & w["family"].isin(cls)].itertuples()
+          for t in r.fp_t]
+    if ev:
+        g = float(np.mean([all(abs(c - t) > MATCH for c in e7.get(k, [])) for k, t in ev]))
+        print("mechanism (report only): classification E2k500 FP@3000 gone in E7 = %.2f (n=%d)" % (g, len(ev)))
+    verdict = ("ADOPT task-specific delta: classification 0.002/0.004, regression 0.05/0.1" if a_pass and split
+               else "split refuted: ADOPT uniform delta 0.002/0.004" if a_pass
+               else "classification gain did not replicate: keep uniform delta 0.05/0.1 (E2-k500)")
+    print("E8 verdict: %s" % verdict)
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -342,7 +402,7 @@ def analyze_stack() -> None:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--family", choices=list(CELLS))
+    ap.add_argument("--family", choices=list(ALL))
     ap.add_argument("--arm", choices=list(ARMS))
     ap.add_argument("--analyze", action="store_true")
     ap.add_argument("--check", action="store_true", help="run the E1 self-check only")
@@ -350,6 +410,7 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-stack", action="store_true", help="E6 vs E2-k500 verdict")
     ap.add_argument("--rescore", action="store_true", help="relabel all runs with 1000/3000-step windows")
     ap.add_argument("--analyze-delta", action="store_true", help="E7 vs E2-k500 verdict")
+    ap.add_argument("--analyze-e8", action="store_true", help="E8 held-out verdict (task-specific delta)")
     a = ap.parse_args()
     self_check()
     if a.family and a.arm:
@@ -364,3 +425,5 @@ if __name__ == "__main__":
         rescore()
     if a.analyze_delta:
         analyze_delta()
+    if a.analyze_e8:
+        analyze_e8()
