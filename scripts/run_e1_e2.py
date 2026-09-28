@@ -17,7 +17,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyze_native_direction import ARCHIVED, RERUN, sig_name  # noqa: E402
-from diagnose_regression_fp import PERTURBATION, classify, dataset_key, discover, load_stream, run  # noqa: E402
+from diagnose_regression_fp import PERTURBATION, WARM_START, classify, dataset_key, discover, load_stream, run  # noqa: E402
 from src.metrics import build_perturbation_intervals  # noqa: E402
 
 OUT, E0 = "outputs/e1_e2", "outputs/e0_native_direction"
@@ -62,7 +62,23 @@ A1 = {  # A1 (docs/ECPF_A1_新資料驗證_預註冊.md); split into sub-familie
                     ("increc", "incremental_reoccurring_balanced"), ("incgrad", "incremental_gradual_balanced"),
                     ("inc", "incremental_balanced"))},
 }
-ALL = {**CELLS, **HELD, **A1}
+_SYN = "data/dataset_0921/synthetic_dataset/{t}/{d}/*_g00.csv"
+_GAS = "data/dataset_0921/injected_real_dataset/multi_classification/*/{m}/gas_sensor_drift_{m}_*_g0[0-2].csv"
+A2 = {  # A2 (docs/ECPF_A2_新資料驗證_預註冊.md); one sub-family per stream / method, only to run cells in parallel
+    **{"SYN2-%s-%s" % (g, k): (sorted(glob.glob(_SYN.format(t=t, d=d))), 0, cfg, g == "REG")
+       for g, t, cfg in (("B", "binary", RERUN["B"][2]), ("MC", "multi_classification", [RERUN["MC-syn"][2][0]]),
+                         ("REG", "regression", REG_LEARNERS))
+       for k, d in (("sud", "sudden"), ("grad", "gradual"), ("inc", "incremental"), ("rec", "recurring"))},
+    **{"INJ-gas-" + k: (sorted(glob.glob(_GAS.format(m=m))), 0, [RERUN["MC-syn"][2][0]], False)
+       for k, m in (("cp", "class_prior"), ("ls", "label_swap"), ("fp", "feature_permutation"),
+                    ("ff", "feature_filtering"))},
+}
+ALL = {**CELLS, **HELD, **A1, **A2}
+
+
+def scored_gt(fam: str, intervals):
+    """A2 rule (prereg): GT intervals that start inside the warm-up are not scored."""
+    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 else intervals
 FP = ("echo", "orphan")
 MATCH = 500
 SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age"]
@@ -119,7 +135,7 @@ def run_cell(family: str, arm: str) -> None:
             label = base_label.replace("/", "-%s/" % arm)
             pk = {**ARMS[arm], **(P3 if is_reg else {})}
             sig, dets, swaps, stage3, intervals, _, n = run(path, mt, max_steps, mk, pk)
-            for r in classify(dets, intervals, sig, swaps, n):
+            for r in classify(dets, scored_gt(family, intervals), sig, swaps, n):
                 rows.append({**r, "dataset": key, "config": label, "path": path})
             with gzip.open(os.path.join(d, "signals", sig_name(key, label)), "wt") as f:
                 sig[[c for c in SIG_COLS if c in sig.columns]].to_csv(f, index=False)
@@ -148,7 +164,7 @@ def iter_runs(held: bool = False):
     for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in (A1 if held == "a1" else HELD if held else CELLS).items():
+    for fam, (_, _, configs, _) in (A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -164,7 +180,7 @@ def runs_table(held: bool = False):
         recs.append({"family": fam, "arm": arm, "dataset": ds, "learner": learner(cfg),
                      "tp": len(hits), "fp": int(g["label"].isin(FP).sum()),
                      "delay": pd.to_numeric(hits["gap_prev_gt"], errors="coerce").tolist(),
-                     "quality": float(sig["raw"].mean() if fam.startswith("REG") else 1 - sig["err"].mean()),
+                     "quality": float(sig["raw"].mean() if ALL[fam][3] else 1 - sig["err"].mean()),
                      "conf_t": g["confirmation_t"].astype(int).tolist(), "path": path, "sig": sig})
     return pd.DataFrame(recs)
 
@@ -177,7 +193,7 @@ def rescore(exts=(1000, 3000), show: bool = True, held: bool = False):
     for fam, arm, path, ds, cfg, g, sig in iter_runs(held):
         key = (path, ALL[fam][1])
         if key not in gt:
-            gt[key] = load_stream(path, ALL[fam][1])[2]
+            gt[key] = scored_gt(fam, load_stream(path, ALL[fam][1])[2])
         dets = list(zip(g["warning_t"].astype(int), g["confirmation_t"].astype(int)))
         for ext in exts:
             drf.PERTURBATION = ext
@@ -189,6 +205,7 @@ def rescore(exts=(1000, 3000), show: bool = True, held: bool = False):
                          "delays": [float(r["gap_prev_gt"]) for r in rows if r["label"] == "hit"],
                          "fp_t": [r["confirmation_t"] for r in rows if r["label"] in FP],
                          "conf_t": [r["confirmation_t"] for r in rows],
+                         "warn_t": [r["warning_t"] for r in rows],
                          "pre": sum(start is not None and r["warning_t"] < start for r in rows),
                          "stored_tp": int((g["label"] == "hit").sum()), "stored_fp": int(g["label"].isin(FP).sum())})
     drf.PERTURBATION = 1000
@@ -210,7 +227,7 @@ def rescore(exts=(1000, 3000), show: bool = True, held: bool = False):
     print()
     print("all families:")
     print(tot.to_string())
-    df.drop(columns=["delays", "fp_t", "conf_t"]).to_csv(os.path.join(OUT, "rescore.csv"), index=False)
+    df.drop(columns=["delays", "fp_t", "conf_t", "warn_t"]).to_csv(os.path.join(OUT, "rescore.csv"), index=False)
     return df
 
 
@@ -474,6 +491,89 @@ def analyze_a1() -> None:
         "HOLDS" if ok["E2k500"] else "does NOT hold", "HOLDS" if ok["E1"] else "does NOT hold"))
 
 
+def analyze_a2() -> None:
+    """A2 verdict (docs/ECPF_A2_新資料驗證_預註冊.md): base vs E1 vs E2-k500 on synthetic v2 and injected gas."""
+    df = rescore(show=False, held="a2")
+    if df is None:
+        print("RESCORE INVALID -- no verdict")
+        return
+    runs = runs_table(held="a2")
+    arms, grp = ["base", "E1", "E2k500"], lambda f: f.rsplit("-", 1)[0]   # SYN2-B-sud -> SYN2-B
+    df["group"], runs["group"] = df["family"].map(grp), runs["family"].map(grp)
+    med = lambda s: float(np.median(sum(s, []))) if sum(s, []) else np.nan
+    q, qf = runs.groupby(["group", "arm"])["quality"].mean(), runs.groupby(["family", "arm"])["quality"].mean()
+    d1, d3 = df[df["ext"] == 1000], df[df["ext"] == 3000]
+    tot = lambda d, g, a, c: int(d[(d["group"] == g) & (d["arm"] == a)][c].sum())
+    groups = ["SYN2-B", "SYN2-MC", "SYN2-REG", "INJ-gas"]
+    print("## A2 per group (quality = accuracy, or MAE for SYN2-REG; delay = median hit delay at 3000)")
+    print("%-9s %-7s %8s %8s %8s %8s %7s %9s" % ("group", "arm", "TP@1000", "FP@1000", "TP@3000", "FP@3000", "delay",
+                                               "quality"))
+    for g in groups:
+        for a in arms:
+            print("%-9s %-7s %8d %8d %8d %8d %7.0f %9.4f" % (
+                g, a, tot(d1, g, a, "tp"), tot(d1, g, a, "fp"), tot(d3, g, a, "tp"), tot(d3, g, a, "fp"),
+                med(d3[(d3["group"] == g) & (d3["arm"] == a)]["delays"]), q[(g, a)]))
+    print("\n## INJ-gas per injection method (6 streams each, one drift per stream)")
+    print("%-6s %-7s %6s %8s %8s %8s %8s %9s" % ("method", "arm", "preFP", "TP@1000", "TP@3000", "FP@1000", "FP@3000",
+                                              "accuracy"))
+    for k in ("cp", "ls", "fp", "ff"):
+        for a in arms:
+            f = "INJ-gas-" + k
+            g1, g3 = (d[(d["family"] == f) & (d["arm"] == a)] for d in (d1, d3))
+            print("%-6s %-7s %6d %8d %8d %8d %8d %9.4f" % (k, a, g1["pre"].sum(), g1["tp"].sum(), g3["tp"].sum(),
+                                                         g1["fp"].sum(), g3["fp"].sum(), qf[(f, a)]))
+
+    print("\n## Criteria")
+    pre, tpg = ({a: tot(d3, "INJ-gas", a, c) for a in arms} for c in ("pre", "tp"))
+    ok = {"E1": {}, "E2k500": {}}
+    for a in ok:
+        ok[a]["P1"] = pre["base"] >= 10 and pre[a] <= 0.30 * pre["base"]
+        ok[a]["P2"] = tpg[a] >= 0.90 * tpg["base"]
+        print("%s: P1 pre-drift FP %d vs base %d (need <=%.1f, base>=10): %s | P2 TP@3000 %d vs base %d (need >=%.1f): %s"
+              % (a, pre[a], pre["base"], 0.3 * pre["base"], ok[a]["P1"], tpg[a], tpg["base"], 0.9 * tpg["base"],
+                 ok[a]["P2"]))
+        for g in ("SYN2-B", "SYN2-MC", "SYN2-REG"):
+            bfp, btp, efp, etp = (tot(d3, g, arm, c) for arm in ("base", a) for c in ("fp", "tp"))
+            fp_ok = efp <= 0.5 * bfp if bfp >= 6 else None          # None: FP part not evaluable
+            tp_ok = etp >= 0.9 * btp
+            ok[a]["P3-" + g] = tp_ok and fp_ok is not False
+            print("%s: P3 %s FP@3000 %d vs base %d (%s) | TP@3000 %d vs base %d (need >=%.1f): %s -> %s" % (
+                a, g, efp, bfp, "not evaluable" if fp_ok is None else "need <=%.1f: %s" % (0.5 * bfp, fp_ok),
+                etp, btp, 0.9 * btp, tp_ok, ok[a]["P3-" + g]))
+        for g in groups:
+            qb, qe = q[(g, "base")], q[(g, a)]
+            ok[a]["P4-" + g] = qe <= 1.02 * qb if g == "SYN2-REG" else qe >= qb - 0.01
+            print("%s: P4 %s quality %.4f vs base %.4f: %s" % (a, g, qe, qb, ok[a]["P4-" + g]))
+    sub = d3[d3["dataset"].str.contains("gradual|incremental")]
+    p5 = {a: int(sub[sub["arm"] == a]["tp"].sum()) for a in arms}
+    print("P5 gradual+incremental TP@3000 %s -> E2k500 >= E1: %s" % (p5, p5["E2k500"] >= p5["E1"]))
+    hp = d3[d3["dataset"].str.contains("hyperplane")]
+    print("hyperplane incremental: confirmations with warning in [200, 1950] (unscored GT [0, 950]): %s" % {
+        a: sum(200 <= w <= 1950 for ws in hp[hp["arm"] == a]["warn_t"] for w in ws) for a in arms})
+    for a in ok:
+        cls = all(ok[a][k] for k in ("P1", "P2", "P3-SYN2-B", "P3-SYN2-MC", "P4-SYN2-B", "P4-SYN2-MC", "P4-INJ-gas"))
+        reg = ok[a]["P3-SYN2-REG"] and ok[a]["P4-SYN2-REG"]
+        print("A2 verdict %s: classification %s; regression %s" % (
+            a, "HOLDS" if cls else "does NOT hold", "HOLDS" if reg else "does NOT hold"))
+
+    print("\n## Stale-reference check: E2-k500 max reference age per group; aligned tail after its last freeze")
+    rows = []
+    for (f, ds, lr), g in runs.groupby(["family", "dataset", "learner"]):
+        s = {r.arm: r.sig for r in g.itertuples()}
+        e2 = s.get("E2k500")
+        if e2 is None or "ref_age" not in e2.columns:
+            continue
+        t0 = int(e2.loc[e2["ref_age"] <= 1, "t"].iloc[-1])   # last freeze: switch (age 0) or confirmation (age 1)
+        n = int(e2["t"].iloc[-1]) - t0
+        val = lambda x: float(x.loc[x["t"] >= t0, "raw"].mean() if ALL[f][3] else 1 - x.loc[x["t"] >= t0, "err"].mean())
+        rows.append({"group": grp(f), "run": "%s %s" % (ds, lr), "max_age": int(e2["ref_age"].max()), "tail": n,
+                     **({a: val(s[a]) for a in arms if a in s} if n >= 5000 else {})})
+    st = pd.DataFrame(rows)
+    print(st.groupby("group")["max_age"].max().to_string())
+    long = st[st["tail"] >= 5000]
+    print(long.round(4).to_string(index=False) if len(long) else "no run has a tail >= 5000 steps")
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -548,6 +648,7 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-e8", action="store_true", help="E8 held-out verdict (task-specific delta)")
     ap.add_argument("--analyze-e9", action="store_true", help="E9 verdict (official-ECPF detectors)")
     ap.add_argument("--analyze-a1", action="store_true", help="A1 verdict (new data: injected electricity, INSECTS)")
+    ap.add_argument("--analyze-a2", action="store_true", help="A2 verdict (new data: synthetic v2, injected gas)")
     a = ap.parse_args()
     self_check()
     if a.family and a.arm:
@@ -568,3 +669,5 @@ if __name__ == "__main__":
         analyze_e9()
     if a.analyze_a1:
         analyze_a1()
+    if a.analyze_a2:
+        analyze_a2()
