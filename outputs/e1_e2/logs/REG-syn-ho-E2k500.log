@@ -1,0 +1,6 @@
+REG-syn-ho E2k500 reg_gradual_20k.csv htr-E2k500/error detections=2 swaps=2
+REG-syn-ho E2k500 reg_gradual_20k.csv hfr-E2k500/error detections=2 swaps=2
+REG-syn-ho E2k500 reg_recurring_20k.csv htr-E2k500/error detections=5 swaps=6
+REG-syn-ho E2k500 reg_recurring_20k.csv hfr-E2k500/error detections=5 swaps=38
+REG-syn-ho E2k500 reg_sudden_20k.csv htr-E2k500/error detections=3 swaps=2
+REG-syn-ho E2k500 reg_sudden_20k.csv hfr-E2k500/error detections=3 swaps=6

@@ -1,0 +1,12 @@
+REG-Joe-ho E2k500 sudden/high/recurring_sudden_friedman_100k_g02.csv htr-E2k500/error detections=3 swaps=10
+REG-Joe-ho E2k500 sudden/high/recurring_sudden_friedman_100k_g02.csv hfr-E2k500/error detections=3 swaps=125
+REG-Joe-ho E2k500 sudden/high/recurring_sudden_friedman_100k_g03.csv htr-E2k500/error detections=3 swaps=11
+REG-Joe-ho E2k500 sudden/high/recurring_sudden_friedman_100k_g03.csv hfr-E2k500/error detections=2 swaps=55
+REG-Joe-ho E2k500 sudden/low/recurring_sudden_friedman_100k_g02.csv htr-E2k500/error detections=4 swaps=4
+REG-Joe-ho E2k500 sudden/low/recurring_sudden_friedman_100k_g02.csv hfr-E2k500/error detections=3 swaps=22
+REG-Joe-ho E2k500 sudden/low/recurring_sudden_friedman_100k_g03.csv htr-E2k500/error detections=3 swaps=46
+REG-Joe-ho E2k500 sudden/low/recurring_sudden_friedman_100k_g03.csv hfr-E2k500/error detections=3 swaps=30
+REG-Joe-ho E2k500 sudden/medium/recurring_sudden_friedman_100k_g02.csv htr-E2k500/error detections=4 swaps=19
+REG-Joe-ho E2k500 sudden/medium/recurring_sudden_friedman_100k_g02.csv hfr-E2k500/error detections=3 swaps=207
+REG-Joe-ho E2k500 sudden/medium/recurring_sudden_friedman_100k_g03.csv htr-E2k500/error detections=2 swaps=23
+REG-Joe-ho E2k500 sudden/medium/recurring_sudden_friedman_100k_g03.csv hfr-E2k500/error detections=3 swaps=39

@@ -1,0 +1,6 @@
+B-ho E2k500 sudden/-/sudden_sea100k_g01.csv ht-E2k500/error detections=2 swaps=9
+B-ho E2k500 sudden/-/sudden_sea100k_g01.csv hf10-E2k500/error detections=2 swaps=2
+B-ho E2k500 gradual/-/gradual_sea100k_g01.csv ht-E2k500/error detections=2 swaps=0
+B-ho E2k500 gradual/-/gradual_sea100k_g01.csv hf10-E2k500/error detections=2 swaps=3
+B-ho E2k500 recurring/-/recurring_sud_sea100k_g01.csv ht-E2k500/error detections=3 swaps=2
+B-ho E2k500 recurring/-/recurring_sud_sea100k_g01.csv hf10-E2k500/error detections=4 swaps=5

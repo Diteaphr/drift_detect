@@ -1,0 +1,12 @@
+REG-Joe-ho E7 sudden/high/recurring_sudden_friedman_100k_g02.csv htr-E7/error detections=3 swaps=8
+REG-Joe-ho E7 sudden/high/recurring_sudden_friedman_100k_g02.csv hfr-E7/error detections=3 swaps=68
+REG-Joe-ho E7 sudden/high/recurring_sudden_friedman_100k_g03.csv htr-E7/error detections=3 swaps=13
+REG-Joe-ho E7 sudden/high/recurring_sudden_friedman_100k_g03.csv hfr-E7/error detections=2 swaps=42
+REG-Joe-ho E7 sudden/low/recurring_sudden_friedman_100k_g02.csv htr-E7/error detections=3 swaps=11
+REG-Joe-ho E7 sudden/low/recurring_sudden_friedman_100k_g02.csv hfr-E7/error detections=2 swaps=14
+REG-Joe-ho E7 sudden/low/recurring_sudden_friedman_100k_g03.csv htr-E7/error detections=3 swaps=2
+REG-Joe-ho E7 sudden/low/recurring_sudden_friedman_100k_g03.csv hfr-E7/error detections=3 swaps=6
+REG-Joe-ho E7 sudden/medium/recurring_sudden_friedman_100k_g02.csv htr-E7/error detections=3 swaps=8
+REG-Joe-ho E7 sudden/medium/recurring_sudden_friedman_100k_g02.csv hfr-E7/error detections=3 swaps=137
+REG-Joe-ho E7 sudden/medium/recurring_sudden_friedman_100k_g03.csv htr-E7/error detections=2 swaps=7
+REG-Joe-ho E7 sudden/medium/recurring_sudden_friedman_100k_g03.csv hfr-E7/error detections=2 swaps=45
