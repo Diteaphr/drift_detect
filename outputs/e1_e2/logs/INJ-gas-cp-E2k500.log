@@ -1,0 +1,6 @@
+INJ-gas-cp E2k500 gas_sensor_drift_class_prior_abrupt_g00.csv hf10sqrt-E2k500/error detections=0 swaps=0
+INJ-gas-cp E2k500 gas_sensor_drift_class_prior_abrupt_g01.csv hf10sqrt-E2k500/error detections=3 swaps=2
+INJ-gas-cp E2k500 gas_sensor_drift_class_prior_abrupt_g02.csv hf10sqrt-E2k500/error detections=0 swaps=0
+INJ-gas-cp E2k500 gas_sensor_drift_class_prior_gradual_g00.csv hf10sqrt-E2k500/error detections=0 swaps=0
+INJ-gas-cp E2k500 gas_sensor_drift_class_prior_gradual_g01.csv hf10sqrt-E2k500/error detections=0 swaps=0
+INJ-gas-cp E2k500 gas_sensor_drift_class_prior_gradual_g02.csv hf10sqrt-E2k500/error detections=0 swaps=0

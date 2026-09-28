@@ -1,0 +1,6 @@
+INJ-gas-ff base gas_sensor_drift_feature_filtering_abrupt_g00.csv hf10sqrt-base/error detections=3 swaps=0
+INJ-gas-ff base gas_sensor_drift_feature_filtering_abrupt_g01.csv hf10sqrt-base/error detections=2 swaps=0
+INJ-gas-ff base gas_sensor_drift_feature_filtering_abrupt_g02.csv hf10sqrt-base/error detections=4 swaps=9
+INJ-gas-ff base gas_sensor_drift_feature_filtering_gradual_g00.csv hf10sqrt-base/error detections=2 swaps=2
+INJ-gas-ff base gas_sensor_drift_feature_filtering_gradual_g01.csv hf10sqrt-base/error detections=3 swaps=0
+INJ-gas-ff base gas_sensor_drift_feature_filtering_gradual_g02.csv hf10sqrt-base/error detections=3 swaps=18

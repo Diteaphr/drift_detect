@@ -1,0 +1,2 @@
+SYN2-REG-inc base incremental_friedman_100k_g00.csv htr-base/error detections=11 swaps=98
+SYN2-REG-inc base incremental_friedman_100k_g00.csv hfr-base/error detections=10 swaps=179

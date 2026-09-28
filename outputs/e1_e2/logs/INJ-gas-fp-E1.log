@@ -1,0 +1,6 @@
+INJ-gas-fp E1 gas_sensor_drift_feature_permutation_abrupt_g00.csv hf10sqrt-E1/error detections=1 swaps=10
+INJ-gas-fp E1 gas_sensor_drift_feature_permutation_abrupt_g01.csv hf10sqrt-E1/error detections=1 swaps=0
+INJ-gas-fp E1 gas_sensor_drift_feature_permutation_abrupt_g02.csv hf10sqrt-E1/error detections=1 swaps=4
+INJ-gas-fp E1 gas_sensor_drift_feature_permutation_gradual_g00.csv hf10sqrt-E1/error detections=1 swaps=2
+INJ-gas-fp E1 gas_sensor_drift_feature_permutation_gradual_g01.csv hf10sqrt-E1/error detections=1 swaps=1
+INJ-gas-fp E1 gas_sensor_drift_feature_permutation_gradual_g02.csv hf10sqrt-E1/error detections=0 swaps=0

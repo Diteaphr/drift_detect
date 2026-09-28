@@ -1,0 +1,10 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+5319,5319,0,hit,144,8032,,0.406,0.546,0.14,rise,0.646,0.83,0.2848,,,0,sudden_rbf4_100k_g00.csv,hf10sqrt-E1/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g00.csv
+13511,13511,0,hit,160,12141,8192,0.338,0.51,0.172,rise,0.506,0.934,0.8458,,6449,0,sudden_rbf4_100k_g00.csv,hf10sqrt-E1/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g00.csv
+25863,25863,0,hit,211,8757,12352,0.358,0.484,0.126,rise,0.55,0.718,0.3055,,10504,0,sudden_rbf4_100k_g00.csv,hf10sqrt-E1/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g00.csv
+34791,34791,0,hit,171,16593,8928,0.344,0.46,0.116,rise,0.502,0.734,0.4622,,7242,0,sudden_rbf4_100k_g00.csv,hf10sqrt-E1/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g00.csv
+51495,51527,32,hit,111,11015,16704,0.206,0.472,0.266,rise,0.382,0.772,1.0209,,13837,0,sudden_rbf4_100k_g00.csv,hf10sqrt-E1/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g00.csv
+62663,62663,0,hit,153,9799,11168,0.326,0.484,0.158,rise,0.492,0.728,0.4797,,5451,0,sudden_rbf4_100k_g00.csv,hf10sqrt-E1/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g00.csv
+72679,72743,64,hit,217,8935,10016,0.394,0.53,0.136,rise,0.614,0.956,0.557,,8176,0,sudden_rbf4_100k_g00.csv,hf10sqrt-E1/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g00.csv
+81767,81767,0,hit,153,7178,9088,0.308,0.506,0.198,rise,0.508,0.67,0.3189,,8217,0,sudden_rbf4_100k_g00.csv,hf10sqrt-E1/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g00.csv
+89159,89159,0,hit,214,,7392,0.368,0.522,0.154,rise,0.53,0.832,0.5698,,6373,0,sudden_rbf4_100k_g00.csv,hf10sqrt-E1/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g00.csv
