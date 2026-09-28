@@ -1,0 +1,41 @@
+{
+  "source": "USP Insects stream (Souza et al. 2020)",
+  "url_paper": "https://arxiv.org/abs/2005.00113",
+  "url_repo": "https://sites.google.com/view/uspdsrepository",
+  "variant": "incremental_gradual_balanced",
+  "paper_name": "Incremental-gradual (bal.)",
+  "temperature_drift_description": "由 37°C 遞減至 35°C 後進入漸進過渡期，35°C 與 23°C 兩種概念交替出現，過渡點在第 14,028 筆，最後完全轉為 23°C 並平滑升至 27°C。",
+  "task": "multi_classification",
+  "n_rows": 24150,
+  "n_features": 33,
+  "n_classes": 6,
+  "original_class_codes": [
+    2,
+    3,
+    4,
+    5,
+    11,
+    12
+  ],
+  "class_remap": {
+    "2": 0,
+    "3": 1,
+    "4": 2,
+    "5": 3,
+    "11": 4,
+    "12": 5
+  },
+  "change_points_paper_table2": [
+    14028
+  ],
+  "drift_times_format": "[[t, t], ...] from published change points; empty if continuous",
+  "has_groundtruth_drift": true,
+  "note": "Separated from data/real_dataset because Insects provides published concept-drift change points (Table 2). Balanced variants only (imbal. / out-of-control omitted).",
+  "preprocessing": [
+    "features + class from USP/River CSV (no header)",
+    "remap class labels to 0-based contiguous ids",
+    "rename features to x0..",
+    "write drift_times from Souza et al. 2020 Table 2"
+  ],
+  "prepared_date": "2026-09-21"
+}
