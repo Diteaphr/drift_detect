@@ -31,7 +31,9 @@ ARMS = {"E1": {"ecpf_adwin_one_sided": True},
                "detector_delta": 0.002, "detector_delta_w": 0.004},
         # E9 (docs/ECPF_V1E9_預註冊.md): official-ECPF single detector on the leader's 0/1 error
         "E9d": {"ecpf_zone_detector": "ddm"},
-        "E9h": {"ecpf_zone_detector": "hddm_a"}}
+        "E9h": {"ecpf_zone_detector": "hddm_a"},
+        # new-data validation (A1+): the plain baseline has to be run there too
+        "base": {}}
 P3 = {"ecpf_normalizer_reset_on_drift": True}  # the regression baseline (htr-nr / hfr-nr) has it on
 REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
@@ -49,7 +51,18 @@ HELD = {  # E8 held-out streams (docs/ECPF_E8_按任務δ_預註冊.md): never u
     "REG-Joe-ho": (sorted(glob.glob("data/synthetic_dataset_joe/regression/sudden_drift/*/"
                                     "recurring_sudden_friedman_100k_g0[23].csv")), 0, REG_LEARNERS, True),
 }
-ALL = {**CELLS, **HELD}
+_INJ = "data/dataset_0921/injected_real_dataset/binary/*/{m}/electricity_{m}_*_g0[0-2].csv"
+_INS = "data/dataset_0921/insects_dataset/multi_classification/{v}/{v}.csv"
+A1 = {  # A1 (docs/ECPF_A1_新資料驗證_預註冊.md); split into sub-families only to run cells in parallel
+    **{"INJ-elec-" + k: (sorted(glob.glob(_INJ.format(m=m))), 0, RERUN["B"][2], False)
+       for k, m in (("cp", "class_prior"), ("ls", "label_swap"), ("fp", "feature_permutation"),
+                    ("ff", "feature_filtering"))},
+    **{"INS-" + k: ([_INS.format(v=v)], 0, [RERUN["MC-syn"][2][0]], False)
+       for k, v in (("abrupt", "abrupt_balanced"), ("incabrupt", "incremental_abrupt_reoccurring_balanced"),
+                    ("increc", "incremental_reoccurring_balanced"), ("incgrad", "incremental_gradual_balanced"),
+                    ("inc", "incremental_balanced"))},
+}
+ALL = {**CELLS, **HELD, **A1}
 FP = ("echo", "orphan")
 MATCH = 500
 SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age"]
@@ -135,7 +148,7 @@ def iter_runs(held: bool = False):
     for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in (HELD if held else CELLS).items():
+    for fam, (_, _, configs, _) in (A1 if held == "a1" else HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -170,11 +183,13 @@ def rescore(exts=(1000, 3000), show: bool = True, held: bool = False):
             drf.PERTURBATION = ext
             rows = drf.classify(dets, gt[key], sig, [], len(sig))
             labels = [r["label"] for r in rows]
+            start = gt[key][0][0] if gt[key] else None
             recs.append({"family": fam, "arm": arm, "ext": ext, "dataset": ds, "learner": learner(cfg),
                          "tp": labels.count("hit"), "fp": sum(lab in FP for lab in labels),
                          "delays": [float(r["gap_prev_gt"]) for r in rows if r["label"] == "hit"],
                          "fp_t": [r["confirmation_t"] for r in rows if r["label"] in FP],
                          "conf_t": [r["confirmation_t"] for r in rows],
+                         "pre": sum(start is not None and r["warning_t"] < start for r in rows),
                          "stored_tp": int((g["label"] == "hit").sum()), "stored_fp": int(g["label"].isin(FP).sum())})
     drf.PERTURBATION = 1000
     df = pd.DataFrame(recs)
@@ -402,6 +417,63 @@ def analyze_e9() -> None:
     print("E9 verdict: %s" % verdict)
 
 
+def analyze_a1() -> None:
+    """A1 verdict (docs/ECPF_A1_新資料驗證_預註冊.md): base vs E1 vs E2-k500 on new data."""
+    df = rescore(show=False, held="a1")
+    if df is None:
+        print("RESCORE INVALID -- no verdict")
+        return
+    q = runs_table(held="a1").groupby(["family", "arm"])["quality"].mean()
+    arms, med = ["base", "E1", "E2k500"], lambda s: float(np.median(sum(s, []))) if sum(s, []) else np.nan
+    inj = df[df["family"].str.startswith("INJ-elec")]
+    print("## A1 injected electricity (24 streams x ht, hf10; one drift per stream)")
+    print("%-5s %-7s %6s %8s %8s %8s %8s %8s %9s" % ("method", "arm", "preFP", "TP@1000", "TP@3000", "FP@1000",
+                                                  "FP@3000", "delay", "accuracy"))
+    for k in ("cp", "ls", "fp", "ff"):
+        for a in arms:
+            f = "INJ-elec-" + k
+            g1 = inj[(inj["family"] == f) & (inj["arm"] == a) & (inj["ext"] == 1000)]
+            g3 = inj[(inj["family"] == f) & (inj["arm"] == a) & (inj["ext"] == 3000)]
+            if not len(g1):
+                continue
+            print("%-5s %-7s %6d %8d %8d %8d %8d %8.0f %9.4f" % (k, a, g1["pre"].sum(), g1["tp"].sum(), g3["tp"].sum(),
+                                                            g1["fp"].sum(), g3["fp"].sum(), med(g3["delays"]), q[(f, a)]))
+    tot = {a: inj[(inj["arm"] == a) & (inj["ext"] == 3000)] for a in arms}
+    pre = {a: int(tot[a]["pre"].sum()) for a in arms}
+    tp = {a: int(tot[a]["tp"].sum()) for a in arms}
+    grad = {a: int(tot[a][tot[a]["dataset"].str.contains("_gradual_")]["tp"].sum()) for a in arms}
+    acc = {a: float(np.mean([q[("INJ-elec-" + k, a)] for k in ("cp", "ls", "fp", "ff")])) for a in arms}
+    print("pooled: pre-drift FP %s | TP@3000 %s | gradual TP@3000 %s | accuracy %s" % (
+        pre, tp, grad, {a: round(v, 4) for a, v in acc.items()}))
+    ok = {}
+    for a in ("E1", "E2k500"):
+        p1 = pre["base"] >= 10 and pre[a] <= 0.30 * pre["base"]
+        p2 = tp[a] >= 0.90 * tp["base"]
+        ok[a] = p1 and p2
+        print("%s: P1 pre-drift FP %d vs base %d (need <=%.1f, base>=10): %s | P2 TP@3000 %d vs base %d (need >=%.1f): %s"
+              % (a, pre[a], pre["base"], 0.30 * pre["base"], p1, tp[a], tp["base"], 0.90 * tp["base"], p2))
+    print("P3 gradual TP@3000 E2k500 %d vs E1 %d -> %s" % (grad["E2k500"], grad["E1"], grad["E2k500"] >= grad["E1"]))
+
+    ins = df[df["family"].str.startswith("INS-")]
+    print("\n## A1 INSECTS (hf10 masked)")
+    print("%-10s %-7s %8s %8s %8s %8s %9s" % ("variant", "arm", "FP@1000", "TP@1000", "FP@3000", "TP@3000", "accuracy"))
+    for k in ("abrupt", "incabrupt", "increc", "incgrad", "inc"):
+        for a in arms:
+            f = "INS-" + k
+            g1 = ins[(ins["family"] == f) & (ins["arm"] == a) & (ins["ext"] == 1000)]
+            g3 = ins[(ins["family"] == f) & (ins["arm"] == a) & (ins["ext"] == 3000)]
+            if len(g1):
+                print("%-10s %-7s %8d %8d %8d %8d %9.4f" % (k, a, g1["fp"].sum(), g1["tp"].sum(), g3["fp"].sum(),
+                                                        g3["tp"].sum(), q[(f, a)]))
+    ab = {a: ins[(ins["family"] == "INS-abrupt") & (ins["arm"] == a) & (ins["ext"] == 3000)] for a in arms}
+    if all(len(v) for v in ab.values()):
+        p4 = ab["E2k500"]["fp"].sum() <= ab["base"]["fp"].sum() and ab["E2k500"]["tp"].sum() >= ab["E1"]["tp"].sum()
+        print("P4 INSECTS abrupt: E2k500 FP@3000 %d vs base %d, TP@3000 %d vs E1 %d -> %s (supporting evidence only)" % (
+            ab["E2k500"]["fp"].sum(), ab["base"]["fp"].sum(), ab["E2k500"]["tp"].sum(), ab["E1"]["tp"].sum(), p4))
+    print("\nA1 verdict: E2-k500 %s on new data; E1 %s on new data" % (
+        "HOLDS" if ok["E2k500"] else "does NOT hold", "HOLDS" if ok["E1"] else "does NOT hold"))
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -475,6 +547,7 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-delta", action="store_true", help="E7 vs E2-k500 verdict")
     ap.add_argument("--analyze-e8", action="store_true", help="E8 held-out verdict (task-specific delta)")
     ap.add_argument("--analyze-e9", action="store_true", help="E9 verdict (official-ECPF detectors)")
+    ap.add_argument("--analyze-a1", action="store_true", help="A1 verdict (new data: injected electricity, INSECTS)")
     a = ap.parse_args()
     self_check()
     if a.family and a.arm:
@@ -493,3 +566,5 @@ if __name__ == "__main__":
         analyze_e8()
     if a.analyze_e9:
         analyze_e9()
+    if a.analyze_a1:
+        analyze_a1()
