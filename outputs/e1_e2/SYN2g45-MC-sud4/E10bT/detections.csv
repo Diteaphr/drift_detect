@@ -1,0 +1,8 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+3463,3463,0,hit,140,18282,,0.358,0.48,0.122,rise,0.628,0.802,0.2771,,,0,sudden_rbf4_100k_g04.csv,hf10sqrt-E10bT/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g04.csv
+22234,22234,0,hit,489,14202,18771,0.604,0.488,-0.116,fall,1.054,0.76,-0.2789,,18639,0,sudden_rbf4_100k_g04.csv,hf10sqrt-E10bT/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g04.csv
+36602,36634,32,hit,166,7887,14368,0.3,0.528,0.228,rise,0.444,0.866,0.9505,,33007,0,sudden_rbf4_100k_g04.csv,hf10sqrt-E10bT/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g04.csv
+43821,44666,845,orphan,7385,668,7219,0.188,0.572,0.384,rise,0.284,0.996,2.507,,6690,0,sudden_rbf4_100k_g04.csv,hf10sqrt-E10bT/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g04.csv
+60077,60141,64,hit,544,17100,16256,0.658,0.442,-0.216,fall,1.004,0.554,-0.4482,,15267,0,sudden_rbf4_100k_g04.csv,hf10sqrt-E10bT/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g04.csv
+77357,77389,32,hit,180,9227,17280,0.332,0.48,0.148,rise,0.436,0.79,0.8119,,17141,0,sudden_rbf4_100k_g04.csv,hf10sqrt-E10bT/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g04.csv
+86701,86701,0,hit,117,,9344,0.294,0.538,0.244,rise,0.496,0.874,0.7621,,8420,0,sudden_rbf4_100k_g04.csv,hf10sqrt-E10bT/error,data/dataset_0921/synthetic_dataset/multi_classification/sudden\sudden_rbf4_100k_g04.csv

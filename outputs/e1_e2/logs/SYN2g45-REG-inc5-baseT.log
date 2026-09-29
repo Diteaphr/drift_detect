@@ -1,0 +1,2 @@
+SYN2g45-REG-inc5 baseT incremental_friedman_100k_g05.csv htr-baseT/error detections=5 swaps=20
+SYN2g45-REG-inc5 baseT incremental_friedman_100k_g05.csv hfr-baseT/error detections=3 swaps=10

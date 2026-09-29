@@ -1,0 +1,2 @@
+INJgas9-ff baseT gas_sensor_drift_feature_filtering_abrupt_g09.csv hf10sqrt-baseT/error detections=2 swaps=0
+INJgas9-ff baseT gas_sensor_drift_feature_filtering_gradual_g09.csv hf10sqrt-baseT/error detections=2 swaps=2

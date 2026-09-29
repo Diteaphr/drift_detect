@@ -1,0 +1,4 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+48455,48615,160,hit,1802,13766,,0.038,0.024,-0.014,flat,0.038,0.024,-0.3684,masked_fall,,0,recurring_gradual_sea100k_g04.csv,ht-E2k500T/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_gradual_sea100k_g04.csv
+64506,64666,160,orphan,2285,20281,16051,0.034,0.05,0.016,flat,0.034,0.05,0.4706,,,0,recurring_gradual_sea100k_g04.csv,ht-E2k500T/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_gradual_sea100k_g04.csv
+22727,22727,0,orphan,3241,23926,,0.034,0.054,0.02,flat,0.034,0.054,0.5882,,,0,recurring_gradual_sea100k_g04.csv,hf10-E2k500T/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_gradual_sea100k_g04.csv

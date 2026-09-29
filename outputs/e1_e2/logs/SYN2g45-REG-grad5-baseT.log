@@ -1,0 +1,2 @@
+SYN2g45-REG-grad5 baseT gradual_friedman_100k_g05.csv htr-baseT/error detections=10 swaps=28
+SYN2g45-REG-grad5 baseT gradual_friedman_100k_g05.csv hfr-baseT/error detections=7 swaps=224

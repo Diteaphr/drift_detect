@@ -1,0 +1,16 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+15975,16167,192,hit,1677,12117,,0.056,0.046,-0.01,flat,0.056,0.046,-0.1786,masked_fall,,0,gradual_sea100k_g04.csv,ht-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+29543,29735,192,hit,1451,15499,13568,0.074,0.05,-0.024,fall,0.074,0.05,-0.3243,,4903,0,gradual_sea100k_g04.csv,ht-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+46631,46631,0,hit,1589,3009,17088,0.054,0.05,-0.004,flat,0.054,0.05,-0.0741,masked_fall,21991,0,gradual_sea100k_g04.csv,ht-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+50471,50471,0,hit,831,19913,3840,0.108,0.066,-0.042,fall,0.108,0.066,-0.3889,,3829,0,gradual_sea100k_g04.csv,ht-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+71015,71047,32,hit,631,6972,20544,0.092,0.054,-0.038,fall,0.092,0.054,-0.413,,19223,0,gradual_sea100k_g04.csv,ht-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+79495,79943,448,hit,1508,9742,8480,0.102,0.028,-0.074,fall,0.102,0.028,-0.7255,,3620,0,gradual_sea100k_g04.csv,ht-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+90426,90426,0,hit,1189,,10931,0.06,0.05,-0.01,flat,0.06,0.05,-0.1667,masked_fall,14551,0,gradual_sea100k_g04.csv,ht-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+12647,12711,64,orphan,11256,1651,,0.04,0.034,-0.006,flat,0.04,0.034,-0.15,masked_fall,,0,gradual_sea100k_g04.csv,hf10-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+17383,17415,32,orphan,3085,10709,4736,0.066,0.056,-0.01,flat,0.066,0.056,-0.1515,masked_fall,,0,gradual_sea100k_g04.csv,hf10-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+29223,29351,128,hit,1131,15819,11840,0.084,0.038,-0.046,fall,0.084,0.038,-0.5476,,,0,gradual_sea100k_g04.csv,hf10-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+48698,48826,128,orphan,3656,942,19475,0.042,0.072,0.03,rise,0.042,0.072,0.7143,,,0,gradual_sea100k_g04.csv,hf10-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+50458,50477,19,hit,818,19926,1760,0.118,0.09,-0.028,fall,0.118,0.09,-0.2373,,1567,0,gradual_sea100k_g04.csv,hf10-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+71469,71661,192,hit,1085,6518,21011,0.098,0.064,-0.034,fall,0.098,0.064,-0.3469,,20302,0,gradual_sea100k_g04.csv,hf10-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+78861,78893,32,hit,874,10376,7392,0.108,0.062,-0.046,fall,0.108,0.062,-0.4259,,7175,0,gradual_sea100k_g04.csv,hf10-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
+90445,90861,416,hit,1208,,11584,0.09,0.066,-0.024,fall,0.09,0.066,-0.2667,,11539,0,gradual_sea100k_g04.csv,hf10-E10bT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g04.csv
