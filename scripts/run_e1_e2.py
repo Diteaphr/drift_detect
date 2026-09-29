@@ -12,8 +12,14 @@ import gzip
 import os
 import sys
 
-import numpy as np
-import pandas as pd
+if __name__ == "__main__" and "--family" in sys.argv and os.path.exists("outputs/e1_e2/PAUSE"):
+    # pause switch, checked before the heavy imports: a queued cell skips itself at once, while
+    # running cells finish and save as usual; delete the file and relaunch the missing cells to resume
+    print("skipped: outputs/e1_e2/PAUSE exists")
+    sys.exit(0)
+
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyze_native_direction import ARCHIVED, RERUN, sig_name  # noqa: E402
@@ -759,6 +765,10 @@ def analyze_e10() -> None:
 def analyze_e11() -> None:
     """E11 verdict (docs/ECPF_E11_逾時與超額命中_預註冊.md): 1000-step warning timeout; recall as excess hits."""
     groups, arms = ["SYN2g23-B", "SYN2g23-MC", "SYN2g23-REG", "INJgas68"], ["base", "baseT", "E1T", "E2k500T"]
+    missing = [(f, a) for f in E11 for a in arms if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
+    if missing:   # paused or still running: never judge a partial matrix
+        print("E11 INCOMPLETE: %d of %d cells missing -- no verdict" % (len(missing), len(E11) * len(arms)))
+        return
     ages = {}
     for a in arms:
         ages[a] = []
