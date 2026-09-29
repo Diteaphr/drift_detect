@@ -1,0 +1,12 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+3655,3655,0,orphan,,22881,,0.088,0.07,-0.018,flat,0.088,0.07,-0.2045,masked_fall,,0,gradual_sea100k_g02.csv,ht-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+8071,8231,160,orphan,,18465,4416,0.016,0.02,0.004,flat,0.016,0.02,0.25,,1593,0,gradual_sea100k_g02.csv,ht-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+71239,71239,0,orphan,4193,16518,63168,0.032,0.028,-0.004,flat,0.032,0.028,-0.125,masked_fall,64761,0,gradual_sea100k_g02.csv,ht-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+88999,88999,0,hit,1242,,17760,0.118,0.076,-0.042,fall,0.118,0.076,-0.3559,,82521,0,gradual_sea100k_g02.csv,ht-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+93895,93991,96,orphan,6138,,4896,0.02,0.04,0.02,rise,0.02,0.04,1.0,,4749,0,gradual_sea100k_g02.csv,ht-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+3815,3911,96,orphan,,22721,,0.032,0.036,0.004,flat,0.032,0.036,0.125,,,0,gradual_sea100k_g02.csv,hf10-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+39751,39751,0,orphan,13215,7918,35936,0.024,0.032,0.008,flat,0.024,0.032,0.3333,,,0,gradual_sea100k_g02.csv,hf10-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+65415,65959,544,orphan,17746,1631,25664,0.004,0.034,0.03,rise,0.004,0.034,7.5,,,0,gradual_sea100k_g02.csv,hf10-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+82343,82343,0,orphan,15297,5414,16928,0.024,0.042,0.018,flat,0.024,0.042,0.75,,4795,0,gradual_sea100k_g02.csv,hf10-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+89287,89319,32,hit,1530,,6944,0.112,0.096,-0.016,flat,0.112,0.096,-0.1429,masked_fall,11739,0,gradual_sea100k_g02.csv,hf10-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+91815,91879,64,orphan,4058,,2528,0.036,0.044,0.008,flat,0.036,0.044,0.2222,,1294,0,gradual_sea100k_g02.csv,hf10-baseT/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv

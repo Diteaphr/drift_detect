@@ -1,0 +1,6 @@
+INJgas68-ls E1T gas_sensor_drift_label_swap_abrupt_g06.csv hf10sqrt-E1T/error detections=1 swaps=0
+INJgas68-ls E1T gas_sensor_drift_label_swap_abrupt_g07.csv hf10sqrt-E1T/error detections=1 swaps=0
+INJgas68-ls E1T gas_sensor_drift_label_swap_abrupt_g08.csv hf10sqrt-E1T/error detections=1 swaps=2
+INJgas68-ls E1T gas_sensor_drift_label_swap_gradual_g06.csv hf10sqrt-E1T/error detections=1 swaps=0
+INJgas68-ls E1T gas_sensor_drift_label_swap_gradual_g07.csv hf10sqrt-E1T/error detections=0 swaps=0
+INJgas68-ls E1T gas_sensor_drift_label_swap_gradual_g08.csv hf10sqrt-E1T/error detections=1 swaps=4

@@ -1,0 +1,14 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+16912,16999,87,hit,568,8235,,0.11,0.09,-0.02,fall,0.11,0.09,-0.1818,,,0,gradual_sea100k_g03.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+42247,42407,160,hit,967,9847,25335,0.076,0.068,-0.008,flat,0.076,0.068,-0.1053,masked_fall,25225,0,gradual_sea100k_g03.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+76839,76903,64,orphan,3028,8192,34592,0.056,0.01,-0.046,fall,0.056,0.01,-0.8214,,32929,0,gradual_sea100k_g03.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+85575,85607,32,hit,544,6704,8736,0.094,0.052,-0.042,fall,0.094,0.052,-0.4468,,41665,0,gradual_sea100k_g03.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+89447,89543,96,orphan,4416,2832,3872,0.082,0.014,-0.068,fall,0.082,0.014,-0.8293,,3647,0,gradual_sea100k_g03.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+92711,92743,32,hit,432,,3264,0.068,0.142,0.074,rise,0.068,0.142,1.0882,,6911,0,gradual_sea100k_g03.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+16679,16775,96,hit,335,8468,,0.108,0.106,-0.002,flat,0.108,0.106,-0.0185,,,0,gradual_sea100k_g03.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+42439,42599,160,hit,1159,9655,25760,0.068,0.058,-0.01,flat,0.068,0.058,-0.1471,masked_fall,25652,0,gradual_sea100k_g03.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+53255,53287,32,hit,1161,7656,10816,0.136,0.05,-0.086,fall,0.136,0.05,-0.6324,,8501,0,gradual_sea100k_g03.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+62567,62695,128,hit,1656,11244,9312,0.094,0.036,-0.058,fall,0.094,0.036,-0.617,,17813,0,gradual_sea100k_g03.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+75559,75623,64,hit,1748,9472,12992,0.098,0.036,-0.062,fall,0.098,0.036,-0.6327,,12821,0,gradual_sea100k_g03.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+85543,85575,32,hit,512,6736,9984,0.086,0.08,-0.006,flat,0.086,0.08,-0.0698,masked_fall,9867,0,gradual_sea100k_g03.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv
+92967,92999,32,hit,688,,7424,0.154,0.116,-0.038,fall,0.154,0.116,-0.2468,,7358,0,gradual_sea100k_g03.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g03.csv

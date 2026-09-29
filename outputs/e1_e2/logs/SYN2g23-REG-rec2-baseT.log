@@ -1,0 +1,2 @@
+SYN2g23-REG-rec2 baseT recurring_incremental_friedman_100k_g02.csv htr-baseT/error detections=5 swaps=43
+SYN2g23-REG-rec2 baseT recurring_incremental_friedman_100k_g02.csv hfr-baseT/error detections=3 swaps=40

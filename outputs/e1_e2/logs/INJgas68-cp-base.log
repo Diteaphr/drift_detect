@@ -1,0 +1,6 @@
+INJgas68-cp base gas_sensor_drift_class_prior_abrupt_g06.csv hf10sqrt-base/error detections=3 swaps=2
+INJgas68-cp base gas_sensor_drift_class_prior_abrupt_g07.csv hf10sqrt-base/error detections=2 swaps=2
+INJgas68-cp base gas_sensor_drift_class_prior_abrupt_g08.csv hf10sqrt-base/error detections=2 swaps=2
+INJgas68-cp base gas_sensor_drift_class_prior_gradual_g06.csv hf10sqrt-base/error detections=3 swaps=0
+INJgas68-cp base gas_sensor_drift_class_prior_gradual_g07.csv hf10sqrt-base/error detections=2 swaps=0
+INJgas68-cp base gas_sensor_drift_class_prior_gradual_g08.csv hf10sqrt-base/error detections=3 swaps=0

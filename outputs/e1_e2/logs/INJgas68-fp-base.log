@@ -1,0 +1,6 @@
+INJgas68-fp base gas_sensor_drift_feature_permutation_abrupt_g06.csv hf10sqrt-base/error detections=4 swaps=2
+INJgas68-fp base gas_sensor_drift_feature_permutation_abrupt_g07.csv hf10sqrt-base/error detections=5 swaps=6
+INJgas68-fp base gas_sensor_drift_feature_permutation_abrupt_g08.csv hf10sqrt-base/error detections=3 swaps=12
+INJgas68-fp base gas_sensor_drift_feature_permutation_gradual_g06.csv hf10sqrt-base/error detections=4 swaps=2
+INJgas68-fp base gas_sensor_drift_feature_permutation_gradual_g07.csv hf10sqrt-base/error detections=4 swaps=14
+INJgas68-fp base gas_sensor_drift_feature_permutation_gradual_g08.csv hf10sqrt-base/error detections=4 swaps=9

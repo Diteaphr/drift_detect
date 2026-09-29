@@ -1,0 +1,2 @@
+SYN2g23-REG-grad3 base gradual_friedman_100k_g03.csv htr-base/error detections=8 swaps=72
+SYN2g23-REG-grad3 base gradual_friedman_100k_g03.csv hfr-base/error detections=6 swaps=195

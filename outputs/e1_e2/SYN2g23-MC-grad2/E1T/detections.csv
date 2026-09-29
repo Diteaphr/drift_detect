@@ -1,0 +1,7 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+1351,1351,0,hit,495,16051,,0.552,0.634,0.082,rise,1.012,1.068,0.0553,,,0,gradual_rbf4_100k_g02.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g02.csv
+17991,17991,0,hit,589,16588,16640,0.356,0.688,0.332,rise,0.604,1.114,0.8444,,9086,0,gradual_rbf4_100k_g02.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g02.csv
+35175,35207,32,hit,596,20330,17184,0.376,0.472,0.096,rise,0.618,0.804,0.301,,15467,0,gradual_rbf4_100k_g02.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g02.csv
+56167,56263,96,hit,662,12943,20992,0.396,0.514,0.118,rise,0.728,0.908,0.2473,,36459,0,gradual_rbf4_100k_g02.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g02.csv
+69799,69831,32,hit,689,20615,13632,0.438,0.526,0.088,rise,0.724,0.912,0.2597,,13533,0,gradual_rbf4_100k_g02.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g02.csv
+90983,90983,0,hit,569,,21184,0.326,0.614,0.288,rise,0.586,1.098,0.8737,,21063,0,gradual_rbf4_100k_g02.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g02.csv

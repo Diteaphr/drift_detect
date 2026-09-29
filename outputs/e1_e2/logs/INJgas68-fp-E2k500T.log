@@ -1,0 +1,6 @@
+INJgas68-fp E2k500T gas_sensor_drift_feature_permutation_abrupt_g06.csv hf10sqrt-E2k500T/error detections=1 swaps=0
+INJgas68-fp E2k500T gas_sensor_drift_feature_permutation_abrupt_g07.csv hf10sqrt-E2k500T/error detections=1 swaps=0
+INJgas68-fp E2k500T gas_sensor_drift_feature_permutation_abrupt_g08.csv hf10sqrt-E2k500T/error detections=1 swaps=17
+INJgas68-fp E2k500T gas_sensor_drift_feature_permutation_gradual_g06.csv hf10sqrt-E2k500T/error detections=1 swaps=0
+INJgas68-fp E2k500T gas_sensor_drift_feature_permutation_gradual_g07.csv hf10sqrt-E2k500T/error detections=1 swaps=0
+INJgas68-fp E2k500T gas_sensor_drift_feature_permutation_gradual_g08.csv hf10sqrt-E2k500T/error detections=1 swaps=2

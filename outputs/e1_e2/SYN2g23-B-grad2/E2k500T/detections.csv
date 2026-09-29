@@ -1,0 +1,4 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+32231,32711,480,orphan,5695,15438,,0.03,0.042,0.012,flat,0.03,0.042,0.4,,,0,gradual_sea100k_g02.csv,ht-E2k500T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+89402,89530,128,hit,1645,,57171,0.124,0.068,-0.056,fall,0.124,0.068,-0.4516,,54278,0,gradual_sea100k_g02.csv,ht-E2k500T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv
+93223,93543,320,orphan,5466,,,0.104,0.108,0.004,flat,0.104,0.108,0.0385,,,0,gradual_sea100k_g02.csv,hf10-E2k500T/error,data/dataset_0921/synthetic_dataset/binary/gradual\gradual_sea100k_g02.csv

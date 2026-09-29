@@ -1,0 +1,14 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+19984,20039,55,hit,259,2902,,0.112,0.062,-0.05,fall,0.112,0.062,-0.4464,,,0,sudden_sea100k_g02.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+23687,23879,192,hit,801,11147,3703,0.106,0.072,-0.034,fall,0.106,0.072,-0.3208,,3646,0,sudden_sea100k_g02.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+35399,35431,32,hit,565,13452,11712,0.124,0.052,-0.072,fall,0.124,0.052,-0.5806,,8336,0,sudden_sea100k_g02.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+50695,50887,192,orphan,1844,8307,15296,0.042,0.052,0.01,flat,0.042,0.052,0.2381,,14933,0,sudden_sea100k_g02.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+59879,59911,32,hit,877,12700,9184,0.102,0.014,-0.088,fall,0.102,0.014,-0.8627,,8915,0,sudden_sea100k_g02.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+74247,74247,0,orphan,1668,11797,14368,0.068,0.044,-0.024,fall,0.068,0.044,-0.3529,,23283,0,sudden_sea100k_g02.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+86256,86279,23,hit,212,8432,12009,0.09,0.06,-0.03,fall,0.09,0.06,-0.3333,,6831,0,sudden_sea100k_g02.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+94919,95175,256,hit,231,,8663,0.084,0.06,-0.024,fall,0.084,0.06,-0.2857,,8609,0,sudden_sea100k_g02.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+19847,19879,32,hit,122,3039,,0.07,0.09,0.02,flat,0.07,0.09,0.2857,,,0,sudden_sea100k_g02.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+23463,23527,64,hit,577,11371,3616,0.144,0.086,-0.058,fall,0.144,0.086,-0.4028,,3582,0,sudden_sea100k_g02.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+59751,59943,192,hit,749,12828,36288,0.078,0.072,-0.006,flat,0.078,0.072,-0.0769,masked_fall,35933,0,sudden_sea100k_g02.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+86279,86279,0,hit,235,8409,26528,0.136,0.068,-0.068,fall,0.136,0.068,-0.5,,25376,0,sudden_sea100k_g02.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv
+94951,94951,0,hit,263,,8672,0.092,0.124,0.032,rise,0.092,0.124,0.3478,,34048,0,sudden_sea100k_g02.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g02.csv

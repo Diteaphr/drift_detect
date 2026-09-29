@@ -1,0 +1,2 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+99047,99047,0,orphan,11314,,,0.4649,0.5075,0.0426,rise,1.3545,1.3412,-0.0098,,,0,recurring_incremental_friedman_100k_g02.csv,htr-E2k500T/error,data/dataset_0921/synthetic_dataset/regression/recurring\recurring_incremental_friedman_100k_g02.csv
