@@ -2,7 +2,8 @@
 # Registered with the data in commit f00864f; the files are no longer tracked on this branch.
 # Each line: <git blob id> TAB <path>.  Restore and verify:
 #   git restore --source=d29bb70 --worktree -- $(grep -v '^#' data/manifests/A2.txt | cut -f2)
-#   grep -v '^#' data/manifests/A2.txt | while IFS=$'\t' read id p; do [ "$(git hash-object "$p")" = "$id" ] || echo "MISMATCH $p"; done
+#   grep -v '^#' data/manifests/A2.txt | while IFS=$'\t' read id p; do [ "$(git hash-object "$p")" = "$id" ] || [ "$(git hash-object --no-filters "$p")" = "$id" ] || echo "MISMATCH $p"; done
+#   (some files are stored with CRLF line endings, which git's line-ending conversion alters, so accept either hash)
 b17de9706b385ebdaa3db97e051a1b27e4b4b89e	data/dataset_0921/injected_real_dataset/multi_classification/abrupt/class_prior/gas_sensor_drift_class_prior_abrupt_g00.csv
 2d41810d281a13b08356eb70d2f061ad76a56d9b	data/dataset_0921/injected_real_dataset/multi_classification/abrupt/class_prior/gas_sensor_drift_class_prior_abrupt_g00.json
 bbfaab66178ee00ec022ffb9ec3bd02b93f85e1f	data/dataset_0921/injected_real_dataset/multi_classification/abrupt/class_prior/gas_sensor_drift_class_prior_abrupt_g00_drift_times.txt

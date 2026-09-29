@@ -2,7 +2,8 @@
 # Registered with the data in commit 8994c02; the files are no longer tracked on this branch.
 # Each line: <git blob id> TAB <path>.  Restore and verify:
 #   git restore --source=d29bb70 --worktree -- $(grep -v '^#' data/manifests/A1.txt | cut -f2)
-#   grep -v '^#' data/manifests/A1.txt | while IFS=$'\t' read id p; do [ "$(git hash-object "$p")" = "$id" ] || echo "MISMATCH $p"; done
+#   grep -v '^#' data/manifests/A1.txt | while IFS=$'\t' read id p; do [ "$(git hash-object "$p")" = "$id" ] || [ "$(git hash-object --no-filters "$p")" = "$id" ] || echo "MISMATCH $p"; done
+#   (some files are stored with CRLF line endings, which git's line-ending conversion alters, so accept either hash)
 078ebc942d65df0f0a6c6e5568b547136b936f01	data/dataset_0921/README.md
 44493414991165b50d3b2a86e8b07e5c06ba0a41	data/dataset_0921/injected_real_dataset/README.md
 1efb285eb42ebd0d26a7e17e742748102931827e	data/dataset_0921/injected_real_dataset/binary/abrupt/class_prior/electricity_class_prior_abrupt_g00.csv
