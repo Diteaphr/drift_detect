@@ -113,12 +113,24 @@ E11 = {  # E11 judges on fresh data: synthetic v2 g02 + g03 (the two seeds pool 
        for k, m in (("cp", "class_prior"), ("ls", "label_swap"), ("fp", "feature_permutation"),
                     ("ff", "feature_filtering"))},
 }
-ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11}
+E12 = {  # E12 judges on fresh data: synthetic v2 g04 + g05 (pooled per group) and gas g09
+    **{"SYN2g45-%s-%s%s" % (g, k, sd): (sorted(glob.glob(_SYN.replace("g00", "g0" + sd).format(t=t, d=d))), 0, cfg,
+                                        g == "REG")
+       for sd in ("4", "5")
+       for g, t, cfg in (("B", "binary", RERUN["B"][2]), ("MC", "multi_classification", [RERUN["MC-syn"][2][0]]),
+                         ("REG", "regression", REG_LEARNERS))
+       for k, d in (("sud", "sudden"), ("grad", "gradual"), ("inc", "incremental"), ("rec", "recurring"))},
+    **{"INJgas9-" + k: (sorted(glob.glob(_GAS.replace("g0[0-2]", "g09").format(m=m))), 0,
+                        [RERUN["MC-syn"][2][0]], False)
+       for k, m in (("cp", "class_prior"), ("ls", "label_swap"), ("fp", "feature_permutation"),
+                    ("ff", "feature_filtering"))},
+}
+ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12}
 
 
 def scored_gt(fam: str, intervals):
     """A2 rule (prereg): GT intervals that start inside the warm-up are not scored."""
-    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 else intervals
+    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 or fam in E12 else intervals
 FP = ("echo", "orphan")
 MATCH = 500
 SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age",
@@ -253,7 +265,7 @@ def iter_runs(held: bool = False):
     for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in (E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
+    for fam, (_, _, configs, _) in (E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -604,7 +616,8 @@ def chance_hits(df):
     return out
 
 
-def new_data_criteria(label: str, held: str, groups, arms, judged, ref: str = "base", excess: bool = False):
+def new_data_criteria(label: str, held: str, groups, arms, judged, ref: str = "base", excess: bool = False,
+                      per_method: int = 6):
     """Per-group tables and the new-data criteria P1-P4 that A2, E10 and E11 share.
     groups = [B, MC, REG, gas] family groups (a family is group + '-' + suffix); ref = the baseline arm;
     excess=True (E11): P2/P3 recall is excess hits, not TP@3000. Returns (ok, df, runs), or None."""
@@ -634,7 +647,7 @@ def new_data_criteria(label: str, held: str, groups, arms, judged, ref: str = "b
                 g, a, tot(d1, g, a, "tp"), tot(d1, g, a, "fp"), tot(d3, g, a, "tp"), tot(d3, g, a, "fp"),
                 med(d3[(d3["group"] == g) & (d3["arm"] == a)]["delays"]), q[(g, a)])
                 + (" %8.1f" % ftot(d3, g, a, "xs") if excess else ""))
-    print("\n## %s per injection method (6 streams each, one drift per stream)" % gas)
+    print("\n## %s per injection method (%d streams each, one drift per stream)" % (gas, per_method))
     print("%-6s %-7s %6s %8s %8s %8s %8s %9s" % ("method", "arm", "preFP", "TP@1000", "TP@3000", "FP@1000", "FP@3000",
                                               "accuracy"))
     for k in ("cp", "ls", "fp", "ff"):
@@ -649,7 +662,7 @@ def new_data_criteria(label: str, held: str, groups, arms, judged, ref: str = "b
     rec = {a: ftot(d3, gas, a, rc) for a in arms}
     ok = {a: {} for a in judged}
     for a in ok:
-        ok[a]["P1"] = pre[ref] >= 10 and pre[a] <= 0.30 * pre[ref]
+        ok[a]["P1"] = (pre[a] <= 0.30 * pre[ref]) if pre[ref] >= 10 else None   # None: not evaluable
         ok[a]["P2"] = rec[a] >= 0.90 * rec[ref]
         print("%s: P1 pre-drift FP %d vs %s %d (need <=%.1f, %s>=10): %s | P2 %s %s vs %s %s (need >=%.1f): %s"
               % (a, pre[a], ref, pre[ref], 0.3 * pre[ref], ref, ok[a]["P1"], rname, fv(rec[a]), ref, fv(rec[ref]),
@@ -908,6 +921,71 @@ def analyze_d2() -> None:
                   all(xs[(g, c)] > xs[(g, "E2k500T")] for g in groups)))
 
 
+def analyze_e12() -> None:
+    """E12 verdict (docs/ECPF_E12_leader守衛取代_預註冊.md): can E10bT replace E2k500T as the main method?"""
+    groups, arms = ["SYN2g45-B", "SYN2g45-MC", "SYN2g45-REG", "INJgas9"], ["baseT", "E2k500T", "E10bT"]
+    missing = [(f, a) for f in E12 for a in arms if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
+    if missing:   # paused or still running: never judge a partial matrix
+        print("E12 INCOMPLETE: %d of %d cells missing -- no verdict" % (len(missing), len(E12) * len(arms)))
+        return
+    ages = {a: [] for a in arms}
+    for a in arms:
+        for f in E12:
+            try:
+                ages[a] += pd.read_csv(os.path.join(OUT, f, a, "detections.csv"))["confirm_age"].tolist()
+            except pd.errors.EmptyDataError:
+                pass
+    a0 = all(max(v, default=0) <= 1001 for v in ages.values())
+    print("## A0 validity: longest warning->confirmation age %s -> %s\n" % (
+        {a: int(max(v, default=0)) for a, v in ages.items()}, "VALID" if a0 else "INVALID"))
+    if not a0:
+        print("E12 INVALID -- no verdict")
+        return
+    res = new_data_criteria("E12", "e12", groups, arms, ["E2k500T", "E10bT"], ref="baseT", excess=True, per_method=2)
+    if res is None:
+        return
+    ok, df, runs = res
+    B, MC, REG, gas = groups
+    d3 = df[df["ext"] == 3000]
+    xs = lambda a, gs: float(d3[(d3["arm"] == a) & d3["group"].isin(gs)]["xs"].sum())
+    print("\n## B verdicts (vs baseT, recall = excess hits; P1 None = not evaluable, then left out)")
+    holds = {}
+    for a in ok:
+        cls = all((ok[a][k] is not False) if k == "P1" else ok[a][k]
+                  for k in ("P1", "P2", "P3-" + B, "P3-" + MC, "P4-" + B, "P4-" + MC, "P4-" + gas))
+        reg = ok[a]["P3-" + REG] and ok[a]["P4-" + REG]
+        holds[a] = (cls, reg)
+        print("E12 verdict %s: classification %s; regression %s" % (
+            a, "HOLDS" if cls else "does NOT hold", "HOLDS" if reg else "does NOT hold"))
+    print("\n## C: replacement (E10bT replaces E2k500T where it holds and has at least E2k500T's excess hits)")
+    for task, gs, i in (("classification", [B, MC, gas], 0), ("regression", [REG], 1)):
+        x_b, x_e = xs("E10bT", gs), xs("E2k500T", gs)
+        print("%s: E10bT holds %s | excess E10bT %.1f vs E2k500T %.1f -> %s" % (
+            task, holds["E10bT"][i], x_b, x_e,
+            "E10bT REPLACES E2k500T" if holds["E10bT"][i] and x_b >= x_e else "keep E2k500T"))
+
+    e10b = runs[runs["arm"] == "E10bT"]
+    n_guard = sum(int(x.sig.set_index("t")["guard_drift"].reindex(x.conf_t).fillna(0).sum()) for x in e10b.itertuples())
+    print("\nE10bT confirmations %d, of which the leader guard fired the drift: %d" % (
+        sum(len(x.conf_t) for x in e10b.itertuples()), n_guard))
+    ra = runs[runs["arm"].isin(["E2k500T", "E10bT"])].copy()
+    ra["max_age"] = [int(s["ref_age"].max()) for s in ra["sig"]]
+    print("max reference age:\n%s" % ra.groupby(["group", "arm"])["max_age"].max().unstack().to_string())
+    rows = []
+    for (f, ds, lr), g in runs.groupby(["family", "dataset", "learner"]):
+        r = {x.arm: x for x in g.itertuples()}
+        iv = scored_gt(f, load_stream(r["E2k500T"].path, ALL[f][1])[2])
+        age = r["E2k500T"].sig.set_index("t")["ref_age"]
+        sel = d3[(d3["family"] == f) & (d3["dataset"] == ds) & (d3["learner"] == lr)]
+        warn = {a: sel[sel["arm"] == a]["warn_t"].iloc[0] for a in arms}
+        for s, e in iv:
+            rows.append({"age": int(age.get(s, -1)), **{a: any(s <= w <= e + 3000 for w in warn[a]) for a in arms}})
+    m = pd.DataFrame(rows)
+    m["bin"] = pd.cut(m["age"], [-1, 10000, 10 ** 6], labels=["<10k", ">=10k"])
+    print("\nhits per E2k500T reference age at drift onset:\n%s" % m.groupby("bin", observed=True)[arms].sum().assign(
+        n=m.groupby("bin", observed=True).size()).to_string())
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -988,6 +1066,7 @@ if __name__ == "__main__":
     ap.add_argument("--excess-report", action="store_true", help="post-hoc excess hits for A1 / A2 / E10")
     ap.add_argument("--analyze-d1", action="store_true", help="D1 dev check: timeout vs stale references on A2 g00")
     ap.add_argument("--analyze-d2", action="store_true", help="D2 dev check: E10a / E10b plus the timeout on A2 g00")
+    ap.add_argument("--analyze-e12", action="store_true", help="E12 verdict (can E10bT replace E2k500T?)")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -1022,3 +1101,5 @@ if __name__ == "__main__":
         analyze_d1()
     if a.analyze_d2:
         analyze_d2()
+    if a.analyze_e12:
+        analyze_e12()
