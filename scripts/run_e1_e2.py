@@ -829,6 +829,53 @@ def excess_report() -> None:
         print("## %s: TP@3000, FP@3000, expected chance hits, excess hits\n%s\n" % (held.upper(), t.round(1).to_string()))
 
 
+def analyze_d1() -> None:
+    """D1 development check (docs/ECPF_D1_逾時與參照過時_開發檢查.md): does the 1000-step timeout also remove
+    A2's stale-reference cascades?  A2 g00 SYN2-B / SYN2-REG; base and E2k500 are A2's own runs."""
+    groups, arms = ["SYN2-B", "SYN2-REG"], ["base", "E2k500", "baseT", "E2k500T"]
+    fams = [f for f in A2 if f.rsplit("-", 1)[0] in groups]
+    df = rescore(exts=(3000,), show=False, held="a2")
+    df = df[df["family"].isin(fams) & df["arm"].isin(arms)].copy()
+    df["xs"] = df["tp"] - np.array(chance_hits(df))
+    df["group"] = df["family"].map(lambda f: f.rsplit("-", 1)[0])
+    runs = runs_table(held="a2")
+    runs = runs[runs["family"].isin(fams) & runs["arm"].isin(arms)].copy()
+    runs["group"] = runs["family"].map(lambda f: f.rsplit("-", 1)[0])
+    q = runs.groupby(["group", "arm"])["quality"].mean()
+    xs = df.groupby(["group", "arm"])["xs"].sum()
+    print("## D1 per group (TP@3000, FP@3000, excess hits, quality = accuracy or MAE, max reference age)")
+    for g in groups:
+        for a in arms:
+            x, r = df[(df["group"] == g) & (df["arm"] == a)], runs[(runs["group"] == g) & (runs["arm"] == a)]
+            age = max((int(s["ref_age"].max()) for s in r["sig"] if "ref_age" in s.columns), default=0)
+            print("%-8s %-8s TP %3d  FP %3d  excess %5.1f  quality %.4f  max ref age %6s" % (
+                g, a, x["tp"].sum(), x["fp"].sum(), xs[(g, a)], q[(g, a)], age or "-"))
+
+    rows = []
+    for (f, ds, lr), g in runs.groupby(["family", "dataset", "learner"]):
+        r = {x.arm: x for x in g.itertuples()}
+        iv = scored_gt(f, load_stream(r["E2k500"].path, ALL[f][1])[2])
+        age, age_t = (r[a].sig.set_index("t")["ref_age"] for a in ("E2k500", "E2k500T"))
+        sel = df[(df["family"] == f) & (df["dataset"] == ds) & (df["learner"] == lr)]
+        warn = {a: sel[sel["arm"] == a]["warn_t"].iloc[0] for a in arms}
+        for s, e in iv:
+            rows.append({"group": f.rsplit("-", 1)[0], "age": int(age.get(s, -1)), "age_t": int(age_t.get(s, -1)),
+                         **{a: any(s <= w <= e + 3000 for w in warn[a]) for a in arms}})
+    m = pd.DataFrame(rows)
+    stale = m[~m["E2k500"] & (m["age"] >= 10000)]
+    print("\nA2's stale misses (E2k500 missed, its reference >= 10k steps old): %d; hit by base %d, baseT %d, E2k500T %d"
+          % (len(stale), stale["base"].sum(), stale["baseT"].sum(), stale["E2k500T"].sum()))
+    m["bin_t"] = pd.cut(m["age_t"], [-1, 2000, 10000, 10 ** 6], labels=["<2k", "2k-10k", ">=10k"])
+    print("\nhits per E2k500T reference age at drift onset:\n%s" % m.groupby("bin_t", observed=True)[arms].sum().assign(
+        n=m.groupby("bin_t", observed=True).size()).to_string())
+    c1 = all(xs[(g, "E2k500T")] >= xs[(g, "baseT")] for g in groups)
+    c2 = len(stale) > 0 and stale["E2k500T"].sum() >= 0.5 * len(stale)
+    print("\nD1 reading: (1) excess E2k500T >= baseT in both groups: %s | (2) stale misses recovered %d/%d >= 50%%: %s"
+          " -> %s" % (c1, stale["E2k500T"].sum(), len(stale), c2,
+                      "timeout RESOLVES the stale reference" if c1 and c2 else "PARTLY resolved" if c1 or c2
+                      else "NOT resolved: the reference refresh rule is still open"))
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -907,6 +954,7 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-e10", action="store_true", help="E10 verdict (reference refresh arms, fresh data)")
     ap.add_argument("--analyze-e11", action="store_true", help="E11 verdict (warning timeout, excess-hit recall)")
     ap.add_argument("--excess-report", action="store_true", help="post-hoc excess hits for A1 / A2 / E10")
+    ap.add_argument("--analyze-d1", action="store_true", help="D1 dev check: timeout vs stale references on A2 g00")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -937,3 +985,5 @@ if __name__ == "__main__":
         analyze_e11()
     if a.excess_report:
         excess_report()
+    if a.analyze_d1:
+        analyze_d1()
