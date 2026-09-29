@@ -1,0 +1,2 @@
+SYN2-REG-inc E10bT incremental_friedman_100k_g00.csv htr-E10bT/error detections=10 swaps=48
+SYN2-REG-inc E10bT incremental_friedman_100k_g00.csv hfr-E10bT/error detections=9 swaps=95

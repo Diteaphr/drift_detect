@@ -1,0 +1,12 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+3623,3623,0,hit,114,15457,,0.102,0.084,-0.018,flat,0.102,0.084,-0.1765,masked_fall,,0,sudden_sea100k_g00.csv,ht-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+35338,35370,32,hit,116,16285,31715,0.052,0.072,0.02,flat,0.052,0.072,0.3846,,13061,0,sudden_sea100k_g00.csv,ht-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+51829,51829,0,hit,206,18030,16491,0.062,0.076,0.014,flat,0.062,0.076,0.2258,,14276,0,sudden_sea100k_g00.csv,ht-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+70144,70208,64,hit,285,16365,18315,0.088,0.038,-0.05,fall,0.088,0.038,-0.5682,,18110,0,sudden_sea100k_g00.csv,ht-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+86667,86667,0,hit,158,,16523,0.056,0.084,0.028,rise,0.056,0.084,0.5,,16372,0,sudden_sea100k_g00.csv,ht-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+2759,3751,992,orphan,,750,,0.02,0.112,0.092,rise,0.02,0.112,4.6,,,0,sudden_sea100k_g00.csv,hf10-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+32322,32322,0,orphan,13242,2900,29563,0.056,0.034,-0.022,fall,0.056,0.034,-0.3929,,10923,0,sudden_sea100k_g00.csv,hf10-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+35541,35573,32,hit,319,16082,3219,0.1,0.09,-0.01,flat,0.1,0.09,-0.1,masked_fall,14142,0,sudden_sea100k_g00.csv,hf10-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+51840,51872,32,hit,217,18019,16299,0.082,0.026,-0.056,fall,0.082,0.026,-0.6829,,15988,0,sudden_sea100k_g00.csv,hf10-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+70059,70091,32,hit,200,16450,18219,0.066,0.032,-0.034,fall,0.066,0.032,-0.5152,,34207,0,sudden_sea100k_g00.csv,hf10-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
+86614,86678,64,hit,105,,16555,0.056,0.018,-0.038,fall,0.056,0.018,-0.6786,,50762,0,sudden_sea100k_g00.csv,hf10-E10aT/error,data/dataset_0921/synthetic_dataset/binary/sudden\sudden_sea100k_g00.csv
