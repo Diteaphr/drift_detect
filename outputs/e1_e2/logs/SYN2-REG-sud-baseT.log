@@ -1,0 +1,2 @@
+SYN2-REG-sud baseT sudden_friedman_100k_g00.csv htr-baseT/error detections=9 swaps=103
+SYN2-REG-sud baseT sudden_friedman_100k_g00.csv hfr-baseT/error detections=4 swaps=122

@@ -1,0 +1,2 @@
+SYN2-B-rec baseT recurring_gradual_sea100k_g00.csv ht-baseT/error detections=12 swaps=20
+SYN2-B-rec baseT recurring_gradual_sea100k_g00.csv hf10-baseT/error detections=10 swaps=8

@@ -1,0 +1,2 @@
+SYN2-REG-inc E2k500T incremental_friedman_100k_g00.csv htr-E2k500T/error detections=10 swaps=32
+SYN2-REG-inc E2k500T incremental_friedman_100k_g00.csv hfr-E2k500T/error detections=9 swaps=130
