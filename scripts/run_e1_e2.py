@@ -46,7 +46,12 @@ ARMS = {"E1": {"ecpf_adwin_one_sided": True},
         # E11 (docs/ECPF_E11_逾時與超額命中_預註冊.md): the existing 1000-step warning timeout on base / E1 / E2-k500
         "baseT": {"ecpf_detector_warning_timeout": 1000},
         "E1T": {"ecpf_adwin_one_sided": True, "ecpf_detector_warning_timeout": 1000},
-        "E2k500T": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_detector_warning_timeout": 1000}}
+        "E2k500T": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_detector_warning_timeout": 1000},
+        # D2 (docs/ECPF_D2_參照更新加逾時_開發檢查.md): E10a / E10b under the 1000-step timeout
+        "E10aT": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_reference_max_age": 5000,
+                  "ecpf_detector_warning_timeout": 1000},
+        "E10bT": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_leader_guard": True,
+                  "ecpf_detector_warning_timeout": 1000}}
 P3 = {"ecpf_normalizer_reset_on_drift": True}  # the regression baseline (htr-nr / hfr-nr) has it on
 REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
@@ -829,10 +834,11 @@ def excess_report() -> None:
         print("## %s: TP@3000, FP@3000, expected chance hits, excess hits\n%s\n" % (held.upper(), t.round(1).to_string()))
 
 
-def analyze_d1() -> None:
-    """D1 development check (docs/ECPF_D1_逾時與參照過時_開發檢查.md): does the 1000-step timeout also remove
-    A2's stale-reference cascades?  A2 g00 SYN2-B / SYN2-REG; base and E2k500 are A2's own runs."""
-    groups, arms = ["SYN2-B", "SYN2-REG"], ["base", "E2k500", "baseT", "E2k500T"]
+def g00_check(label: str, arms):
+    """Shared by the D1 / D2 development checks on A2's g00 SYN2-B / SYN2-REG streams: prints the per-group
+    table and returns (groups, df, xs, m); m = one row per GT drift with the hit of every arm and the reference
+    ages of A2's E2k500 (age) and of E2k500T (age_t) at the drift onset."""
+    groups = ["SYN2-B", "SYN2-REG"]
     fams = [f for f in A2 if f.rsplit("-", 1)[0] in groups]
     df = rescore(exts=(3000,), show=False, held="a2")
     df = df[df["family"].isin(fams) & df["arm"].isin(arms)].copy()
@@ -843,7 +849,7 @@ def analyze_d1() -> None:
     runs["group"] = runs["family"].map(lambda f: f.rsplit("-", 1)[0])
     q = runs.groupby(["group", "arm"])["quality"].mean()
     xs = df.groupby(["group", "arm"])["xs"].sum()
-    print("## D1 per group (TP@3000, FP@3000, excess hits, quality = accuracy or MAE, max reference age)")
+    print("## %s per group (TP@3000, FP@3000, excess hits, quality = accuracy or MAE, max reference age)" % label)
     for g in groups:
         for a in arms:
             x, r = df[(df["group"] == g) & (df["arm"] == a)], runs[(runs["group"] == g) & (runs["arm"] == a)]
@@ -861,7 +867,14 @@ def analyze_d1() -> None:
         for s, e in iv:
             rows.append({"group": f.rsplit("-", 1)[0], "age": int(age.get(s, -1)), "age_t": int(age_t.get(s, -1)),
                          **{a: any(s <= w <= e + 3000 for w in warn[a]) for a in arms}})
-    m = pd.DataFrame(rows)
+    return groups, df, xs, pd.DataFrame(rows)
+
+
+def analyze_d1() -> None:
+    """D1 development check (docs/ECPF_D1_逾時與參照過時_開發檢查.md): does the 1000-step timeout also remove
+    A2's stale-reference cascades?  A2 g00 SYN2-B / SYN2-REG; base and E2k500 are A2's own runs."""
+    arms = ["base", "E2k500", "baseT", "E2k500T"]
+    groups, df, xs, m = g00_check("D1", arms)
     stale = m[~m["E2k500"] & (m["age"] >= 10000)]
     print("\nA2's stale misses (E2k500 missed, its reference >= 10k steps old): %d; hit by base %d, baseT %d, E2k500T %d"
           % (len(stale), stale["base"].sum(), stale["baseT"].sum(), stale["E2k500T"].sum()))
@@ -874,6 +887,25 @@ def analyze_d1() -> None:
           " -> %s" % (c1, stale["E2k500T"].sum(), len(stale), c2,
                       "timeout RESOLVES the stale reference" if c1 and c2 else "PARTLY resolved" if c1 or c2
                       else "NOT resolved: the reference refresh rule is still open"))
+
+
+def analyze_d2() -> None:
+    """D2 development check (docs/ECPF_D2_參照更新加逾時_開發檢查.md): E10a / E10b plus the timeout on A2's g00."""
+    arms = ["base", "E2k500", "baseT", "E2k500T", "E10aT", "E10bT"]
+    groups, df, xs, m = g00_check("D2", arms)
+    fp = df.groupby(["group", "arm"])["fp"].sum()
+    stale = m[~m["E2k500"] & (m["age"] >= 10000)]
+    print("\nA2's stale misses (E2k500 missed, its reference >= 10k steps old): %d; hit by %s" % (
+        len(stale), ", ".join("%s %d" % (a, stale[a].sum()) for a in ("base", "baseT", "E2k500T", "E10aT", "E10bT"))))
+    for c in ("E10aT", "E10bT"):
+        c1 = all(xs[(g, c)] >= xs[(g, "baseT")] for g in groups)
+        c2 = len(stale) > 0 and stale[c].sum() >= 0.5 * len(stale)
+        c3 = all(fp[(g, c)] <= 0.5 * fp[(g, "baseT")] for g in groups)
+        print("D2 reading %s: (1) excess >= baseT in both groups %s | (2) stale recovered %d/%d >= 50%% %s | "
+              "(3) FP <= 50%% of baseT in both groups %s -> %s | beats E2k500T in both groups: %s" % (
+                  c, c1, stale[c].sum(), len(stale), c2, c3,
+                  "FIXED" if c1 and c2 and c3 else "PARTLY" if c3 and (c1 or c2) else "NO",
+                  all(xs[(g, c)] > xs[(g, "E2k500T")] for g in groups)))
 
 
 def premise() -> None:
@@ -955,6 +987,7 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-e11", action="store_true", help="E11 verdict (warning timeout, excess-hit recall)")
     ap.add_argument("--excess-report", action="store_true", help="post-hoc excess hits for A1 / A2 / E10")
     ap.add_argument("--analyze-d1", action="store_true", help="D1 dev check: timeout vs stale references on A2 g00")
+    ap.add_argument("--analyze-d2", action="store_true", help="D2 dev check: E10a / E10b plus the timeout on A2 g00")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -987,3 +1020,5 @@ if __name__ == "__main__":
         excess_report()
     if a.analyze_d1:
         analyze_d1()
+    if a.analyze_d2:
+        analyze_d2()
