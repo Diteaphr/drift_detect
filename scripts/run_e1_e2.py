@@ -184,6 +184,8 @@ def self_check() -> None:
         fp = sum(not any(s <= d < e for s, e in wins) for d in det)
         xs.append(tp - expected_chance(fp, 100000 - WARM_START - 3000 * len(wins), [3000] * len(wins)))
     assert abs(np.mean(xs)) < 0.3, np.mean(xs)
+    # C1 break-even: E11-B raw TP (E2k500T 73 hits / 14 FP vs baseT 79 / 67) -> baseT cheaper once w > 53/6
+    assert breakeven(73, 14, 79, 67) == ("other", 53 / 6) and breakeven(10, 5, 8, 20) == ("main", 0.0)
 
 
 def check_e10() -> None:
@@ -308,6 +310,7 @@ def rescore(exts=(1000, 3000), show: bool = True, held: bool = False):
                          "conf_t": [r["confirmation_t"] for r in rows],
                          "warn_t": [r["warning_t"] for r in rows],
                          "pre": sum(start is not None and r["warning_t"] < start for r in rows),
+                         "n_gt": len(gt[key]),
                          "stored_tp": int((g["label"] == "hit").sum()), "stored_fp": int(g["label"].isin(FP).sum())})
     drf.PERTURBATION = 1000
     df = pd.DataFrame(recs)
@@ -986,6 +989,113 @@ def analyze_e12() -> None:
         n=m.groupby("bin", observed=True).size()).to_string())
 
 
+C1_W = (1, 2, 5, 10)   # C1 cost ratios: a miss costs w false alarms
+
+
+def breakeven(r_m: float, fp_m: float, r_o: float, fp_o: float):
+    """C1: cost(w) = w * (N - recall) + FP for the main arm m and another arm o (N cancels).
+    Returns (who, w*): 'main' or 'other' is the cheaper arm for every w > w*; w* = 0: never costlier at any w."""
+    dr, dfp = r_m - r_o, fp_o - fp_m   # cost_o - cost_m = w * dr + dfp
+    if dr >= 0 and dfp >= 0:
+        return "main", 0.0
+    if dr <= 0 and dfp <= 0:
+        return "other", 0.0
+    return ("main", -dfp / dr) if dr > 0 else ("other", dfp / -dr)
+
+
+def analyze_c1() -> None:
+    """C1 readings (docs/ECPF_C1_漏抓加權成本_預註冊.md): cost(w) = w * missed + FP on E11 / E12's stored runs,
+    missed = scored GT drifts - excess hits at 3000 steps (raw basis, for contrast only: - TP@3000)."""
+    cost = lambda r, col, w: w * (r["n_gt"] - r[col]) + r["fp"]
+
+    def fmt(m, o, who, w):
+        return "%s %s" % (m if who == "main" else o, "never costlier" if w == 0 else "cheaper once w > %.2f" % w)
+    kinds, r1, r2, r3, r3_raw, r4 = ("sud", "grad", "inc", "rec"), [], [], [], 0, []
+    for rnd, held, groups, arms, main_of in (
+            ("E11", "e11", ["SYN2g23-B", "SYN2g23-MC", "SYN2g23-REG", "INJgas68"], ["base", "baseT", "E1T", "E2k500T"],
+             lambda g: "E2k500T"),
+            ("E12", "e12", ["SYN2g45-B", "SYN2g45-MC", "SYN2g45-REG", "INJgas9"], ["baseT", "E2k500T", "E10bT"],
+             lambda g: "E2k500T" if g.endswith("REG") else "E10bT")):
+        df = rescore(show=False, held=held)
+        if df is None:
+            print("RESCORE INVALID -- no reading")
+            return
+        df = df[df["ext"] == 3000].copy()
+        df["xs"] = df["tp"] - np.array(chance_hits(df))
+        df["group"] = df["family"].map(lambda f: f.rsplit("-", 1)[0])
+        df["kind"] = df["family"].map(lambda f: f.rsplit("-", 1)[1].rstrip("0123456789"))
+        t = df.groupby(["group", "arm"])[["n_gt", "tp", "fp", "xs"]].sum()
+        assert (t.groupby("group")["n_gt"].nunique() == 1).all(), "N differs across arms: a cell is missing"
+        print("## %s pooled per group (3000-step windows; missed = N - excess; cost = w * missed + FP)" % rnd)
+        print("%-12s %-8s %4s %4s %4s %7s %7s" % ("group", "arm", "N", "TP", "FP", "excess", "missed")
+              + "".join(" %8s" % ("cost@%d" % w) for w in C1_W))
+        for g in groups:
+            for a in arms:
+                r = t.loc[(g, a)]
+                print("%-12s %-8s %4d %4d %4d %7.1f %7.1f" % (g, a, r["n_gt"], r["tp"], r["fp"], r["xs"],
+                                                             r["n_gt"] - r["xs"])
+                      + "".join(" %8.1f" % cost(r, "xs", w) for w in C1_W))
+        for basis, col in (("excess", "xs"), ("raw", "tp")):
+            print("\nlowest-cost arm, %s basis (w = %s):" % (basis, ", ".join(map(str, C1_W))))
+            for g in groups:
+                c = {a: [cost(t.loc[(g, a)], col, w) for w in C1_W] for a in arms}
+                print("%-12s %s" % (g, " | ".join("=".join(a for a in arms if c[a][i] <= min(v[i] for v in c.values())
+                                                             + 1e-9) for i in range(len(C1_W)))))
+        print("\nbreak-even, main arm vs each other arm:")
+        for g in groups:
+            m, rm = main_of(g), t.loc[(g, main_of(g))]
+            for a in arms:
+                if a != m:
+                    ro = t.loc[(g, a)]
+                    print("%-12s %s vs %-8s excess: %-32s raw: %s" % (
+                        g, m, a, fmt(m, a, *breakeven(rm["xs"], rm["fp"], ro["xs"], ro["fp"])),
+                        fmt(m, a, *breakeven(rm["tp"], rm["fp"], ro["tp"], ro["fp"]))))
+            for b in ("base", "baseT"):
+                if b in arms:
+                    rb = t.loc[(g, b)]
+                    r1.append(all(cost(rm, "xs", w) <= cost(rb, "xs", w) + 1e-9 for w in C1_W))
+                    r2 += ["%s %s w=%d" % (g, b, w) for w in C1_W if cost(rb, "tp", w) < cost(rm, "tp", w)]
+
+        k = df[df["group"].str.startswith("SYN2")].groupby(["group", "kind", "arm"])[["n_gt", "tp", "fp", "xs"]].sum()
+        print("\n## %s per drift type (synthetic, two seeds pooled): main arm vs baseT" % rnd)
+        for g in groups[:3]:
+            m = main_of(g)
+            for kd in kinds:
+                rm, rb = k.loc[(g, kd, m)], k.loc[(g, kd, "baseT")]
+                flip = cost(rb, "xs", 10) < cost(rm, "xs", 10)
+                if flip:
+                    r3.append("%s-%s" % (g, kd))
+                r3_raw += int(cost(rb, "tp", 10) < cost(rm, "tp", 10))
+                print("%-12s %-4s N %3d | %s excess %5.1f FP %3d | baseT excess %5.1f FP %3d | cost@10 %6.1f vs %6.1f"
+                      " | %s%s" % (g, kd, rm["n_gt"], m, rm["xs"], rm["fp"], rb["xs"], rb["fp"], cost(rm, "xs", 10),
+                                   cost(rb, "xs", 10), fmt(m, "baseT", *breakeven(rm["xs"], rm["fp"], rb["xs"], rb["fp"])),
+                                   "  <- baseT cheaper at w=10" if flip else ""))
+        if rnd == "E12":
+            g = "SYN2g45-REG"
+            print("\n## E12 regression: E10bT vs E2k500T (excess basis)")
+            for name, re_, r2_ in [("pooled", t.loc[(g, "E10bT")], t.loc[(g, "E2k500T")])] + [
+                    (kd, k.loc[(g, kd, "E10bT")], k.loc[(g, kd, "E2k500T")]) for kd in kinds]:
+                ok = all(cost(re_, "xs", w) < cost(r2_, "xs", w) for w in C1_W)
+                r4.append(ok)
+                print("%-6s E10bT excess %5.1f FP %3d | E2k500T excess %5.1f FP %3d | %s | E10bT cheaper at every "
+                      "registered w: %s" % (name, re_["xs"], re_["fp"], r2_["xs"], r2_["fp"],
+                                             fmt("E10bT", "E2k500T", *breakeven(re_["xs"], re_["fp"], r2_["xs"],
+                                                                                r2_["fp"])), ok))
+        print()
+
+    print("## Readings (registered; C1 changes no E11 / E12 verdict)")
+    print("R1 pooled: main arm's cost <= baseT (E11: also base) at every w in all 8 groups: %s -> %s" % (
+        all(r1), "miss weighting does not bring base back" if all(r1) else "base is cheaper somewhere: see tables"))
+    print("R2 raw basis (contrast only), baseT cheaper than the main arm: %s" % (", ".join(r2) or "nowhere"))
+    print("R3 drift-type cells where baseT is cheaper than the main arm at w=10: %d of %d %s -> %s (raw basis: %d)" % (
+        len(r3), 2 * 3 * len(kinds), r3, "the main arm holds per drift type; exceptions are few" if len(r3) <= 4
+        else "with heavy miss costs, choose by drift type", r3_raw))
+    n4 = sum(r4[1:])
+    print("R4 regression E10bT vs E2k500T: pooled cheaper at every w %s; drift types cheaper at every w %d of 4 -> %s" % (
+        r4[0], n4, "cost view supports E10bT for regression (candidate for a registered round on fresh seeds)"
+        if r4[0] and n4 >= 3 else "cost view keeps E2k500T"))
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -1067,6 +1177,7 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-d1", action="store_true", help="D1 dev check: timeout vs stale references on A2 g00")
     ap.add_argument("--analyze-d2", action="store_true", help="D2 dev check: E10a / E10b plus the timeout on A2 g00")
     ap.add_argument("--analyze-e12", action="store_true", help="E12 verdict (can E10bT replace E2k500T?)")
+    ap.add_argument("--analyze-c1", action="store_true", help="C1 readings (miss-weighted cost on E11 / E12)")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -1103,3 +1214,5 @@ if __name__ == "__main__":
         analyze_d2()
     if a.analyze_e12:
         analyze_e12()
+    if a.analyze_c1:
+        analyze_c1()
