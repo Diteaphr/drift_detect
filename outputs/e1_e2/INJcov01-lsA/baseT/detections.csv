@@ -1,0 +1,2 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+24775,24775,0,orphan,,51119,,0.298,0.308,0.01,flat,0.446,0.472,0.0583,,,0,covertype_label_swap_abrupt_g00.csv,hf10sqrt-baseT/error,data/dataset_0921/injected_real_dataset/multi_classification/abrupt/label_swap\covertype_label_swap_abrupt_g00.csv

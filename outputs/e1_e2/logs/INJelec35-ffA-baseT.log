@@ -1,0 +1,6 @@
+INJelec35-ffA baseT electricity_feature_filtering_abrupt_g03.csv ht-baseT/error detections=1 swaps=0
+INJelec35-ffA baseT electricity_feature_filtering_abrupt_g03.csv hf10-baseT/error detections=1 swaps=0
+INJelec35-ffA baseT electricity_feature_filtering_abrupt_g04.csv ht-baseT/error detections=2 swaps=4
+INJelec35-ffA baseT electricity_feature_filtering_abrupt_g04.csv hf10-baseT/error detections=2 swaps=0
+INJelec35-ffA baseT electricity_feature_filtering_abrupt_g05.csv ht-baseT/error detections=0 swaps=0
+INJelec35-ffA baseT electricity_feature_filtering_abrupt_g05.csv hf10-baseT/error detections=1 swaps=0

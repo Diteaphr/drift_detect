@@ -1,0 +1,3 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+28391,28775,384,orphan,,46455,,0.27,0.302,0.032,rise,0.418,0.486,0.1627,,,0,covertype_class_prior_abrupt_g01.csv,hf10sqrt-E10bT/error,data/dataset_0921/injected_real_dataset/multi_classification/abrupt/class_prior\covertype_class_prior_abrupt_g01.csv
+76378,76378,0,orphan,1532,,47987,0.154,0.146,-0.008,flat,0.26,0.286,0.1,,,0,covertype_class_prior_abrupt_g01.csv,hf10sqrt-E10bT/error,data/dataset_0921/injected_real_dataset/multi_classification/abrupt/class_prior\covertype_class_prior_abrupt_g01.csv

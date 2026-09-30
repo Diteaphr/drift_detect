@@ -1,0 +1,2 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+29575,29895,320,orphan,4620,,,0.21,0.232,0.022,rise,0.21,0.232,0.1048,,,0,electricity_feature_filtering_abrupt_g05.csv,hf10-E10bT/error,data/dataset_0921/injected_real_dataset/binary/abrupt/feature_filtering\electricity_feature_filtering_abrupt_g05.csv

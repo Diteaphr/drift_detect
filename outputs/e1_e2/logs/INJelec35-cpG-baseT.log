@@ -1,0 +1,6 @@
+INJelec35-cpG baseT electricity_class_prior_gradual_g03.csv ht-baseT/error detections=2 swaps=18
+INJelec35-cpG baseT electricity_class_prior_gradual_g03.csv hf10-baseT/error detections=2 swaps=8
+INJelec35-cpG baseT electricity_class_prior_gradual_g04.csv ht-baseT/error detections=4 swaps=18
+INJelec35-cpG baseT electricity_class_prior_gradual_g04.csv hf10-baseT/error detections=3 swaps=6
+INJelec35-cpG baseT electricity_class_prior_gradual_g05.csv ht-baseT/error detections=0 swaps=0
+INJelec35-cpG baseT electricity_class_prior_gradual_g05.csv hf10-baseT/error detections=3 swaps=4

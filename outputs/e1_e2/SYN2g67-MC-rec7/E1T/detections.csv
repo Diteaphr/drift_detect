@@ -1,0 +1,5 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+4007,4135,128,hit,204,14940,,0.448,0.488,0.04,rise,0.816,0.896,0.098,,,0,recurring_sudden_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/recurring\recurring_sudden_rbf4_100k_g07.csv
+47175,47271,96,hit,776,9228,43168,0.316,0.358,0.042,rise,0.59,0.652,0.1051,,41726,0,recurring_sudden_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/recurring\recurring_sudden_rbf4_100k_g07.csv
+73831,73895,64,orphan,1405,4149,26656,0.262,0.25,-0.012,flat,0.498,0.428,-0.1406,masked_fall,68382,0,recurring_sudden_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/recurring\recurring_sudden_rbf4_100k_g07.csv
+96967,97031,64,hit,494,,23136,0.256,0.196,-0.06,fall,0.428,0.356,-0.1682,,91518,0,recurring_sudden_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/recurring\recurring_sudden_rbf4_100k_g07.csv

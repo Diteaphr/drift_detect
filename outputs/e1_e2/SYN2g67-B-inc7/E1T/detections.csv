@@ -1,0 +1,8 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+40807,40839,32,hit,660,5978,,0.194,0.166,-0.028,fall,0.194,0.166,-0.1443,,,0,incremental_hyperplane_100k_g07.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/incremental\incremental_hyperplane_100k_g07.csv
+73136,73159,23,hit,550,7570,32329,0.12,0.158,0.038,rise,0.12,0.158,0.3167,,32232,0,incremental_hyperplane_100k_g07.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/incremental\incremental_hyperplane_100k_g07.csv
+81191,81191,0,hit,485,9881,8055,0.13,0.204,0.074,rise,0.13,0.204,0.5692,,7082,0,incremental_hyperplane_100k_g07.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/incremental\incremental_hyperplane_100k_g07.csv
+91879,92007,128,hit,807,,10688,0.148,0.104,-0.044,fall,0.148,0.104,-0.2973,,10176,0,incremental_hyperplane_100k_g07.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/incremental\incremental_hyperplane_100k_g07.csv
+40935,40935,0,hit,788,5850,,0.22,0.132,-0.088,fall,0.22,0.132,-0.4,,,0,incremental_hyperplane_100k_g07.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/incremental\incremental_hyperplane_100k_g07.csv
+48391,48423,32,hit,1606,14169,7456,0.12,0.108,-0.012,flat,0.12,0.108,-0.1,masked_fall,7421,0,incremental_hyperplane_100k_g07.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/incremental\incremental_hyperplane_100k_g07.csv
+92423,92487,64,hit,1351,,44032,0.18,0.066,-0.114,fall,0.18,0.066,-0.6333,,43269,0,incremental_hyperplane_100k_g07.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/incremental\incremental_hyperplane_100k_g07.csv

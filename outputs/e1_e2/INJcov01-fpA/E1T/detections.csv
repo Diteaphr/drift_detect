@@ -1,0 +1,2 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+58704,59591,887,orphan,8094,,,0.316,0.326,0.01,flat,0.498,0.51,0.0241,,,0,covertype_feature_permutation_abrupt_g01.csv,hf10sqrt-E1T/error,data/dataset_0921/injected_real_dataset/multi_classification/abrupt/feature_permutation\covertype_feature_permutation_abrupt_g01.csv

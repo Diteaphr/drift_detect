@@ -1,0 +1,9 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+47879,47911,32,hit,563,12892,,0.5109,0.5213,0.0104,flat,2.0651,2.9333,0.4204,,,0,gradual_friedman_100k_g06.csv,htr-E1T/error,data/dataset_0921/synthetic_dataset/regression/gradual\gradual_friedman_100k_g06.csv
+65959,66631,672,orphan,5188,5394,18080,0.4979,0.4891,-0.0088,flat,1.9891,2.9092,0.4625,,,0,gradual_friedman_100k_g06.csv,htr-E1T/error,data/dataset_0921/synthetic_dataset/regression/gradual\gradual_friedman_100k_g06.csv
+89319,89447,128,hit,796,,23360,0.5122,0.4872,-0.025,fall,2.0676,2.2849,0.1051,fake_fall,269,1,gradual_friedman_100k_g06.csv,htr-E1T/error,data/dataset_0921/synthetic_dataset/regression/gradual\gradual_friedman_100k_g06.csv
+18631,18919,288,orphan,4608,15239,,0.5124,0.4942,-0.0182,flat,4.1861,4.0205,-0.0396,,,0,gradual_friedman_100k_g06.csv,hfr-E1T/error,data/dataset_0921/synthetic_dataset/regression/gradual\gradual_friedman_100k_g06.csv
+43751,43751,0,orphan,9881,3565,25120,0.4332,0.4862,0.053,rise,2.5825,2.999,0.1613,,8142,0,gradual_friedman_100k_g06.csv,hfr-E1T/error,data/dataset_0921/synthetic_dataset/regression/gradual\gradual_friedman_100k_g06.csv
+47975,48007,32,hit,659,12796,4224,0.5458,0.5035,-0.0423,fall,3.4587,4.5756,0.3229,fake_fall,4194,0,gradual_friedman_100k_g06.csv,hfr-E1T/error,data/dataset_0921/synthetic_dataset/regression/gradual\gradual_friedman_100k_g06.csv
+72967,73031,64,hit,1614,15556,24992,0.4447,0.4918,0.047,rise,3.5598,3.2135,-0.0973,,24924,0,gradual_friedman_100k_g06.csv,hfr-E1T/error,data/dataset_0921/synthetic_dataset/regression/gradual\gradual_friedman_100k_g06.csv
+89703,89831,128,hit,1180,,16736,0.5409,0.482,-0.0589,fall,3.4547,3.6158,0.0466,fake_fall,16347,0,gradual_friedman_100k_g06.csv,hfr-E1T/error,data/dataset_0921/synthetic_dataset/regression/gradual\gradual_friedman_100k_g06.csv

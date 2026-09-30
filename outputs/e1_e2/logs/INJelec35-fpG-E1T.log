@@ -1,0 +1,6 @@
+INJelec35-fpG E1T electricity_feature_permutation_gradual_g03.csv ht-E1T/error detections=0 swaps=0
+INJelec35-fpG E1T electricity_feature_permutation_gradual_g03.csv hf10-E1T/error detections=1 swaps=0
+INJelec35-fpG E1T electricity_feature_permutation_gradual_g04.csv ht-E1T/error detections=1 swaps=9
+INJelec35-fpG E1T electricity_feature_permutation_gradual_g04.csv hf10-E1T/error detections=0 swaps=0
+INJelec35-fpG E1T electricity_feature_permutation_gradual_g05.csv ht-E1T/error detections=1 swaps=4
+INJelec35-fpG E1T electricity_feature_permutation_gradual_g05.csv hf10-E1T/error detections=0 swaps=0

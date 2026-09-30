@@ -1,0 +1,6 @@
+INJelec35-fpA baseT electricity_feature_permutation_abrupt_g03.csv ht-baseT/error detections=1 swaps=1
+INJelec35-fpA baseT electricity_feature_permutation_abrupt_g03.csv hf10-baseT/error detections=2 swaps=1
+INJelec35-fpA baseT electricity_feature_permutation_abrupt_g04.csv ht-baseT/error detections=2 swaps=2
+INJelec35-fpA baseT electricity_feature_permutation_abrupt_g04.csv hf10-baseT/error detections=2 swaps=0
+INJelec35-fpA baseT electricity_feature_permutation_abrupt_g05.csv ht-baseT/error detections=1 swaps=10
+INJelec35-fpA baseT electricity_feature_permutation_abrupt_g05.csv hf10-baseT/error detections=3 swaps=6

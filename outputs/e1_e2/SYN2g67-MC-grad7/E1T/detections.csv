@@ -1,0 +1,10 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+6087,6087,0,hit,650,13826,,0.486,0.59,0.104,rise,0.87,1.066,0.2253,,,0,gradual_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g07.csv
+6439,7015,576,echo_inwin,1002,13474,352,0.572,0.468,-0.104,fall,1.046,0.796,-0.239,,,0,gradual_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g07.csv
+21223,21991,768,hit,1310,5359,14784,0.492,0.418,-0.074,fall,0.72,0.63,-0.125,,13374,0,gradual_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g07.csv
+27015,27015,0,hit,433,11718,5792,0.328,0.516,0.188,rise,0.48,0.762,0.5875,,4896,0,gradual_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g07.csv
+39431,39495,64,hit,698,18473,12416,0.412,0.532,0.12,rise,0.688,0.88,0.2791,,17312,0,gradual_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g07.csv
+58599,58631,32,hit,695,7962,19168,0.386,0.576,0.19,rise,0.61,0.862,0.4131,,19043,0,gradual_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g07.csv
+67047,67079,32,hit,486,15346,8448,0.342,0.52,0.178,rise,0.56,0.792,0.4143,,7339,0,gradual_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g07.csv
+82951,83111,160,hit,558,7735,15904,0.318,0.56,0.242,rise,0.454,0.822,0.8106,,15869,0,gradual_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g07.csv
+91303,91303,0,hit,617,,8352,0.38,0.512,0.132,rise,0.566,0.834,0.4735,,7792,0,gradual_rbf4_100k_g07.csv,hf10sqrt-E1T/error,data/dataset_0921/synthetic_dataset/multi_classification/gradual\gradual_rbf4_100k_g07.csv

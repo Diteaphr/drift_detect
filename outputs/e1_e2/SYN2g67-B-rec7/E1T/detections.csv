@@ -1,0 +1,3 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+3815,3847,32,orphan,1821,13538,,0.09,0.058,-0.032,fall,0.09,0.058,-0.3556,,,0,recurring_sudden_sea100k_g07.csv,ht-E1T/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g07.csv
+67367,67367,0,orphan,4439,10052,,0.026,0.024,-0.002,flat,0.026,0.024,-0.0769,masked_fall,,0,recurring_sudden_sea100k_g07.csv,hf10-E1T/error,data/dataset_0921/synthetic_dataset/binary/recurring\recurring_sudden_sea100k_g07.csv

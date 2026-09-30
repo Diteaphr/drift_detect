@@ -1,0 +1,6 @@
+INJelec35-lsA baseT electricity_label_swap_abrupt_g03.csv ht-baseT/error detections=1 swaps=1
+INJelec35-lsA baseT electricity_label_swap_abrupt_g03.csv hf10-baseT/error detections=2 swaps=3
+INJelec35-lsA baseT electricity_label_swap_abrupt_g04.csv ht-baseT/error detections=2 swaps=6
+INJelec35-lsA baseT electricity_label_swap_abrupt_g04.csv hf10-baseT/error detections=3 swaps=3
+INJelec35-lsA baseT electricity_label_swap_abrupt_g05.csv ht-baseT/error detections=3 swaps=6
+INJelec35-lsA baseT electricity_label_swap_abrupt_g05.csv hf10-baseT/error detections=2 swaps=1

@@ -1,0 +1,6 @@
+INJelec35-ffG baseT electricity_feature_filtering_gradual_g03.csv ht-baseT/error detections=3 swaps=19
+INJelec35-ffG baseT electricity_feature_filtering_gradual_g03.csv hf10-baseT/error detections=2 swaps=2
+INJelec35-ffG baseT electricity_feature_filtering_gradual_g04.csv ht-baseT/error detections=0 swaps=0
+INJelec35-ffG baseT electricity_feature_filtering_gradual_g04.csv hf10-baseT/error detections=4 swaps=2
+INJelec35-ffG baseT electricity_feature_filtering_gradual_g05.csv ht-baseT/error detections=0 swaps=0
+INJelec35-ffG baseT electricity_feature_filtering_gradual_g05.csv hf10-baseT/error detections=1 swaps=2

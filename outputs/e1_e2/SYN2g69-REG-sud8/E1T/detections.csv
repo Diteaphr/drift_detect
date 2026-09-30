@@ -1,0 +1,8 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+30599,30631,32,hit,222,16804,,0.5085,0.4898,-0.0187,flat,2.0256,2.4039,0.1867,,,0,sudden_friedman_100k_g08.csv,htr-E1T/error,data/dataset_0921/synthetic_dataset/regression/sudden\sudden_friedman_100k_g08.csv
+62311,62375,64,hit,188,13958,31712,0.4975,0.4896,-0.0079,flat,1.5935,1.8566,0.1651,,,0,sudden_friedman_100k_g08.csv,htr-E1T/error,data/dataset_0921/synthetic_dataset/regression/sudden\sudden_friedman_100k_g08.csv
+76359,76391,32,hit,90,16215,14048,0.5371,0.4535,-0.0835,fall,2.1793,4.2823,0.965,fake_fall,,0,sudden_friedman_100k_g08.csv,htr-E1T/error,data/dataset_0921/synthetic_dataset/regression/sudden\sudden_friedman_100k_g08.csv
+83559,83879,320,orphan,7290,9015,7200,0.4719,0.4952,0.0233,rise,2.1707,2.1552,-0.0071,,7138,0,sudden_friedman_100k_g08.csv,htr-E1T/error,data/dataset_0921/synthetic_dataset/regression/sudden\sudden_friedman_100k_g08.csv
+92711,92743,32,hit,137,,9152,0.543,0.4975,-0.0455,fall,2.7529,2.7516,-0.0005,fake_fall,16290,0,sudden_friedman_100k_g08.csv,htr-E1T/error,data/dataset_0921/synthetic_dataset/regression/sudden\sudden_friedman_100k_g08.csv
+18151,18471,320,hit,570,12226,,0.5428,0.4846,-0.0583,fall,3.7681,3.3305,-0.1161,,,0,sudden_friedman_100k_g08.csv,hfr-E1T/error,data/dataset_0921/synthetic_dataset/regression/sudden\sudden_friedman_100k_g08.csv
+76455,76455,0,hit,186,16119,58304,0.5766,0.471,-0.1056,fall,4.4873,4.7804,0.0653,fake_fall,28811,0,sudden_friedman_100k_g08.csv,hfr-E1T/error,data/dataset_0921/synthetic_dataset/regression/sudden\sudden_friedman_100k_g08.csv

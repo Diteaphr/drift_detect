@@ -1,0 +1,2 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+58887,59079,192,orphan,2109,,,0.38,0.358,-0.022,fall,0.568,0.552,-0.0282,fake_fall,,0,covertype_feature_filtering_abrupt_g00.csv,hf10sqrt-E10bT/error,data/dataset_0921/injected_real_dataset/multi_classification/abrupt/feature_filtering\covertype_feature_filtering_abrupt_g00.csv
