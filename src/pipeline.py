@@ -12,6 +12,7 @@ When ``PipelineConfig.use_ecpf`` is True, the Enhanced Concept Profiling Framewo
 (``m=0.95``, ``f=15``, synthetic oracle buffer length 60).
 """
 
+import copy
 import logging
 from pathlib import Path
 from collections import deque
@@ -248,6 +249,9 @@ class ConceptDriftPipeline:
                 delta_w=self.config.detector_delta_w,
                 one_sided=True,
             )
+        # E13: the guard's frozen scale (regression), None until the era's k-th step.
+        self._guard_scale = None
+        self._guard_scale_due: Optional[int] = None
 
         # UQ Warning Layer: UQ-only warning + error-based drift confirmation
         self._uq_warning_detector: Optional[UQWarningDetector] = None
@@ -748,10 +752,23 @@ class ConceptDriftPipeline:
                         "error", y_true=y_true, y_pred=y_pred, err=err, proba_matrix=None,
                         is_regression=self.task.is_regression,
                     )
-                    guard_w, guard_d = self._ecpf_guard.update_values(guard_value, guard_value)
+                    frozen = self.config.ecpf_guard_frozen_scale > 0 and self.task.is_regression
+                    if frozen:
+                        # E13: idle for the era's first k steps, then the raw residual
+                        # through the normalizer as it stood at step k.
+                        if self._guard_scale_due is None:
+                            self._guard_scale_due = int(index) + self.config.ecpf_guard_frozen_scale
+                        if self._guard_scale is None and index >= self._guard_scale_due:
+                            self._guard_scale = copy.copy(self.task.normalizer)
+                        guard_value = (self._guard_scale.transform(self.task.raw_residual(y_true, y_pred))
+                                       if self._guard_scale is not None else None)
+                    guard_w, guard_d = (self._ecpf_guard.update_values(guard_value, guard_value)
+                                        if guard_value is not None else (False, False))
                     is_warning, is_drift = is_warning or guard_w, is_drift or guard_d
                     if ref_extra is not None:
                         ref_extra["guard_drift"] = int(guard_d)
+                        if frozen:
+                            ref_extra["guard_in"] = float("nan") if guard_value is None else guard_value
                 # Echo suppression: a confirmation inside the cooldown window is
                 # the new leader's settling-in error being read as a second
                 # change. The detector still updates (its window keeps filling);
@@ -880,6 +897,9 @@ class ConceptDriftPipeline:
                         # so both detector pairs restart, whichever one confirmed.
                         self._ecpf_guard.reset()
                         self._ecpf_detector.reset()
+                        # E13: a new era -- the guard idles k steps, then re-snapshots the scale.
+                        self._guard_scale = None
+                        self._guard_scale_due = int(index) + self.config.ecpf_guard_frozen_scale
                     # Prescription 3: re-baseline the residual normalizer on the
                     # new era together with the detectors (see config).
                     if self.config.ecpf_normalizer_reset_on_drift and self.task.is_regression:

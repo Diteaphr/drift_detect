@@ -51,7 +51,10 @@ ARMS = {"E1": {"ecpf_adwin_one_sided": True},
         "E10aT": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_reference_max_age": 5000,
                   "ecpf_detector_warning_timeout": 1000},
         "E10bT": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_leader_guard": True,
-                  "ecpf_detector_warning_timeout": 1000}}
+                  "ecpf_detector_warning_timeout": 1000},
+        # E13 (docs/ECPF_E13_守衛凍結尺度_預註冊.md): E10bT with the guard's scale frozen per era (regression only)
+        "E10bFT": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_leader_guard": True,
+                   "ecpf_detector_warning_timeout": 1000, "ecpf_guard_frozen_scale": 500}}
 P3 = {"ecpf_normalizer_reset_on_drift": True}  # the regression baseline (htr-nr / hfr-nr) has it on
 REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
@@ -125,16 +128,43 @@ E12 = {  # E12 judges on fresh data: synthetic v2 g04 + g05 (pooled per group) a
        for k, m in (("cp", "class_prior"), ("ls", "label_swap"), ("fp", "feature_permutation"),
                     ("ff", "feature_filtering"))},
 }
-ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12}
+_KINDS = (("sud", "sudden"), ("grad", "gradual"), ("inc", "incremental"), ("rec", "recurring"))
+_METHODS = (("cp", "class_prior"), ("ls", "label_swap"), ("fp", "feature_permutation"), ("ff", "feature_filtering"))
+_INJ13 = "data/dataset_0921/injected_real_dataset/{t}/{a}/{m}/{s}_{m}_{a}_g0[{g}].csv"
+E13 = {  # E13 judges on fresh data: regression g06-g09, classification g06-g07, injected electricity g03-g05 and
+         # covertype g00-g01; injected families are split by abruptness only to run cells in parallel
+    **{"SYN2g69-REG-%s%s" % (k, sd): (sorted(glob.glob(_SYN.replace("g00", "g0" + sd).format(t="regression", d=d))),
+                                     0, REG_LEARNERS, True)
+       for sd in "6789" for k, d in _KINDS},
+    **{"SYN2g67-%s-%s%s" % (g, k, sd): (sorted(glob.glob(_SYN.replace("g00", "g0" + sd).format(t=t, d=d))), 0, cfg,
+                                        False)
+       for sd in "67"
+       for g, t, cfg in (("B", "binary", RERUN["B"][2]), ("MC", "multi_classification", [RERUN["MC-syn"][2][0]]))
+       for k, d in _KINDS},
+    **{"INJelec35-%s%s" % (k, a[0].upper()): (sorted(glob.glob(_INJ13.format(t="binary", a=a, m=m, s="electricity",
+                                                                              g="3-5"))), 0, RERUN["B"][2], False)
+       for k, m in _METHODS for a in ("abrupt", "gradual")},
+    **{"INJcov01-%s%s" % (k, a[0].upper()): (sorted(glob.glob(_INJ13.format(t="multi_classification", a=a, m=m,
+                                                                             s="covertype", g="0-1"))), 0,
+                                            [RERUN["MC-syn"][2][0]], False)
+       for k, m in _METHODS for a in ("abrupt", "gradual")},
+}
+E13_REG_ARMS, E13_CLS_ARMS = ["baseT", "E1T", "E2k500T", "E10bT", "E10bFT"], ["baseT", "E1T", "E10bT"]
+ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12, **E13}
+
+
+def e13_arms(fam: str):
+    """E13 matrix: five arms on regression, three on classification (E10bFT == E10bT there, gate G3)."""
+    return E13_REG_ARMS if ALL[fam][3] else E13_CLS_ARMS
 
 
 def scored_gt(fam: str, intervals):
     """A2 rule (prereg): GT intervals that start inside the warm-up are not scored."""
-    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 or fam in E12 else intervals
+    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 or fam in E12 or fam in E13 else intervals
 FP = ("echo", "orphan")
 MATCH = 500
 SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age",
-            "ref_refresh", "guard_drift"]
+            "ref_refresh", "guard_drift", "guard_in"]
 
 
 def learner(config: str) -> str:
@@ -267,7 +297,7 @@ def iter_runs(held: bool = False):
     for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in (E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
+    for fam, (_, _, configs, _) in (E13 if held == "e13" else E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -1096,6 +1126,272 @@ def analyze_c1() -> None:
         if r4[0] and n4 >= 3 else "cost view keeps E2k500T"))
 
 
+# ---------------------------------------------------------------------------
+# E13 (docs/ECPF_E13_守衛凍結尺度_預註冊.md): a frozen guard scale for regression; E1T vs E10bT on classification
+def gate_rerun(family: str, arm: str, stored: str) -> bool:
+    """G2 / G3: rerun a stored cell with `arm`; every run's detections must equal the stored `stored` arm's."""
+    paths, max_steps, configs, is_reg = ALL[family]
+    det = pd.read_csv(os.path.join(OUT, family, stored, "detections.csv"))
+    same = True
+    for path in paths:
+        for base_label, mt, mk in configs:
+            _, dets, *_ = run(path, mt, max_steps, mk, {**ARMS[arm], **(P3 if is_reg else {})})
+            g = det[(det["dataset"] == dataset_key(path)) & (det["config"] == base_label.replace("/", "-%s/" % stored))]
+            ok = sorted(dets) == sorted(zip(g["warning_t"].astype(int), g["confirmation_t"].astype(int)))
+            print("%s %s %s: %d detections vs stored %s %d -> %s" % (
+                family, base_label, arm, len(dets), stored, len(g), "IDENTICAL" if ok else "DIFFERENT"), flush=True)
+            same &= ok
+    return same
+
+
+def check_e13() -> None:
+    """G4: the frozen guard scale through the pipeline itself (htr, P3 on, a reference that never fires)."""
+    from src.config import PipelineConfig
+    from src.pipeline import ConceptDriftPipeline
+
+    class Flat:  # a reference detector that never fires: only the guard can confirm
+        zone, combo_name, stats = False, "flat", {}
+
+        def update_values(self, w, d):
+            return False, False
+
+        def reset(self):
+            pass
+
+    def pipe_run(X, y):
+        pipe = ConceptDriftPipeline(PipelineConfig(
+            model_type="htr", use_ecpf=True, ecpf_signal_mode="dual_adwin", ecpf_warning_signal="error",
+            ecpf_drift_signal="error", ecpf_detector_min_instances=30, trace_enabled=True, **ARMS["E10bFT"], **P3))
+        pipe._ecpf_detector = Flat()
+        dets = [(int(d.timestamp), i) for i, _, _, ds, _ in pipe.run_stream(X, y, warm_start_samples=WARM_START)
+                for d in ds]
+        return pd.DataFrame(pipe.tracer._signals), dets
+    rng = np.random.default_rng(0)
+    n = 8000
+    X, t = rng.random((n, 2)), np.arange(n)
+    f = 10 * X[:, 0] + 5 * X[:, 1]
+    sig, dets = pipe_run(X, f + rng.normal(0, 1, n) + np.where(t >= 4000, rng.normal(0, 6, n), 0))
+    print("G4 residual step up at 4000: confirmations %s" % dets)
+    assert dets and all(w >= 4000 for w, _ in dets)                            # (b) a raw rise confirms, not before
+    idle = sig["guard_in"].isna().to_numpy()
+    ts = sig["t"].to_numpy(int)
+    expect = ts < ts[0] + 500
+    for _, c in dets:
+        expect |= (ts > c) & (ts < c + 500)
+    assert (idle == expect).all()                                               # (a) idle exactly k steps per era
+    sig, dets = pipe_run(X, f + rng.normal(0, 1, n) * np.linspace(4, 1, n))
+    print("G4 residual falling slowly, no drift: confirmations %s" % dets)
+    assert not dets                                                             # (b) a decline stays quiet
+    print("G4 PASS")
+
+
+def e13_guard_events(arm: str):
+    """Every E13 regression confirmation of `arm`: trigger (guard / ref / both, from an exact replay of both drift
+    arms), FP@3000 label, hit delay, raw residual over the guard cut's dropped / kept sub-windows, and rr = raw over
+    the last 300 steps / the 2000 before. Returns (DataFrame, replay mismatches); A0(b) needs 0 mismatches."""
+    import diagnose_regression_fp as drf
+    from detectors.meta_ecpf.adwin_family import _ADWINAdapter
+    mk = lambda one: _ADWINAdapter(delta=0.05, min_num_instances=30, one_sided=one)
+    rows, bad = [], 0
+    for fam, a, path, ds, cfg, g, sig in iter_runs("e13"):
+        if a != arm or not ALL[fam][3]:
+            continue
+        gt = scored_gt(fam, load_stream(path, ALL[fam][1])[2])
+        dets = sorted(zip(g["warning_t"].astype(int), g["confirmation_t"].astype(int)), key=lambda d: d[1])
+        drf.PERTURBATION = 3000
+        lab = {r["confirmation_t"]: r for r in drf.classify(dets, gt, sig, [], len(sig))}
+        drf.PERTURBATION = 1000
+        pos = {t: i for i, t in enumerate(sig["t"].to_numpy(int))}
+        conf = {pos[ct] for _, ct in dets}
+        gin = (sig["guard_in"] if "guard_in" in sig else sig["err"]).to_numpy(float)
+        ref, sw = sig["ref_err"].to_numpy(float), sig["ref_switch"].fillna(0).to_numpy(bool)
+        gd, rd, cut = mk(True), mk(False), {}
+        gf, rf = np.zeros(len(sig), bool), np.zeros(len(sig), bool)
+        for i in range(len(sig)):
+            if sw[i]:   # _switch_reference runs before the step's detector update
+                rd = mk(False)
+            if not np.isnan(gin[i]):
+                wb = int(gd._detector.width)
+                if gd.update(gin[i]):
+                    gf[i], cut[i], gd = True, (wb, int(gd._detector.width)), mk(True)
+            if rd.update(ref[i]):
+                rf[i], rd = True, mk(False)
+            if i in conf:
+                gd, rd = mk(True), mk(False)
+        bad += int((gf != sig["guard_drift"].astype(bool).to_numpy()).sum())
+        bad += int(((gf | rf) != sig["is_drift"].astype(bool).to_numpy()).sum())
+        raw = sig["raw"].to_numpy(float)
+        for _, ct in dets:
+            i, r = pos[ct], lab[ct]
+            row = {"family": fam, "learner": learner(cfg), "confirmation_t": ct, "label": r["label"],
+                   "delay": r["gap_prev_gt"] if r["label"] == "hit" else np.nan,
+                   "src": "both" if gf[i] and rf[i] else "guard" if gf[i] else "ref",
+                   "rr": raw[max(0, i - 299):i + 1].mean() / raw[max(0, i - 2299):max(1, i - 299)].mean()}
+            if gf[i]:
+                wb, wa = cut[i]
+                row.update(raw_w0=raw[i - wb:i - wa + 1].mean(), raw_w1=raw[i - wa + 1:i + 1].mean())
+            rows.append(row)
+    ev = pd.DataFrame(rows)
+    if len(ev):
+        ev["fp"] = ev["label"].isin(FP)
+        ev["guard"] = ev["src"] != "ref"
+        ev["catch"] = ev.get("raw_w1", np.nan) <= 1.05 * ev.get("raw_w0", np.nan)
+    return ev, bad
+
+
+def analyze_e13() -> None:
+    """E13 verdict (docs/ECPF_E13_守衛凍結尺度_預註冊.md)."""
+    n_cells = sum(len(e13_arms(f)) for f in E13)
+    missing = [(f, a) for f in E13 for a in e13_arms(f) if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
+    if missing:   # paused or still running: never judge a partial matrix
+        print("E13 INCOMPLETE: %d of %d cells missing -- no verdict" % (len(missing), n_cells))
+        return
+    ages = []
+    for f in E13:
+        for a in e13_arms(f):
+            try:
+                ages += pd.read_csv(os.path.join(OUT, f, a, "detections.csv"))["confirm_age"].tolist()
+            except pd.errors.EmptyDataError:
+                pass
+    print("## A0(a) longest warning->confirmation age: %d -> %s" % (
+        max(ages, default=0), "VALID" if max(ages, default=0) <= 1001 else "INVALID"))
+    if max(ages, default=0) > 1001:
+        print("E13 INVALID -- no verdict")
+        return
+    df = rescore(show=False, held="e13")
+    if df is None:
+        print("RESCORE INVALID -- no verdict")
+        return
+    runs = runs_table(held="e13")
+    grp = lambda f: f.rsplit("-", 1)[0]
+    df, runs["group"] = df[df["ext"] == 3000].copy(), runs["family"].map(grp)
+    df["group"] = df["family"].map(grp)
+    df["xs"] = df["tp"] - np.array(chance_hits(df))
+    B, MC, REG, ELEC, COV = "SYN2g67-B", "SYN2g67-MC", "SYN2g69-REG", "INJelec35", "INJcov01"
+    arms_of = lambda g: E13_REG_ARMS if g == REG else E13_CLS_ARMS
+    t = df.groupby(["group", "arm"])[["n_gt", "tp", "fp", "xs", "pre"]].sum()
+    assert (t.groupby("group")["n_gt"].nunique() == 1).all(), "N differs across arms: a cell is missing"
+    q = runs.groupby(["group", "arm"])["quality"].mean()
+    med = lambda s: float(np.median(sum(s, []))) if sum(s, []) else np.nan
+    dl = df.groupby(["group", "arm"])["delays"].apply(lambda s: med(list(s)))
+    print("\n## Per group (3000-step windows; quality = accuracy, MAE for %s; preFP only read on injected groups)" % REG)
+    print("%-12s %-7s %4s %5s %5s %8s %6s %7s %9s" % ("group", "arm", "N", "TP", "FP", "excess", "preFP", "delay",
+                                                    "quality"))
+    for g in (B, MC, REG, ELEC, COV):
+        for a in arms_of(g):
+            r = t.loc[(g, a)]
+            print("%-12s %-7s %4d %5d %5d %8.1f %6d %7.0f %9.4f" % (g, a, r["n_gt"], r["tp"], r["fp"], r["xs"], r["pre"],
+                                                                    dl[(g, a)], q[(g, a)]))
+
+    def p3(g, a):
+        bfp, efp, bx, ex = t.loc[(g, "baseT"), "fp"], t.loc[(g, a), "fp"], t.loc[(g, "baseT"), "xs"], t.loc[(g, a), "xs"]
+        fp_ok = bool(efp <= 0.5 * bfp) if bfp >= 6 else None
+        tp_ok = bool(ex >= 0.9 * bx)
+        print("%s: P3 %s FP@3000 %d vs baseT %d (%s) | excess %.1f vs %.1f (need >=%.1f): %s" % (
+            a, g, efp, bfp, "not evaluable" if fp_ok is None else "need <=%.1f: %s" % (0.5 * bfp, fp_ok), ex, bx,
+            0.9 * bx, tp_ok))
+        return tp_ok and fp_ok is not False
+
+    def p4(g, a):
+        qb, qe = q[(g, "baseT")], q[(g, a)]
+        ok = bool(qe <= 1.02 * qb) if g == REG else bool(qe >= qb - 0.01)
+        print("%s: P4 %s quality %.4f vs baseT %.4f: %s" % (a, g, qe, qb, ok))
+        return ok
+    print("\n## B: each arm vs baseT (recall = excess hits)")
+    cls, reg = {}, {}
+    for a in ("E1T", "E10bT"):
+        ok = []
+        for g in (ELEC, COV):
+            pb, pa = t.loc[(g, "baseT"), "pre"], t.loc[(g, a), "pre"]
+            p1 = bool(pa <= 0.30 * pb) if pb >= 10 else None
+            p2 = bool(t.loc[(g, a), "xs"] >= 0.90 * t.loc[(g, "baseT"), "xs"])
+            print("%s: P1 %s pre-drift FP %d vs baseT %d (%s) | P2 excess %.1f vs %.1f (need >=%.1f): %s" % (
+                a, g, pa, pb, "not evaluable" if p1 is None else "need <=%.1f: %s" % (0.3 * pb, p1),
+                t.loc[(g, a), "xs"], t.loc[(g, "baseT"), "xs"], 0.9 * t.loc[(g, "baseT"), "xs"], p2))
+            ok += [p1 is not False, p2]
+        ok += [p3(g, a) for g in (B, MC)] + [p4(g, a) for g in (B, MC, ELEC, COV)]
+        cls[a] = all(ok)
+    for a in ("E1T", "E2k500T", "E10bT", "E10bFT"):
+        reg[a] = p3(REG, a) & p4(REG, a)
+    for a in ("E1T", "E2k500T", "E10bT", "E10bFT"):
+        print("E13 verdict %s: classification %s; regression %s" % (
+            a, "-" if a not in cls else "HOLDS" if cls[a] else "does NOT hold", "HOLDS" if reg[a] else "does NOT hold"))
+
+    x = lambda g, a: float(t.loc[(g, a), "xs"])
+    c = reg["E10bFT"] and x(REG, "E10bFT") >= x(REG, "E2k500T")
+    print("\n## C (main decision): E10bFT holds for regression %s | excess E10bFT %.1f vs E2k500T %.1f -> %s" % (
+        reg["E10bFT"], x(REG, "E10bFT"), x(REG, "E2k500T"),
+        "E10bFT REPLACES E2k500T for regression" if c else "keep E2k500T for regression"))
+    if c:
+        print("   E10bT holds for classification in E13: %s -> %s" % (cls["E10bT"], (
+            "ONE main method: E10bFT (== E10bT on classification)" if cls["E10bT"]
+            else "conflict with E12 reported; classification stays as E12 decided, no unification claim")))
+
+    ev = {a: e13_guard_events(a) for a in ("E10bT", "E10bFT")}
+    bad = sum(b for _, b in ev.values())
+    print("\n## A0(b) guard / reference replay mismatches on regression: %d -> %s" % (
+        bad, "VALID" if not bad else "INVALID: M1 / M2 not read"))
+    e, f = ev["E10bT"][0], ev["E10bFT"][0]
+    for name, d in (("E10bT", e), ("E10bFT", f)):
+        gfp = d[d["fp"] & d["guard"]]
+        gh = d[(d["label"] == "hit") & d["guard"]]
+        print("%-6s confirmations %d | FP %d (guard %d, catch-up pattern %d) | hits %d (guard %d, rr>=1.1 %d, "
+              "median guard-hit delay %.0f)" % (name, len(d), d["fp"].sum(), len(gfp), int(gfp["catch"].sum()),
+                                                (d["label"] == "hit").sum(), len(gh), int((gh["rr"] >= 1.1).sum()),
+                                                gh["delay"].astype(float).median()))
+        print("        FP rr %s" % " ".join("%.2f" % v for v in sorted(gfp["rr"])))
+    if not bad:
+        ge, gf_ = int((e["fp"] & e["guard"]).sum()), int((f["fp"] & f["guard"]).sum())
+        m1 = bool(gf_ <= 0.30 * ge) if ge >= 5 else None
+        real = int(((e["label"] == "hit") & e["guard"] & (e["rr"] >= 1.1)).sum())
+        m2 = bool(int(((f["label"] == "hit") & f["guard"]).sum()) >= 0.70 * real)
+        print("M1 guard FP E10bFT %d vs E10bT %d (need <=%.1f, E10bT>=5): %s" % (
+            gf_, ge, 0.3 * ge, "not evaluable" if m1 is None else m1))
+        print("M2 guard hits E10bFT %d vs E10bT's rr>=1.1 guard hits %d (need >=%.1f): %s" % (
+            int(((f["label"] == "hit") & f["guard"]).sum()), real, 0.7 * real, m2))
+        if c and m1 is not True:
+            print("   C adopts E10bFT, but the catch-up explanation is NOT supported (M1)")
+
+    print("\n## Q: E1T vs E10bT on classification, cost(w) = w * (N - excess) + FP@3000")
+    cost = lambda g, a, w: w * (t.loc[(g, a), "n_gt"] - t.loc[(g, a), "xs"]) + t.loc[(g, a), "fp"]
+    wins = 0
+    for g in (B, MC, ELEC, COV):
+        e1 = all(cost(g, "E1T", w) <= cost(g, "E10bT", w) + 1e-9 for w in C1_W)
+        wins += e1
+        who, ws = breakeven(x(g, "E10bT"), t.loc[(g, "E10bT"), "fp"], x(g, "E1T"), t.loc[(g, "E1T"), "fp"])
+        print("%-12s %s | E1T <= E10bT at every w: %s | %s" % (
+            g, " ".join("w=%d %.1f/%.1f" % (w, cost(g, "E1T", w), cost(g, "E10bT", w)) for w in C1_W), e1,
+            "%s %s" % ("E10bT" if who == "main" else "E1T",
+                       "never costlier" if ws == 0 else "cheaper once w > %.2f" % ws)))
+    print("Q reading: E1T holds for classification %s, cheaper at every w in %d of 4 groups -> %s" % (
+        cls["E1T"], wins, "MOA's one-sided rule SUFFICES for classification (recommend E1T)"
+        if cls["E1T"] and wins >= 3 else "E10bT stays the classification main method"))
+
+    print("\n## Regression per drift type (4 seeds pooled; cost at w = 1 / 10)")
+    rd = df[df["group"] == REG].assign(kind=lambda d: d["family"].map(lambda s: s.rsplit("-", 1)[1].rstrip("0123456789")))
+    k = rd.groupby(["kind", "arm"])[["n_gt", "fp", "xs"]].sum()
+    for kd, _ in _KINDS:
+        print("%-5s %s" % (kd, " | ".join("%s xs %.1f FP %d c %.0f/%.0f" % (
+            a, k.loc[(kd, a), "xs"], k.loc[(kd, a), "fp"], (k.loc[(kd, a), "n_gt"] - k.loc[(kd, a), "xs"]) + k.loc[(kd, a), "fp"],
+            10 * (k.loc[(kd, a), "n_gt"] - k.loc[(kd, a), "xs"]) + k.loc[(kd, a), "fp"]) for a in E13_REG_ARMS)))
+    ra = runs[runs["group"] == REG]
+    ra = ra[ra["arm"].isin(["E2k500T", "E10bT", "E10bFT"])].assign(max_age=lambda d: [int(s["ref_age"].max()) for s in d["sig"]])
+    print("\nmax reference age (regression): %s" % ra.groupby("arm")["max_age"].max().to_dict())
+    rows = []
+    for (fm, ds, lr), g in runs[runs["group"] == REG].groupby(["family", "dataset", "learner"]):
+        r = {z.arm: z for z in g.itertuples()}
+        iv = scored_gt(fm, load_stream(r["E2k500T"].path, ALL[fm][1])[2])
+        age = r["E2k500T"].sig.set_index("t")["ref_age"]
+        sel = df[(df["family"] == fm) & (df["dataset"] == ds) & (df["learner"] == lr)]
+        warn = {a: sel[sel["arm"] == a]["warn_t"].iloc[0] for a in E13_REG_ARMS}
+        for s, e_ in iv:
+            rows.append({"age": int(age.get(s, -1)), **{a: any(s <= w <= e_ + 3000 for w in warn[a]) for a in E13_REG_ARMS}})
+    m = pd.DataFrame(rows)
+    m["bin"] = pd.cut(m["age"], [-1, 10000, 10 ** 6], labels=["<10k", ">=10k"])
+    print("regression hits per E2k500T reference age at drift onset:\n%s" % m.groupby("bin", observed=True)[
+        E13_REG_ARMS].sum().assign(n=m.groupby("bin", observed=True).size()).to_string())
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -1178,6 +1474,9 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-d2", action="store_true", help="D2 dev check: E10a / E10b plus the timeout on A2 g00")
     ap.add_argument("--analyze-e12", action="store_true", help="E12 verdict (can E10bT replace E2k500T?)")
     ap.add_argument("--analyze-c1", action="store_true", help="C1 readings (miss-weighted cost on E11 / E12)")
+    ap.add_argument("--gate-e13", choices=["g2", "g3", "g4"], help="E13 pre-launch gates (G2 flag-off rerun, G3 "
+                    "classification identity, G4 self-check)")
+    ap.add_argument("--analyze-e13", action="store_true", help="E13 verdict (frozen guard scale; E1T vs E10bT)")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -1216,3 +1515,11 @@ if __name__ == "__main__":
         analyze_e12()
     if a.analyze_c1:
         analyze_c1()
+    if a.gate_e13 == "g2":
+        print("G2 %s" % ("PASS" if gate_rerun("SYN2g45-REG-sud4", "E10bT", "E10bT") else "FAIL"))
+    if a.gate_e13 == "g3":
+        print("G3 %s" % ("PASS" if gate_rerun("SYN2g45-B-sud4", "E10bFT", "E10bT") else "FAIL"))
+    if a.gate_e13 == "g4":
+        check_e13()
+    if a.analyze_e13:
+        analyze_e13()

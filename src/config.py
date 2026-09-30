@@ -222,6 +222,13 @@ class PipelineConfig:
     # byte-identical.
     ecpf_reference_max_age: int = 0
     ecpf_leader_guard: bool = False
+    # E13 (docs/ECPF_E13_守衛凍結尺度_預註冊.md): regression only. The online normalizer
+    # drifts up within an era while the leader is still learning, and the guard's long
+    # ADWIN windows read that catch-up as a rise. k>0: the guard stays idle for the first
+    # k steps of each era (stream start, every confirmation), then reads the leader's raw
+    # residual through a snapshot of the normalizer taken at that step. Default-off runs
+    # are byte-identical; classification (0/1 loss, no normalizer) is unaffected.
+    ecpf_guard_frozen_scale: int = 0
 
     # E1 (docs/ECPF_E1E2_預註冊.md): MOA ADWINChangeDetector semantics on both ADWIN
     # arms -- a cut counts only if the error estimate rose; a suppressed cut keeps
