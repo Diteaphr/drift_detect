@@ -1,0 +1,2 @@
+REALreg-bike baseT bike_sharing.csv htr-baseT/error detections=5 swaps=16
+REALreg-bike baseT bike_sharing.csv hfr-baseT/error detections=5 swaps=33

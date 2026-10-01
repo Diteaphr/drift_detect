@@ -1,0 +1,2 @@
+REALreg-metro baseT metro_interstate_traffic.csv htr-baseT/error detections=23 swaps=276
+REALreg-metro baseT metro_interstate_traffic.csv hfr-baseT/error detections=6 swaps=28

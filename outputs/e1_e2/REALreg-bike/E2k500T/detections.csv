@@ -1,0 +1,13 @@
+warning_t,confirmation_t,confirm_age,label,gap_prev_gt,gap_next_gt,gap_prev_det,norm_before,norm_after,norm_delta,direction,raw_before,raw_after,raw_rel_change,discord,swap_gap,swap_within,dataset,config,path
+1991,2247,256,orphan,,,,0.5308,0.5266,-0.0042,flat,41.4714,69.5632,0.6774,,,0,bike_sharing.csv,htr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+7610,7610,0,orphan,,,5619,0.4578,0.483,0.0252,rise,50.8323,58.7946,0.1566,,1624,0,bike_sharing.csv,htr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+8877,8909,32,orphan,,,1267,0.5287,0.4937,-0.035,fall,76.2573,57.984,-0.2396,,2891,0,bike_sharing.csv,htr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+9357,9357,0,orphan,,,480,0.4884,0.5067,0.0183,flat,57.8377,56.8332,-0.0174,,302,1,bike_sharing.csv,htr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+11008,11008,0,orphan,,,1651,0.5445,0.5069,-0.0376,fall,93.9536,90.0918,-0.0411,fake_fall,1953,0,bike_sharing.csv,htr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+16284,16499,215,orphan,,,5276,0.4605,0.4931,0.0326,rise,72.5861,75.2149,0.0362,,7229,0,bike_sharing.csv,htr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+1991,1991,0,orphan,,,,0.5215,0.5069,-0.0146,flat,32.0757,35.0363,0.0923,,,0,bike_sharing.csv,hfr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+6234,6458,224,orphan,,,4243,0.5001,0.4865,-0.0135,flat,51.0796,55.2543,0.0817,,2933,0,bike_sharing.csv,hfr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+8397,8397,0,orphan,,,2163,0.4658,0.4999,0.0342,rise,42.262,51.5948,0.2208,,1900,0,bike_sharing.csv,hfr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+8685,8685,0,orphan,,,288,0.4768,0.4914,0.0146,flat,42.34,54.5815,0.2891,,258,1,bike_sharing.csv,hfr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+10400,10400,0,orphan,,,1715,0.5124,0.4917,-0.0207,fall,66.9374,81.1144,0.2118,fake_fall,46,1,bike_sharing.csv,hfr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+15123,15315,192,orphan,,,4723,0.523,0.494,-0.029,fall,84.8273,116.2249,0.3701,fake_fall,4769,0,bike_sharing.csv,hfr-E2k500T/error,data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv

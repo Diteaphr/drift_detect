@@ -1,0 +1,2 @@
+REALreg-bike E2k500T bike_sharing.csv htr-E2k500T/error detections=6 swaps=8
+REALreg-bike E2k500T bike_sharing.csv hfr-E2k500T/error detections=6 swaps=45

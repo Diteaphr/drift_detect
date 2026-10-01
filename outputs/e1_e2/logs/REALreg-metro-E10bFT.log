@@ -1,0 +1,2 @@
+REALreg-metro E10bFT metro_interstate_traffic.csv htr-E10bFT/error detections=18 swaps=177
+REALreg-metro E10bFT metro_interstate_traffic.csv hfr-E10bFT/error detections=17 swaps=116
