@@ -1,0 +1,10 @@
+# A3 data subset, taken from origin/main commit d29bb70 (Joe's data/dataset_0921/).
+# Registered by this manifest only; the files are not tracked on this branch.
+# Each line: <git blob id> TAB <path>.  Restore and verify:
+#   git restore --source=d29bb70 --worktree -- $(grep -v '^#' data/manifests/A3.txt | cut -f2)
+#   grep -v '^#' data/manifests/A3.txt | while IFS=$'\t' read id p; do [ "$(git hash-object "$p")" = "$id" ] || [ "$(git hash-object --no-filters "$p")" = "$id" ] || echo "MISMATCH $p"; done
+#   (some files are stored with CRLF line endings, which git's line-ending conversion alters, so accept either hash)
+a05dddc64c7629c85862c98156163c2d150136f5	data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv
+85be855e05f4fc3d7972dcfeb43335e7839b685b	data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing_meta.json
+0f70a4c1e8eb6458cbc08266a9b30e548ac76373	data/dataset_0921/real_dataset/regression/metro_interstate_traffic/metro_interstate_traffic.csv
+eed3536246e3d6e66bb12e7c7aa49ae7e04a11af	data/dataset_0921/real_dataset/regression/metro_interstate_traffic/metro_interstate_traffic_meta.json
