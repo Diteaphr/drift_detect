@@ -55,6 +55,10 @@ ARMS = {"E1": {"ecpf_adwin_one_sided": True},
         # E13 (docs/ECPF_E13_守衛凍結尺度_預註冊.md): E10bT with the guard's scale frozen per era (regression only)
         "E10bFT": {"ecpf_reference_signal": True, "ecpf_reference_warmup": 500, "ecpf_leader_guard": True,
                    "ecpf_detector_warning_timeout": 1000, "ecpf_guard_frozen_scale": 500}}
+# D5 (docs/ECPF_D5_預測範圍守衛_開發檢查.md): the same arms with the regression learners' prediction-range guard
+ARMS.update({a + "C": ARMS[a] for a in ("baseT", "E2k500T", "E10bFT")})
+D5_ARMS = ["baseTC", "E2k500TC", "E10bFTC"]
+ARM_MODEL_KW = {a: {"clip_predictions": True} for a in D5_ARMS}   # model kwargs an arm adds (regression only)
 P3 = {"ecpf_normalizer_reset_on_drift": True}  # the regression baseline (htr-nr / hfr-nr) has it on
 REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
@@ -279,7 +283,8 @@ def run_cell(family: str, arm: str) -> None:
         for base_label, mt, mk in configs:
             label = base_label.replace("/", "-%s/" % arm)
             pk = {**ARMS[arm], **(P3 if is_reg else {})}
-            sig, dets, swaps, stage3, intervals, _, n = run(path, mt, max_steps, mk, pk)
+            sig, dets, swaps, stage3, intervals, _, n = run(path, mt, max_steps,
+                                                            {**mk, **(ARM_MODEL_KW.get(arm, {}) if is_reg else {})}, pk)
             for r in classify(dets, scored_gt(family, intervals), sig, swaps, n):
                 rows.append({**r, "dataset": key, "config": label, "path": path})
             with gzip.open(os.path.join(d, "signals", sig_name(key, label)), "wt") as f:
@@ -1438,22 +1443,22 @@ def crit_p12(t, g, a):
     return [p1 is not False, p2]
 
 
-def crit_p3(t, g, a):
-    """P3: FP@3000 <= 50% of baseT (not evaluable if baseT < 6) and excess >= 90% of baseT."""
-    bfp, efp, bx, ex = t.loc[(g, "baseT"), "fp"], t.loc[(g, a), "fp"], t.loc[(g, "baseT"), "xs"], t.loc[(g, a), "xs"]
+def crit_p3(t, g, a, ref: str = "baseT"):
+    """P3: FP@3000 <= 50% of the baseline (not evaluable if it has < 6) and excess >= 90% of the baseline."""
+    bfp, efp, bx, ex = t.loc[(g, ref), "fp"], t.loc[(g, a), "fp"], t.loc[(g, ref), "xs"], t.loc[(g, a), "xs"]
     fp_ok = bool(efp <= 0.5 * bfp) if bfp >= 6 else None
     tp_ok = bool(ex >= 0.9 * bx)
-    print("%s: P3 %s FP@3000 %d vs baseT %d (%s) | excess %.1f vs %.1f (need >=%.1f): %s" % (
-        a, g, efp, bfp, "not evaluable" if fp_ok is None else "need <=%.1f: %s" % (0.5 * bfp, fp_ok), ex, bx,
+    print("%s: P3 %s FP@3000 %d vs %s %d (%s) | excess %.1f vs %.1f (need >=%.1f): %s" % (
+        a, g, efp, ref, bfp, "not evaluable" if fp_ok is None else "need <=%.1f: %s" % (0.5 * bfp, fp_ok), ex, bx,
         0.9 * bx, tp_ok))
     return tp_ok and fp_ok is not False
 
 
-def crit_p4(q, g, a, mae: bool = False):
-    """P4 quality guard: accuracy >= baseT - 0.01, or MAE <= 1.02 x baseT."""
-    qb, qe = q[(g, "baseT")], q[(g, a)]
+def crit_p4(q, g, a, mae: bool = False, ref: str = "baseT"):
+    """P4 quality guard: accuracy >= baseline - 0.01, or MAE <= 1.02 x baseline."""
+    qb, qe = q[(g, ref)], q[(g, a)]
     ok = bool(qe <= 1.02 * qb) if mae else bool(qe >= qb - 0.01)
-    print("%s: P4 %s quality %.4f vs baseT %.4f: %s" % (a, g, qe, qb, ok))
+    print("%s: P4 %s quality %.4f vs %s %.4f: %s" % (a, g, qe, ref, qb, ok))
     return ok
 
 
@@ -1660,6 +1665,101 @@ def analyze_a3() -> None:
         "boundary condition -- Q1 fails on %s" % ", ".join(f for f in A3 if not q1[f])))
 
 
+def check_d5() -> None:
+    """D5 gate G3: the prediction-range guard on the regression models themselves."""
+    from src.model_adapter import create_base_model
+    rng = np.random.default_rng(0)
+    X = rng.random((400, 3))
+    y = 100 + 50 * X[:, 0] + rng.normal(0, 1, 400)
+    for mt in ("htr", "hfr"):
+        off, on = create_base_model(mt, {}), create_base_model(mt, {"clip_predictions": True})
+        assert on.predict_one(X[0]) == off.predict_one(X[0]) == 0.0          # nothing seen yet: left alone
+        for xi, yi in zip(X, y):
+            off.learn_one(xi, yi)
+            on.learn_one(xi, yi)
+        lo, hi = y.min(), y.max()
+        far = np.array([1e9, -1e9, 1e9])                                       # a row that makes a linear leaf extrapolate
+        members = on.predict_per_model(far) if mt == "hfr" else [on.predict_one(far)]
+        assert all(lo - (hi - lo) <= v <= hi + (hi - lo) for v in members), (mt, members)
+        assert all(on.predict_one(xi) == off.predict_one(xi) for xi in X[:200])  # in-range predictions untouched
+        assert create_base_model(mt, {}).clip_predictions is False              # default off
+    print("G3 PASS")
+
+
+def analyze_d5() -> None:
+    """D5 development check (docs/ECPF_D5_預測範圍守衛_開發檢查.md): the regression learners' prediction-range
+    guard on the A3 streams (R1) and on E13's regression streams (R2). Arms with the guard end in 'C'."""
+    pair = dict(zip(D5_ARMS, ["baseT", "E2k500T", "E10bFT"]))
+    reg = {f: v for f, v in E13.items() if v[3]}
+    missing = [(f, a) for f in list(A3) + list(reg) for a in D5_ARMS
+               if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
+    if missing:
+        print("D5 INCOMPLETE: %d cells missing -- nothing is read" % len(missing))
+        return
+    print("## R1: real regression streams (A3), guard on vs A3's stored runs")
+    rows = []
+    for x in runs_table(held="a3").itertuples():
+        raw, pos = x.sig["raw"].to_numpy(float), {t: i for i, t in enumerate(x.sig["t"].to_numpy(int))}
+        yv = load_stream(x.path, 0)[1]
+        rr = [raw[max(0, i - 299):i + 1].mean() / raw[max(0, i - 2299):max(1, i - 299)].mean()
+              for i in (pos[t] for t in x.conf_t)]
+        rows.append({"family": x.family, "arm": x.arm, "learner": x.learner, "mae": x.quality, "max": raw.max(),
+                     "wild": int((raw > 2 * (yv.max() - yv.min())).sum()), "conf": len(rr),
+                     "rise": sum(v >= 1.1 for v in rr)})
+    m = pd.DataFrame(rows)
+    print("%-14s %-4s %-9s %12s %12s %5s %5s %5s" % ("data set", "lr", "arm", "MAE", "max |res|", "wild", "conf", "rise"))
+    for r in m.sort_values(["family", "learner", "arm"]).itertuples():
+        print("%-14s %-4s %-9s %12.4g %12.4g %5d %5d %5d" % (r.family, r.learner, r.arm, r.mae, r.max, r.wild, r.conf,
+                                                         r.rise))
+    c = m[m["arm"].isin(D5_ARMS)]
+    r1a = int(c["wild"].sum()) == 0
+    print("\nR1a steps with |residual| > 2 x target range under the guard: %d (without it: %d) -> %s" % (
+        c["wild"].sum(), m[m["arm"].isin(pair.values())]["wild"].sum(), "blow-up GONE" if r1a else "blow-up REMAINS"))
+    q, n = m.groupby(["family", "arm"])["mae"].mean(), m.groupby(["family", "arm"])["conf"].sum()
+    r1b = {}
+    for f in A3:
+        r1b[f] = bool(q[(f, "E10bFTC")] <= 1.02 * q[(f, "baseTC")])
+        print("R1b %-14s MAE E10bFTC %.3f vs baseTC %.3f (ratio %.3f, need <=1.02): %s | E2k500TC %.3f (ratio %.3f) | "
+              "R1c confirmations E10bFTC %d vs baseTC %d (<= half: %s), E2k500TC %d" % (
+                  f, q[(f, "E10bFTC")], q[(f, "baseTC")], q[(f, "E10bFTC")] / q[(f, "baseTC")], r1b[f],
+                  q[(f, "E2k500TC")], q[(f, "E2k500TC")] / q[(f, "baseTC")], n[(f, "E10bFTC")], n[(f, "baseTC")],
+                  bool(n[(f, "E10bFTC")] <= 0.5 * n[(f, "baseTC")]), n[(f, "E2k500TC")]))
+    tot = c.groupby("arm")[["conf", "rise"]].sum()
+    print("R1c share of confirmations with rr >= 1.1: %s" % ", ".join(
+        "%s %d/%d = %.2f" % (a, tot.loc[a, "rise"], tot.loc[a, "conf"], tot.loc[a, "rise"] / tot.loc[a, "conf"])
+        for a in D5_ARMS))
+
+    print("\n## R2: E13's regression streams with the guard on")
+    REG = "SYN2g69-REG"
+    res = judged_round("D5-R2", "e13", reg, lambda f: D5_ARMS, (REG,), lambda g: list(pair.values()) + D5_ARMS,
+                       mae_group=REG)
+    if res is None:
+        return
+    t, q2, df, _ = res
+    print()
+    holds = crit_p3(t, REG, "E10bFTC", ref="baseTC") & crit_p4(q2, REG, "E10bFTC", mae=True, ref="baseTC")
+    xe, xk = float(t.loc[(REG, "E10bFTC"), "xs"]), float(t.loc[(REG, "E2k500TC"), "xs"])
+    r2a = bool(holds and xe >= xk)
+    print("R2a E10bFTC holds vs baseTC: %s | excess E10bFTC %.1f vs E2k500TC %.1f -> %s" % (
+        holds, xe, xk, "E13's main decision UNCHANGED under the guard" if r2a else "E13's main decision CHANGES"))
+    d = df[df["group"] == REG]
+    seq = {(r.family, r.dataset, r.learner, r.arm): (r.warn_t, r.conf_t) for r in d.itertuples()}
+    for a, old in pair.items():
+        keys = [k for k in seq if k[3] == a]
+        same = sum(seq[k] == seq[k[:3] + (old,)] for k in keys)
+        print("R2b %-9s runs identical to %-8s %2d of %d (htr %d, hfr %d) | TP %+d FP %+d excess %+.1f MAE %+.4f" % (
+            a, old, same, len(keys), sum(seq[k] == seq[k[:3] + (old,)] for k in keys if k[2] == "htr"),
+            sum(seq[k] == seq[k[:3] + (old,)] for k in keys if k[2] == "hfr"),
+            t.loc[(REG, a), "tp"] - t.loc[(REG, old), "tp"], t.loc[(REG, a), "fp"] - t.loc[(REG, old), "fp"],
+            t.loc[(REG, a), "xs"] - t.loc[(REG, old), "xs"], q2[(REG, a)] - q2[(REG, old)]))
+    print("\nD5 conclusion: %s" % (
+        "R1a, R1b and R2a hold -> the guard is the SUGGESTED setting for the regression learners (development "
+        "evidence only; adoption needs unused real regression data)" if r1a and all(r1b.values()) and r2a else
+        "R2a fails -> the guard changes the synthetic conclusion: not suggested" if not r2a else
+        "the guard removes the blow-up%s; R1b fails on %s -> real regression data stays a boundary condition" % (
+            "" if r1a else " only partly", ", ".join(f for f in A3 if not r1b[f]))))
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -1749,6 +1849,8 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-e13", action="store_true", help="E13 verdict (frozen guard scale; E1T vs E10bT)")
     ap.add_argument("--analyze-e14", action="store_true", help="E14 verdict (classification confirmation of E10bFT)")
     ap.add_argument("--analyze-a3", action="store_true", help="A3 verdict (real regression streams without GT)")
+    ap.add_argument("--gate-d5", choices=["g2", "g3"], help="D5 gates (G2 flag-off rerun of an E13 cell, G3 self-check)")
+    ap.add_argument("--analyze-d5", action="store_true", help="D5 dev check (prediction-range guard)")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -1803,3 +1905,9 @@ if __name__ == "__main__":
         analyze_e14()
     if a.analyze_a3:
         analyze_a3()
+    if a.gate_d5 == "g2":
+        print("G2 %s" % ("PASS" if gate_rerun("SYN2g69-REG-sud6", "E10bFT", "E10bFT") else "FAIL"))
+    if a.gate_d5 == "g3":
+        check_d5()
+    if a.analyze_d5:
+        analyze_d5()

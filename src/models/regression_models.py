@@ -71,6 +71,30 @@ def _as_float(value: Any, default: float = 0.0) -> float:
     return out if math.isfinite(out) else default
 
 
+class _SeenRange:
+    """D5 prediction-range guard (docs/ECPF_D5_預測範圍守衛_開發檢查.md): the target range a model
+    has been trained on. ``clip`` keeps a prediction within one range width of it -- a leaf's
+    linear model fed unscaled features can otherwise predict 1e10 on an ordinary row. A model
+    that has seen no target yet is left alone."""
+
+    __slots__ = ("lo", "hi")
+
+    def __init__(self) -> None:
+        self.lo, self.hi = math.inf, -math.inf
+
+    def see(self, y: float) -> None:
+        if y < self.lo:
+            self.lo = y
+        if y > self.hi:
+            self.hi = y
+
+    def clip(self, value: float) -> float:
+        if self.lo > self.hi:
+            return value
+        width = self.hi - self.lo
+        return min(max(value, self.lo - width), self.hi + width)
+
+
 class HoeffdingTreeRegressorModel(BaseModel):
     """Plain (non-adaptive) Hoeffding Tree regressor — River.
 
@@ -105,6 +129,9 @@ class HoeffdingTreeRegressorModel(BaseModel):
         Names of nominal (categorical) features.  ``None`` = all numeric.
     max_size : float
         Maximum tree size in MB (River's memory cap).
+    clip_predictions : bool
+        D5 guard, default off: keep predictions within one range width of the
+        target range this model has been trained on (see ``_SeenRange``).
     """
 
     def __init__(
@@ -119,7 +146,10 @@ class HoeffdingTreeRegressorModel(BaseModel):
         min_samples_split: int = 5,
         nominal_attributes: Optional[List[str]] = None,
         max_size: float = 500.0,
+        clip_predictions: bool = False,
     ) -> None:
+        self.clip_predictions = bool(clip_predictions)
+        self._seen = _SeenRange()
         self._init_kwargs = dict(
             grace_period=grace_period,
             max_depth=max_depth,
@@ -141,28 +171,26 @@ class HoeffdingTreeRegressorModel(BaseModel):
         X = self._to_numpy(X)
         y = np.asarray(y).ravel()
         for xi, yi in zip(X, y):
-            x_dict = self._to_dict(xi)
-            self.model.learn_one(x_dict, float(yi))
+            self.learn_one(xi, yi)
         return self
 
     def predict(self, X: Any) -> np.ndarray:
         X = self._to_numpy(X)
-        preds = [
-            _as_float(self.model.predict_one(self._to_dict(xi))) for xi in X
-        ]
-        return np.asarray(preds, dtype=float)
+        return np.asarray([self.predict_one(xi) for xi in X], dtype=float)
 
     # ------------------------------------------------------------------
     # Streaming / online interface
     # ------------------------------------------------------------------
     def learn_one(self, x: Dict[str, float], y: Any) -> "HoeffdingTreeRegressorModel":
         x = self._to_dict(x)
+        self._seen.see(float(y))
         self.model.learn_one(x, float(y))
         return self
 
     def predict_one(self, x: Dict[str, float]) -> float:
         x = self._to_dict(x)
-        return _as_float(self.model.predict_one(x))
+        p = _as_float(self.model.predict_one(x))
+        return self._seen.clip(p) if self.clip_predictions else p
 
     # ------------------------------------------------------------------
     # Persistence
@@ -336,6 +364,11 @@ class HoeffdingForestRegressorModel(BaseModel):
         Base random seed.  Tree ``i`` uses ``seed + i * 1000``, matching the
         classifier twin so paired classification/regression runs are
         comparable.
+    clip_predictions : bool
+        D5 guard, default off: clip every member's prediction to within one
+        range width of the target range this forest has been trained on, before
+        aggregating (see ``_SeenRange``) -- one exploding member otherwise
+        drags the mean.
     """
 
     def __init__(
@@ -354,7 +387,10 @@ class HoeffdingForestRegressorModel(BaseModel):
         min_samples_split: int = 5,
         max_size: float = 500.0,
         seed: Optional[int] = 42,
+        clip_predictions: bool = False,
     ) -> None:
+        self.clip_predictions = bool(clip_predictions)
+        self._seen = _SeenRange()
         if aggregation not in ("mean", "median"):
             raise ValueError(
                 "aggregation must be 'mean' or 'median', got %r" % (aggregation,)
@@ -455,7 +491,8 @@ class HoeffdingForestRegressorModel(BaseModel):
         epistemic signal being measured.
         """
         x_dict = self._to_dict(x)
-        return [_as_float(t.predict_one(x_dict)) for t in self.trees]
+        preds = [_as_float(t.predict_one(x_dict)) for t in self.trees]
+        return [self._seen.clip(p) for p in preds] if self.clip_predictions else preds
 
     # ------------------------------------------------------------------
     # Batch interface
@@ -499,6 +536,7 @@ class HoeffdingForestRegressorModel(BaseModel):
         # Lazy init: assign each tree a random feature subset.
         if self._feature_masks[0] is None and x_dict:
             self._init_feature_masks(sorted(x_dict.keys()))
+        self._seen.see(y)
 
         for i, t in enumerate(self.trees):
             k = int(self._rngs[i].poisson(self.lambda_poisson))
