@@ -1020,6 +1020,77 @@ def analyze_d3() -> None:
             list(shown)].sum().assign(n=mg.groupby("bin_t", observed=True).size()).to_string()))
 
 
+def miss_cost_rows(held: str, prefix: str, ref_arm=None):
+    """D4: one row per (regression stream, learner, scored GT drift) -- whether E10bFT (F) and baseT (B) hit it, and
+    both arms' summed |residual| over the post-drift window (3000 and 1000 steps, cut at the next GT start) and the
+    pre-drift window (2000 steps, not before the previous GT start). ref_arm: also flag D1's stale misses."""
+    arms = ["baseT", "E10bFT"] + ([ref_arm] if ref_arm else [])
+    df = rescore(exts=(3000,), show=False, held=held)
+    runs = runs_table(held=held)
+    runs = runs[runs["family"].str.startswith(prefix) & runs["arm"].isin(arms)]
+    rows = []
+    for (f, ds, lr), g in runs.groupby(["family", "dataset", "learner"]):
+        r = {x.arm: x for x in g.itertuples()}
+        iv = sorted(scored_gt(f, load_stream(r["baseT"].path, ALL[f][1])[2]))
+        sel = df[(df["family"] == f) & (df["dataset"] == ds) & (df["learner"] == lr)]
+        warn = {a: sel[sel["arm"] == a]["warn_t"].iloc[0] for a in arms}
+        raw = {k: r[a].sig.set_index("t")["raw"] for k, a in (("F", "E10bFT"), ("B", "baseT"))}
+        age = r[ref_arm].sig.set_index("t")["ref_age"] if ref_arm else None
+        starts = [s for s, _ in iv]
+        for i, (s, e) in enumerate(iv):
+            nxt, prv = (starts[i + 1] if i + 1 < len(starts) else 10 ** 9), (starts[i - 1] if i else 0)
+            hit = {a: any(s <= w <= e + 3000 for w in warn[a]) for a in arms}
+            row = {"kind": f.rsplit("-", 1)[1].rstrip("0123456789"), "learner": lr, "gt": s,
+                   "cat": "ABCD"[2 * (not hit["baseT"]) + (not hit["E10bFT"])],
+                   "stale": bool(ref_arm) and not hit[ref_arm] and int(age.get(s, -1)) >= 10000, "missF": not hit["E10bFT"]}
+            for name, lo, hi in (("post", s, min(s + 3000, nxt)), ("post1k", s, min(s + 1000, nxt)),
+                                 ("pre", max(s - 2000, prv), s)):
+                for k in ("F", "B"):
+                    row["%s_%s" % (name, k)] = float(raw[k].loc[lo:hi - 1].sum())
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def analyze_d4() -> None:
+    """D4 development check (docs/ECPF_D4_漏抓代價_開發檢查.md): does a regression drift that E10bFT misses and
+    baseT hits (category B) cost prediction quality? Stored traces only."""
+    ratio = lambda d, w: d[w + "_F"].sum() / d[w + "_B"].sum() if len(d) else float("nan")
+    names = {"A": "both hit", "B": "E10bFT miss, baseT hit", "C": "E10bFT hit, baseT miss", "D": "both miss"}
+    reads = []
+    for label, held, prefix, ref in (("A2 g00 SYN2-REG (primary)", "a2", "SYN2-REG", "E2k500"),
+                                     ("E13 SYN2g69-REG (replication)", "e13", "SYN2g69-REG", None)):
+        m = miss_cost_rows(held, prefix, ref)
+        print("## %s: %d scored drifts; ratio = E10bFT / baseT summed |residual| (>1: E10bFT worse)" % (label, len(m)))
+        print("%-3s %-24s %4s %10s %10s %10s" % ("cat", "", "n", "post 3000", "post 1000", "pre 2000"))
+        for c in "ABCD":
+            d = m[m["cat"] == c]
+            print("%-3s %-24s %4d %10.3f %10.3f %10.3f" % (c, names[c], len(d), ratio(d, "post"), ratio(d, "post1k"),
+                                                         ratio(d, "pre")))
+        print("%-3s %-24s %4d %10.3f %10.3f %10.3f" % ("all", "", len(m), ratio(m, "post"), ratio(m, "post1k"),
+                                                      ratio(m, "pre")))
+        b, a = m[m["cat"] == "B"], m[m["cat"] == "A"]
+        r1 = ratio(b, "post")
+        r2 = r1 / ratio(a, "post")
+        read = ("not readable (B < 5)" if len(b) < 5 else "NO COST" if r1 <= 1.02 else "COST" if r1 > 1.05 else "SMALL cost")
+        reads.append((read, r2))
+        print("R1 category B post-window ratio %.3f (n=%d) -> %s" % (r1, len(b), read))
+        print("R2 B / A = %.3f / %.3f = %.3f -> %s" % (
+            r1, ratio(a, "post"), r2, "attributable cost (> 1.05)" if r2 > 1.05 else "no attributable cost"))
+        print("B by drift type: %s" % ", ".join("%s n=%d %.3f" % (k, len(d), ratio(d, "post"))
+                                                for k, d in b.groupby("kind")))
+        if ref:
+            st = m[m["stale"] & m["missF"]]
+            print("D1's stale misses that E10bFT misses: n=%d, post-window ratio %.3f (of which baseT hit: n=%d, %.3f)" % (
+                len(st), ratio(st, "post"), (st["cat"] == "B").sum(), ratio(st[st["cat"] == "B"], "post")))
+        print()
+    no_cost = all(r == "NO COST" and r2 <= 1.05 for r, r2 in reads)
+    print("D4 conclusion: %s" % (
+        "both data sets read NO COST with R2 <= 1.05 -> the regression stale reference is a limit of the recall "
+        "METRIC, not an open problem of the method" if no_cost else
+        "primary data reads COST -> a METHOD problem: regression needs a new trigger" if reads[0][0] == "COST" else
+        "mixed -> reported as is"))
+
+
 def analyze_e12() -> None:
     """E12 verdict (docs/ECPF_E12_leader守衛取代_預註冊.md): can E10bT replace E2k500T as the main method?"""
     groups, arms = ["SYN2g45-B", "SYN2g45-MC", "SYN2g45-REG", "INJgas9"], ["baseT", "E2k500T", "E10bT"]
@@ -1608,6 +1679,7 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-d2", action="store_true", help="D2 dev check: E10a / E10b plus the timeout on A2 g00")
     ap.add_argument("--analyze-e12", action="store_true", help="E12 verdict (can E10bT replace E2k500T?)")
     ap.add_argument("--analyze-d3", action="store_true", help="D3 dev check: E10bFT on A2 g00 (stale references)")
+    ap.add_argument("--analyze-d4", action="store_true", help="D4 dev check: MAE cost of missed regression drifts")
     ap.add_argument("--analyze-c1", action="store_true", help="C1 readings (miss-weighted cost on E11 / E12)")
     ap.add_argument("--gate-e13", choices=["g2", "g3", "g4"], help="E13 pre-launch gates (G2 flag-off rerun, G3 "
                     "classification identity, G4 self-check)")
@@ -1651,6 +1723,8 @@ if __name__ == "__main__":
         analyze_e12()
     if a.analyze_d3:
         analyze_d3()
+    if a.analyze_d4:
+        analyze_d4()
     if a.analyze_c1:
         analyze_c1()
     if a.gate_e13 == "g2":
