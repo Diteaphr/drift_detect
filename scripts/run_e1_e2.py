@@ -161,7 +161,11 @@ E14 = {  # E14 classification confirmation: the last unused synthetic (g08-g09) 
        for k, m in _METHODS for a in ("abrupt", "gradual")},
 }
 E14_ARMS = ["baseT", "E10bFT"]
-ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12, **E13, **E14}
+_REALREG = "data/dataset_0921/real_dataset/regression/{d}/{d}.csv"
+A3 = {"REALreg-" + k: ([_REALREG.format(d=d)], 0, REG_LEARNERS, True)   # A3: real regression streams, no GT
+      for k, d in (("bike", "bike_sharing"), ("metro", "metro_interstate_traffic"))}
+A3_ARMS = ["baseT", "E2k500T", "E10bFT"]
+ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12, **E13, **E14, **A3}
 
 
 def e13_arms(fam: str):
@@ -308,7 +312,7 @@ def iter_runs(held: bool = False):
     for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in (E14 if held == "e14" else E13 if held == "e13" else E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
+    for fam, (_, _, configs, _) in (A3 if held == "a3" else E14 if held == "e14" else E13 if held == "e13" else E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -1597,6 +1601,65 @@ def analyze_e14() -> None:
         sum(len(x.conf_t) for x in r10.itertuples()), n_guard, max(int(x.sig["ref_age"].max()) for x in r10.itertuples())))
 
 
+def analyze_a3() -> None:
+    """A3 verdict (docs/ECPF_A3_真實迴歸資料_預註冊.md): the main method on real regression streams without GT --
+    MAE guard (Q1), number of confirmations (Q2), share of confirmations preceded by a real residual rise (Q3)."""
+    missing = [(f, a) for f in A3 for a in A3_ARMS if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
+    if missing:   # never judge a partial matrix
+        print("A3 INCOMPLETE: %d of %d cells missing -- no verdict" % (len(missing), len(A3) * len(A3_ARMS)))
+        return
+    ages = []
+    for f in A3:
+        for a in A3_ARMS:
+            try:
+                ages += pd.read_csv(os.path.join(OUT, f, a, "detections.csv"))["confirm_age"].tolist()
+            except pd.errors.EmptyDataError:
+                pass
+    print("## A0 longest warning->confirmation age: %d -> %s" % (
+        max(ages, default=0), "VALID" if max(ages, default=0) <= 1001 else "INVALID"))
+    if max(ages, default=0) > 1001:
+        print("A3 INVALID -- no verdict")
+        return
+    rows = []
+    for x in runs_table(held="a3").itertuples():
+        raw, pos = x.sig["raw"].to_numpy(float), {t: i for i, t in enumerate(x.sig["t"].to_numpy(int))}
+        rr = [raw[max(0, i - 299):i + 1].mean() / raw[max(0, i - 2299):max(1, i - 299)].mean()
+              for i in (pos[t] for t in x.conf_t)]
+        guard = int(x.sig.set_index("t")["guard_drift"].reindex(x.conf_t).fillna(0).sum()) if "guard_drift" in x.sig else 0
+        rows.append({"family": x.family, "arm": x.arm, "learner": x.learner, "steps": len(raw), "mae": x.quality,
+                     "conf": len(rr), "rise": sum(v >= 1.1 for v in rr), "guard": guard,
+                     "max_age": int(x.sig["ref_age"].max()) if "ref_age" in x.sig else 0})
+    m = pd.DataFrame(rows)
+    print("\n## Per run (MAE after warm-up; rise = confirmations with rr >= 1.1; guard = fired by the leader guard)")
+    print("%-14s %-8s %-4s %6s %10s %5s %5s %6s %8s" % ("data set", "arm", "lr", "steps", "MAE", "conf", "rise", "guard",
+                                                      "max age"))
+    for r in m.sort_values(["family", "learner", "arm"]).itertuples():
+        print("%-14s %-8s %-4s %6d %10.3f %5d %5d %6d %8d" % (r.family, r.arm, r.learner, r.steps, r.mae, r.conf, r.rise,
+                                                             r.guard, r.max_age))
+    q, c = m.groupby(["family", "arm"])["mae"].mean(), m.groupby(["family", "arm"])["conf"].sum()
+    print("\n## Q1 quality guard and Q2 confirmations, per data set (MAE = mean of the two learners)")
+    q1, q2 = {}, {}
+    for f in A3:
+        q1[f] = bool(q[(f, "E10bFT")] <= 1.02 * q[(f, "baseT")])
+        q2[f] = bool(c[(f, "E10bFT")] <= 0.5 * c[(f, "baseT")])
+        print("%-14s Q1 MAE E10bFT %.3f vs baseT %.3f (ratio %.3f, need <=1.02): %s | E2k500T %.3f (ratio %.3f) | "
+              "Q2 confirmations E10bFT %d vs baseT %d (need <=%.1f): %s | E2k500T %d" % (
+                  f, q[(f, "E10bFT")], q[(f, "baseT")], q[(f, "E10bFT")] / q[(f, "baseT")], q1[f], q[(f, "E2k500T")],
+                  q[(f, "E2k500T")] / q[(f, "baseT")], c[(f, "E10bFT")], c[(f, "baseT")], 0.5 * c[(f, "baseT")], q2[f],
+                  c[(f, "E2k500T")]))
+    tot = m.groupby("arm")[["conf", "rise"]].sum()
+    share = tot["rise"] / tot["conf"]
+    q3 = None if min(tot.loc["E10bFT", "conf"], tot.loc["baseT", "conf"]) < 5 else bool(share["E10bFT"] >= share["baseT"])
+    print("\n## Q3 share of confirmations preceded by a real residual rise (rr >= 1.1), both data sets pooled")
+    for a in A3_ARMS:
+        print("%-8s %d of %d = %.2f" % (a, tot.loc[a, "rise"], tot.loc[a, "conf"], share[a]))
+    print("Q3 E10bFT >= baseT: %s" % ("not readable (< 5 confirmations)" if q3 is None else q3))
+    print("\nA3 conclusion: %s" % (
+        "the main method is NOT WORSE than baseT on real regression data%s" % (
+            ", with at most half the confirmations" if all(q2.values()) else "") if all(q1.values()) else
+        "boundary condition -- Q1 fails on %s" % ", ".join(f for f in A3 if not q1[f])))
+
+
 def premise() -> None:
     """E6 premise: native cut direction in REFERENCE space, replayed on the E2-k500 traces."""
     from analyze_native_direction import analyse_run
@@ -1685,6 +1748,7 @@ if __name__ == "__main__":
                     "classification identity, G4 self-check)")
     ap.add_argument("--analyze-e13", action="store_true", help="E13 verdict (frozen guard scale; E1T vs E10bT)")
     ap.add_argument("--analyze-e14", action="store_true", help="E14 verdict (classification confirmation of E10bFT)")
+    ap.add_argument("--analyze-a3", action="store_true", help="A3 verdict (real regression streams without GT)")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -1737,3 +1801,5 @@ if __name__ == "__main__":
         analyze_e13()
     if a.analyze_e14:
         analyze_e14()
+    if a.analyze_a3:
+        analyze_a3()
