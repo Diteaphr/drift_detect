@@ -965,6 +965,61 @@ def analyze_d2() -> None:
                   all(xs[(g, c)] > xs[(g, "E2k500T")] for g in groups)))
 
 
+def analyze_d3() -> None:
+    """D3 development check (docs/ECPF_D3_主方法與參照過時_開發檢查.md): the main method E10bFT on A2's g00
+    streams, where the stale reference bit (D1 / D2). Descriptive only."""
+    arms, c = ["base", "E2k500", "baseT", "E2k500T", "E10bT", "E10bFT"], "E10bFT"
+    groups, df, xs, m = g00_check("D3", arms)
+    seq = {(r.family, r.dataset, r.learner, r.arm): (r.warn_t, r.conf_t)
+           for r in df[df["group"] == "SYN2-B"].itertuples()}
+    mine = [k for k in seq if k[3] == c]
+    diff = [k[:3] for k in mine if seq[k] != seq[k[:3] + ("E10bT",)]]
+    print("\n## V: SYN2-B runs where E10bFT's detections differ from E10bT's: %d of %d -> %s" % (
+        len(diff), len(mine), "VALID" if mine and not diff else "INVALID"))
+    if diff or not mine:
+        print("D3 INVALID -- nothing is read")
+        return
+    fp = df.groupby(["group", "arm"])["fp"].sum()
+    stale = m[~m["E2k500"] & (m["age"] >= 10000)]
+    shown = ("base", "baseT", "E2k500T", "E10bT", c)
+    print("\nA2's stale misses (E2k500 missed, its reference >= 10k steps old): %d; hit by %s" % (
+        len(stale), ", ".join("%s %d" % (a, stale[a].sum()) for a in shown)))
+    for g in groups:
+        sg = stale[stale["group"] == g]
+        print("  %-8s %2d; hit by %s" % (g, len(sg), ", ".join("%s %d" % (a, sg[a].sum()) for a in shown)))
+    c1 = all(xs[(g, c)] >= xs[(g, "baseT")] for g in groups)
+    c2 = len(stale) > 0 and stale[c].sum() >= 0.5 * len(stale)
+    c3 = all(fp[(g, c)] <= 0.5 * fp[(g, "baseT")] for g in groups)
+    print("\nD3 reading %s: (1) excess >= baseT in both groups %s | (2) stale recovered %d/%d >= 50%% %s | "
+          "(3) FP <= 50%% of baseT in both groups %s -> %s | beats E2k500T in both groups: %s" % (
+              c, c1, stale[c].sum(), len(stale), c2, c3,
+              "FIXED" if c1 and c2 and c3 else "PARTLY" if c3 and (c1 or c2) else "NO",
+              all(xs[(g, c)] > xs[(g, "E2k500T")] for g in groups)))
+    sr = stale[stale["group"] == "SYN2-REG"]
+    kx = xs[("SYN2-REG", c)] >= xs[("SYN2-REG", "E10bT")] - 1.0
+    ks = sr[c].sum() >= sr["E10bT"].sum() - 1
+    print("vs E10bT on SYN2-REG: excess %.1f vs %.1f (need >=%.1f: %s) | stale recovered %d vs %d (need >=%d: %s) -> %s" % (
+        xs[("SYN2-REG", c)], xs[("SYN2-REG", "E10bT")], xs[("SYN2-REG", "E10bT")] - 1.0, kx, sr[c].sum(),
+        sr["E10bT"].sum(), sr["E10bT"].sum() - 1, ks,
+        "NOT WORSE than E10bT" if kx and ks else "the frozen scale WEAKENS the guard on stale-reference streams"))
+
+    ev = {a: e13_guard_events(a, held="a2") for a in ("E10bT", c)}
+    bad = sum(b for _, b in ev.values())
+    print("\n## Guard-triggered confirmations on SYN2-REG (replay mismatches: %d -> %s)" % (
+        bad, "VALID" if not bad else "INVALID: not read"))
+    if not bad:
+        for name, (d, _) in ev.items():
+            gh = d[(d["label"] == "hit") & d["guard"]]
+            print("%-6s confirmations %d | FP %d (guard %d) | hits %d (guard %d, rr>=1.1 %d, median guard-hit delay %.0f)" % (
+                name, len(d), d["fp"].sum(), (d["fp"] & d["guard"]).sum(), (d["label"] == "hit").sum(), len(gh),
+                int((gh["rr"] >= 1.1).sum()), gh["delay"].astype(float).median()))
+    m["bin_t"] = pd.cut(m["age_t"], [-1, 10000, 10 ** 6], labels=["<10k", ">=10k"])
+    for g in groups:
+        mg = m[m["group"] == g]
+        print("\n%s hits per E2k500T reference age at drift onset:\n%s" % (g, mg.groupby("bin_t", observed=True)[
+            list(shown)].sum().assign(n=mg.groupby("bin_t", observed=True).size()).to_string()))
+
+
 def analyze_e12() -> None:
     """E12 verdict (docs/ECPF_E12_leader守衛取代_預註冊.md): can E10bT replace E2k500T as the main method?"""
     groups, arms = ["SYN2g45-B", "SYN2g45-MC", "SYN2g45-REG", "INJgas9"], ["baseT", "E2k500T", "E10bT"]
@@ -1196,15 +1251,15 @@ def check_e13() -> None:
     print("G4 PASS")
 
 
-def e13_guard_events(arm: str):
-    """Every E13 regression confirmation of `arm`: trigger (guard / ref / both, from an exact replay of both drift
+def e13_guard_events(arm: str, held: str = "e13"):
+    """Every regression confirmation of `arm` in a round (E13 by default): trigger (guard / ref / both, from an exact replay of both drift
     arms), FP@3000 label, hit delay, raw residual over the guard cut's dropped / kept sub-windows, and rr = raw over
     the last 300 steps / the 2000 before. Returns (DataFrame, replay mismatches); A0(b) needs 0 mismatches."""
     import diagnose_regression_fp as drf
     from detectors.meta_ecpf.adwin_family import _ADWINAdapter
     mk = lambda one: _ADWINAdapter(delta=0.05, min_num_instances=30, one_sided=one)
     rows, bad = [], 0
-    for fam, a, path, ds, cfg, g, sig in iter_runs("e13"):
+    for fam, a, path, ds, cfg, g, sig in iter_runs(held):
         if a != arm or not ALL[fam][3]:
             continue
         gt = scored_gt(fam, load_stream(path, ALL[fam][1])[2])
@@ -1552,6 +1607,7 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-d1", action="store_true", help="D1 dev check: timeout vs stale references on A2 g00")
     ap.add_argument("--analyze-d2", action="store_true", help="D2 dev check: E10a / E10b plus the timeout on A2 g00")
     ap.add_argument("--analyze-e12", action="store_true", help="E12 verdict (can E10bT replace E2k500T?)")
+    ap.add_argument("--analyze-d3", action="store_true", help="D3 dev check: E10bFT on A2 g00 (stale references)")
     ap.add_argument("--analyze-c1", action="store_true", help="C1 readings (miss-weighted cost on E11 / E12)")
     ap.add_argument("--gate-e13", choices=["g2", "g3", "g4"], help="E13 pre-launch gates (G2 flag-off rerun, G3 "
                     "classification identity, G4 self-check)")
@@ -1593,6 +1649,8 @@ if __name__ == "__main__":
         analyze_d2()
     if a.analyze_e12:
         analyze_e12()
+    if a.analyze_d3:
+        analyze_d3()
     if a.analyze_c1:
         analyze_c1()
     if a.gate_e13 == "g2":
