@@ -150,7 +150,18 @@ E13 = {  # E13 judges on fresh data: regression g06-g09, classification g06-g07,
        for k, m in _METHODS for a in ("abrupt", "gradual")},
 }
 E13_REG_ARMS, E13_CLS_ARMS = ["baseT", "E1T", "E2k500T", "E10bT", "E10bFT"], ["baseT", "E1T", "E10bT"]
-ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12, **E13}
+E14 = {  # E14 classification confirmation: the last unused synthetic (g08-g09) and electricity (g06-g09) data
+    **{"SYN2g89-%s-%s%s" % (g, k, sd): (sorted(glob.glob(_SYN.replace("g00", "g0" + sd).format(t=t, d=d))), 0, cfg,
+                                        False)
+       for sd in "89"
+       for g, t, cfg in (("B", "binary", RERUN["B"][2]), ("MC", "multi_classification", [RERUN["MC-syn"][2][0]]))
+       for k, d in _KINDS},
+    **{"INJelec69-%s%s" % (k, a[0].upper()): (sorted(glob.glob(_INJ13.format(t="binary", a=a, m=m, s="electricity",
+                                                                              g="6-9"))), 0, RERUN["B"][2], False)
+       for k, m in _METHODS for a in ("abrupt", "gradual")},
+}
+E14_ARMS = ["baseT", "E10bFT"]
+ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12, **E13, **E14}
 
 
 def e13_arms(fam: str):
@@ -160,7 +171,7 @@ def e13_arms(fam: str):
 
 def scored_gt(fam: str, intervals):
     """A2 rule (prereg): GT intervals that start inside the warm-up are not scored."""
-    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 or fam in E12 or fam in E13 else intervals
+    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 or fam in E12 or fam in E13 or fam in E14 else intervals
 FP = ("echo", "orphan")
 MATCH = 500
 SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age",
@@ -297,7 +308,7 @@ def iter_runs(held: bool = False):
     for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in (E13 if held == "e13" else E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
+    for fam, (_, _, configs, _) in (E14 if held == "e14" else E13 if held == "e13" else E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -1239,16 +1250,18 @@ def e13_guard_events(arm: str):
     return ev, bad
 
 
-def analyze_e13() -> None:
-    """E13 verdict (docs/ECPF_E13_守衛凍結尺度_預註冊.md)."""
-    n_cells = sum(len(e13_arms(f)) for f in E13)
-    missing = [(f, a) for f in E13 for a in e13_arms(f) if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
+def judged_round(label: str, held: str, fams, arms_of_fam, groups, arms_of_group, mae_group=None):
+    """Front half of the E13 / E14 verdicts: completeness, A0 confirmation ages, the per-group table.
+    Returns (t, q, df, runs) at 3000 steps with excess hits, or None (incomplete or invalid: no verdict)."""
+    n_cells = sum(len(arms_of_fam(f)) for f in fams)
+    missing = [(f, a) for f in fams for a in arms_of_fam(f)
+               if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
     if missing:   # paused or still running: never judge a partial matrix
-        print("E13 INCOMPLETE: %d of %d cells missing -- no verdict" % (len(missing), n_cells))
-        return
+        print("%s INCOMPLETE: %d of %d cells missing -- no verdict" % (label, len(missing), n_cells))
+        return None
     ages = []
-    for f in E13:
-        for a in e13_arms(f):
+    for f in fams:
+        for a in arms_of_fam(f):
             try:
                 ages += pd.read_csv(os.path.join(OUT, f, a, "detections.csv"))["confirm_age"].tolist()
             except pd.errors.EmptyDataError:
@@ -1256,63 +1269,82 @@ def analyze_e13() -> None:
     print("## A0(a) longest warning->confirmation age: %d -> %s" % (
         max(ages, default=0), "VALID" if max(ages, default=0) <= 1001 else "INVALID"))
     if max(ages, default=0) > 1001:
-        print("E13 INVALID -- no verdict")
-        return
-    df = rescore(show=False, held="e13")
+        print("%s INVALID -- no verdict" % label)
+        return None
+    df = rescore(show=False, held=held)
     if df is None:
         print("RESCORE INVALID -- no verdict")
-        return
-    runs = runs_table(held="e13")
+        return None
+    runs = runs_table(held=held)
     grp = lambda f: f.rsplit("-", 1)[0]
     df, runs["group"] = df[df["ext"] == 3000].copy(), runs["family"].map(grp)
     df["group"] = df["family"].map(grp)
     df["xs"] = df["tp"] - np.array(chance_hits(df))
-    B, MC, REG, ELEC, COV = "SYN2g67-B", "SYN2g67-MC", "SYN2g69-REG", "INJelec35", "INJcov01"
-    arms_of = lambda g: E13_REG_ARMS if g == REG else E13_CLS_ARMS
     t = df.groupby(["group", "arm"])[["n_gt", "tp", "fp", "xs", "pre"]].sum()
     assert (t.groupby("group")["n_gt"].nunique() == 1).all(), "N differs across arms: a cell is missing"
     q = runs.groupby(["group", "arm"])["quality"].mean()
     med = lambda s: float(np.median(sum(s, []))) if sum(s, []) else np.nan
     dl = df.groupby(["group", "arm"])["delays"].apply(lambda s: med(list(s)))
-    print("\n## Per group (3000-step windows; quality = accuracy, MAE for %s; preFP only read on injected groups)" % REG)
+    print("\n## Per group (3000-step windows; quality = accuracy%s; preFP only read on injected groups)" % (
+        ", MAE for %s" % mae_group if mae_group else ""))
     print("%-12s %-7s %4s %5s %5s %8s %6s %7s %9s" % ("group", "arm", "N", "TP", "FP", "excess", "preFP", "delay",
                                                     "quality"))
-    for g in (B, MC, REG, ELEC, COV):
-        for a in arms_of(g):
+    for g in groups:
+        for a in arms_of_group(g):
             r = t.loc[(g, a)]
             print("%-12s %-7s %4d %5d %5d %8.1f %6d %7.0f %9.4f" % (g, a, r["n_gt"], r["tp"], r["fp"], r["xs"], r["pre"],
                                                                     dl[(g, a)], q[(g, a)]))
+    return t, q, df, runs
 
-    def p3(g, a):
-        bfp, efp, bx, ex = t.loc[(g, "baseT"), "fp"], t.loc[(g, a), "fp"], t.loc[(g, "baseT"), "xs"], t.loc[(g, a), "xs"]
-        fp_ok = bool(efp <= 0.5 * bfp) if bfp >= 6 else None
-        tp_ok = bool(ex >= 0.9 * bx)
-        print("%s: P3 %s FP@3000 %d vs baseT %d (%s) | excess %.1f vs %.1f (need >=%.1f): %s" % (
-            a, g, efp, bfp, "not evaluable" if fp_ok is None else "need <=%.1f: %s" % (0.5 * bfp, fp_ok), ex, bx,
-            0.9 * bx, tp_ok))
-        return tp_ok and fp_ok is not False
 
-    def p4(g, a):
-        qb, qe = q[(g, "baseT")], q[(g, a)]
-        ok = bool(qe <= 1.02 * qb) if g == REG else bool(qe >= qb - 0.01)
-        print("%s: P4 %s quality %.4f vs baseT %.4f: %s" % (a, g, qe, qb, ok))
-        return ok
+def crit_p12(t, g, a):
+    """P1 (pre-drift FP <= 30% of baseT, None if baseT < 10) and P2 (excess >= 90%) on an injected group."""
+    pb, pa = t.loc[(g, "baseT"), "pre"], t.loc[(g, a), "pre"]
+    p1 = bool(pa <= 0.30 * pb) if pb >= 10 else None
+    p2 = bool(t.loc[(g, a), "xs"] >= 0.90 * t.loc[(g, "baseT"), "xs"])
+    print("%s: P1 %s pre-drift FP %d vs baseT %d (%s) | P2 excess %.1f vs %.1f (need >=%.1f): %s" % (
+        a, g, pa, pb, "not evaluable" if p1 is None else "need <=%.1f: %s" % (0.3 * pb, p1),
+        t.loc[(g, a), "xs"], t.loc[(g, "baseT"), "xs"], 0.9 * t.loc[(g, "baseT"), "xs"], p2))
+    return [p1 is not False, p2]
+
+
+def crit_p3(t, g, a):
+    """P3: FP@3000 <= 50% of baseT (not evaluable if baseT < 6) and excess >= 90% of baseT."""
+    bfp, efp, bx, ex = t.loc[(g, "baseT"), "fp"], t.loc[(g, a), "fp"], t.loc[(g, "baseT"), "xs"], t.loc[(g, a), "xs"]
+    fp_ok = bool(efp <= 0.5 * bfp) if bfp >= 6 else None
+    tp_ok = bool(ex >= 0.9 * bx)
+    print("%s: P3 %s FP@3000 %d vs baseT %d (%s) | excess %.1f vs %.1f (need >=%.1f): %s" % (
+        a, g, efp, bfp, "not evaluable" if fp_ok is None else "need <=%.1f: %s" % (0.5 * bfp, fp_ok), ex, bx,
+        0.9 * bx, tp_ok))
+    return tp_ok and fp_ok is not False
+
+
+def crit_p4(q, g, a, mae: bool = False):
+    """P4 quality guard: accuracy >= baseT - 0.01, or MAE <= 1.02 x baseT."""
+    qb, qe = q[(g, "baseT")], q[(g, a)]
+    ok = bool(qe <= 1.02 * qb) if mae else bool(qe >= qb - 0.01)
+    print("%s: P4 %s quality %.4f vs baseT %.4f: %s" % (a, g, qe, qb, ok))
+    return ok
+
+
+def analyze_e13() -> None:
+    """E13 verdict (docs/ECPF_E13_守衛凍結尺度_預註冊.md)."""
+    B, MC, REG, ELEC, COV = "SYN2g67-B", "SYN2g67-MC", "SYN2g69-REG", "INJelec35", "INJcov01"
+    res = judged_round("E13", "e13", E13, e13_arms, (B, MC, REG, ELEC, COV),
+                       lambda g: E13_REG_ARMS if g == REG else E13_CLS_ARMS, mae_group=REG)
+    if res is None:
+        return
+    t, q, df, runs = res
     print("\n## B: each arm vs baseT (recall = excess hits)")
     cls, reg = {}, {}
     for a in ("E1T", "E10bT"):
         ok = []
         for g in (ELEC, COV):
-            pb, pa = t.loc[(g, "baseT"), "pre"], t.loc[(g, a), "pre"]
-            p1 = bool(pa <= 0.30 * pb) if pb >= 10 else None
-            p2 = bool(t.loc[(g, a), "xs"] >= 0.90 * t.loc[(g, "baseT"), "xs"])
-            print("%s: P1 %s pre-drift FP %d vs baseT %d (%s) | P2 excess %.1f vs %.1f (need >=%.1f): %s" % (
-                a, g, pa, pb, "not evaluable" if p1 is None else "need <=%.1f: %s" % (0.3 * pb, p1),
-                t.loc[(g, a), "xs"], t.loc[(g, "baseT"), "xs"], 0.9 * t.loc[(g, "baseT"), "xs"], p2))
-            ok += [p1 is not False, p2]
-        ok += [p3(g, a) for g in (B, MC)] + [p4(g, a) for g in (B, MC, ELEC, COV)]
+            ok += crit_p12(t, g, a)
+        ok += [crit_p3(t, g, a) for g in (B, MC)] + [crit_p4(q, g, a) for g in (B, MC, ELEC, COV)]
         cls[a] = all(ok)
     for a in ("E1T", "E2k500T", "E10bT", "E10bFT"):
-        reg[a] = p3(REG, a) & p4(REG, a)
+        reg[a] = crit_p3(t, REG, a) & crit_p4(q, REG, a, mae=True)
     for a in ("E1T", "E2k500T", "E10bT", "E10bFT"):
         print("E13 verdict %s: classification %s; regression %s" % (
             a, "-" if a not in cls else "HOLDS" if cls[a] else "does NOT hold", "HOLDS" if reg[a] else "does NOT hold"))
@@ -1390,6 +1422,53 @@ def analyze_e13() -> None:
     m["bin"] = pd.cut(m["age"], [-1, 10000, 10 ** 6], labels=["<10k", ">=10k"])
     print("regression hits per E2k500T reference age at drift onset:\n%s" % m.groupby("bin", observed=True)[
         E13_REG_ARMS].sum().assign(n=m.groupby("bin", observed=True).size()).to_string())
+
+
+def analyze_e14() -> None:
+    """E14 verdict (docs/ECPF_E14_分類確認_預註冊.md): does E10bFT hold for classification?"""
+    B, MC, ELEC = "SYN2g89-B", "SYN2g89-MC", "INJelec69"
+    res = judged_round("E14", "e14", E14, lambda f: E14_ARMS, (B, MC, ELEC), lambda g: E14_ARMS)
+    if res is None:
+        return
+    t, q, df, runs = res
+    a = "E10bFT"
+    print("\n## B: E10bFT vs baseT (recall = excess hits)")
+    ok = crit_p12(t, ELEC, a)
+    p2 = ok[1]
+    ok += [crit_p3(t, g, a) for g in (B, MC)] + [crit_p4(q, g, a) for g in (B, MC, ELEC)]
+    print("\n## Main reading: %s" % (
+        "ALL PASS -> classification CONFIRMED; one main method E10bFT for both tasks (classification holds in E12 and "
+        "E14, missed in E13)" if all(ok) else "NOT all pass -> no one-method claim" + (
+            "; INJ-elec P2 missed in two rounds running -> registered boundary condition of the main method"
+            if not p2 else "")))
+
+    e = df[df["group"] == ELEC].copy()
+    print("\n## S1 learner split on %s: E10bFT excess / baseT" % ELEC)
+    sl = e.groupby(["learner", "arm"])["xs"].sum().unstack("arm")
+    for lr, r in sl.iterrows():
+        print("%-6s baseT %5.1f  E10bFT %5.1f  ratio %.2f" % (lr, r["baseT"], r[a], r[a] / r["baseT"]))
+    rat = (sl[a] / sl["baseT"]).tolist()
+    print("-> %s" % ("shortfall bound to a learner" if min(rat) < 0.9 <= max(rat) else "not learner-bound"))
+
+    print("\n## S2 electricity pooled with E13 (E13's E10bT == E10bFT on classification)")
+    old = rescore(show=False, held="e13")
+    old = old[(old["ext"] == 3000) & old["family"].str.startswith("INJelec35") & old["arm"].isin(["baseT", "E10bT"])].copy()
+    old["xs"] = old["tp"] - np.array(chance_hits(old))
+    old["arm"] = old["arm"].replace({"E10bT": a})
+    both = pd.concat([old, e])
+    pt = both.groupby("arm")[["pre", "xs"]].sum()
+    print("pooled pre-drift FP E10bFT %d vs baseT %d (P1 need <=%.1f: %s) | excess %.1f vs %.1f (P2 need >=%.1f: %s)" % (
+        pt.loc[a, "pre"], pt.loc["baseT", "pre"], 0.3 * pt.loc["baseT", "pre"], pt.loc[a, "pre"] <= 0.3 * pt.loc["baseT", "pre"],
+        pt.loc[a, "xs"], pt.loc["baseT", "xs"], 0.9 * pt.loc["baseT", "xs"], pt.loc[a, "xs"] >= 0.9 * pt.loc["baseT", "xs"]))
+
+    print("\n## S3 per injection method (abrupt + gradual pooled)")
+    e["m"] = e["family"].map(lambda f: f.rsplit("-", 1)[1][:-1])
+    print(e.groupby(["m", "arm"])[["n_gt", "tp", "pre", "xs"]].sum().round(1).unstack("arm").to_string())
+
+    r10 = runs[runs["arm"] == a]
+    n_guard = sum(int(x.sig.set_index("t")["guard_drift"].reindex(x.conf_t).fillna(0).sum()) for x in r10.itertuples())
+    print("\nE10bFT confirmations %d, of which the leader guard fired the drift: %d; max reference age %d" % (
+        sum(len(x.conf_t) for x in r10.itertuples()), n_guard, max(int(x.sig["ref_age"].max()) for x in r10.itertuples())))
 
 
 def premise() -> None:
@@ -1477,6 +1556,7 @@ if __name__ == "__main__":
     ap.add_argument("--gate-e13", choices=["g2", "g3", "g4"], help="E13 pre-launch gates (G2 flag-off rerun, G3 "
                     "classification identity, G4 self-check)")
     ap.add_argument("--analyze-e13", action="store_true", help="E13 verdict (frozen guard scale; E1T vs E10bT)")
+    ap.add_argument("--analyze-e14", action="store_true", help="E14 verdict (classification confirmation of E10bFT)")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -1523,3 +1603,5 @@ if __name__ == "__main__":
         check_e13()
     if a.analyze_e13:
         analyze_e13()
+    if a.analyze_e14:
+        analyze_e14()
