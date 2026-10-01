@@ -1,0 +1,2 @@
+REALreg-bike E10bFTC bike_sharing.csv htr-E10bFTC/error detections=5 swaps=18
+REALreg-bike E10bFTC bike_sharing.csv hfr-E10bFTC/error detections=7 swaps=22

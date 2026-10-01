@@ -1,0 +1,2 @@
+SYN2g69-REG-grad6 baseTC gradual_friedman_100k_g06.csv htr-baseTC/error detections=6 swaps=39
+SYN2g69-REG-grad6 baseTC gradual_friedman_100k_g06.csv hfr-baseTC/error detections=5 swaps=122

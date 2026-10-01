@@ -1,0 +1,2 @@
+REALreg-metro E2k500TC metro_interstate_traffic.csv htr-E2k500TC/error detections=10 swaps=176
+REALreg-metro E2k500TC metro_interstate_traffic.csv hfr-E2k500TC/error detections=14 swaps=125
