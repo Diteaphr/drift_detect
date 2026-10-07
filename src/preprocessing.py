@@ -4,13 +4,33 @@ import numpy as np
 from typing import List, Optional
 
 
+def zero_one_loss(y_true: float, y_pred: float) -> float:
+    """Per-instance 0-1 loss: 1.0 on a misclassification, 0.0 when correct.
+
+    This is the contract the detectors document for their ``err`` argument
+    (``detectors/meta/base.py``: "1.0 for misclassification, 0.0 for correct")
+    and it matches the definition the ECPF signal router already applies in
+    ``detectors/meta_ecpf/signal_routing.py``.
+
+    The previous formulation ``abs(y_true - y_pred)`` coincides with this one
+    only when the labels are exactly {0, 1}: it treats class indices as
+    *ordinal*, so with K > 2 a 0-vs-3 confusion scores 3.0 instead of 1.0.
+    That magnitude reaches ADWIN, HDDM_A and Page-Hinkley unmodified in
+    ``detectors/core/unified.py`` (only the binomial detectors are spared,
+    because they re-threshold at ``> 0.5``), silently rescaling their bounds.
+    The same holds for a {-1, +1} or {1, 2} binary encoding, where every
+    mistake would score 2.0.
+    """
+    return 0.0 if int(round(float(y_true))) == int(round(float(y_pred))) else 1.0
+
+
 def compute_prediction_errors(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
-    """Compute prediction errors (e.g. absolute or squared). Returns 1D array."""
-    y_true = np.asarray(y_true).ravel()
-    y_pred = np.asarray(y_pred).ravel()
+    """Vectorised :func:`zero_one_loss` over aligned label arrays. Returns 1D array."""
+    y_true = np.asarray(y_true, dtype=np.float64).ravel()
+    y_pred = np.asarray(y_pred, dtype=np.float64).ravel()
     if len(y_true) != len(y_pred):
         raise ValueError("y_true and y_pred must have the same length")
-    return np.abs(y_true - y_pred)
+    return (np.rint(y_true) != np.rint(y_pred)).astype(np.float64)
 
 
 def smooth_errors(errors: np.ndarray, window: int = 5) -> np.ndarray:
@@ -41,8 +61,18 @@ class StreamBuffer:
         y_pred: float,
         index: int,
         x: Optional[np.ndarray] = None,
+        err: Optional[float] = None,
     ) -> None:
-        err = float(np.abs(y_true - y_pred))
+        """Store one (y_true, y_pred) pair and its error.
+
+        *err* should be supplied by the caller so the per-instance error is
+        computed exactly **once** per sample. That matters beyond tidiness: under
+        a regression task the loss is stateful (it advances an online normalizer),
+        so recomputing it here would move the running statistics twice per
+        instance and skew every normalized value. Falls back to the 0-1 loss when
+        omitted, which is what a classification caller would have produced anyway.
+        """
+        err = zero_one_loss(y_true, y_pred) if err is None else float(err)
         self._y_true.append(y_true)
         self._y_pred.append(y_pred)
         self._errors.append(err)

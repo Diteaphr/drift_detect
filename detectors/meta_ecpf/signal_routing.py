@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from src.uq_extractor import UQExtractor
 
@@ -45,15 +45,57 @@ def extract_signal(
     err: float,
     proba_matrix: Optional[List[Dict[Any, float]]],
     num_classes: Optional[int] = None,
+    is_regression: bool = False,
+    pred_matrix: Optional[Sequence[float]] = None,
+    uq_normalizer: Optional[Any] = None,
 ) -> float:
     """Extract one scalar stream value for a detector.
 
-    ``error`` is always the supervised zero-one loss.  UQ signals are computed
-    from the per-tree probability matrix when available, otherwise they fall
-    back to 0.0 so non-forest models can still run the same CLI surface.
+    Classification: ``error`` is the supervised zero-one loss, and UQ signals are
+    computed from the per-tree probability matrix when available, otherwise they
+    fall back to 0.0 so non-forest models can still run the same CLI surface.
+
+    Regression (``is_regression=True``): ``error`` passes through the caller's
+    already-normalized residual, and the only UQ signal with a continuous-target
+    analogue is ``uq_variance`` -- the cross-member variance of *point*
+    predictions supplied via *pred_matrix*.  The other three UQ modes are
+    functionals of a probability simplex and are rejected loudly rather than
+    quietly returning 0.0, because a UQ signal pinned at a constant looks like
+    "no drift ever" and is indistinguishable from a working detector.
+
+    Parameters
+    ----------
+    pred_matrix : sequence of float, optional
+        One point prediction per ensemble member
+        (``HoeffdingForestRegressorModel.predict_per_model``).
+    uq_normalizer : object, optional
+        Anything with ``update(value) -> float``; the regression variance is
+        unbounded, and SEED/SeqDrift2 scale their bounds by a ``value_range``
+        that assumes a [0, 1] stream.  Required for ``uq_variance`` regression.
     """
 
     name = normalize_signal_name(signal)
+
+    if is_regression:
+        if name == "error":
+            return float(err)
+        if name != "uq_variance":
+            raise ValueError(
+                "ECPF signal %r has no regression analogue: %s is a functional of a "
+                "probability simplex, which a continuous target does not have. Use "
+                "'error' or 'uq_variance'." % (signal, name)
+            )
+        if not pred_matrix:
+            raise ValueError(
+                "signal 'uq_variance' on a regression task needs per-member point "
+                "predictions, but pred_matrix was empty. Use a backend that exposes "
+                "predict_per_model(), i.e. model_type='hfr'."
+            )
+        variance = UQExtractor("variance_eu").extract_regression(pred_matrix)
+        if uq_normalizer is None:
+            return float(variance)
+        return float(uq_normalizer.update(variance))
+
     if name == "error":
         return 1.0 if int(round(float(y_pred))) != int(round(float(y_true))) else 0.0
     if not proba_matrix:
