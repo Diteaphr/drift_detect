@@ -1,0 +1,6 @@
+REALreg-metro baseT
+REALreg-metro E2k500T
+REALreg-metro E10bFT
+REALreg-bike baseT
+REALreg-bike E2k500T
+REALreg-bike E10bFT
