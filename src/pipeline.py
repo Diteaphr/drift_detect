@@ -12,6 +12,7 @@ When ``PipelineConfig.use_ecpf`` is True, the Enhanced Concept Profiling Framewo
 (``m=0.95``, ``f=15``, synthetic oracle buffer length 60).
 """
 
+import copy
 import logging
 from pathlib import Path
 from collections import deque
@@ -21,20 +22,34 @@ import pandas as pd
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from .config import DriftDetection, DriftType, PipelineConfig
-from .preprocessing import StreamBuffer
+from .preprocessing import StreamBuffer, zero_one_loss
+from .task import (
+    REAL_VALUED_DETECTORS,
+    ErrorNormalizer,
+    TaskSpec,
+    TaskType,
+    incompatible_detectors,
+    resolve_task,
+)
 from detectors import (
     ConceptMemory,
     detect_recurring_drift,
 )
-from .ecpf import ECPFMetaLearner, load_drift_times_file, load_drift_intervals_file
-from .ecpf_detector import ECPFWarningDriftDetector
+from .ecpf import ECPFMetaLearner, _deep_clone, load_drift_times_file, load_drift_intervals_file
+from .ecpf_detector import ECPFWarningDriftDetector, ECPFZoneDetector
 from .uq_warning_detector import UQWarningDetector
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
-from detectors.meta_ecpf.signal_routing import extract_signal
+from detectors.meta_ecpf.signal_routing import extract_signal, normalize_signal_name
 from .drift_type_classifier_type_ldd import classify_drift_type
 from .model_pool import ModelPool
-from .prediction_model import PredictionModel
-from .model_adapter import BaseModelAdapter, is_advanced_model_type
+from .prediction_model import PredictionModel, needs_class_declaration
+from .model_adapter import (
+    DEFAULT_MODEL_BY_TASK,
+    BaseModelAdapter,
+    is_advanced_model_type,
+    is_regression_model_type,
+)
+from .models import ElasticNetModel
 from .tracing import StageTracer, NullTracer
 
 try:
@@ -152,45 +167,52 @@ class ConceptDriftPipeline:
         self._warm = False
         self._concept_counter = 0
 
-        # --- Model backend selection ---
-        self._use_advanced = is_advanced_model_type(self.config.model_type)
+        # --- Task type ---
+        # Defaults to binary so a pipeline driven instance-by-instance (without
+        # run_stream) behaves exactly as before: TaskSpec.loss for a classification
+        # task IS zero_one_loss. run_stream calls _bind_task() to replace this with
+        # the type actually inferred from the target array.
+        self.task: TaskSpec = TaskSpec(task_type=TaskType.BINARY, n_classes=2)
+        self._task_bound = False
+        self._task_provisional = False
+        self._resolved_model_type = self.config.model_type
+        # Separate from the task's error normalizer: the ensemble-variance UQ
+        # signal lives on a different scale than the residual.
+        self._uq_normalizer = ErrorNormalizer(warmup=self.config.error_normalizer_warmup)
 
-        if self._use_advanced:
-            self.prediction_model: Union[PredictionModel, BaseModelAdapter] = (
-                BaseModelAdapter(
-                    model_type=self.config.model_type,
-                    model_kwargs=self.config.model_kwargs,
-                )
-            )
-        else:
-            self.prediction_model = PredictionModel(model_type=self.config.model_type)
+        # --- Model backend selection ---
+        self._use_advanced = is_advanced_model_type(self._resolved_model_type)
+        self.prediction_model: Union[PredictionModel, BaseModelAdapter] = (
+            self._build_prediction_model()
+        )
 
         # ECPF (Enhanced Concept Profiling Framework)
-        self._ecpf: Optional[ECPFMetaLearner] = None
-        if self.config.use_ecpf:
-            self._ecpf = ECPFMetaLearner(
-                similarity_margin=self.config.ecpf_similarity_margin,
-                fade_points=self.config.ecpf_fade_points,
-                model_check_freq=self.config.ecpf_model_check_freq,
-                fade_enabled=self.config.ecpf_fade_enabled,
-                max_pool_size=self.config.ecpf_max_pool_size,
-                use_advanced=self._use_advanced,
-                model_type=self.config.model_type,
-                model_kwargs=self.config.model_kwargs,
-            )
+        self._ecpf: Optional[ECPFMetaLearner] = self._build_ecpf()
         self._ecpf_warning_active = False
         self._ecpf_warning_start_idx: Optional[int] = None
         self._ecpf_buffer: List[Tuple[np.ndarray, float]] = []
         self._ecpf_oracle_started: set = set()
         self._ecpf_ring: deque = deque(maxlen=5000)
+        # Frozen-reference detector input (see config.ecpf_reference_signal).
+        self._ref_model = None              # frozen copy the detectors are fed with
+        self._ref_norm = ErrorNormalizer()  # the reference's own normalizer
+        self._ref_frozen_at = None          # index at which the current reference was frozen
+        self._ref_switch_due = None         # secondary arm: index at which to re-freeze
+        self._ref_shadow = None             # previous reference, shadow-run after a switch
+        self._ref_shadow_until = None
         self._ecpf_detector: Optional[ECPFAdwinFamilyDetector] = None
-        if self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES:
+        if (self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES
+                and self.config.ecpf_zone_detector):
+            # E9: the official-ECPF single detector replaces the dual ADWIN.
+            self._ecpf_detector = ECPFZoneDetector(self.config.ecpf_zone_detector)
+        elif self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES:
             warning_detector, drift_detector = self._resolve_ecpf_adwin_family_detectors()
             if warning_detector == "adwin" and drift_detector == "adwin":
                 self._ecpf_detector = ECPFWarningDriftDetector(
                     min_num_instances=self.config.ecpf_detector_min_instances,
                     delta=self.config.detector_delta,
                     delta_w=self.config.detector_delta_w,
+                    one_sided=self.config.ecpf_adwin_one_sided,
                 )
             else:
                 self._ecpf_detector = ECPFAdwinFamilyDetector(
@@ -202,7 +224,20 @@ class ConceptDriftPipeline:
                     random_seed=self.config.recurring_random_seed,
                     warning_value_range=self.config.ecpf_warning_value_range,
                     drift_value_range=self.config.ecpf_drift_value_range,
+                    one_sided=self.config.ecpf_adwin_one_sided,
                 )
+        # E10b: E1's detector on the leader's own error, next to the reference detectors.
+        self._ecpf_guard: Optional[ECPFWarningDriftDetector] = None
+        if self._ecpf_detector is not None and self.config.ecpf_leader_guard:
+            self._ecpf_guard = ECPFWarningDriftDetector(
+                min_num_instances=self.config.ecpf_detector_min_instances,
+                delta=self.config.detector_delta,
+                delta_w=self.config.detector_delta_w,
+                one_sided=True,
+            )
+        # E13: the guard's frozen scale (regression), None until the era's k-th step.
+        self._guard_scale = None
+        self._guard_scale_due: Optional[int] = None
 
         # UQ Warning Layer: UQ-only warning + error-based drift confirmation
         self._uq_warning_detector: Optional[UQWarningDetector] = None
@@ -213,6 +248,8 @@ class ConceptDriftPipeline:
                 delta=self.config.ecpf_uq_delta,
                 grace_period=self.config.ecpf_uq_grace_period,
                 smoothing_alpha=self.config.ecpf_uq_smoothing_alpha,
+                num_classes=self.config.ecpf_uq_num_classes or self.config.n_classes,
+                normalize_scale=self.config.ecpf_uq_normalize_scale,
             )
             # Second layer: error-based ADWIN for drift confirmation only
             self._uq_drift_detector = ECPFWarningDriftDetector(
@@ -262,14 +299,215 @@ class ConceptDriftPipeline:
         return ECPFAdwinFamilyDetector.COMBOS[self._resolve_ecpf_adwin_family_combo()]
 
     # ------------------------------------------------------------------
+    # UQ signal plumbing
+    # ------------------------------------------------------------------
+    def _uq_num_classes(self) -> Optional[int]:
+        """Denominator for UQ rescaling: explicit config wins, else the resolved K."""
+        if self.config.ecpf_uq_num_classes is not None:
+            return self.config.ecpf_uq_num_classes
+        return self.task.n_classes
+
+    def _uq_inputs(self, x_: np.ndarray) -> Tuple[Optional[list], Optional[list]]:
+        """``(proba_matrix, pred_matrix)`` -- only one is ever populated.
+
+        Classification reduces a per-tree probability matrix; regression reduces
+        per-member point predictions. Asking a regression backend for
+        ``predict_proba_matrix`` returns ``[]``, which routes to a UQ scalar
+        pinned at 0.0 -- indistinguishable from "no drift ever" -- so the two
+        paths are kept strictly separate.
+        """
+        if self.task.is_regression:
+            if hasattr(self.prediction_model, "predict_per_model"):
+                try:
+                    return None, self.prediction_model.predict_per_model(x_)
+                except Exception:
+                    return None, None
+            return None, None
+        if hasattr(self.prediction_model, "predict_proba_matrix"):
+            try:
+                return self.prediction_model.predict_proba_matrix(x_), None
+            except Exception:
+                return None, None
+        return None, None
+
+    def _uq_normalizer_pair(self):
+        """Hand the live normalizer to the first consumer, a frozen view to the rest."""
+        if not self.task.is_regression:
+            return None, None
+        if normalize_signal_name(self.config.ecpf_warning_signal) == "uq_variance":
+            return self._uq_normalizer, self._uq_normalizer.frozen()
+        return None, self._uq_normalizer
+
+    # ------------------------------------------------------------------
+    # Task binding
+    # ------------------------------------------------------------------
+    def declarable_classes(self) -> Optional[np.ndarray]:
+        """The full label set to declare on every sklearn wrapper, or ``None``.
+
+        ``TaskSpec.classes`` is resolved from the *whole* target array before
+        anything is fit, so declaring it is the only way to stop sklearn locking
+        ``classes_`` to whichever labels a particular batch happened to contain
+        -- a batch that can be a single instance long (an ECPF warning buffer).
+
+        ``None`` (and therefore no behavioural change) whenever the task is not
+        yet bound, is regression, or is the pinned ``{0, 1}`` binary path.
+        """
+        if not self._task_bound or not self.task.is_classification:
+            return None
+        classes = self.task.classes
+        return classes if needs_class_declaration(classes) else None
+
+    def _build_prediction_model(self) -> Union[PredictionModel, BaseModelAdapter]:
+        if self._use_advanced:
+            return BaseModelAdapter(
+                model_type=self._resolved_model_type,
+                model_kwargs=self.config.model_kwargs,
+            )
+        return PredictionModel(
+            model_type=self._resolved_model_type,
+            classes=self.declarable_classes(),
+        )
+
+    def _build_ecpf(self) -> Optional[ECPFMetaLearner]:
+        if not self.config.use_ecpf:
+            return None
+        margin = (
+            self.config.ecpf_similarity_margin_regression
+            if self.task.is_regression
+            else self.config.ecpf_similarity_margin
+        )
+        return ECPFMetaLearner(
+            similarity_margin=margin,
+            fade_points=self.config.ecpf_fade_points,
+            model_check_freq=self.config.ecpf_model_check_freq,
+            fade_enabled=self.config.ecpf_fade_enabled,
+            max_pool_size=self.config.ecpf_max_pool_size,
+            use_advanced=self._use_advanced,
+            model_type=self._resolved_model_type,
+            model_kwargs=self.config.model_kwargs,
+            # None keeps ECPF in its legacy classification mode, which is what
+            # every binary run wants and what tests/test_ecpf.py asserts.
+            task=self.task if self._task_bound else None,
+            similarity_mode=self.config.ecpf_similarity_mode,
+        )
+
+    def _bind_task(self, y: np.ndarray, *, authoritative: bool = True) -> TaskSpec:
+        """Infer the task from the target array and reconfigure accordingly.
+
+        Called before anything is fit, so rebuilding the model and the ECPF pool
+        here discards nothing. Three things can change: the backend (a classifier
+        cannot model a continuous target), the ECPF similarity statistic and its
+        margin, and which detectors are legal.
+
+        Two entry points reach this. :meth:`run_stream` holds the whole target
+        array and binds *authoritatively*. :meth:`warm_start` holds only the
+        warm-up batch, so it binds *provisionally*: enough to pick the right
+        backend and loss, but that batch can easily be missing one of the K
+        classes, and sklearn commits its ``classes_`` on first fit with no way to
+        widen it later. An authoritative bind therefore overrides a provisional
+        one; two provisional binds do not stack.
+
+        Binding here rather than only in ``run_stream`` matters: ``warm_start`` +
+        ``step`` is a public entry point (the repo's own ``test_integration.py``
+        uses it), and without this the whole task layer silently no-ops there --
+        a regression stream would be scored with the classification loss.
+        """
+        if self._task_bound and not (authoritative and self._task_provisional):
+            return self.task
+
+        self.task = resolve_task(
+            y,
+            declared=self.config.task_type,
+            n_classes=self.config.n_classes,
+        )
+        self.task.normalizer.warmup = int(self.config.error_normalizer_warmup)
+        self._task_bound = True
+        self._task_provisional = not authoritative
+
+        # A binomial detector on a continuous error stream is not merely
+        # imprecise, it is invalid: DDM's sqrt(p*(1-p)/n) needs a Bernoulli rate.
+        selected = list(self.config.selected_detectors or [])
+        bad = incompatible_detectors(self.task.task_type, selected)
+        if bad:
+            raise ValueError(
+                "detectors %s assume a Bernoulli (0/1) error stream and cannot be "
+                "used on a %s task. Choose from %s."
+                % (sorted(bad), self.task.describe(), sorted(REAL_VALUED_DETECTORS))
+            )
+
+        if self.task.is_regression:
+            mode = self.config.ecpf_signal_mode
+            if mode == "uq_warning":
+                raise ValueError(
+                    "ecpf_signal_mode='uq_warning' reduces a per-tree probability "
+                    "matrix, which a continuous target does not have. Use "
+                    "'detector' / an ADWIN-family mode with "
+                    "ecpf_warning_signal='uq_variance' and model_type='hfr'."
+                )
+            if mode in {"meta_ecpf_dwm", "meta_ecpf_gddm", "meta_ecpf_hier_parallel"}:
+                logger.warning(
+                    "signal_mode=%r derives some of its proxies from a probability "
+                    "matrix; on a regression stream those degrade to their "
+                    "error-based fallbacks only.", mode,
+                )
+
+        wanted = self._resolved_model_type
+        if self.task.is_regression and not is_regression_model_type(wanted):
+            fallback = DEFAULT_MODEL_BY_TASK["regression"]
+            logger.warning(
+                "model_type=%r predicts class labels but the target is continuous; "
+                "falling back to %r. Set model_type explicitly to silence this.",
+                wanted, fallback,
+            )
+            self._resolved_model_type = fallback
+        elif self.task.is_classification and is_regression_model_type(wanted):
+            raise ValueError(
+                "model_type=%r is a regressor but the target is %s."
+                % (wanted, self.task.describe())
+            )
+
+        if self.config.ecpf_signal_mode == "uq_warning" and not hasattr(
+            self.prediction_model, "predict_proba_matrix"
+        ):
+            # Pre-existing failure mode: this mode calls predict_proba_matrix
+            # unguarded, so a non-forest backend died with a bare AttributeError
+            # deep in the stream loop (on binary too). Name the requirement here.
+            raise ValueError(
+                "ecpf_signal_mode='uq_warning' reduces a per-tree probability "
+                "matrix, which model_type=%r does not expose. Use a forest "
+                "backend, i.e. model_type='hf'." % self._resolved_model_type
+            )
+
+        if self._resolved_model_type == "elastic":
+            # The per-sample guard inside ElasticNetModel cannot fire until the
+            # third distinct label arrives, which may be thousands of instances
+            # in. Fail at config time instead.
+            ElasticNetModel.assert_task_supported(self.task)
+
+        self._use_advanced = is_advanced_model_type(self._resolved_model_type)
+        self.prediction_model = self._build_prediction_model()
+        self._ecpf = self._build_ecpf()
+        logger.info(
+            "task bound: %s; model_type=%r", self.task.describe(), self._resolved_model_type
+        )
+        return self.task
+
+    # ------------------------------------------------------------------
     # Warm start
     # ------------------------------------------------------------------
     def warm_start(self, X: np.ndarray, y: np.ndarray) -> None:
-        """Initial fit of the prediction model on first batch."""
+        """Initial fit of the prediction model on first batch.
+
+        Binds the task provisionally from this batch when nothing has bound it
+        yet, so the ``warm_start`` + ``step`` entry point gets the same backend
+        selection, loss and detector validation that ``run_stream`` gets.
+        ``run_stream`` binds authoritatively before calling this, so it wins.
+        """
         X = np.asarray(X)
         y = np.asarray(y).ravel()
         if X.ndim == 1:
             X = X.reshape(-1, 1)
+        self._bind_task(y, authoritative=False)
         self.prediction_model.fit(X, y)
         self._warm = True
         if self.config.use_ecpf and self._ecpf is not None:
@@ -350,7 +588,12 @@ class ConceptDriftPipeline:
                 self.prediction_model.data_buffer.append(
                     (BaseModel._to_dict(x_flat), y_true, index)
                 )
-                self.buffer.append(y_true, y_pred, index, x=x_flat)
+                # Cold-start samples are real stream samples, so they must feed the
+                # regression normalizer too -- otherwise it enters the warmed-up
+                # phase having seen nothing.
+                self.buffer.append(
+                    y_true, y_pred, index, x=x_flat, err=self.task.loss(y_true, y_pred)
+                )
                 self._cold_start_count = getattr(self, '_cold_start_count', 0) + 1
                 if self._cold_start_count >= self.config.update_batch_size:
                     self._warm = True
@@ -375,9 +618,38 @@ class ConceptDriftPipeline:
         else:
             y_pred = float(self.prediction_model.predict(x_)[0])
 
-        self.buffer.append(y_true, y_pred, index, x=x_flat)
+        # Classification: exactly zero_one_loss, as before. Regression: the
+        # absolute residual normalized online into [0,1] so the bounded-signal
+        # detectors (ADWIN/SEED/SeqDrift2) stay valid. Computed once and handed
+        # to the buffer -- the regression loss advances an online normalizer, so
+        # a second call here would move its statistics twice per instance.
+        err = self.task.loss(y_true, y_pred)
+        self.buffer.append(y_true, y_pred, index, x=x_flat, err=err)
         errors = self.buffer.get_errors()
-        err = float(np.abs(y_true - y_pred))
+
+        # Frozen reference: the ADWIN-family detectors read a frozen copy's
+        # residual instead of the learner's. Nothing else reads ref_* -- the
+        # ADWIN-family branch swaps its input, the tracer logs it, that is all.
+        ref_extra = None
+        det_pred = y_pred   # classification's "error" signal is recomputed from this
+        if self.config.ecpf_reference_signal:
+            if self._ref_model is None:
+                self._freeze_reference(index)   # end of warm-up: first reference
+            switch_info = None
+            if self._ref_switch_due is not None and index >= self._ref_switch_due:
+                switch_info = self._switch_reference(index)
+            det_pred = self._model_predict(self._ref_model, x_)
+            ref_raw = self._ref_loss(y_true, det_pred)
+            ref_err = self._ref_norm.update(ref_raw) if self.task.is_regression else ref_raw
+            ref_extra = {"ref_err": ref_err, "ref_raw": ref_raw,
+                         "ref_age": int(index) - int(self._ref_frozen_at)}
+            if self._ref_shadow is not None:
+                if index <= self._ref_shadow_until:
+                    ref_extra["shadow_raw"] = self._ref_loss(y_true, self._model_predict(self._ref_shadow, x_))
+                else:
+                    self._ref_shadow = None
+            if switch_info:
+                ref_extra.update(switch_info)
 
         new_detections: List[DriftDetection] = []
         ecf_warn = bool(self.config.use_ecpf and self._ecpf_warning_active)
@@ -428,36 +700,91 @@ class ConceptDriftPipeline:
                     self._ecpf_warning_step(x_, y_true, y_pred, index)
                     return y_pred, [], False
             elif self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES and self._ecpf_detector is not None:
-                proba_matrix = None
-                if hasattr(self.prediction_model, 'predict_proba_matrix'):
-                    try:
-                        proba_matrix = self.prediction_model.predict_proba_matrix(x_)
-                    except Exception:
-                        pass
+                proba_matrix, pred_matrix = self._uq_inputs(x_)
+                # The "error" signal the detectors consume: the frozen reference's
+                # residual when enabled, otherwise the learner's own (unchanged).
+                det_err = ref_extra["ref_err"] if ref_extra is not None else err
+                # The unbounded regression UQ variance must be normalized against
+                # one scale shared by both signals, and the running statistics must
+                # advance exactly once per instance -- hence live-then-frozen.
+                warn_norm, drift_norm = self._uq_normalizer_pair()
                 warning_value = extract_signal(
                     self.config.ecpf_warning_signal,
                     y_true=y_true,
-                    y_pred=y_pred,
-                    err=err,
+                    y_pred=det_pred,
+                    err=det_err,
                     proba_matrix=proba_matrix,
-                    num_classes=self.config.ecpf_uq_num_classes,
+                    num_classes=self._uq_num_classes(),
+                    is_regression=self.task.is_regression,
+                    pred_matrix=pred_matrix,
+                    uq_normalizer=warn_norm,
                 )
                 drift_value = extract_signal(
                     self.config.ecpf_drift_signal,
                     y_true=y_true,
-                    y_pred=y_pred,
-                    err=err,
+                    y_pred=det_pred,
+                    err=det_err,
                     proba_matrix=proba_matrix,
-                    num_classes=self.config.ecpf_uq_num_classes,
+                    num_classes=self._uq_num_classes(),
+                    is_regression=self.task.is_regression,
+                    pred_matrix=pred_matrix,
+                    uq_normalizer=drift_norm,
                 )
                 is_warning, is_drift = self._ecpf_detector.update_values(
                     warning_value,
                     drift_value,
                 )
+                if self._ecpf_guard is not None:
+                    # E10b: the leader's own error (never the reference's), one-sided;
+                    # either detector pair may open the warning or confirm.
+                    guard_value = extract_signal(
+                        "error", y_true=y_true, y_pred=y_pred, err=err, proba_matrix=None,
+                        is_regression=self.task.is_regression,
+                    )
+                    frozen = self.config.ecpf_guard_frozen_scale > 0 and self.task.is_regression
+                    if frozen:
+                        # E13: idle for the era's first k steps, then the raw residual
+                        # through the normalizer as it stood at step k.
+                        if self._guard_scale_due is None:
+                            self._guard_scale_due = int(index) + self.config.ecpf_guard_frozen_scale
+                        if self._guard_scale is None and index >= self._guard_scale_due:
+                            self._guard_scale = copy.copy(self.task.normalizer)
+                        guard_value = (self._guard_scale.transform(self.task.raw_residual(y_true, y_pred))
+                                       if self._guard_scale is not None else None)
+                    guard_w, guard_d = (self._ecpf_guard.update_values(guard_value, guard_value)
+                                        if guard_value is not None else (False, False))
+                    is_warning, is_drift = is_warning or guard_w, is_drift or guard_d
+                    if ref_extra is not None:
+                        ref_extra["guard_drift"] = int(guard_d)
+                        if frozen:
+                            ref_extra["guard_in"] = float("nan") if guard_value is None else guard_value
                 self.tracer.log_signal(
                     index, y_true, y_pred, err,
                     warning_value, drift_value, is_warning, is_drift,
+                    extra=ref_extra,
                 )
+
+                # Warning timeout: an unconfirmed warning that stays open for
+                # thousands of steps poisons everything downstream -- a later
+                # confirmation (even of a REAL drift) is stamped with the stale
+                # warning time, and the buffer spanning two concepts is used
+                # for model reuse selection. Close it and re-baseline the
+                # warning arm; a genuine change will reopen it immediately.
+                if (
+                    self._ecpf_warning_active
+                    and self.config.ecpf_detector_warning_timeout > 0
+                    and self._ecpf_warning_start_idx is not None
+                    and index - self._ecpf_warning_start_idx
+                    > self.config.ecpf_detector_warning_timeout
+                ):
+                    logger.info(
+                        "ECPF detector: warning from t=%d timed out at t=%d",
+                        self._ecpf_warning_start_idx, index,
+                    )
+                    self._ecpf_warning_active = False
+                    self._ecpf_warning_start_idx = None
+                    self._ecpf_buffer = []
+                    self._ecpf_detector.reset_warning()
 
                 if is_warning and not self._ecpf_warning_active:
                     self._ecpf_warning_active = True
@@ -468,6 +795,18 @@ class ConceptDriftPipeline:
                         index,
                         self._ecpf_detector.combo_name,
                     )
+
+                if (
+                    self._ecpf_warning_active
+                    and getattr(self._ecpf_detector, "zone", False)
+                    and not is_warning
+                    and not is_drift
+                ):
+                    # Official ECPF (E9): leaving the detector's warning zone without a
+                    # drift ends the warning and drops its buffer.
+                    self._ecpf_warning_active = False
+                    self._ecpf_warning_start_idx = None
+                    self._ecpf_buffer = []
 
                 if self._ecpf_warning_active:
                     self._ecpf_buffer.append(
@@ -491,6 +830,27 @@ class ConceptDriftPipeline:
                     self._ecpf_warning_start_idx = None
                     self._ecpf_buffer = []
                     self.meta_detector.reset()
+                    if self._ecpf_guard is not None:
+                        # E10b: the leader just changed and the reference is re-frozen below,
+                        # so both detector pairs restart, whichever one confirmed.
+                        self._ecpf_guard.reset()
+                        self._ecpf_detector.reset()
+                        # E13: a new era -- the guard idles k steps, then re-snapshots the scale.
+                        self._guard_scale = None
+                        self._guard_scale_due = int(index) + self.config.ecpf_guard_frozen_scale
+                    # Prescription 3: re-baseline the residual normalizer on the
+                    # new era together with the detectors (see config).
+                    if self.config.ecpf_normalizer_reset_on_drift and self.task.is_regression:
+                        self.task.normalizer.reset()
+                    if self.config.ecpf_reference_signal:
+                        # k=0: the just-installed clone becomes the reference right
+                        # now; k>0 additionally schedules a re-freeze from the
+                        # adapted leader (secondary arm).
+                        self._freeze_reference(index)
+                        self._ref_switch_due = (
+                            int(index) + int(self.config.ecpf_reference_warmup)
+                            if self.config.ecpf_reference_warmup > 0 else None
+                        )
                     self._batch_X.clear()
                     self._batch_y.clear()
                     self.buffer = StreamBuffer(
@@ -825,6 +1185,47 @@ class ConceptDriftPipeline:
         stats = uq_entry.get("stats", {})
         return dict(stats) if isinstance(stats, dict) else {}
 
+    # ------------------------------------------------------------------
+    # Frozen reference: detector input decoupled from the adaptive learner
+    # ------------------------------------------------------------------
+    def _model_predict(self, model: Any, x_: np.ndarray) -> float:
+        if self._use_advanced:
+            return float(model.predict_one(x_))
+        return float(model.predict(x_)[0])
+
+    def _ref_loss(self, y_true: float, pred: float) -> float:
+        """Raw loss of a reference prediction: |residual|, or 0/1 for classification."""
+        if self.task.is_regression:
+            return abs(float(y_true) - pred)
+        return 1.0 if int(round(pred)) != int(round(float(y_true))) else 0.0
+
+    def _freeze_reference(self, index: int) -> None:
+        """Freeze a copy of the current leader as the detectors' reference."""
+        self._ref_model = _deep_clone(self.prediction_model)
+        self._ref_norm.reset()
+        self._ref_frozen_at = int(index)
+
+    def _switch_reference(self, index: int) -> dict:
+        """Secondary arm: re-freeze from the adapted leader (a switch reset).
+
+        The detectors' input steps down here, so both arms restart, an open
+        warning is closed and its buffer dropped; the previous reference
+        shadow-runs 500 steps so both can be compared on the same data.
+        """
+        age = (
+            int(index) - int(self._ecpf_warning_start_idx)
+            if self._ecpf_warning_active and self._ecpf_warning_start_idx is not None
+            else -1
+        )
+        self._ref_shadow, self._ref_shadow_until = self._ref_model, int(index) + 500
+        self._freeze_reference(index)
+        self._ref_switch_due = None
+        self._ecpf_detector.reset()
+        self._ecpf_warning_active = False
+        self._ecpf_warning_start_idx = None
+        self._ecpf_buffer = []
+        return {"ref_switch": 1, "switch_warning_age": age}
+
     def _handle_ecpf_drift(
         self,
         buffer: List[Tuple[np.ndarray, float]],
@@ -1086,7 +1487,10 @@ class ConceptDriftPipeline:
             self._warm = False
             self._cold_start_count = 0
         else:
-            self.prediction_model = PredictionModel(model_type=self.config.model_type)
+            # Rebuild through the factory, not a bare PredictionModel(...): a
+            # hand-rolled wrapper here would silently drop the declared class set
+            # and put a K > 2 stream back on the arrival-order failure.
+            self.prediction_model = self._build_prediction_model()
             self._warm = False
 
     def _handle_gradual_reset(self, timestamp: int) -> None:
@@ -1099,7 +1503,7 @@ class ConceptDriftPipeline:
                 timestamp,
             )
         else:
-            self.prediction_model = PredictionModel(model_type=self.config.model_type)
+            self.prediction_model = self._build_prediction_model()
             self._warm = False
 
     def _reset_model(self) -> None:
@@ -1107,7 +1511,7 @@ class ConceptDriftPipeline:
         if self._use_advanced:
             self.prediction_model.reset_model()
         else:
-            self.prediction_model = PredictionModel(model_type=self.config.model_type)
+            self.prediction_model = self._build_prediction_model()
         self._warm = False
 
     def _try_retrieve_recurring_model(self):
@@ -1147,6 +1551,9 @@ class ConceptDriftPipeline:
         X, y = np.asarray(X), np.asarray(y).ravel()
         if X.ndim == 1:
             X = X.reshape(-1, 1)
+        # Resolve classification vs regression from the whole target array before
+        # anything is fit; this may swap the backend and the ECPF similarity rule.
+        self._bind_task(y)
         n = len(y)
         if warm_start_samples and warm_start_samples > 0:
             self.warm_start(X[:warm_start_samples], y[:warm_start_samples])

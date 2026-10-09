@@ -1,8 +1,17 @@
 from .base_model import BaseModel
-from .elastic_net import ElasticNetModel
+from .elastic_net import (
+    MULTICLASS_CAPABLE_BACKENDS,
+    ElasticNetModel,
+    MulticlassNotSupportedError,
+)
 from .random_forest import RandomForestModel
 from .hoeffding_tree import HoeffdingTreeModel
 from .hoeffding_forest import HoeffdingForestModel
+from .regression_models import (
+    AdaptiveRandomForestRegressorModel,
+    HoeffdingForestRegressorModel,
+    HoeffdingTreeRegressorModel,
+)
 
 try:
     from .xgboost_model import XGBoostModel
@@ -22,5 +31,12 @@ __all__ = [
     "GRUModel",
     "HoeffdingTreeModel",
     "HoeffdingForestModel",
+    # Regression learners (continuous targets).
+    "HoeffdingTreeRegressorModel",
+    "AdaptiveRandomForestRegressorModel",
+    "HoeffdingForestRegressorModel",
+    # Task-type guard raised by the binary-only ElasticNet backend.
+    "MulticlassNotSupportedError",
+    "MULTICLASS_CAPABLE_BACKENDS",
 ]
 

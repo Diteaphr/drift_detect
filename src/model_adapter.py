@@ -31,6 +31,9 @@ from .models import (
     GRUModel,
     HoeffdingTreeModel,
     HoeffdingForestModel,
+    HoeffdingTreeRegressorModel,
+    AdaptiveRandomForestRegressorModel,
+    HoeffdingForestRegressorModel,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,16 +42,44 @@ _MODEL_REGISTRY: Dict[str, Tuple[Type[BaseModel], Dict[str, Any]]] = {
     "elastic": (ElasticNetModel, {}),
     "rf":      (RandomForestModel, {"n_models": 10, "seed": 42}),
     "xgb":     (XGBoostModel, {"buffer_size": 50, "num_boost_round": 50}),
-    "gru":     (GRUModel, {"input_size": 4, "hidden_size": 32, "window_size": 10}),
+    # input_size is deliberately absent: GRUModel infers it from the first batch.
+    # It used to be pinned at 4 here, which made this backend unrunnable on every
+    # dataset in data/ (they carry 2 or 3 features) since no runner passes model_kwargs.
+    "gru":     (GRUModel, {"hidden_size": 32, "window_size": 10}),
     # Plain Hoeffding Tree (no internal drift handling) — for ECPF-style
     # external concept-management experiments.
     "ht":      (HoeffdingTreeModel, {"grace_period": 200, "leaf_prediction": "nba"}),
     # Hoeffding Forest — ensemble of plain HTs with online bagging.
     # Provides per-tree predict_proba_matrix() for UQ-based drift warning.
     "hf":      (HoeffdingForestModel, {"n_trees": 5, "lambda_poisson": 6.0, "seed": 42}),
+
+    # --- Regression backends (continuous targets) ---
+    "htr":     (HoeffdingTreeRegressorModel, {"grace_period": 200}),
+    "arfr":    (AdaptiveRandomForestRegressorModel, {"n_models": 10, "seed": 42}),
+    # Regression analogue of 'hf'. Exposes predict_per_model() so the UQ layer can
+    # take the cross-member variance -- the only one of the four UQ modes with a
+    # regression analogue (the others need a probability simplex).
+    "hfr":     (HoeffdingForestRegressorModel, {"n_trees": 5, "lambda_poisson": 6.0, "seed": 42}),
 }
 
 ADVANCED_MODEL_TYPES = set(_MODEL_REGISTRY.keys())
+
+#: Backends that model a continuous target. Everything else is a classifier.
+REGRESSION_MODEL_TYPES = frozenset({"htr", "arfr", "hfr", "sgdr"})
+
+#: Backends measured to train and predict correctly on a K > 2 stream. 'elastic'
+#: is excluded by design -- River's LogisticRegression is binary-only, so it now
+#: raises instead of silently capping itself at two labels (measured: it finished
+#: a 3-class run at accuracy 0.640 having only ever predicted two classes).
+MULTICLASS_MODEL_TYPES = frozenset({"rf", "ht", "hf", "xgb", "gru", "linear", "nonlinear"})
+
+#: What to fall back to when a config asks for a classifier on a regression stream.
+DEFAULT_MODEL_BY_TASK = {"binary": "ht", "multiclass": "ht", "regression": "htr"}
+
+
+def is_regression_model_type(model_type: str) -> bool:
+    """Return True if *model_type* predicts a continuous target."""
+    return model_type in REGRESSION_MODEL_TYPES
 
 
 def is_advanced_model_type(model_type: str) -> bool:
@@ -154,6 +185,20 @@ class BaseModelAdapter:
         x_dict = BaseModel._to_dict(x)
         if hasattr(self._base_model, "predict_proba_matrix"):
             return self._base_model.predict_proba_matrix(x_dict)
+        return []
+
+    def predict_per_model(self, x: np.ndarray) -> list:
+        """Per-member point predictions (regression analogue of ``predict_proba_matrix``).
+
+        Only ``HoeffdingForestRegressorModel`` implements this. ``ARFRegressor``
+        deliberately does not: it swaps its own members when its internal ADWIN
+        fires, so member-to-member spread is contaminated by the ensemble's own
+        drift handling and is not a clean epistemic signal. Returns ``[]`` when
+        the underlying model does not provide it.
+        """
+        x_dict = BaseModel._to_dict(x)
+        if hasattr(self._base_model, "predict_per_model"):
+            return self._base_model.predict_per_model(x_dict)
         return []
 
     def learn_one(self, x: np.ndarray, y: Any) -> None:

@@ -42,6 +42,24 @@ class PipelineConfig:
             ``"gru"``     -- GRU (PyTorch sliding-window online)
             ``"ht"``      -- Plain Hoeffding Tree (River, no internal drift
                               handling; for ECPF-style external frameworks)
+            ``"hf"``      -- Hoeffding Forest (per-tree predict_proba_matrix
+                              for UQ-based warning)
+
+        Multi-class capable: only ``"rf"``, ``"ht"``, ``"hf"``. ``"elastic"`` is
+        binary-only and now raises rather than silently capping its accuracy;
+        ``"linear"``/``"nonlinear"`` learn their class set from data; ``"xgb"``
+        and ``"gru"`` switch to a multi-class head when K > 2.
+
+        Regression (continuous target):
+            ``"sgdr"``    -- sklearn SGDRegressor
+            ``"htr"``     -- River HoeffdingTreeRegressor
+            ``"arfr"``    -- River ARFRegressor (self-adaptive)
+            ``"hfr"``     -- Hoeffding Forest Regressor; exposes
+                              predict_per_model() for ensemble-variance UQ
+
+        An unrecognised value still falls through to GaussianNB, which is the
+        historical behaviour -- a typo'd regressor name therefore trains a
+        classifier on a continuous target and dies in ``fit``.
 
     model_kwargs : dict
         Extra keyword arguments forwarded to the model constructor.
@@ -82,6 +100,18 @@ class PipelineConfig:
     meta_dwm_threshold: float = 0.5
     meta_proxy_policy: str = "any"  # "any" or "all"
 
+    # --- Task type (classification vs regression) ---
+    # ``None`` auto-detects from the target array via ``src/task.py``: an integral
+    # target with at most ``task_max_classes`` distinct values is classification,
+    # anything else is regression. Declare it explicitly only to override that
+    # inference (e.g. to model an integer-valued rating as a continuous quantity);
+    # a declaration that contradicts the data raises rather than guessing.
+    task_type: Optional[str] = None  # "binary" | "multiclass" | "regression"
+    n_classes: Optional[int] = None
+    task_max_classes: int = 50
+    # Warm-up before the regression error normalizer trusts its own mean/sigma.
+    error_normalizer_warmup: int = 30
+
     # Model
     model_type: str = "ht"
     model_kwargs: Dict[str, Any] = field(default_factory=dict)
@@ -118,10 +148,83 @@ class PipelineConfig:
     ecpf_oracle_true_drift_times: Optional[List[int]] = None
     ecpf_warning_length: int = 60
     ecpf_similarity_margin: float = 0.95  # m
+    # Regression uses a different similarity statistic, so the paper's m does not
+    # transfer: classification measures an agreement RATE over predicted labels,
+    # regression measures Pearson correlation of residual vectors mapped to
+    # (r + 1) / 2. Reusing 0.95 there would mean r >= 0.90, and two experts scored
+    # against the same targets are routinely correlated above that -- everything
+    # would merge. Calibrated to 0.80 as a non-degenerate starting point; this is
+    # a hyperparameter to tune, not a constant carried over from the paper.
+    ecpf_similarity_margin_regression: float = 0.80
+    # Conceptual-equivalence definition, for the ablation of this project's
+    # modification. "auto" = predicted-label agreement (ours; provably equal to
+    # the paper at K=2). "error_bitset" = the published ECPF/CPF definition
+    # (wrong-bit XOR; (wrong, wrong) counts as agreement even across different
+    # wrong classes). Invalid for regression.
+    ecpf_similarity_mode: str = "auto"
     ecpf_fade_points: int = 15  # f
     ecpf_fade_enabled: bool = True
     ecpf_model_check_freq: int = 1
     ecpf_max_pool_size: int = 10
+
+    # Prescription 3 (regression). The online residual normalizer is a global
+    # Welford mean/sd that never resets; when the residual scale changes across
+    # concepts it keeps catching up for tens of thousands of steps, turning a
+    # flat raw residual into a slow ramp the two-sided ADWIN cuts (fixed-scale
+    # counterfactual on Joe sudden: forest FP 21 -> 10). With this on, the
+    # normalizer re-baselines together with the detectors at every ECPF
+    # confirmation (the duel credit is then neutral, 0.5, for the normalizer's
+    # 30-instance warm-up). Classification never uses the normalizer, so binary
+    # runs are byte-identical either way; default off.
+    ecpf_normalizer_reset_on_drift: bool = False
+    # Frozen-reference detector input (regression). The two-sided ADWIN reads
+    # the adaptive leader's own improvement (learning curve, duel swaps, a bad
+    # reuse being re-learnt) as drift. With this on, the detectors are fed the
+    # residual of a FROZEN copy of the model installed at the last confirmation
+    # (own normalizer, reset at every freeze); the leader keeps learning as
+    # usual and still supplies predictions, accuracy, duel credit and buffer
+    # scoring. warmup=0: freeze the just-installed clone and keep it until the
+    # next confirmation (no warm-up, no switch). warmup=k>0 (secondary arm):
+    # re-freeze from the adapted leader k steps after each confirmation, with
+    # a switch reset (detectors, open warning, buffer, reference normalizer);
+    # the previous reference then shadow-runs 500 steps for diagnostics only.
+    # Classification (E2, docs/實驗脈絡總覽.md): the detectors read the frozen
+    # copy's 0/1 loss. Default-off runs are byte-identical.
+    ecpf_reference_signal: bool = False
+    ecpf_reference_warmup: int = 0
+    # Leader guard (E10b). The reference is refreshed only after a confirmation, so one
+    # missed drift leaves it stale and later drifts go unseen. With this on, an extra
+    # one-sided dual ADWIN (E1's) reads the leader's own error; either detector pair opens
+    # a warning or confirms, and both restart at every confirmation. Default-off runs are
+    # byte-identical.
+    ecpf_leader_guard: bool = False
+    # E13 (docs/實驗脈絡總覽.md): regression only. The online normalizer
+    # drifts up within an era while the leader is still learning, and the guard's long
+    # ADWIN windows read that catch-up as a rise. k>0: the guard stays idle for the first
+    # k steps of each era (stream start, every confirmation), then reads the leader's raw
+    # residual through a snapshot of the normalizer taken at that step. Default-off runs
+    # are byte-identical; classification (0/1 loss, no normalizer) is unaffected.
+    ecpf_guard_frozen_scale: int = 0
+
+    # E1 (docs/實驗脈絡總覽.md): MOA ADWINChangeDetector semantics on both ADWIN
+    # arms -- a cut counts only if the error estimate rose; a suppressed cut keeps
+    # its post-cut window. river's ADWIN is two-sided, MOA's wrapper has been
+    # increase-only since 2017. Default OFF; binary runs unchanged.
+    ecpf_adwin_one_sided: bool = False
+
+    # E9 (docs/實驗脈絡總覽.md): official-ECPF single detector ("ddm" | "hddm_a",
+    # river defaults = MOA defaults) in place of the dual ADWIN, with the official
+    # warning-zone semantics. Classification only. "" = off; binary runs unchanged.
+    ecpf_zone_detector: str = ""
+
+    # Close a warning that has stayed open longer than this many steps without
+    # a confirmation (0 = off). Measured failure it prevents: a warning opened
+    # at t=4743 stayed open 11,168 steps; the confirmation triggered by a REAL
+    # drift at t=15718 was stamped with the stale warning time (scored as a
+    # false positive) and the warning buffer spanning two concepts was used for
+    # model reuse selection. The uq_warning mode has an equivalent timeout;
+    # the ADWIN-family modes lacked one.
+    ecpf_detector_warning_timeout: int = 0
 
     # Standalone detector used when ecpf_signal_mode == "detector".
     ecpf_detector_type: str = "ddm"
@@ -166,6 +269,18 @@ class PipelineConfig:
     # UQ scalar extraction mode:
     # "mi_like" | "vote_disagreement" | "predictive_entropy" | "variance_eu"
     ecpf_uq_mode: str = "mi_like"
+    # Divide the UQ scalar by its theoretical maximum (log2(K) for the entropy
+    # modes, 1 - 1/K for vote/variance) so one threshold transfers across class
+    # counts. Off by default: a no-op for the entropy modes at K=2, but it would
+    # rescale ``vote_disagreement`` and ``variance_eu`` and therefore change
+    # existing binary results. Turn it on for multi-class comparability.
+    #
+    # Applies to the paths that feed a UQ scalar straight into a detector --
+    # ``uq_warning`` (src/uq_warning_detector.py) and ``meta_ecpf_gddm``. The
+    # ADWIN-family modes do NOT need it: detectors/meta_ecpf/signal_routing.py
+    # already rescales by the same denominators before the value leaves it, so
+    # enabling this there would divide twice.
+    ecpf_uq_normalize_scale: bool = False
     ecpf_uq_delta: float = 0.01
     ecpf_uq_grace_period: int = 50
     ecpf_uq_smoothing_alpha: float = 0.1

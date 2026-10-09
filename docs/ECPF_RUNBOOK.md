@@ -6,6 +6,8 @@ This document explains:
 - what output files mean,
 - how to interpret key metrics.
 
+For the multi-class / regression extension and the current drift-detection setting (E10bFT), start at [實驗脈絡總覽.md](實驗脈絡總覽.md).
+
 ## 1) What Has Been Implemented
 
 ### Core ECPF logic

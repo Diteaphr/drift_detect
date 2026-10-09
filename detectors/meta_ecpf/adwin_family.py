@@ -10,15 +10,31 @@ from .seed import SEEDDetector
 from .seqdrift2 import SeqDrift2Detector
 
 
+class _OneSidedADWIN(drift.ADWIN):
+    """MOA ``ADWINChangeDetector`` semantics (Waikato/moa 585577f, 2017): report a cut
+    only if the estimate rose. A suppressed cut keeps its post-cut window, exactly as
+    MOA does -- river would otherwise wipe the whole window on the next update."""
+
+    def update(self, x):
+        if self.drift_detected:
+            self._reset()
+        before = self.estimation
+        self._drift_detected = self._helper.update(x)
+        if self._drift_detected and self.estimation <= before:
+            self._drift_detected = False
+        return self
+
+
 class _ADWINAdapter:
-    def __init__(self, *, delta: float, min_num_instances: int) -> None:
+    def __init__(self, *, delta: float, min_num_instances: int, one_sided: bool = False) -> None:
         self.delta = float(delta)
         self.min_num_instances = int(min_num_instances)
-        self._detector = drift.ADWIN(delta=self.delta, grace_period=self.min_num_instances)
+        self._cls = _OneSidedADWIN if one_sided else drift.ADWIN
+        self._detector = self._cls(delta=self.delta, grace_period=self.min_num_instances)
         self.drift_detected = False
 
     def reset(self) -> None:
-        self._detector = drift.ADWIN(delta=self.delta, grace_period=self.min_num_instances)
+        self._detector = self._cls(delta=self.delta, grace_period=self.min_num_instances)
         self.drift_detected = False
 
     def update(self, value: float) -> bool:
@@ -35,10 +51,11 @@ def _make_detector(
     min_num_instances: int,
     random_seed: int,
     value_range: float,
+    one_sided: bool = False,
 ):
     kind = detector_type.lower()
     if kind == "adwin":
-        return _ADWINAdapter(delta=delta, min_num_instances=min_num_instances)
+        return _ADWINAdapter(delta=delta, min_num_instances=min_num_instances, one_sided=one_sided)
     if kind == "seed":
         return SEEDDetector(
             role=role,
@@ -82,6 +99,7 @@ class ECPFAdwinFamilyDetector:
         random_seed: int = 42,
         warning_value_range: float = 1.0,
         drift_value_range: float = 1.0,
+        one_sided: bool = False,
     ) -> None:
         self.warning_detector_type = warning_detector_type.lower()
         self.drift_detector_type = drift_detector_type.lower()
@@ -99,6 +117,7 @@ class ECPFAdwinFamilyDetector:
             min_num_instances=self.min_num_instances,
             random_seed=self.random_seed,
             value_range=self.warning_value_range,
+            one_sided=one_sided,
         )
         self._drift = _make_detector(
             self.drift_detector_type,
@@ -107,6 +126,7 @@ class ECPFAdwinFamilyDetector:
             min_num_instances=self.min_num_instances,
             random_seed=self.random_seed + 1,
             value_range=self.drift_value_range,
+            one_sided=one_sided,
         )
 
     @classmethod
@@ -143,6 +163,10 @@ class ECPFAdwinFamilyDetector:
     def reset(self) -> None:
         self._warn.reset()
         self._drift.reset()
+
+    def reset_warning(self) -> None:
+        """Re-baseline only the warning arm (used by the warning timeout)."""
+        self._warn.reset()
 
     def update(self, err: float) -> Tuple[bool, bool]:
         return self.update_values(err, err)
