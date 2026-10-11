@@ -166,6 +166,17 @@ class PipelineConfig:
     ecpf_fade_enabled: bool = True
     ecpf_model_check_freq: int = 1
     ecpf_max_pool_size: int = 10
+    # Leader-swap rule: "strict" (paper: shadow leads by >= 1 correct) or
+    # "hoeffding" (ARCUS/ARF-style: lead must exceed a Hoeffding bound at
+    # confidence 1 - ecpf_swap_delta).
+    ecpf_swap_policy: str = "strict"
+    ecpf_swap_delta: float = 0.05
+    # Fade rule: "ecpf" (paper: leader +f, others -1 per drift) or
+    # "reuse_value" (AiRStream-style: a slot earns the errors its reuse saved
+    # vs. a fresh learner over the first ecpf_reuse_value_window instances).
+    ecpf_fade_policy: str = "ecpf"
+    ecpf_reuse_value_window: int = 500
+    ecpf_reuse_idle_cost: float = 1.0
 
     # Prescription 3 (regression). The online residual normalizer is a global
     # Welford mean/sd that never resets; when the residual scale changes across

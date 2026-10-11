@@ -1,0 +1,42 @@
+20 runs (4 streams x 5 configs)
+[1/20] reuse_nocap   electricity.csv        acc=0.7920 pool mean/max=4.0/8 246s 
+[2/20] reuse_cap10   electricity.csv        acc=0.7920 pool mean/max=4.0/8 246s 
+[3/20] nofade_nocap  electricity.csv        acc=0.7921 pool mean/max=5.6/9 249s 
+[4/20] ecpf_cap10    electricity.csv        acc=0.7921 pool mean/max=5.5/8 250s 
+[5/20] ecpf_nocap    electricity.csv        acc=0.7921 pool mean/max=5.5/8 251s 
+[6/20] ecpf_cap10    airlines.csv           acc=0.6829 pool mean/max=3.2/4 322s 
+[7/20] ecpf_nocap    airlines.csv           acc=0.6829 pool mean/max=3.2/4 324s 
+[8/20] reuse_cap10   airlines.csv           acc=0.6829 pool mean/max=3.2/4 325s 
+[9/20] ecpf_cap10    gas_sensor_drift.csv   acc=0.8419 pool mean/max=4.3/8 135s 
+[10/20] reuse_nocap   airlines.csv           acc=0.6829 pool mean/max=3.2/4 334s 
+[11/20] nofade_nocap  airlines.csv           acc=0.6829 pool mean/max=3.2/4 335s 
+[12/20] reuse_cap10   gas_sensor_drift.csv   acc=0.8356 pool mean/max=2.6/4 145s 
+[13/20] ecpf_nocap    gas_sensor_drift.csv   acc=0.8419 pool mean/max=4.3/8 142s 
+[14/20] reuse_nocap   gas_sensor_drift.csv   acc=0.8356 pool mean/max=2.6/4 146s 
+[15/20] nofade_nocap  gas_sensor_drift.csv   acc=0.8419 pool mean/max=4.3/8 143s 
+[16/20] ecpf_cap10    covertype.csv          acc=0.8261 pool mean/max=5.9/10 703s 
+[17/20] ecpf_nocap    covertype.csv          acc=0.8261 pool mean/max=5.9/10 707s 
+[18/20] nofade_nocap  covertype.csv          acc=0.8266 pool mean/max=8.2/16 688s 
+[19/20] reuse_cap10   covertype.csv          acc=0.8202 pool mean/max=5.7/10 765s 
+[20/20] reuse_nocap   covertype.csv          acc=0.8202 pool mean/max=5.7/11 722s 
+      config model_type                 file  samples  accuracy  ecpf_drifts  slots_created  merges  evicted  pool_final  pool_mean  pool_max   mb_mean    mb_max  kb_per_model    total_s    drift_s  drift_share  ms_per_drift  reuse_value_neg_frac
+ reuse_nocap         hf      electricity.csv    45312  0.792007           29             30      19        5           6   4.000000         8  3.380304  7.960557    845.076069 245.520827  55.203460     0.224842   1903.567575              0.607143
+ reuse_cap10         hf      electricity.csv    45312  0.792007           29             30      19        5           6   4.000000         8  3.379873  7.959491    844.968310 245.964767  55.153430     0.224233   1901.842412              0.607143
+nofade_nocap         hf      electricity.csv    45312  0.792073           29             30      21        0           9   5.620690         9  5.231116  9.321521    930.689337 249.170674  58.704521     0.235600   2024.293845              0.678571
+  ecpf_cap10         hf      electricity.csv    45312  0.792073           29             30      21        2           7   5.482759         8  5.056563  7.959621    922.266233 250.463483  58.927501     0.235274   2031.982793              0.678571
+  ecpf_nocap         hf      electricity.csv    45312  0.792073           29             30      21        2           7   5.482759         8  5.055395  7.958959    922.053101 251.248224  59.076083     0.235130   2037.106299              0.678571
+  ecpf_cap10         hf         airlines.csv   100000  0.682886           19             20      16        0           4   3.157895         4  7.623576 17.402698   2414.132467 322.377286  31.322345     0.097161   1648.544467              0.000000
+  ecpf_nocap         hf         airlines.csv   100000  0.682886           19             20      16        0           4   3.157895         4  7.622871 17.401302   2413.909183 323.769500  31.534198     0.097397   1659.694649              0.000000
+ reuse_cap10         hf         airlines.csv   100000  0.682886           19             20      16        0           4   3.157895         4  7.623404 17.402722   2414.077817 325.213980  31.928781     0.098178   1680.462138              0.000000
+  ecpf_cap10         hf gas_sensor_drift.csv    13910  0.841867           19             20      12        0           8   4.315789         8 13.530598 23.882619   3135.138634 134.569923  17.413872     0.129404    916.519566              0.777778
+ reuse_nocap         hf         airlines.csv   100000  0.682886           19             20      16        0           4   3.157895         4  7.624589 17.407872   2414.453150 334.448474  32.662419     0.097661   1719.074662              0.000000
+nofade_nocap         hf         airlines.csv   100000  0.682886           19             20      16        0           4   3.157895         4  7.621434 17.399692   2413.454050 334.861880  32.673253     0.097572   1719.644873              0.000000
+ reuse_cap10         hf gas_sensor_drift.csv    13910  0.835594           20             21      11        8           2   2.600000         4  8.675487 13.571697   3336.725635 144.947440  20.082324     0.138549   1004.116198              0.842105
+  ecpf_nocap         hf gas_sensor_drift.csv    13910  0.841867           19             20      12        0           8   4.315789         8 13.530573 23.883303   3135.132732 142.056752  18.817308     0.132463    990.384651              0.777778
+ reuse_nocap         hf gas_sensor_drift.csv    13910  0.835594           20             21      11        8           2   2.600000         4  8.675558 13.575021   3336.753000 145.839534  20.456993     0.140271   1022.849658              0.842105
+nofade_nocap         hf gas_sensor_drift.csv    13910  0.841867           19             20      12        0           8   4.315789         8 13.530791 23.882467   3135.183366 142.788966  20.967772     0.146844   1103.566921              0.777778
+  ecpf_cap10         hf        covertype.csv   100000  0.826132          287            288     264       20           4   5.947735        10 18.647372 48.030145   3135.205422 702.841455 228.834562     0.325585    797.332970              0.590909
+  ecpf_nocap         hf        covertype.csv   100000  0.826132          287            288     264       20           4   5.947735        10 18.647817 48.030312   3135.280287 706.641038 228.725571     0.323680    796.953209              0.590909
+nofade_nocap         hf        covertype.csv   100000  0.826573          285            286     270        0          16   8.245614        16 23.580677 48.302624   2859.784212 688.109713 223.159610     0.324308    783.016174              0.584507
+ reuse_cap10         hf        covertype.csv   100000  0.820200          297            298     264       29           5   5.730640        10 18.656697 74.666604   3255.604606 765.237302 286.415713     0.374284    964.362668              0.584459
+ reuse_nocap         hf        covertype.csv   100000  0.820200          297            298     264       29           5   5.734007        11 18.665587 74.665144   3255.243282 722.220807 270.209965     0.374138    909.797860              0.584459

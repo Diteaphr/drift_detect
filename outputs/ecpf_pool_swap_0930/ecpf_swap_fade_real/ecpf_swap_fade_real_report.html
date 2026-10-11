@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECPF 真實資料實驗</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f7f6f3;
+  --surface: #fcfcfb;
+  --border: #e4e2dc;
+  --grid: #ecebe7;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --text-3: #7a7974;
+  --baseline: #a3a29c;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --win: #2a78d6;
+  --tie: #cfcdc6;
+  --lose: #eb6834;
+  --callout: #eef4fc;
+  --callout-border: #2a78d6;
+  --warn-bg: #fdf1ea;
+  --warn-border: #eb6834;
+  --code-bg: #efeee9;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211;
+    --surface: #1a1a19;
+    --border: #2f2f2c;
+    --grid: #2a2a27;
+    --text: #ffffff;
+    --text-2: #c3c2b7;
+    --text-3: #8f8e86;
+    --baseline: #6f6e69;
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --win: #3987e5;
+    --tie: #4a4a46;
+    --lose: #d95926;
+    --callout: #16263a;
+    --callout-border: #3987e5;
+    --warn-bg: #2e1d14;
+    --warn-border: #d95926;
+    --code-bg: #262624;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211; --surface: #1a1a19; --border: #2f2f2c; --grid: #2a2a27;
+  --text: #ffffff; --text-2: #c3c2b7; --text-3: #8f8e86; --baseline: #6f6e69;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  --win: #3987e5; --tie: #4a4a46; --lose: #d95926;
+  --callout: #16263a; --callout-border: #3987e5; --warn-bg: #2e1d14; --warn-border: #d95926; --code-bg: #262624;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.7 -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+}
+main { max-width: 920px; margin: 0 auto; padding: 40px 16px 80px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 0 0 8px; }
+h2 { font-size: 22px; margin: 56px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+h3 { font-size: 17px; margin: 28px 0 8px; }
+p { margin: 8px 0; }
+.sub { color: var(--text-2); margin: 0 0 24px; }
+.muted { color: var(--text-3); font-size: 14px; }
+code { background: var(--code-bg); padding: 1px 6px; border-radius: 4px; font-size: 14px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 20px 0; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.tile .k { font-size: 13px; color: var(--text-2); }
+.tile .v { font-size: 28px; font-weight: 650; line-height: 1.25; margin: 4px 0; font-variant-numeric: tabular-nums; }
+.tile .d { font-size: 13px; color: var(--text-2); }
+.callout { background: var(--callout); border-left: 4px solid var(--callout-border); padding: 12px 16px; border-radius: 6px; margin: 16px 0; }
+.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-border); padding: 12px 16px; border-radius: 6px; margin: 16px 0; }
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--surface); }
+th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { color: var(--text-2); font-weight: 600; white-space: nowrap; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 16px 8px; margin: 16px 0; }
+.card-title { font-weight: 650; margin: 0; }
+.card-sub { color: var(--text-2); font-size: 14px; margin: 2px 0 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--text-2); margin: 4px 0 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--text-2); font-size: 12px; }
+.chart .axis-label { fill: var(--text-3); font-size: 11px; }
+.chart .grid { stroke: var(--grid); stroke-width: 1; }
+.chart .zero { stroke: var(--text-3); stroke-width: 1; }
+.chart .hit { fill: transparent; cursor: default; }
+.chart .mark { transition: opacity .12s; }
+.chart.dim .mark { opacity: .35; }
+.chart.dim .mark.on { opacity: 1; }
+details { margin: 8px 0 16px; }
+summary { cursor: pointer; color: var(--text-2); font-size: 14px; }
+#tip {
+  position: fixed; pointer-events: none; z-index: 10; display: none;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.5;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15); max-width: 280px;
+}
+#tip b { font-weight: 650; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 680px) { .two { grid-template-columns: 1fr; } h1 { font-size: 25px; } }
+.flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; font-size: 14px; }
+.flow .step { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+.flow .arr { color: var(--text-3); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>ECPF 換人與淘汰規則實驗：真實資料</h1>
+<p class="sub">延續 synthetic 資料的實驗，改用真實串流驗證兩個改良：ARCUS 式的「換人要有統計把握」與 AiRStream 式的「依重用價值淘汰模型」。資料：dataset_0921 real_dataset 的 binary 2 組、multi-class 2 組，共 32 次執行。</p>
+
+<div class="tiles">
+  <div class="tile"><div class="k">Hoeffding 換人規則：換人次數</div><div class="v">−87%</div><div class="d">每條串流 176 → 23 次</div></div>
+  <div class="tile"><div class="k">Hoeffding 換人規則：正確率</div><div class="v">−1.7</div><div class="d">百分點（平均）；8 組全部變差</div></div>
+  <div class="tile"><div class="k">重用價值淘汰：正確率</div><div class="v">+0.25</div><div class="d">百分點（平均）；4 贏 2 輸 2 平，幅度小</div></div>
+  <div class="tile"><div class="k">重用比從零訓練更差的比例</div><div class="v">62–71%</div><div class="d">covertype、electricity、gas 三組</div></div>
+</div>
+
+<div class="callout"><b>一句話結論：</b>真實資料的結果與 synthetic <b>方向一致、而且更明顯</b>。Hoeffding 換人規則在 8 組全部讓正確率下降（平均 −1.7 pp），原因跟 synthetic 相同：換得太慢，較差的模型會繼續輸出、被存進池子。重用價值淘汰在真實資料上小幅正向（平均 +0.25 pp），而且只用約一半的模型池就達到同樣或更好的正確率，但幅度還不足以下定論。最大的警訊是：在三組資料上，<b>超過一半</b>的模型重用比從零訓練還差。</div>
+
+<h2>1. 實驗在做什麼</h2>
+
+<h3>與 synthetic 實驗的差別</h3>
+<p>兩個改良機制與 synthetic 實驗完全相同（原理見 synthetic 報告），這次只換資料。真實資料<b>沒有標記 drift 發生的時間點</b>，所以實驗設定要跟著調整：</p>
+<div class="table-wrap"><table>
+<thead><tr><th>項目</th><th>synthetic 實驗</th><th>真實資料實驗</th></tr></thead>
+<tbody>
+<tr><td>設定</td><td>oracle、oracle_pool3、detector</td><td><b>detector</b>、<b>detector_pool3</b>（沒有真實 drift 點，無法用 oracle）</td></tr>
+<tr><td>drift 觸發</td><td>真實 drift 點，或 <code>dual_adwin</code> 偵測</td><td>只能靠 <code>dual_adwin</code> 偵測（δ = 0.05）</td></tr>
+<tr><td>恢復正確率</td><td>drift 後 1,000 筆的正確率</td><td>無法計算（不知道真正的 drift 在哪）</td></tr>
+<tr><td>額外參考</td><td>—</td><td><b>no-change 基準</b>：永遠預測「跟上一筆一樣」的正確率，用來判斷分數高低是否有意義</td></tr>
+</tbody></table></div>
+
+<h3>資料</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>資料集</th><th>任務</th><th class="num">筆數</th><th>內容</th></tr></thead>
+<tbody>
+<tr><td><b>electricity</b></td><td>binary</td><td class="num">45,312</td><td>澳洲電價漲跌，最常用的 concept drift 真實基準</td></tr>
+<tr><td><b>airlines</b></td><td>binary</td><td class="num">100,000</td><td>航班是否延誤（原 53.9 萬筆，取前 10 萬）</td></tr>
+<tr><td><b>covertype</b></td><td>multi-class（7 類）</td><td class="num">100,000</td><td>森林覆蓋類型（原 58.1 萬筆，取前 10 萬）</td></tr>
+<tr><td><b>gas_sensor_drift</b></td><td>multi-class（6 類）</td><td class="num">13,910</td><td>氣體感測器陣列，感測器本身會隨時間老化漂移</td></tr>
+</tbody></table></div>
+<p class="muted">binary 未使用 ai4i2020：故障樣本只佔約 3%，永遠猜「沒故障」就有 97% 正確率，正確率無法反映差異。multi-class 只有這兩組可選。</p>
+<p><b>變體</b>與 synthetic 相同：baseline（原版）、hoeffding、reuse_value、both。<b>指標：</b>正確率、換人次數、ECPF 處理的 drift 次數、模型池大小。</p>
+
+<h2>2. 實驗結果</h2>
+
+<h3>結果一：Hoeffding 規則讓換人次數大幅下降</h3>
+<div class="card">
+  <p class="card-title">每條串流的換人次數</p>
+  <p class="card-sub">真實資料的 drift 次數多很多（detector 每條偵測到 20–290 次），原版換人次數也高很多；hoeffding 與 both 一樣降到原本的一到二成。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--baseline)"></i>baseline（原版）</span><span><i class="sw" style="background:var(--s1)"></i>hoeffding</span><span><i class="sw" style="background:var(--s2)"></i>reuse_value</span><span><i class="sw" style="background:var(--s3)"></i>both</span></div>
+  <div class="chart"><svg viewBox="0 0 860 300" role="img" aria-label="各變體換人次數"><text x="4" y="12" class="axis-label">次數</text><line x1="48" x2="852" y1="252.0" y2="252.0" class="zero"/><text x="40" y="256.0" text-anchor="end">0</text><line x1="48" x2="852" y1="161.4" y2="161.4" class="grid"/><text x="40" y="165.4" text-anchor="end">200</text><line x1="48" x2="852" y1="70.8" y2="70.8" class="grid"/><text x="40" y="74.8" text-anchor="end">400</text><text x="98.2" y="270" text-anchor="middle">electricity</text><text x="98.2" y="286" text-anchor="middle" class="axis-label">binary · 池 10</text><path id="m1" class="mark" d="M61.1,252.0V183.0Q61.1,179.0 65.1,179.0H74.2Q78.2,179.0 78.2,183.0V252.0Z" fill="var(--baseline)"/><rect class="hit" x="60.1" y="22" width="19.1" height="230" data-mark="m1" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;electricity · binary · 池 10&lt;br&gt;換人 &lt;b&gt;161&lt;/b&gt; 次"/><path id="m2" class="mark" d="M80.2,252.0V246.5Q80.2,242.5 84.2,242.5H93.2Q97.2,242.5 97.2,246.5V252.0Z" fill="var(--s1)"/><rect class="hit" x="79.2" y="22" width="19.1" height="230" data-mark="m2" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;electricity · binary · 池 10&lt;br&gt;換人 &lt;b&gt;21&lt;/b&gt; 次"/><path id="m3" class="mark" d="M99.2,252.0V191.2Q99.2,187.2 103.2,187.2H112.3Q116.3,187.2 116.3,191.2V252.0Z" fill="var(--s2)"/><rect class="hit" x="98.2" y="22" width="19.1" height="230" data-mark="m3" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;electricity · binary · 池 10&lt;br&gt;換人 &lt;b&gt;143&lt;/b&gt; 次"/><path id="m4" class="mark" d="M118.3,252.0V248.1Q118.3,244.3 122.2,244.3H131.6Q135.4,244.3 135.4,248.1V252.0Z" fill="var(--s3)"/><rect class="hit" x="117.3" y="22" width="19.1" height="230" data-mark="m4" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;electricity · binary · 池 10&lt;br&gt;換人 &lt;b&gt;17&lt;/b&gt; 次"/><text x="198.8" y="270" text-anchor="middle">airlines</text><text x="198.8" y="286" text-anchor="middle" class="axis-label">binary · 池 10</text><path id="m5" class="mark" d="M161.6,252.0V208.4Q161.6,204.4 165.6,204.4H174.7Q178.7,204.4 178.7,208.4V252.0Z" fill="var(--baseline)"/><rect class="hit" x="160.6" y="22" width="19.1" height="230" data-mark="m5" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;airlines · binary · 池 10&lt;br&gt;換人 &lt;b&gt;105&lt;/b&gt; 次"/><rect id="m6" class="mark" x="180.7" y="250.5" width="17.1" height="1.5" fill="var(--s1)"/><rect class="hit" x="179.7" y="22" width="19.1" height="230" data-mark="m6" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;airlines · binary · 池 10&lt;br&gt;換人 &lt;b&gt;1&lt;/b&gt; 次"/><path id="m7" class="mark" d="M199.8,252.0V208.4Q199.8,204.4 203.8,204.4H212.8Q216.8,204.4 216.8,208.4V252.0Z" fill="var(--s2)"/><rect class="hit" x="198.8" y="22" width="19.1" height="230" data-mark="m7" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;airlines · binary · 池 10&lt;br&gt;換人 &lt;b&gt;105&lt;/b&gt; 次"/><rect id="m8" class="mark" x="218.8" y="250.5" width="17.1" height="1.5" fill="var(--s3)"/><rect class="hit" x="217.8" y="22" width="19.1" height="230" data-mark="m8" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;airlines · binary · 池 10&lt;br&gt;換人 &lt;b&gt;1&lt;/b&gt; 次"/><text x="299.2" y="270" text-anchor="middle">covertype</text><text x="299.2" y="286" text-anchor="middle" class="axis-label">multi-class · 池 10</text><path id="m9" class="mark" d="M262.1,252.0V71.1Q262.1,67.1 266.1,67.1H275.2Q279.2,67.1 279.2,71.1V252.0Z" fill="var(--baseline)"/><rect class="hit" x="261.1" y="22" width="19.1" height="230" data-mark="m9" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 10&lt;br&gt;換人 &lt;b&gt;408&lt;/b&gt; 次"/><path id="m10" class="mark" d="M281.2,252.0V232.0Q281.2,228.0 285.2,228.0H294.2Q298.2,228.0 298.2,232.0V252.0Z" fill="var(--s1)"/><rect class="hit" x="280.2" y="22" width="19.1" height="230" data-mark="m10" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 10&lt;br&gt;換人 &lt;b&gt;53&lt;/b&gt; 次"/><path id="m11" class="mark" d="M300.2,252.0V43.0Q300.2,39.0 304.2,39.0H313.3Q317.3,39.0 317.3,43.0V252.0Z" fill="var(--s2)"/><rect class="hit" x="299.2" y="22" width="19.1" height="230" data-mark="m11" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 10&lt;br&gt;換人 &lt;b&gt;470&lt;/b&gt; 次"/><path id="m12" class="mark" d="M319.3,252.0V212.0Q319.3,208.0 323.3,208.0H332.4Q336.4,208.0 336.4,212.0V252.0Z" fill="var(--s3)"/><rect class="hit" x="318.3" y="22" width="19.1" height="230" data-mark="m12" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 10&lt;br&gt;換人 &lt;b&gt;97&lt;/b&gt; 次"/><text x="399.8" y="270" text-anchor="middle">gas_sensor_drift</text><text x="399.8" y="286" text-anchor="middle" class="axis-label">multi-class · 池 10</text><path id="m13" class="mark" d="M362.6,252.0V246.9Q362.6,242.9 366.6,242.9H375.7Q379.7,242.9 379.7,246.9V252.0Z" fill="var(--baseline)"/><rect class="hit" x="361.6" y="22" width="19.1" height="230" data-mark="m13" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 10&lt;br&gt;換人 &lt;b&gt;20&lt;/b&gt; 次"/><path id="m14" class="mark" d="M381.7,252.0V249.7Q381.7,247.5 383.9,247.5H396.5Q398.8,247.5 398.8,249.7V252.0Z" fill="var(--s1)"/><rect class="hit" x="380.7" y="22" width="19.1" height="230" data-mark="m14" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 10&lt;br&gt;換人 &lt;b&gt;10&lt;/b&gt; 次"/><path id="m15" class="mark" d="M400.8,252.0V245.1Q400.8,241.1 404.8,241.1H413.8Q417.8,241.1 417.8,245.1V252.0Z" fill="var(--s2)"/><rect class="hit" x="399.8" y="22" width="19.1" height="230" data-mark="m15" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 10&lt;br&gt;換人 &lt;b&gt;24&lt;/b&gt; 次"/><path id="m16" class="mark" d="M419.8,252.0V250.2Q419.8,248.4 421.7,248.4H435.1Q436.9,248.4 436.9,250.2V252.0Z" fill="var(--s3)"/><rect class="hit" x="418.8" y="22" width="19.1" height="230" data-mark="m16" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 10&lt;br&gt;換人 &lt;b&gt;8&lt;/b&gt; 次"/><text x="500.2" y="270" text-anchor="middle">electricity</text><text x="500.2" y="286" text-anchor="middle" class="axis-label">binary · 池 3</text><path id="m17" class="mark" d="M463.1,252.0V180.8Q463.1,176.8 467.1,176.8H476.2Q480.2,176.8 480.2,180.8V252.0Z" fill="var(--baseline)"/><rect class="hit" x="462.1" y="22" width="19.1" height="230" data-mark="m17" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;electricity · binary · 池 3&lt;br&gt;換人 &lt;b&gt;166&lt;/b&gt; 次"/><path id="m18" class="mark" d="M482.2,252.0V245.1Q482.2,241.1 486.2,241.1H495.2Q499.2,241.1 499.2,245.1V252.0Z" fill="var(--s1)"/><rect class="hit" x="481.2" y="22" width="19.1" height="230" data-mark="m18" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;electricity · binary · 池 3&lt;br&gt;換人 &lt;b&gt;24&lt;/b&gt; 次"/><path id="m19" class="mark" d="M501.2,252.0V187.1Q501.2,183.1 505.2,183.1H514.3Q518.3,183.1 518.3,187.1V252.0Z" fill="var(--s2)"/><rect class="hit" x="500.2" y="22" width="19.1" height="230" data-mark="m19" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;electricity · binary · 池 3&lt;br&gt;換人 &lt;b&gt;152&lt;/b&gt; 次"/><path id="m20" class="mark" d="M520.3,252.0V244.2Q520.3,240.2 524.3,240.2H533.4Q537.4,240.2 537.4,244.2V252.0Z" fill="var(--s3)"/><rect class="hit" x="519.3" y="22" width="19.1" height="230" data-mark="m20" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;electricity · binary · 池 3&lt;br&gt;換人 &lt;b&gt;26&lt;/b&gt; 次"/><text x="600.8" y="270" text-anchor="middle">airlines</text><text x="600.8" y="286" text-anchor="middle" class="axis-label">binary · 池 3</text><path id="m21" class="mark" d="M563.6,252.0V208.4Q563.6,204.4 567.6,204.4H576.7Q580.7,204.4 580.7,208.4V252.0Z" fill="var(--baseline)"/><rect class="hit" x="562.6" y="22" width="19.1" height="230" data-mark="m21" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;airlines · binary · 池 3&lt;br&gt;換人 &lt;b&gt;105&lt;/b&gt; 次"/><rect id="m22" class="mark" x="582.7" y="250.5" width="17.1" height="1.5" fill="var(--s1)"/><rect class="hit" x="581.7" y="22" width="19.1" height="230" data-mark="m22" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;airlines · binary · 池 3&lt;br&gt;換人 &lt;b&gt;1&lt;/b&gt; 次"/><path id="m23" class="mark" d="M601.8,252.0V208.4Q601.8,204.4 605.8,204.4H614.8Q618.8,204.4 618.8,208.4V252.0Z" fill="var(--s2)"/><rect class="hit" x="600.8" y="22" width="19.1" height="230" data-mark="m23" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;airlines · binary · 池 3&lt;br&gt;換人 &lt;b&gt;105&lt;/b&gt; 次"/><rect id="m24" class="mark" x="620.8" y="250.5" width="17.1" height="1.5" fill="var(--s3)"/><rect class="hit" x="619.8" y="22" width="19.1" height="230" data-mark="m24" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;airlines · binary · 池 3&lt;br&gt;換人 &lt;b&gt;1&lt;/b&gt; 次"/><text x="701.2" y="270" text-anchor="middle">covertype</text><text x="701.2" y="286" text-anchor="middle" class="axis-label">multi-class · 池 3</text><path id="m25" class="mark" d="M664.1,252.0V63.4Q664.1,59.4 668.1,59.4H677.2Q681.2,59.4 681.2,63.4V252.0Z" fill="var(--baseline)"/><rect class="hit" x="663.1" y="22" width="19.1" height="230" data-mark="m25" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 3&lt;br&gt;換人 &lt;b&gt;425&lt;/b&gt; 次"/><path id="m26" class="mark" d="M683.2,252.0V228.8Q683.2,224.8 687.2,224.8H696.2Q700.2,224.8 700.2,228.8V252.0Z" fill="var(--s1)"/><rect class="hit" x="682.2" y="22" width="19.1" height="230" data-mark="m26" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 3&lt;br&gt;換人 &lt;b&gt;60&lt;/b&gt; 次"/><path id="m27" class="mark" d="M702.2,252.0V43.0Q702.2,39.0 706.2,39.0H715.3Q719.3,39.0 719.3,43.0V252.0Z" fill="var(--s2)"/><rect class="hit" x="701.2" y="22" width="19.1" height="230" data-mark="m27" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 3&lt;br&gt;換人 &lt;b&gt;470&lt;/b&gt; 次"/><path id="m28" class="mark" d="M721.3,252.0V222.9Q721.3,218.9 725.3,218.9H734.4Q738.4,218.9 738.4,222.9V252.0Z" fill="var(--s3)"/><rect class="hit" x="720.3" y="22" width="19.1" height="230" data-mark="m28" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 3&lt;br&gt;換人 &lt;b&gt;73&lt;/b&gt; 次"/><text x="801.8" y="270" text-anchor="middle">gas_sensor_drift</text><text x="801.8" y="286" text-anchor="middle" class="axis-label">multi-class · 池 3</text><path id="m29" class="mark" d="M764.6,252.0V246.9Q764.6,242.9 768.6,242.9H777.7Q781.7,242.9 781.7,246.9V252.0Z" fill="var(--baseline)"/><rect class="hit" x="763.6" y="22" width="19.1" height="230" data-mark="m29" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 3&lt;br&gt;換人 &lt;b&gt;20&lt;/b&gt; 次"/><path id="m30" class="mark" d="M783.7,252.0V249.7Q783.7,247.5 785.9,247.5H798.5Q800.8,247.5 800.8,249.7V252.0Z" fill="var(--s1)"/><rect class="hit" x="782.7" y="22" width="19.1" height="230" data-mark="m30" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 3&lt;br&gt;換人 &lt;b&gt;10&lt;/b&gt; 次"/><path id="m31" class="mark" d="M802.8,252.0V245.6Q802.8,241.6 806.8,241.6H815.8Q819.8,241.6 819.8,245.6V252.0Z" fill="var(--s2)"/><rect class="hit" x="801.8" y="22" width="19.1" height="230" data-mark="m31" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 3&lt;br&gt;換人 &lt;b&gt;23&lt;/b&gt; 次"/><path id="m32" class="mark" d="M821.8,252.0V250.2Q821.8,248.4 823.7,248.4H837.1Q838.9,248.4 838.9,250.2V252.0Z" fill="var(--s3)"/><rect class="hit" x="820.8" y="22" width="19.1" height="230" data-mark="m32" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 3&lt;br&gt;換人 &lt;b&gt;8&lt;/b&gt; 次"/></svg></div>
+</div>
+
+<h3>結果二：但 Hoeffding 讓正確率全面下降，重用價值小幅正向</h3>
+<div class="card">
+  <p class="card-title">正確率相對 baseline 的差距（百分點）</p>
+  <p class="card-sub">往下代表比原版差。hoeffding 在 8 組全部為負（−0.6 ~ −3.2 pp）；reuse_value 大多落在 0 附近的正值。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>hoeffding</span><span><i class="sw" style="background:var(--s2)"></i>reuse_value</span><span><i class="sw" style="background:var(--s3)"></i>both</span></div>
+  <div class="chart"><svg viewBox="0 0 860 300" role="img" aria-label="正確率相對 baseline 差距"><text x="4" y="12" class="axis-label">百分點</text><line x1="48" x2="852" y1="252.0" y2="252.0" class="grid"/><text x="40" y="256.0" text-anchor="end">-4</text><line x1="48" x2="852" y1="206.7" y2="206.7" class="grid"/><text x="40" y="210.7" text-anchor="end">-3</text><line x1="48" x2="852" y1="161.3" y2="161.3" class="grid"/><text x="40" y="165.3" text-anchor="end">-2</text><line x1="48" x2="852" y1="116.0" y2="116.0" class="grid"/><text x="40" y="120.0" text-anchor="end">-1</text><line x1="48" x2="852" y1="70.7" y2="70.7" class="zero"/><text x="40" y="74.7" text-anchor="end">0</text><line x1="48" x2="852" y1="25.4" y2="25.4" class="grid"/><text x="40" y="29.4" text-anchor="end">+1</text><text x="98.2" y="270" text-anchor="middle">electricity</text><text x="98.2" y="286" text-anchor="middle" class="axis-label">binary · 池 10</text><path id="m33" class="mark" d="M61.1,70.7V162.6Q61.1,166.6 65.1,166.6H80.5Q84.5,166.6 84.5,162.6V70.7Z" fill="var(--s1)"/><rect class="hit" x="60.1" y="22" width="25.5" height="230" data-mark="m33" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;electricity · binary · 池 10&lt;br&gt;正確率差距 &lt;b&gt;-2.12 pp&lt;/b&gt;"/><path id="m34" class="mark" d="M86.5,70.7V64.2Q86.5,60.2 90.5,60.2H106.0Q110.0,60.2 110.0,64.2V70.7Z" fill="var(--s2)"/><rect class="hit" x="85.5" y="22" width="25.5" height="230" data-mark="m34" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;electricity · binary · 池 10&lt;br&gt;正確率差距 &lt;b&gt;+0.23 pp&lt;/b&gt;"/><path id="m35" class="mark" d="M112.0,70.7V101.4Q112.0,105.4 116.0,105.4H131.4Q135.4,105.4 135.4,101.4V70.7Z" fill="var(--s3)"/><rect class="hit" x="111.0" y="22" width="25.5" height="230" data-mark="m35" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;electricity · binary · 池 10&lt;br&gt;正確率差距 &lt;b&gt;-0.76 pp&lt;/b&gt;"/><text x="198.8" y="270" text-anchor="middle">airlines</text><text x="198.8" y="286" text-anchor="middle" class="axis-label">binary · 池 10</text><path id="m36" class="mark" d="M161.6,70.7V92.6Q161.6,96.6 165.6,96.6H181.0Q185.0,96.6 185.0,92.6V70.7Z" fill="var(--s1)"/><rect class="hit" x="160.6" y="22" width="25.5" height="230" data-mark="m36" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;airlines · binary · 池 10&lt;br&gt;正確率差距 &lt;b&gt;-0.57 pp&lt;/b&gt;"/><rect id="m37" class="mark" x="187.0" y="69.2" width="23.5" height="1.5" fill="var(--s2)"/><rect class="hit" x="186.0" y="22" width="25.5" height="230" data-mark="m37" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;airlines · binary · 池 10&lt;br&gt;正確率差距 &lt;b&gt;+0.00 pp&lt;/b&gt;"/><path id="m38" class="mark" d="M212.5,70.7V92.6Q212.5,96.6 216.5,96.6H231.9Q235.9,96.6 235.9,92.6V70.7Z" fill="var(--s3)"/><rect class="hit" x="211.5" y="22" width="25.5" height="230" data-mark="m38" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;airlines · binary · 池 10&lt;br&gt;正確率差距 &lt;b&gt;-0.57 pp&lt;/b&gt;"/><text x="299.2" y="270" text-anchor="middle">covertype</text><text x="299.2" y="286" text-anchor="middle" class="axis-label">multi-class · 池 10</text><path id="m39" class="mark" d="M262.1,70.7V143.0Q262.1,147.0 266.1,147.0H281.5Q285.5,147.0 285.5,143.0V70.7Z" fill="var(--s1)"/><rect class="hit" x="261.1" y="22" width="25.5" height="230" data-mark="m39" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 10&lt;br&gt;正確率差距 &lt;b&gt;-1.68 pp&lt;/b&gt;"/><path id="m40" class="mark" d="M287.5,70.7V51.7Q287.5,47.7 291.5,47.7H307.0Q311.0,47.7 311.0,51.7V70.7Z" fill="var(--s2)"/><rect class="hit" x="286.5" y="22" width="25.5" height="230" data-mark="m40" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 10&lt;br&gt;正確率差距 &lt;b&gt;+0.51 pp&lt;/b&gt;"/><path id="m41" class="mark" d="M313.0,70.7V193.1Q313.0,197.1 317.0,197.1H332.4Q336.4,197.1 336.4,193.1V70.7Z" fill="var(--s3)"/><rect class="hit" x="312.0" y="22" width="25.5" height="230" data-mark="m41" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 10&lt;br&gt;正確率差距 &lt;b&gt;-2.79 pp&lt;/b&gt;"/><text x="399.8" y="270" text-anchor="middle">gas_sensor_drift</text><text x="399.8" y="286" text-anchor="middle" class="axis-label">multi-class · 池 10</text><path id="m42" class="mark" d="M362.6,70.7V128.2Q362.6,132.2 366.6,132.2H382.0Q386.0,132.2 386.0,128.2V70.7Z" fill="var(--s1)"/><rect class="hit" x="361.6" y="22" width="25.5" height="230" data-mark="m42" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 10&lt;br&gt;正確率差距 &lt;b&gt;-1.36 pp&lt;/b&gt;"/><path id="m43" class="mark" d="M388.0,70.7V42.6Q388.0,38.6 392.0,38.6H407.5Q411.5,38.6 411.5,42.6V70.7Z" fill="var(--s2)"/><rect class="hit" x="387.0" y="22" width="25.5" height="230" data-mark="m43" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 10&lt;br&gt;正確率差距 &lt;b&gt;+0.71 pp&lt;/b&gt;"/><path id="m44" class="mark" d="M413.5,70.7V123.2Q413.5,127.2 417.5,127.2H432.9Q436.9,127.2 436.9,123.2V70.7Z" fill="var(--s3)"/><rect class="hit" x="412.5" y="22" width="25.5" height="230" data-mark="m44" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 10&lt;br&gt;正確率差距 &lt;b&gt;-1.25 pp&lt;/b&gt;"/><text x="500.2" y="270" text-anchor="middle">electricity</text><text x="500.2" y="286" text-anchor="middle" class="axis-label">binary · 池 3</text><path id="m45" class="mark" d="M463.1,70.7V161.0Q463.1,165.0 467.1,165.0H482.5Q486.5,165.0 486.5,161.0V70.7Z" fill="var(--s1)"/><rect class="hit" x="462.1" y="22" width="25.5" height="230" data-mark="m45" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;electricity · binary · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-2.08 pp&lt;/b&gt;"/><path id="m46" class="mark" d="M488.5,70.7V76.6Q488.5,80.6 492.5,80.6H508.0Q512.0,80.6 512.0,76.6V70.7Z" fill="var(--s2)"/><rect class="hit" x="487.5" y="22" width="25.5" height="230" data-mark="m46" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;electricity · binary · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-0.22 pp&lt;/b&gt;"/><path id="m47" class="mark" d="M514.0,70.7V150.2Q514.0,154.2 518.0,154.2H533.4Q537.4,154.2 537.4,150.2V70.7Z" fill="var(--s3)"/><rect class="hit" x="513.0" y="22" width="25.5" height="230" data-mark="m47" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;electricity · binary · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-1.84 pp&lt;/b&gt;"/><text x="600.8" y="270" text-anchor="middle">airlines</text><text x="600.8" y="286" text-anchor="middle" class="axis-label">binary · 池 3</text><path id="m48" class="mark" d="M563.6,70.7V92.6Q563.6,96.6 567.6,96.6H583.0Q587.0,96.6 587.0,92.6V70.7Z" fill="var(--s1)"/><rect class="hit" x="562.6" y="22" width="25.5" height="230" data-mark="m48" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;airlines · binary · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-0.57 pp&lt;/b&gt;"/><rect id="m49" class="mark" x="589.0" y="69.2" width="23.5" height="1.5" fill="var(--s2)"/><rect class="hit" x="588.0" y="22" width="25.5" height="230" data-mark="m49" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;airlines · binary · 池 3&lt;br&gt;正確率差距 &lt;b&gt;+0.00 pp&lt;/b&gt;"/><path id="m50" class="mark" d="M614.5,70.7V92.6Q614.5,96.6 618.5,96.6H633.9Q637.9,96.6 637.9,92.6V70.7Z" fill="var(--s3)"/><rect class="hit" x="613.5" y="22" width="25.5" height="230" data-mark="m50" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;airlines · binary · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-0.57 pp&lt;/b&gt;"/><text x="701.2" y="270" text-anchor="middle">covertype</text><text x="701.2" y="286" text-anchor="middle" class="axis-label">multi-class · 池 3</text><path id="m51" class="mark" d="M664.1,70.7V211.2Q664.1,215.2 668.1,215.2H683.5Q687.5,215.2 687.5,211.2V70.7Z" fill="var(--s1)"/><rect class="hit" x="663.1" y="22" width="25.5" height="230" data-mark="m51" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-3.19 pp&lt;/b&gt;"/><rect id="m52" class="mark" x="689.5" y="70.7" width="23.5" height="1.5" fill="var(--s2)"/><rect class="hit" x="688.5" y="22" width="25.5" height="230" data-mark="m52" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-0.02 pp&lt;/b&gt;"/><path id="m53" class="mark" d="M715.0,70.7V165.1Q715.0,169.1 719.0,169.1H734.4Q738.4,169.1 738.4,165.1V70.7Z" fill="var(--s3)"/><rect class="hit" x="714.0" y="22" width="25.5" height="230" data-mark="m53" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;covertype · multi-class · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-2.17 pp&lt;/b&gt;"/><text x="801.8" y="270" text-anchor="middle">gas_sensor_drift</text><text x="801.8" y="286" text-anchor="middle" class="axis-label">multi-class · 池 3</text><path id="m54" class="mark" d="M764.6,70.7V159.9Q764.6,163.9 768.6,163.9H784.0Q788.0,163.9 788.0,159.9V70.7Z" fill="var(--s1)"/><rect class="hit" x="763.6" y="22" width="25.5" height="230" data-mark="m54" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-2.06 pp&lt;/b&gt;"/><path id="m55" class="mark" d="M790.0,70.7V40.3Q790.0,36.3 794.0,36.3H809.5Q813.5,36.3 813.5,40.3V70.7Z" fill="var(--s2)"/><rect class="hit" x="789.0" y="22" width="25.5" height="230" data-mark="m55" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 3&lt;br&gt;正確率差距 &lt;b&gt;+0.76 pp&lt;/b&gt;"/><path id="m56" class="mark" d="M815.5,70.7V124.2Q815.5,128.2 819.5,128.2H834.9Q838.9,128.2 838.9,124.2V70.7Z" fill="var(--s3)"/><rect class="hit" x="814.5" y="22" width="25.5" height="230" data-mark="m56" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class · 池 3&lt;br&gt;正確率差距 &lt;b&gt;-1.27 pp&lt;/b&gt;"/></svg></div>
+</div>
+
+<div class="card">
+  <p class="card-title">重用價值淘汰：模型池更小，正確率不變或更好</p>
+  <p class="card-sub">detector 設定（池子上限 10）下，reuse_value 會主動淘汰「重用後反而更差」的模型，最後池子平均只留 3 個，約是原版的一半。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--baseline)"></i>baseline（原版）</span><span><i class="sw" style="background:var(--s2)"></i>reuse_value</span></div>
+  <div class="chart"><svg viewBox="0 0 860 260" role="img" aria-label="模型池大小比較"><text x="4" y="12" class="axis-label">個</text><line x1="48" x2="852" y1="212.0" y2="212.0" class="zero"/><text x="40" y="216.0" text-anchor="end">0</text><line x1="48" x2="852" y1="168.0" y2="168.0" class="grid"/><text x="40" y="172.0" text-anchor="end">2</text><line x1="48" x2="852" y1="124.0" y2="124.0" class="grid"/><text x="40" y="128.0" text-anchor="end">4</text><line x1="48" x2="852" y1="80.1" y2="80.1" class="grid"/><text x="40" y="84.1" text-anchor="end">6</text><line x1="48" x2="852" y1="36.1" y2="36.1" class="grid"/><text x="40" y="40.1" text-anchor="end">8</text><text x="148.5" y="230" text-anchor="middle">electricity</text><text x="148.5" y="246" text-anchor="middle" class="axis-label">binary</text><path id="m57" class="mark" d="M74.1,212.0V40.1Q74.1,36.1 78.1,36.1H143.5Q147.5,36.1 147.5,40.1V212.0Z" fill="var(--baseline)"/><rect class="hit" x="73.1" y="22" width="75.4" height="190" data-mark="m57" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;electricity · binary&lt;br&gt;模型池 &lt;b&gt;8&lt;/b&gt; 個&lt;br&gt;正確率 82.77%"/><path id="m58" class="mark" d="M149.5,212.0V150.0Q149.5,146.0 153.5,146.0H218.9Q222.9,146.0 222.9,150.0V212.0Z" fill="var(--s2)"/><rect class="hit" x="148.5" y="22" width="75.4" height="190" data-mark="m58" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;electricity · binary&lt;br&gt;模型池 &lt;b&gt;3&lt;/b&gt; 個&lt;br&gt;正確率 83.00%"/><text x="349.5" y="230" text-anchor="middle">airlines</text><text x="349.5" y="246" text-anchor="middle" class="axis-label">binary</text><path id="m59" class="mark" d="M275.1,212.0V150.0Q275.1,146.0 279.1,146.0H344.5Q348.5,146.0 348.5,150.0V212.0Z" fill="var(--baseline)"/><rect class="hit" x="274.1" y="22" width="75.4" height="190" data-mark="m59" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;airlines · binary&lt;br&gt;模型池 &lt;b&gt;3&lt;/b&gt; 個&lt;br&gt;正確率 65.83%"/><path id="m60" class="mark" d="M350.5,212.0V150.0Q350.5,146.0 354.5,146.0H419.9Q423.9,146.0 423.9,150.0V212.0Z" fill="var(--s2)"/><rect class="hit" x="349.5" y="22" width="75.4" height="190" data-mark="m60" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;airlines · binary&lt;br&gt;模型池 &lt;b&gt;3&lt;/b&gt; 個&lt;br&gt;正確率 65.83%"/><text x="550.5" y="230" text-anchor="middle">covertype</text><text x="550.5" y="246" text-anchor="middle" class="axis-label">multi-class</text><path id="m61" class="mark" d="M476.1,212.0V128.0Q476.1,124.0 480.1,124.0H545.5Q549.5,124.0 549.5,128.0V212.0Z" fill="var(--baseline)"/><rect class="hit" x="475.1" y="22" width="75.4" height="190" data-mark="m61" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;covertype · multi-class&lt;br&gt;模型池 &lt;b&gt;4&lt;/b&gt; 個&lt;br&gt;正確率 81.15%"/><path id="m62" class="mark" d="M551.5,212.0V150.0Q551.5,146.0 555.5,146.0H620.9Q624.9,146.0 624.9,150.0V212.0Z" fill="var(--s2)"/><rect class="hit" x="550.5" y="22" width="75.4" height="190" data-mark="m62" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;covertype · multi-class&lt;br&gt;模型池 &lt;b&gt;3&lt;/b&gt; 個&lt;br&gt;正確率 81.66%"/><text x="751.5" y="230" text-anchor="middle">gas_sensor_drift</text><text x="751.5" y="246" text-anchor="middle" class="axis-label">multi-class</text><path id="m63" class="mark" d="M677.1,212.0V40.1Q677.1,36.1 681.1,36.1H746.5Q750.5,36.1 750.5,40.1V212.0Z" fill="var(--baseline)"/><rect class="hit" x="676.1" y="22" width="75.4" height="190" data-mark="m63" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class&lt;br&gt;模型池 &lt;b&gt;8&lt;/b&gt; 個&lt;br&gt;正確率 83.81%"/><path id="m64" class="mark" d="M752.5,212.0V150.0Q752.5,146.0 756.5,146.0H821.9Q825.9,146.0 825.9,150.0V212.0Z" fill="var(--s2)"/><rect class="hit" x="751.5" y="22" width="75.4" height="190" data-mark="m64" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class&lt;br&gt;模型池 &lt;b&gt;3&lt;/b&gt; 個&lt;br&gt;正確率 84.51%"/></svg></div>
+</div>
+
+<details>
+<summary>查看完整數據表</summary>
+<div class="table-wrap"><table><thead><tr><th>設定</th><th>資料集</th><th>變體</th><th class="num">正確率</th><th class="num">Δ pp</th><th class="num">no-change 基準</th><th class="num">換人次數</th><th class="num">drift 次數</th><th class="num">池大小</th><th class="num">重用較差比例</th></tr></thead><tbody><tr><td>detector</td><td>electricity</td><td>baseline</td><td class="num">82.77%</td><td class="num">—</td><td class="num">85.3%</td><td class="num">161</td><td class="num">80</td><td class="num">8</td><td class="num">71%</td></tr><tr><td>detector</td><td>electricity</td><td>hoeffding</td><td class="num">80.65%</td><td class="num">-2.12</td><td class="num">85.3%</td><td class="num">21</td><td class="num">94</td><td class="num">6</td><td class="num">66%</td></tr><tr><td>detector</td><td>electricity</td><td>reuse_value</td><td class="num">83.00%</td><td class="num">+0.23</td><td class="num">85.3%</td><td class="num">143</td><td class="num">75</td><td class="num">3</td><td class="num">57%</td></tr><tr><td>detector</td><td>electricity</td><td>both</td><td class="num">82.00%</td><td class="num">-0.76</td><td class="num">85.3%</td><td class="num">17</td><td class="num">92</td><td class="num">10</td><td class="num">60%</td></tr><tr><td>detector</td><td>airlines</td><td>baseline</td><td class="num">65.83%</td><td class="num">—</td><td class="num">59.4%</td><td class="num">105</td><td class="num">20</td><td class="num">3</td><td class="num">16%</td></tr><tr><td>detector</td><td>airlines</td><td>hoeffding</td><td class="num">65.26%</td><td class="num">-0.57</td><td class="num">59.4%</td><td class="num">1</td><td class="num">21</td><td class="num">2</td><td class="num">15%</td></tr><tr><td>detector</td><td>airlines</td><td>reuse_value</td><td class="num">65.83%</td><td class="num">+0.00</td><td class="num">59.4%</td><td class="num">105</td><td class="num">20</td><td class="num">3</td><td class="num">16%</td></tr><tr><td>detector</td><td>airlines</td><td>both</td><td class="num">65.26%</td><td class="num">-0.57</td><td class="num">59.4%</td><td class="num">1</td><td class="num">21</td><td class="num">2</td><td class="num">15%</td></tr><tr><td>detector</td><td>covertype</td><td>baseline</td><td class="num">81.15%</td><td class="num">—</td><td class="num">90.7%</td><td class="num">408</td><td class="num">289</td><td class="num">4</td><td class="num">70%</td></tr><tr><td>detector</td><td>covertype</td><td>hoeffding</td><td class="num">79.47%</td><td class="num">-1.68</td><td class="num">90.7%</td><td class="num">53</td><td class="num">339</td><td class="num">5</td><td class="num">68%</td></tr><tr><td>detector</td><td>covertype</td><td>reuse_value</td><td class="num">81.66%</td><td class="num">+0.51</td><td class="num">90.7%</td><td class="num">470</td><td class="num">282</td><td class="num">3</td><td class="num">59%</td></tr><tr><td>detector</td><td>covertype</td><td>both</td><td class="num">78.36%</td><td class="num">-2.79</td><td class="num">90.7%</td><td class="num">97</td><td class="num">354</td><td class="num">5</td><td class="num">73%</td></tr><tr><td>detector</td><td>gas_sensor_drift</td><td>baseline</td><td class="num">83.81%</td><td class="num">—</td><td class="num">58.6%</td><td class="num">20</td><td class="num">21</td><td class="num">8</td><td class="num">70%</td></tr><tr><td>detector</td><td>gas_sensor_drift</td><td>hoeffding</td><td class="num">82.45%</td><td class="num">-1.36</td><td class="num">58.6%</td><td class="num">10</td><td class="num">26</td><td class="num">9</td><td class="num">68%</td></tr><tr><td>detector</td><td>gas_sensor_drift</td><td>reuse_value</td><td class="num">84.51%</td><td class="num">+0.71</td><td class="num">58.6%</td><td class="num">24</td><td class="num">20</td><td class="num">3</td><td class="num">79%</td></tr><tr><td>detector</td><td>gas_sensor_drift</td><td>both</td><td class="num">82.56%</td><td class="num">-1.25</td><td class="num">58.6%</td><td class="num">8</td><td class="num">25</td><td class="num">5</td><td class="num">83%</td></tr><tr><td>detector_pool3</td><td>electricity</td><td>baseline</td><td class="num">82.97%</td><td class="num">—</td><td class="num">85.3%</td><td class="num">166</td><td class="num">77</td><td class="num">3</td><td class="num">62%</td></tr><tr><td>detector_pool3</td><td>electricity</td><td>hoeffding</td><td class="num">80.89%</td><td class="num">-2.08</td><td class="num">85.3%</td><td class="num">24</td><td class="num">95</td><td class="num">3</td><td class="num">64%</td></tr><tr><td>detector_pool3</td><td>electricity</td><td>reuse_value</td><td class="num">82.75%</td><td class="num">-0.22</td><td class="num">85.3%</td><td class="num">152</td><td class="num">77</td><td class="num">3</td><td class="num">49%</td></tr><tr><td>detector_pool3</td><td>electricity</td><td>both</td><td class="num">81.12%</td><td class="num">-1.84</td><td class="num">85.3%</td><td class="num">26</td><td class="num">100</td><td class="num">3</td><td class="num">64%</td></tr><tr><td>detector_pool3</td><td>airlines</td><td>baseline</td><td class="num">65.83%</td><td class="num">—</td><td class="num">59.4%</td><td class="num">105</td><td class="num">20</td><td class="num">3</td><td class="num">16%</td></tr><tr><td>detector_pool3</td><td>airlines</td><td>hoeffding</td><td class="num">65.26%</td><td class="num">-0.57</td><td class="num">59.4%</td><td class="num">1</td><td class="num">21</td><td class="num">2</td><td class="num">15%</td></tr><tr><td>detector_pool3</td><td>airlines</td><td>reuse_value</td><td class="num">65.83%</td><td class="num">+0.00</td><td class="num">59.4%</td><td class="num">105</td><td class="num">20</td><td class="num">3</td><td class="num">16%</td></tr><tr><td>detector_pool3</td><td>airlines</td><td>both</td><td class="num">65.26%</td><td class="num">-0.57</td><td class="num">59.4%</td><td class="num">1</td><td class="num">21</td><td class="num">2</td><td class="num">15%</td></tr><tr><td>detector_pool3</td><td>covertype</td><td>baseline</td><td class="num">81.55%</td><td class="num">—</td><td class="num">90.7%</td><td class="num">425</td><td class="num">272</td><td class="num">3</td><td class="num">66%</td></tr><tr><td>detector_pool3</td><td>covertype</td><td>hoeffding</td><td class="num">78.36%</td><td class="num">-3.19</td><td class="num">90.7%</td><td class="num">60</td><td class="num">354</td><td class="num">3</td><td class="num">77%</td></tr><tr><td>detector_pool3</td><td>covertype</td><td>reuse_value</td><td class="num">81.53%</td><td class="num">-0.02</td><td class="num">90.7%</td><td class="num">470</td><td class="num">268</td><td class="num">3</td><td class="num">63%</td></tr><tr><td>detector_pool3</td><td>covertype</td><td>both</td><td class="num">79.38%</td><td class="num">-2.17</td><td class="num">90.7%</td><td class="num">73</td><td class="num">324</td><td class="num">3</td><td class="num">65%</td></tr><tr><td>detector_pool3</td><td>gas_sensor_drift</td><td>baseline</td><td class="num">83.81%</td><td class="num">—</td><td class="num">58.6%</td><td class="num">20</td><td class="num">21</td><td class="num">3</td><td class="num">70%</td></tr><tr><td>detector_pool3</td><td>gas_sensor_drift</td><td>hoeffding</td><td class="num">81.75%</td><td class="num">-2.06</td><td class="num">58.6%</td><td class="num">10</td><td class="num">29</td><td class="num">3</td><td class="num">79%</td></tr><tr><td>detector_pool3</td><td>gas_sensor_drift</td><td>reuse_value</td><td class="num">84.57%</td><td class="num">+0.76</td><td class="num">58.6%</td><td class="num">23</td><td class="num">20</td><td class="num">3</td><td class="num">68%</td></tr><tr><td>detector_pool3</td><td>gas_sensor_drift</td><td>both</td><td class="num">82.54%</td><td class="num">-1.27</td><td class="num">58.6%</td><td class="num">8</td><td class="num">26</td><td class="num">2</td><td class="num">80%</td></tr></tbody></table><p class="muted">每列是一條串流的一次執行；「drift 次數」是 ECPF 實際處理的 drift（detector 觸發）次數；「重用較差比例」＝ drift 後 500 筆內，挑回的舊模型比新模型答對更少的 drift 比例。</p></div>
+</details>
+
+<h3>結果三：為什麼少換人反而變差？（診斷）</h3>
+<p>原因與 synthetic 實驗相同。複習一下：ECPF 換人本身沒有成本（leader 與 shadow 每一筆都同時學習），換人決定的是<b>現在用誰的預測</b>，以及<b>下次 drift 時誰被存進模型池</b>（leader 存進去，shadow 丟掉）。</p>
+<p>在 electricity（detector 設定）記錄每段 drift 之間的換人情況：</p>
+<div class="card">
+  <p class="card-title">electricity：兩種換人規則的行為比較</p>
+  <p class="card-sub">「shadow 較好卻沒換上」＝ 該段結束時 shadow 答對較多，但 leader 仍是原本的模型；下次 drift 時，較好的 shadow 會被丟掉。</p>
+  <div class="table-wrap"><table><thead><tr><th>換人規則</th><th class="num">正確率</th><th class="num">drift 區段數</th><th class="num">換人次數</th><th class="num">有換人的區段</th><th class="num">drift 後第幾筆才換（中位數）</th><th class="num">shadow 較好卻沒換上</th></tr></thead><tbody><tr><td><b>原版（多 1 題就換）</b></td><td class="num">82.77%</td><td class="num">79</td><td class="num">161</td><td class="num">76 / 79</td><td class="num">10</td><td class="num"><b>0 / 79</b></td></tr><tr><td><b>Hoeffding</b></td><td class="num">80.65%</td><td class="num">93</td><td class="num">21</td><td class="num">21 / 93</td><td class="num">32</td><td class="num"><b>44 / 93</b></td></tr></tbody></table></div>
+</div>
+<p>真實資料的問題比 synthetic 更嚴重，原因是<b>drift 很頻繁</b>：electricity 兩次 drift 之間平均只有約 400 筆。Hoeffding 門檻在 n = 400 時仍要求每題平均領先約 12%，幾乎達不到，於是：</p>
+<ul>
+<li><b>近一半（44/93）的區段，較好的 shadow 在下次 drift 時被丟掉</b>，存進池子的是較差的模型。</li>
+<li>較差的模型繼續輸出 → 錯誤率上升 → detector 更常觸發：Hoeffding 版本 ECPF 處理的 drift 從平均 100 次增加到 122 次，形成惡性循環。</li>
+</ul>
+
+<h3>結果四：模型重用常常比從零訓練更差</h3>
+<div class="card">
+  <p class="card-title">重用的舊模型比新模型更差的 drift 比例（原版 ECPF）</p>
+  <p class="card-sub">drift 後 500 筆內，挑回的舊模型答對數少於從零訓練的新模型，就算一次「重用較差」。synthetic 資料為 21–31%，真實資料高出許多。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--baseline)"></i>detector（池 10）</span><span><i class="sw" style="background:var(--text-3)"></i>detector_pool3（池 3）</span></div>
+  <div class="chart"><svg viewBox="0 0 860 260" role="img" aria-label="重用較差比例"><text x="4" y="12" class="axis-label">%</text><line x1="48" x2="852" y1="212.0" y2="212.0" class="zero"/><text x="40" y="216.0" text-anchor="end">0</text><line x1="48" x2="852" y1="162.4" y2="162.4" class="grid"/><text x="40" y="166.4" text-anchor="end">20</text><line x1="48" x2="852" y1="112.7" y2="112.7" class="grid"/><text x="40" y="116.7" text-anchor="end">40</text><line x1="48" x2="852" y1="63.1" y2="63.1" class="grid"/><text x="40" y="67.1" text-anchor="end">60</text><text x="148.5" y="230" text-anchor="middle">electricity</text><text x="148.5" y="246" text-anchor="middle" class="axis-label">binary</text><path id="m65" class="mark" d="M74.1,212.0V40.1Q74.1,36.1 78.1,36.1H143.5Q147.5,36.1 147.5,40.1V212.0Z" fill="var(--baseline)"/><rect class="hit" x="73.1" y="22" width="75.4" height="190" data-mark="m65" data-tip="&lt;b&gt;detector（池 10）&lt;/b&gt;&lt;br&gt;electricity · binary&lt;br&gt;重用較差 &lt;b&gt;71%&lt;/b&gt; 的 drift"/><path id="m66" class="mark" d="M149.5,212.0V62.5Q149.5,58.5 153.5,58.5H218.9Q222.9,58.5 222.9,62.5V212.0Z" fill="var(--text-3)"/><rect class="hit" x="148.5" y="22" width="75.4" height="190" data-mark="m66" data-tip="&lt;b&gt;detector_pool3（池 3）&lt;/b&gt;&lt;br&gt;electricity · binary&lt;br&gt;重用較差 &lt;b&gt;62%&lt;/b&gt; 的 drift"/><text x="349.5" y="230" text-anchor="middle">airlines</text><text x="349.5" y="246" text-anchor="middle" class="axis-label">binary</text><path id="m67" class="mark" d="M275.1,212.0V176.8Q275.1,172.8 279.1,172.8H344.5Q348.5,172.8 348.5,176.8V212.0Z" fill="var(--baseline)"/><rect class="hit" x="274.1" y="22" width="75.4" height="190" data-mark="m67" data-tip="&lt;b&gt;detector（池 10）&lt;/b&gt;&lt;br&gt;airlines · binary&lt;br&gt;重用較差 &lt;b&gt;16%&lt;/b&gt; 的 drift"/><path id="m68" class="mark" d="M350.5,212.0V176.8Q350.5,172.8 354.5,172.8H419.9Q423.9,172.8 423.9,176.8V212.0Z" fill="var(--text-3)"/><rect class="hit" x="349.5" y="22" width="75.4" height="190" data-mark="m68" data-tip="&lt;b&gt;detector_pool3（池 3）&lt;/b&gt;&lt;br&gt;airlines · binary&lt;br&gt;重用較差 &lt;b&gt;16%&lt;/b&gt; 的 drift"/><text x="550.5" y="230" text-anchor="middle">covertype</text><text x="550.5" y="246" text-anchor="middle" class="axis-label">multi-class</text><path id="m69" class="mark" d="M476.1,212.0V41.1Q476.1,37.1 480.1,37.1H545.5Q549.5,37.1 549.5,41.1V212.0Z" fill="var(--baseline)"/><rect class="hit" x="475.1" y="22" width="75.4" height="190" data-mark="m69" data-tip="&lt;b&gt;detector（池 10）&lt;/b&gt;&lt;br&gt;covertype · multi-class&lt;br&gt;重用較差 &lt;b&gt;70%&lt;/b&gt; 的 drift"/><path id="m70" class="mark" d="M551.5,212.0V52.1Q551.5,48.1 555.5,48.1H620.9Q624.9,48.1 624.9,52.1V212.0Z" fill="var(--text-3)"/><rect class="hit" x="550.5" y="22" width="75.4" height="190" data-mark="m70" data-tip="&lt;b&gt;detector_pool3（池 3）&lt;/b&gt;&lt;br&gt;covertype · multi-class&lt;br&gt;重用較差 &lt;b&gt;66%&lt;/b&gt; 的 drift"/><text x="751.5" y="230" text-anchor="middle">gas_sensor_drift</text><text x="751.5" y="246" text-anchor="middle" class="axis-label">multi-class</text><path id="m71" class="mark" d="M677.1,212.0V42.3Q677.1,38.3 681.1,38.3H746.5Q750.5,38.3 750.5,42.3V212.0Z" fill="var(--baseline)"/><rect class="hit" x="676.1" y="22" width="75.4" height="190" data-mark="m71" data-tip="&lt;b&gt;detector（池 10）&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class&lt;br&gt;重用較差 &lt;b&gt;70%&lt;/b&gt; 的 drift"/><path id="m72" class="mark" d="M752.5,212.0V42.3Q752.5,38.3 756.5,38.3H821.9Q825.9,38.3 825.9,42.3V212.0Z" fill="var(--text-3)"/><rect class="hit" x="751.5" y="22" width="75.4" height="190" data-mark="m72" data-tip="&lt;b&gt;detector_pool3（池 3）&lt;/b&gt;&lt;br&gt;gas_sensor_drift · multi-class&lt;br&gt;重用較差 &lt;b&gt;70%&lt;/b&gt; 的 drift"/></svg></div>
+</div>
+<p>covertype、electricity、gas_sensor_drift 三組有 <b>62–71%</b> 的重用比從零訓練還差。這些資料的 detector 觸發次數很多（每條 20–290 次），其中不少應該是誤報，或是沒有明確、會重複出現的概念，ECPF 挑回舊模型的假設不太成立。這也是重用價值淘汰在真實資料上比 synthetic 更有作用的原因：<b>值得淘汰的模型真的很多</b>。</p>
+
+<div class="warn"><b>重要提醒：ECPF 在兩組資料上輸給 no-change 基準。</b>covertype 的 no-change 正確率是 90.7%，ECPF 原版只有 81.2%；electricity 是 85.3% 對 82.8%。這兩組資料相鄰幾筆的標籤高度相關，單純「照抄上一筆」就很準。所以這兩組的正確率不能直接解讀成模型好壞，比較變體之間的<b>相對差距</b>仍然有效。之後若要正式報告真實資料，建議改用 Kappa-temporal 這類扣掉時間相依性的指標。</div>
+
+<h2>3. 結論與建議</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>改動</th><th>真實資料結論</th><th>與 synthetic 比較</th><th>建議</th></tr></thead>
+<tbody>
+<tr><td><b>Hoeffding 換人</b></td><td>換人次數 −87%，正確率 8 組全部下降，平均 −1.7 pp</td><td>方向一致，損失更大（drift 越頻繁，門檻越難達到）</td><td><b>放棄這個做法。</b>維持預設關閉。</td></tr>
+<tr><td><b>重用價值淘汰</b></td><td>平均 +0.25 pp（4 贏 2 輸 2 平），模型池約少一半</td><td>synthetic 幾乎無作用，真實資料小幅正向</td><td>值得保留觀察。需要更多真實資料集，並用 Kappa-temporal 等指標確認。</td></tr>
+<tr><td><b>挑模型的準確度</b></td><td>62–71% 的重用比從零訓練更差</td><td>比 synthetic（21–31%）嚴重得多</td><td>下一步優先做 <b>FiCSUM 式概念指紋</b>，並檢討 detector 誤報過多的問題。</td></tr>
+</tbody></table></div>
+
+<div class="warn"><b>限制：</b>（1）每種任務只有 2 組資料、每組 1 條串流，重用價值的小幅差異可能是雜訊；（2）沒有真實 drift 點，只能靠 detector 觸發，結果同時受 detector 誤報影響；（3）covertype 與 electricity 有強烈時間相依性，見上方提醒；（4）Type-LDD 在實驗中以替身取代（本機沒有 torch），它在 ECPF 路線上只寫標籤，不影響結果。</div>
+
+<h2>4. 重現方式</h2>
+<p>程式改動與 synthetic 實驗相同（兩個機制皆為預設關閉的開關）。實驗腳本新增了兩項支援：沒有 <code>*_drift_times.txt</code> 的真實串流，以及 <code>detector_pool3</code> 設定。</p>
+<pre>R=data/dataset_0921/real_dataset
+python3 scripts/experiment_ecpf_swap_fade.py --workers 8 \
+  --settings detector detector_pool3 --out-dir outputs/ecpf_swap_fade_real \
+  --data-dirs $R/binary/electricity $R/binary/airlines \
+              $R/multi_classification/covertype $R/multi_classification/gas_sensor_drift</pre>
+<p class="muted">原始結果：<code>outputs/ecpf_swap_fade_real/runs.csv</code>（每次執行一列）、<code>summary.csv</code>（彙總）。</p>
+
+</main>
+
+<div id="tip"></div>
+
+<script>
+const tip = document.getElementById("tip");
+document.querySelectorAll(".chart").forEach(host => {
+  host.querySelectorAll("[data-tip]").forEach(n => {
+    const mark = n.dataset.mark ? host.querySelector("#" + n.dataset.mark) : n;
+    n.addEventListener("mousemove", ev => {
+      host.classList.add("dim"); if (mark) mark.classList.add("on");
+      tip.innerHTML = n.dataset.tip; tip.style.display = "block";
+      const w = tip.offsetWidth, h = tip.offsetHeight;
+      let x = ev.clientX + 14, y = ev.clientY + 14;
+      if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+      if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+      tip.style.left = x + "px"; tip.style.top = y + "px";
+    });
+    n.addEventListener("mouseleave", () => { host.classList.remove("dim"); if (mark) mark.classList.remove("on"); tip.style.display = "none"; });
+  });
+});
+</script>
+</body>
+</html>

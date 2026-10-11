@@ -389,6 +389,11 @@ class ConceptDriftPipeline:
             # every binary run wants and what tests/test_ecpf.py asserts.
             task=self.task if self._task_bound else None,
             similarity_mode=self.config.ecpf_similarity_mode,
+            swap_policy=self.config.ecpf_swap_policy,
+            swap_delta=self.config.ecpf_swap_delta,
+            fade_policy=self.config.ecpf_fade_policy,
+            reuse_value_window=self.config.ecpf_reuse_value_window,
+            reuse_idle_cost=self.config.ecpf_reuse_idle_cost,
         )
 
     def _bind_task(self, y: np.ndarray, *, authoritative: bool = True) -> TaskSpec:

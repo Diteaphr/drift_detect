@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECPF 換人與淘汰規則實驗</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f7f6f3;
+  --surface: #fcfcfb;
+  --border: #e4e2dc;
+  --grid: #ecebe7;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --text-3: #7a7974;
+  --baseline: #a3a29c;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --win: #2a78d6;
+  --tie: #cfcdc6;
+  --lose: #eb6834;
+  --callout: #eef4fc;
+  --callout-border: #2a78d6;
+  --warn-bg: #fdf1ea;
+  --warn-border: #eb6834;
+  --code-bg: #efeee9;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211;
+    --surface: #1a1a19;
+    --border: #2f2f2c;
+    --grid: #2a2a27;
+    --text: #ffffff;
+    --text-2: #c3c2b7;
+    --text-3: #8f8e86;
+    --baseline: #6f6e69;
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --win: #3987e5;
+    --tie: #4a4a46;
+    --lose: #d95926;
+    --callout: #16263a;
+    --callout-border: #3987e5;
+    --warn-bg: #2e1d14;
+    --warn-border: #d95926;
+    --code-bg: #262624;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211; --surface: #1a1a19; --border: #2f2f2c; --grid: #2a2a27;
+  --text: #ffffff; --text-2: #c3c2b7; --text-3: #8f8e86; --baseline: #6f6e69;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  --win: #3987e5; --tie: #4a4a46; --lose: #d95926;
+  --callout: #16263a; --callout-border: #3987e5; --warn-bg: #2e1d14; --warn-border: #d95926; --code-bg: #262624;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.7 -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+}
+main { max-width: 920px; margin: 0 auto; padding: 40px 16px 80px; }
+h1 { font-size: 30px; line-height: 1.3; margin: 0 0 8px; }
+h2 { font-size: 22px; margin: 56px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+h3 { font-size: 17px; margin: 28px 0 8px; }
+p { margin: 8px 0; }
+.sub { color: var(--text-2); margin: 0 0 24px; }
+.muted { color: var(--text-3); font-size: 14px; }
+code { background: var(--code-bg); padding: 1px 6px; border-radius: 4px; font-size: 14px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 20px 0; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.tile .k { font-size: 13px; color: var(--text-2); }
+.tile .v { font-size: 28px; font-weight: 650; line-height: 1.25; margin: 4px 0; font-variant-numeric: tabular-nums; }
+.tile .d { font-size: 13px; color: var(--text-2); }
+.callout { background: var(--callout); border-left: 4px solid var(--callout-border); padding: 12px 16px; border-radius: 6px; margin: 16px 0; }
+.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-border); padding: 12px 16px; border-radius: 6px; margin: 16px 0; }
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--surface); }
+th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { color: var(--text-2); font-weight: 600; white-space: nowrap; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 16px 8px; margin: 16px 0; }
+.card-title { font-weight: 650; margin: 0; }
+.card-sub { color: var(--text-2); font-size: 14px; margin: 2px 0 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--text-2); margin: 4px 0 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--text-2); font-size: 12px; }
+.chart .axis-label { fill: var(--text-3); font-size: 11px; }
+.chart .grid { stroke: var(--grid); stroke-width: 1; }
+.chart .zero { stroke: var(--text-3); stroke-width: 1; }
+.chart .hit { fill: transparent; cursor: default; }
+.chart .mark { transition: opacity .12s; }
+.chart.dim .mark { opacity: .35; }
+.chart.dim .mark.on { opacity: 1; }
+details { margin: 8px 0 16px; }
+summary { cursor: pointer; color: var(--text-2); font-size: 14px; }
+#tip {
+  position: fixed; pointer-events: none; z-index: 10; display: none;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.5;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15); max-width: 280px;
+}
+#tip b { font-weight: 650; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 680px) { .two { grid-template-columns: 1fr; } h1 { font-size: 25px; } }
+.flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; font-size: 14px; }
+.flow .step { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+.flow .arr { color: var(--text-3); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>ECPF 換人與淘汰規則實驗</h1>
+<p class="sub">測試兩個從論文借來的改良：ARCUS 式的「換人要有統計把握」與 AiRStream 式的「依重用價值淘汰模型」。資料：dataset_0921 synthetic recurring（binary 10 條 + multi-class 10 條），共 240 次執行。</p>
+
+<div class="tiles">
+  <div class="tile"><div class="k">Hoeffding 換人規則：換人次數</div><div class="v">−83%</div><div class="d">每條串流 23.2 → 4.0 次（oracle）</div></div>
+  <div class="tile"><div class="k">Hoeffding 換人規則：正確率</div><div class="v">−0.5~−1.3</div><div class="d">百分點；oracle 下 20 條中 18 條變差</div></div>
+  <div class="tile"><div class="k">重用價值淘汰：正確率</div><div class="v">≈ 0</div><div class="d">binary 9/10 與原版完全相同</div></div>
+  <div class="tile"><div class="k">重用比從零訓練更差的比例</div><div class="v">21–31%</div><div class="d">ECPF 挑的舊模型常常挑錯</div></div>
+</div>
+
+<div class="callout"><b>一句話結論：</b>兩個改動在這批資料上都<b>沒有帶來改善</b>。Hoeffding 換人規則成功讓 leader 不再頻繁換人，但在 ECPF 裡頻繁換人本身沒有成本，<b>換得太慢才有代價</b>：drift 剛發生時會繼續用較差的模型預測，而且下次 drift 時存進模型池的可能是較差的那一個。重用價值淘汰則因為資料只有兩個概念、模型池幾乎不會滿，沒有發揮空間。建議兩者都維持預設關閉。</div>
+
+<h2>1. 實驗在做什麼</h2>
+
+<h3>ECPF 的模型池怎麼運作</h3>
+<p>把 ECPF 想成一間顧問公司：每個模型是一位顧問，專精某一種資料規律（概念）；<b>leader</b> 是目前負責預測的顧問，其他顧問在<b>模型池</b>裡待命。</p>
+<div class="flow">
+  <span class="step">偵測到 drift</span><span class="arr">→</span>
+  <span class="step">從池中挑出在最近 60 筆表現最好的舊模型，複製一份當 leader</span><span class="arr">→</span>
+  <span class="step">同時用這 60 筆訓練一個新模型當 shadow 陪跑</span><span class="arr">→</span>
+  <span class="step">兩者持續比賽，shadow 較好就換它當 leader</span>
+</div>
+<p>這次改的是其中兩個決策點：</p>
+
+<div class="table-wrap"><table>
+<thead><tr><th>決策點</th><th>原版 ECPF</th><th>改良版</th><th>借用概念</th></tr></thead>
+<tbody>
+<tr><td><b>換人</b><br><span class="muted">shadow 何時取代 leader</span></td>
+<td>shadow 累積答對數只要<b>多 1 題</b>就換</td>
+<td>shadow 平均每題領先幅度要超過 Hoeffding 門檻 <code>ε = √(2·ln(1/δ)/n)</code>，δ = 0.05；比過的題數 n 越少，門檻越高</td>
+<td>ARCUS / ARF：可靠度檢定</td></tr>
+<tr><td><b>淘汰</b><br><span class="muted">池子裡留誰、刪誰</span></td>
+<td>被選上場 <b>+15 分</b>，其他每次 drift <b>−1 分</b>，扣到 0 刪除</td>
+<td>分數 = <b>重用價值</b>：drift 後 500 筆內「舊模型答對數 − 新模型答對數」，在下一次 drift 時計入該模型；沒被用到每次 −1</td>
+<td>AiRStream：記憶價值評估</td></tr>
+</tbody></table></div>
+
+<h3>比較方式</h3>
+<div class="two">
+<div>
+<p><b>4 個變體</b></p>
+<ul>
+<li><b>baseline</b>：原版 ECPF</li>
+<li><b>hoeffding</b>：只改換人規則</li>
+<li><b>reuse_value</b>：只改淘汰規則</li>
+<li><b>both</b>：兩個都改</li>
+</ul>
+</div>
+<div>
+<p><b>3 種設定</b></p>
+<ul>
+<li><b>oracle</b>：在真實 drift 點觸發，排除 detector 誤差，只看模型池機制</li>
+<li><b>oracle_pool3</b>：同上，但池子上限從 10 降到 3，逼淘汰規則做取捨</li>
+<li><b>detector</b>：用 <code>dual_adwin</code> 實際偵測，會有誤報</li>
+</ul>
+</div>
+</div>
+<p><b>資料：</b>binary（SEA、Hyperplane）與 multi-class（RandomRBF 4 類）recurring 串流各 10 條，每條 100,000 筆、約 7 次 drift，型態涵蓋 sudden、gradual、incremental。預測模型為 Hoeffding Tree。</p>
+<p><b>指標：</b><b>正確率</b>（整條串流）、<b>drift 後恢復正確率</b>（每次真實 drift 後 1,000 筆內的正確率）、<b>換人次數</b>。每個變體都跟 baseline 在同一條串流上逐條比較。</p>
+
+<h2>2. 實驗結果</h2>
+
+<h3>結果一：Hoeffding 規則確實讓換人次數大幅下降</h3>
+<div class="card">
+  <p class="card-title">每條串流平均換人次數</p>
+  <p class="card-sub">hoeffding 與 both 從約 20–30 次降到約 3–6 次；reuse_value 只改淘汰規則，換人次數與 baseline 相近。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--baseline)"></i>baseline（原版）</span><span><i class="sw" style="background:var(--s1)"></i>hoeffding</span><span><i class="sw" style="background:var(--s2)"></i>reuse_value</span><span><i class="sw" style="background:var(--s3)"></i>both</span></div>
+  <div class="chart"><svg viewBox="0 0 860 300" role="img" aria-label="各變體平均換人次數"><text x="4" y="12" class="axis-label">次數</text><line x1="48" x2="852" y1="252.0" y2="252.0" class="zero"/><text x="40" y="256.0" text-anchor="end">0</text><line x1="48" x2="852" y1="198.5" y2="198.5" class="grid"/><text x="40" y="202.5" text-anchor="end">10</text><line x1="48" x2="852" y1="145.0" y2="145.0" class="grid"/><text x="40" y="149.0" text-anchor="end">20</text><line x1="48" x2="852" y1="91.5" y2="91.5" class="grid"/><text x="40" y="95.5" text-anchor="end">30</text><line x1="48" x2="852" y1="38.0" y2="38.0" class="grid"/><text x="40" y="42.0" text-anchor="end">40</text><text x="115.0" y="270" text-anchor="middle">oracle</text><text x="115.0" y="286" text-anchor="middle" class="axis-label">binary</text><path id="m1" class="mark" d="M66.8,252.0V150.1Q66.8,146.1 70.8,146.1H85.4Q89.4,146.1 89.4,150.1V252.0Z" fill="var(--baseline)"/><rect class="hit" x="65.8" y="22" width="24.6" height="230" data-mark="m1" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;平均換人 &lt;b&gt;19.8&lt;/b&gt; 次"/><path id="m2" class="mark" d="M91.4,252.0V239.9Q91.4,235.9 95.4,235.9H110.0Q114.0,235.9 114.0,239.9V252.0Z" fill="var(--s1)"/><rect class="hit" x="90.4" y="22" width="24.6" height="230" data-mark="m2" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;平均換人 &lt;b&gt;3.0&lt;/b&gt; 次"/><path id="m3" class="mark" d="M116.0,252.0V150.1Q116.0,146.1 120.0,146.1H134.6Q138.6,146.1 138.6,150.1V252.0Z" fill="var(--s2)"/><rect class="hit" x="115.0" y="22" width="24.6" height="230" data-mark="m3" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;平均換人 &lt;b&gt;19.8&lt;/b&gt; 次"/><path id="m4" class="mark" d="M140.6,252.0V239.9Q140.6,235.9 144.6,235.9H159.2Q163.2,235.9 163.2,239.9V252.0Z" fill="var(--s3)"/><rect class="hit" x="139.6" y="22" width="24.6" height="230" data-mark="m4" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;平均換人 &lt;b&gt;3.0&lt;/b&gt; 次"/><text x="249.0" y="270" text-anchor="middle">oracle</text><text x="249.0" y="286" text-anchor="middle" class="axis-label">multi-class</text><path id="m5" class="mark" d="M200.8,252.0V114.2Q200.8,110.2 204.8,110.2H219.4Q223.4,110.2 223.4,114.2V252.0Z" fill="var(--baseline)"/><rect class="hit" x="199.8" y="22" width="24.6" height="230" data-mark="m5" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;平均換人 &lt;b&gt;26.5&lt;/b&gt; 次"/><path id="m6" class="mark" d="M225.4,252.0V229.8Q225.4,225.8 229.4,225.8H244.0Q248.0,225.8 248.0,229.8V252.0Z" fill="var(--s1)"/><rect class="hit" x="224.4" y="22" width="24.6" height="230" data-mark="m6" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;平均換人 &lt;b&gt;4.9&lt;/b&gt; 次"/><path id="m7" class="mark" d="M250.0,252.0V119.0Q250.0,115.0 254.0,115.0H268.6Q272.6,115.0 272.6,119.0V252.0Z" fill="var(--s2)"/><rect class="hit" x="249.0" y="22" width="24.6" height="230" data-mark="m7" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;平均換人 &lt;b&gt;25.6&lt;/b&gt; 次"/><path id="m8" class="mark" d="M274.6,252.0V231.4Q274.6,227.4 278.6,227.4H293.2Q297.2,227.4 297.2,231.4V252.0Z" fill="var(--s3)"/><rect class="hit" x="273.6" y="22" width="24.6" height="230" data-mark="m8" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;平均換人 &lt;b&gt;4.6&lt;/b&gt; 次"/><text x="383.0" y="270" text-anchor="middle">oracle_pool3</text><text x="383.0" y="286" text-anchor="middle" class="axis-label">binary</text><path id="m9" class="mark" d="M334.8,252.0V150.1Q334.8,146.1 338.8,146.1H353.4Q357.4,146.1 357.4,150.1V252.0Z" fill="var(--baseline)"/><rect class="hit" x="333.8" y="22" width="24.6" height="230" data-mark="m9" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;平均換人 &lt;b&gt;19.8&lt;/b&gt; 次"/><path id="m10" class="mark" d="M359.4,252.0V239.9Q359.4,235.9 363.4,235.9H378.0Q382.0,235.9 382.0,239.9V252.0Z" fill="var(--s1)"/><rect class="hit" x="358.4" y="22" width="24.6" height="230" data-mark="m10" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;平均換人 &lt;b&gt;3.0&lt;/b&gt; 次"/><path id="m11" class="mark" d="M384.0,252.0V150.1Q384.0,146.1 388.0,146.1H402.6Q406.6,146.1 406.6,150.1V252.0Z" fill="var(--s2)"/><rect class="hit" x="383.0" y="22" width="24.6" height="230" data-mark="m11" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;平均換人 &lt;b&gt;19.8&lt;/b&gt; 次"/><path id="m12" class="mark" d="M408.6,252.0V239.9Q408.6,235.9 412.6,235.9H427.2Q431.2,235.9 431.2,239.9V252.0Z" fill="var(--s3)"/><rect class="hit" x="407.6" y="22" width="24.6" height="230" data-mark="m12" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;平均換人 &lt;b&gt;3.0&lt;/b&gt; 次"/><text x="517.0" y="270" text-anchor="middle">oracle_pool3</text><text x="517.0" y="286" text-anchor="middle" class="axis-label">multi-class</text><path id="m13" class="mark" d="M468.8,252.0V127.6Q468.8,123.6 472.8,123.6H487.4Q491.4,123.6 491.4,127.6V252.0Z" fill="var(--baseline)"/><rect class="hit" x="467.8" y="22" width="24.6" height="230" data-mark="m13" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;平均換人 &lt;b&gt;24.0&lt;/b&gt; 次"/><path id="m14" class="mark" d="M493.4,252.0V229.8Q493.4,225.8 497.4,225.8H512.0Q516.0,225.8 516.0,229.8V252.0Z" fill="var(--s1)"/><rect class="hit" x="492.4" y="22" width="24.6" height="230" data-mark="m14" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;平均換人 &lt;b&gt;4.9&lt;/b&gt; 次"/><path id="m15" class="mark" d="M518.0,252.0V144.7Q518.0,140.7 522.0,140.7H536.6Q540.6,140.7 540.6,144.7V252.0Z" fill="var(--s2)"/><rect class="hit" x="517.0" y="22" width="24.6" height="230" data-mark="m15" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;平均換人 &lt;b&gt;20.8&lt;/b&gt; 次"/><path id="m16" class="mark" d="M542.6,252.0V233.5Q542.6,229.5 546.6,229.5H561.2Q565.2,229.5 565.2,233.5V252.0Z" fill="var(--s3)"/><rect class="hit" x="541.6" y="22" width="24.6" height="230" data-mark="m16" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;平均換人 &lt;b&gt;4.2&lt;/b&gt; 次"/><text x="651.0" y="270" text-anchor="middle">detector</text><text x="651.0" y="286" text-anchor="middle" class="axis-label">binary</text><path id="m17" class="mark" d="M602.8,252.0V139.9Q602.8,135.9 606.8,135.9H621.4Q625.4,135.9 625.4,139.9V252.0Z" fill="var(--baseline)"/><rect class="hit" x="601.8" y="22" width="24.6" height="230" data-mark="m17" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;平均換人 &lt;b&gt;21.7&lt;/b&gt; 次"/><path id="m18" class="mark" d="M627.4,252.0V243.2Q627.4,239.2 631.4,239.2H646.0Q650.0,239.2 650.0,243.2V252.0Z" fill="var(--s1)"/><rect class="hit" x="626.4" y="22" width="24.6" height="230" data-mark="m18" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;平均換人 &lt;b&gt;2.4&lt;/b&gt; 次"/><path id="m19" class="mark" d="M652.0,252.0V141.5Q652.0,137.5 656.0,137.5H670.6Q674.6,137.5 674.6,141.5V252.0Z" fill="var(--s2)"/><rect class="hit" x="651.0" y="22" width="24.6" height="230" data-mark="m19" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;平均換人 &lt;b&gt;21.4&lt;/b&gt; 次"/><path id="m20" class="mark" d="M676.6,252.0V241.6Q676.6,237.6 680.6,237.6H695.2Q699.2,237.6 699.2,241.6V252.0Z" fill="var(--s3)"/><rect class="hit" x="675.6" y="22" width="24.6" height="230" data-mark="m20" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;平均換人 &lt;b&gt;2.7&lt;/b&gt; 次"/><text x="785.0" y="270" text-anchor="middle">detector</text><text x="785.0" y="286" text-anchor="middle" class="axis-label">multi-class</text><path id="m21" class="mark" d="M736.8,252.0V89.6Q736.8,85.6 740.8,85.6H755.4Q759.4,85.6 759.4,89.6V252.0Z" fill="var(--baseline)"/><rect class="hit" x="735.8" y="22" width="24.6" height="230" data-mark="m21" data-tip="&lt;b&gt;baseline（原版）&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;平均換人 &lt;b&gt;31.1&lt;/b&gt; 次"/><path id="m22" class="mark" d="M761.4,252.0V231.4Q761.4,227.4 765.4,227.4H780.0Q784.0,227.4 784.0,231.4V252.0Z" fill="var(--s1)"/><rect class="hit" x="760.4" y="22" width="24.6" height="230" data-mark="m22" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;平均換人 &lt;b&gt;4.6&lt;/b&gt; 次"/><path id="m23" class="mark" d="M786.0,252.0V43.0Q786.0,39.0 790.0,39.0H804.6Q808.6,39.0 808.6,43.0V252.0Z" fill="var(--s2)"/><rect class="hit" x="785.0" y="22" width="24.6" height="230" data-mark="m23" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;平均換人 &lt;b&gt;39.8&lt;/b&gt; 次"/><path id="m24" class="mark" d="M810.6,252.0V225.0Q810.6,221.0 814.6,221.0H829.2Q833.2,221.0 833.2,225.0V252.0Z" fill="var(--s3)"/><rect class="hit" x="809.6" y="22" width="24.6" height="230" data-mark="m24" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;平均換人 &lt;b&gt;5.8&lt;/b&gt; 次"/></svg></div>
+</div>
+
+<h3>結果二：但正確率沒有變好，Hoeffding 反而下降</h3>
+<div class="card">
+  <p class="card-title">正確率相對 baseline 的差距（百分點）</p>
+  <p class="card-sub">往下代表比原版差。hoeffding 在每一組都是負的，multi-class 最明顯；reuse_value 大多貼近 0。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>hoeffding</span><span><i class="sw" style="background:var(--s2)"></i>reuse_value</span><span><i class="sw" style="background:var(--s3)"></i>both</span></div>
+  <div class="chart"><svg viewBox="0 0 860 300" role="img" aria-label="正確率相對 baseline 差距"><text x="4" y="12" class="axis-label">百分點</text><line x1="48" x2="852" y1="252.0" y2="252.0" class="grid"/><text x="40" y="256.0" text-anchor="end">-1.5</text><line x1="48" x2="852" y1="191.5" y2="191.5" class="grid"/><text x="40" y="195.5" text-anchor="end">-1</text><line x1="48" x2="852" y1="131.0" y2="131.0" class="grid"/><text x="40" y="135.0" text-anchor="end">-0.5</text><line x1="48" x2="852" y1="70.5" y2="70.5" class="zero"/><text x="40" y="74.5" text-anchor="end">0</text><text x="115.0" y="270" text-anchor="middle">oracle</text><text x="115.0" y="286" text-anchor="middle" class="axis-label">binary</text><path id="m25" class="mark" d="M66.8,70.5V121.7Q66.8,125.7 70.8,125.7H93.6Q97.6,125.7 97.6,121.7V70.5Z" fill="var(--s1)"/><rect class="hit" x="65.8" y="22" width="32.8" height="230" data-mark="m25" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;正確率差距 &lt;b&gt;-0.46 pp&lt;/b&gt;&lt;br&gt;贏 1 · 平 1 · 輸 8"/><rect id="m26" class="mark" x="99.6" y="70.5" width="30.8" height="1.5" fill="var(--s2)"/><rect class="hit" x="98.6" y="22" width="32.8" height="230" data-mark="m26" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;正確率差距 &lt;b&gt;-0.00 pp&lt;/b&gt;&lt;br&gt;贏 0 · 平 9 · 輸 1"/><path id="m27" class="mark" d="M132.4,70.5V121.8Q132.4,125.8 136.4,125.8H159.2Q163.2,125.8 163.2,121.8V70.5Z" fill="var(--s3)"/><rect class="hit" x="131.4" y="22" width="32.8" height="230" data-mark="m27" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;正確率差距 &lt;b&gt;-0.46 pp&lt;/b&gt;&lt;br&gt;贏 1 · 平 1 · 輸 8"/><text x="249.0" y="270" text-anchor="middle">oracle</text><text x="249.0" y="286" text-anchor="middle" class="axis-label">multi-class</text><path id="m28" class="mark" d="M200.8,70.5V222.2Q200.8,226.2 204.8,226.2H227.6Q231.6,226.2 231.6,222.2V70.5Z" fill="var(--s1)"/><rect class="hit" x="199.8" y="22" width="32.8" height="230" data-mark="m28" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;正確率差距 &lt;b&gt;-1.29 pp&lt;/b&gt;&lt;br&gt;贏 0 · 平 0 · 輸 10"/><path id="m29" class="mark" d="M233.6,70.5V54.7Q233.6,50.7 237.6,50.7H260.4Q264.4,50.7 264.4,54.7V70.5Z" fill="var(--s2)"/><rect class="hit" x="232.6" y="22" width="32.8" height="230" data-mark="m29" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;正確率差距 &lt;b&gt;+0.16 pp&lt;/b&gt;&lt;br&gt;贏 2 · 平 8 · 輸 0"/><path id="m30" class="mark" d="M266.4,70.5V183.4Q266.4,187.4 270.4,187.4H293.2Q297.2,187.4 297.2,183.4V70.5Z" fill="var(--s3)"/><rect class="hit" x="265.4" y="22" width="32.8" height="230" data-mark="m30" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;正確率差距 &lt;b&gt;-0.97 pp&lt;/b&gt;&lt;br&gt;贏 2 · 平 0 · 輸 8"/><text x="383.0" y="270" text-anchor="middle">oracle_pool3</text><text x="383.0" y="286" text-anchor="middle" class="axis-label">binary</text><path id="m31" class="mark" d="M334.8,70.5V121.7Q334.8,125.7 338.8,125.7H361.6Q365.6,125.7 365.6,121.7V70.5Z" fill="var(--s1)"/><rect class="hit" x="333.8" y="22" width="32.8" height="230" data-mark="m31" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;正確率差距 &lt;b&gt;-0.46 pp&lt;/b&gt;&lt;br&gt;贏 1 · 平 1 · 輸 8"/><rect id="m32" class="mark" x="367.6" y="70.5" width="30.8" height="1.5" fill="var(--s2)"/><rect class="hit" x="366.6" y="22" width="32.8" height="230" data-mark="m32" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;正確率差距 &lt;b&gt;-0.00 pp&lt;/b&gt;&lt;br&gt;贏 0 · 平 9 · 輸 1"/><path id="m33" class="mark" d="M400.4,70.5V121.8Q400.4,125.8 404.4,125.8H427.2Q431.2,125.8 431.2,121.8V70.5Z" fill="var(--s3)"/><rect class="hit" x="399.4" y="22" width="32.8" height="230" data-mark="m33" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;正確率差距 &lt;b&gt;-0.46 pp&lt;/b&gt;&lt;br&gt;贏 1 · 平 1 · 輸 8"/><text x="517.0" y="270" text-anchor="middle">oracle_pool3</text><text x="517.0" y="286" text-anchor="middle" class="axis-label">multi-class</text><path id="m34" class="mark" d="M468.8,70.5V220.7Q468.8,224.7 472.8,224.7H495.6Q499.6,224.7 499.6,220.7V70.5Z" fill="var(--s1)"/><rect class="hit" x="467.8" y="22" width="32.8" height="230" data-mark="m34" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;正確率差距 &lt;b&gt;-1.27 pp&lt;/b&gt;&lt;br&gt;贏 1 · 平 0 · 輸 9"/><path id="m35" class="mark" d="M501.6,70.5V41.1Q501.6,37.1 505.6,37.1H528.4Q532.4,37.1 532.4,41.1V70.5Z" fill="var(--s2)"/><rect class="hit" x="500.6" y="22" width="32.8" height="230" data-mark="m35" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;正確率差距 &lt;b&gt;+0.28 pp&lt;/b&gt;&lt;br&gt;贏 4 · 平 3 · 輸 3"/><path id="m36" class="mark" d="M534.4,70.5V163.8Q534.4,167.8 538.4,167.8H561.2Q565.2,167.8 565.2,163.8V70.5Z" fill="var(--s3)"/><rect class="hit" x="533.4" y="22" width="32.8" height="230" data-mark="m36" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;正確率差距 &lt;b&gt;-0.80 pp&lt;/b&gt;&lt;br&gt;贏 3 · 平 0 · 輸 7"/><text x="651.0" y="270" text-anchor="middle">detector</text><text x="651.0" y="286" text-anchor="middle" class="axis-label">binary</text><path id="m37" class="mark" d="M602.8,70.5V100.5Q602.8,104.5 606.8,104.5H629.6Q633.6,104.5 633.6,100.5V70.5Z" fill="var(--s1)"/><rect class="hit" x="601.8" y="22" width="32.8" height="230" data-mark="m37" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;正確率差距 &lt;b&gt;-0.28 pp&lt;/b&gt;&lt;br&gt;贏 4 · 平 0 · 輸 6"/><path id="m38" class="mark" d="M635.6,70.5V73.9Q635.6,77.3 639.0,77.3H663.0Q666.4,77.3 666.4,73.9V70.5Z" fill="var(--s2)"/><rect class="hit" x="634.6" y="22" width="32.8" height="230" data-mark="m38" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;正確率差距 &lt;b&gt;-0.06 pp&lt;/b&gt;&lt;br&gt;贏 0 · 平 8 · 輸 2"/><path id="m39" class="mark" d="M668.4,70.5V109.7Q668.4,113.7 672.4,113.7H695.2Q699.2,113.7 699.2,109.7V70.5Z" fill="var(--s3)"/><rect class="hit" x="667.4" y="22" width="32.8" height="230" data-mark="m39" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;正確率差距 &lt;b&gt;-0.36 pp&lt;/b&gt;&lt;br&gt;贏 4 · 平 0 · 輸 6"/><text x="785.0" y="270" text-anchor="middle">detector</text><text x="785.0" y="286" text-anchor="middle" class="axis-label">multi-class</text><path id="m40" class="mark" d="M736.8,70.5V156.7Q736.8,160.7 740.8,160.7H763.6Q767.6,160.7 767.6,156.7V70.5Z" fill="var(--s1)"/><rect class="hit" x="735.8" y="22" width="32.8" height="230" data-mark="m40" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;正確率差距 &lt;b&gt;-0.74 pp&lt;/b&gt;&lt;br&gt;贏 4 · 平 0 · 輸 6"/><path id="m41" class="mark" d="M769.6,70.5V148.4Q769.6,152.4 773.6,152.4H796.4Q800.4,152.4 800.4,148.4V70.5Z" fill="var(--s2)"/><rect class="hit" x="768.6" y="22" width="32.8" height="230" data-mark="m41" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;正確率差距 &lt;b&gt;-0.68 pp&lt;/b&gt;&lt;br&gt;贏 3 · 平 3 · 輸 4"/><path id="m42" class="mark" d="M802.4,70.5V127.6Q802.4,131.6 806.4,131.6H829.2Q833.2,131.6 833.2,127.6V70.5Z" fill="var(--s3)"/><rect class="hit" x="801.4" y="22" width="32.8" height="230" data-mark="m42" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;正確率差距 &lt;b&gt;-0.51 pp&lt;/b&gt;&lt;br&gt;贏 5 · 平 0 · 輸 5"/></svg></div>
+</div>
+
+<div class="card">
+  <p class="card-title">逐條比較：20 條串流中贏、平、輸幾條</p>
+  <p class="card-sub">跟 baseline 同一條串流比較正確率。hoeffding 在 oracle 下 20 條輸 18 條；reuse_value 多數與 baseline 完全相同（平手）。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--win)"></i>贏 baseline</span><span><i class="sw" style="background:var(--tie)"></i>平手（完全相同）</span><span><i class="sw" style="background:var(--lose)"></i>輸 baseline</span></div>
+  <div class="chart"><svg viewBox="0 0 860 362" role="img" aria-label="逐條比較勝平負"><line x1="200.0" x2="200.0" y1="4" y2="334" class="grid"/><text x="200.0" y="352" text-anchor="middle" class="axis-label">0 條</text><line x1="363.0" x2="363.0" y1="4" y2="334" class="grid"/><text x="363.0" y="352" text-anchor="middle" class="axis-label">5 條</text><line x1="526.0" x2="526.0" y1="4" y2="334" class="grid"/><text x="526.0" y="352" text-anchor="middle" class="axis-label">10 條</text><line x1="689.0" x2="689.0" y1="4" y2="334" class="grid"/><text x="689.0" y="352" text-anchor="middle" class="axis-label">15 條</text><line x1="852.0" x2="852.0" y1="4" y2="334" class="grid"/><text x="852.0" y="352" text-anchor="middle" class="axis-label">20 條</text><text x="190" y="21.0" text-anchor="end">hoeffding · oracle</text><rect id="m43" class="mark" x="200.0" y="4" width="30.6" height="26" rx="3" fill="var(--win)" data-tip="&lt;b&gt;hoeffding&lt;/b&gt; · oracle&lt;br&gt;贏 1 · 平 1 · 輸 18（共 20 條）"/><text x="215.3" y="21.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">1</text><rect id="m44" class="mark" x="232.6" y="4" width="30.6" height="26" rx="3" fill="var(--tie)" data-tip="&lt;b&gt;hoeffding&lt;/b&gt; · oracle&lt;br&gt;贏 1 · 平 1 · 輸 18（共 20 條）"/><text x="247.9" y="21.0" text-anchor="middle" style="fill:var(--text);font-weight:600;pointer-events:none">1</text><rect id="m45" class="mark" x="265.2" y="4" width="584.8" height="26" rx="3" fill="var(--lose)" data-tip="&lt;b&gt;hoeffding&lt;/b&gt; · oracle&lt;br&gt;贏 1 · 平 1 · 輸 18（共 20 條）"/><text x="557.6" y="21.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">18</text><text x="190" y="55.0" text-anchor="end">hoeffding · oracle_pool3</text><rect id="m46" class="mark" x="200.0" y="38" width="63.2" height="26" rx="3" fill="var(--win)" data-tip="&lt;b&gt;hoeffding&lt;/b&gt; · oracle_pool3&lt;br&gt;贏 2 · 平 1 · 輸 17（共 20 條）"/><text x="231.6" y="55.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">2</text><rect id="m47" class="mark" x="265.2" y="38" width="30.6" height="26" rx="3" fill="var(--tie)" data-tip="&lt;b&gt;hoeffding&lt;/b&gt; · oracle_pool3&lt;br&gt;贏 2 · 平 1 · 輸 17（共 20 條）"/><text x="280.5" y="55.0" text-anchor="middle" style="fill:var(--text);font-weight:600;pointer-events:none">1</text><rect id="m48" class="mark" x="297.8" y="38" width="552.2" height="26" rx="3" fill="var(--lose)" data-tip="&lt;b&gt;hoeffding&lt;/b&gt; · oracle_pool3&lt;br&gt;贏 2 · 平 1 · 輸 17（共 20 條）"/><text x="573.9" y="55.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">17</text><text x="190" y="89.0" text-anchor="end">hoeffding · detector</text><rect id="m49" class="mark" x="200.0" y="72" width="258.8" height="26" rx="3" fill="var(--win)" data-tip="&lt;b&gt;hoeffding&lt;/b&gt; · detector&lt;br&gt;贏 8 · 平 0 · 輸 12（共 20 條）"/><text x="329.4" y="89.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">8</text><rect id="m50" class="mark" x="460.8" y="72" width="389.2" height="26" rx="3" fill="var(--lose)" data-tip="&lt;b&gt;hoeffding&lt;/b&gt; · detector&lt;br&gt;贏 8 · 平 0 · 輸 12（共 20 條）"/><text x="655.4" y="89.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">12</text><text x="190" y="135.0" text-anchor="end">reuse_value · oracle</text><rect id="m51" class="mark" x="200.0" y="118" width="63.2" height="26" rx="3" fill="var(--win)" data-tip="&lt;b&gt;reuse_value&lt;/b&gt; · oracle&lt;br&gt;贏 2 · 平 17 · 輸 1（共 20 條）"/><text x="231.6" y="135.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">2</text><rect id="m52" class="mark" x="265.2" y="118" width="552.2" height="26" rx="3" fill="var(--tie)" data-tip="&lt;b&gt;reuse_value&lt;/b&gt; · oracle&lt;br&gt;贏 2 · 平 17 · 輸 1（共 20 條）"/><text x="541.3" y="135.0" text-anchor="middle" style="fill:var(--text);font-weight:600;pointer-events:none">17</text><rect id="m53" class="mark" x="819.4" y="118" width="30.6" height="26" rx="3" fill="var(--lose)" data-tip="&lt;b&gt;reuse_value&lt;/b&gt; · oracle&lt;br&gt;贏 2 · 平 17 · 輸 1（共 20 條）"/><text x="834.7" y="135.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">1</text><text x="190" y="169.0" text-anchor="end">reuse_value · oracle_pool3</text><rect id="m54" class="mark" x="200.0" y="152" width="128.4" height="26" rx="3" fill="var(--win)" data-tip="&lt;b&gt;reuse_value&lt;/b&gt; · oracle_pool3&lt;br&gt;贏 4 · 平 12 · 輸 4（共 20 條）"/><text x="264.2" y="169.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">4</text><rect id="m55" class="mark" x="330.4" y="152" width="389.2" height="26" rx="3" fill="var(--tie)" data-tip="&lt;b&gt;reuse_value&lt;/b&gt; · oracle_pool3&lt;br&gt;贏 4 · 平 12 · 輸 4（共 20 條）"/><text x="525.0" y="169.0" text-anchor="middle" style="fill:var(--text);font-weight:600;pointer-events:none">12</text><rect id="m56" class="mark" x="721.6" y="152" width="128.4" height="26" rx="3" fill="var(--lose)" data-tip="&lt;b&gt;reuse_value&lt;/b&gt; · oracle_pool3&lt;br&gt;贏 4 · 平 12 · 輸 4（共 20 條）"/><text x="785.8" y="169.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">4</text><text x="190" y="203.0" text-anchor="end">reuse_value · detector</text><rect id="m57" class="mark" x="200.0" y="186" width="95.8" height="26" rx="3" fill="var(--win)" data-tip="&lt;b&gt;reuse_value&lt;/b&gt; · detector&lt;br&gt;贏 3 · 平 11 · 輸 6（共 20 條）"/><text x="247.9" y="203.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">3</text><rect id="m58" class="mark" x="297.8" y="186" width="356.6" height="26" rx="3" fill="var(--tie)" data-tip="&lt;b&gt;reuse_value&lt;/b&gt; · detector&lt;br&gt;贏 3 · 平 11 · 輸 6（共 20 條）"/><text x="476.1" y="203.0" text-anchor="middle" style="fill:var(--text);font-weight:600;pointer-events:none">11</text><rect id="m59" class="mark" x="656.4" y="186" width="193.6" height="26" rx="3" fill="var(--lose)" data-tip="&lt;b&gt;reuse_value&lt;/b&gt; · detector&lt;br&gt;贏 3 · 平 11 · 輸 6（共 20 條）"/><text x="753.2" y="203.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">6</text><text x="190" y="249.0" text-anchor="end">both · oracle</text><rect id="m60" class="mark" x="200.0" y="232" width="95.8" height="26" rx="3" fill="var(--win)" data-tip="&lt;b&gt;both&lt;/b&gt; · oracle&lt;br&gt;贏 3 · 平 1 · 輸 16（共 20 條）"/><text x="247.9" y="249.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">3</text><rect id="m61" class="mark" x="297.8" y="232" width="30.6" height="26" rx="3" fill="var(--tie)" data-tip="&lt;b&gt;both&lt;/b&gt; · oracle&lt;br&gt;贏 3 · 平 1 · 輸 16（共 20 條）"/><text x="313.1" y="249.0" text-anchor="middle" style="fill:var(--text);font-weight:600;pointer-events:none">1</text><rect id="m62" class="mark" x="330.4" y="232" width="519.6" height="26" rx="3" fill="var(--lose)" data-tip="&lt;b&gt;both&lt;/b&gt; · oracle&lt;br&gt;贏 3 · 平 1 · 輸 16（共 20 條）"/><text x="590.2" y="249.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">16</text><text x="190" y="283.0" text-anchor="end">both · oracle_pool3</text><rect id="m63" class="mark" x="200.0" y="266" width="128.4" height="26" rx="3" fill="var(--win)" data-tip="&lt;b&gt;both&lt;/b&gt; · oracle_pool3&lt;br&gt;贏 4 · 平 1 · 輸 15（共 20 條）"/><text x="264.2" y="283.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">4</text><rect id="m64" class="mark" x="330.4" y="266" width="30.6" height="26" rx="3" fill="var(--tie)" data-tip="&lt;b&gt;both&lt;/b&gt; · oracle_pool3&lt;br&gt;贏 4 · 平 1 · 輸 15（共 20 條）"/><text x="345.7" y="283.0" text-anchor="middle" style="fill:var(--text);font-weight:600;pointer-events:none">1</text><rect id="m65" class="mark" x="363.0" y="266" width="487.0" height="26" rx="3" fill="var(--lose)" data-tip="&lt;b&gt;both&lt;/b&gt; · oracle_pool3&lt;br&gt;贏 4 · 平 1 · 輸 15（共 20 條）"/><text x="606.5" y="283.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">15</text><text x="190" y="317.0" text-anchor="end">both · detector</text><rect id="m66" class="mark" x="200.0" y="300" width="291.4" height="26" rx="3" fill="var(--win)" data-tip="&lt;b&gt;both&lt;/b&gt; · detector&lt;br&gt;贏 9 · 平 0 · 輸 11（共 20 條）"/><text x="345.7" y="317.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">9</text><rect id="m67" class="mark" x="493.4" y="300" width="356.6" height="26" rx="3" fill="var(--lose)" data-tip="&lt;b&gt;both&lt;/b&gt; · detector&lt;br&gt;贏 9 · 平 0 · 輸 11（共 20 條）"/><text x="671.7" y="317.0" text-anchor="middle" style="fill:#fff;font-weight:600;pointer-events:none">11</text></svg></div>
+</div>
+
+<div class="card">
+  <p class="card-title">drift 後恢復正確率相對 baseline 的差距（百分點）</p>
+  <p class="card-sub">drift 後 1,000 筆內的損失比整體更大，hoeffding 在 multi-class oracle 下約 −2 pp。問題集中在 drift 剛發生之後。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>hoeffding</span><span><i class="sw" style="background:var(--s2)"></i>reuse_value</span><span><i class="sw" style="background:var(--s3)"></i>both</span></div>
+  <div class="chart"><svg viewBox="0 0 860 300" role="img" aria-label="drift 後恢復正確率相對 baseline 差距"><text x="4" y="12" class="axis-label">百分點</text><line x1="48" x2="852" y1="252.0" y2="252.0" class="grid"/><text x="40" y="256.0" text-anchor="end">-3</text><line x1="48" x2="852" y1="188.2" y2="188.2" class="grid"/><text x="40" y="192.2" text-anchor="end">-2</text><line x1="48" x2="852" y1="124.5" y2="124.5" class="grid"/><text x="40" y="128.5" text-anchor="end">-1</text><line x1="48" x2="852" y1="60.7" y2="60.7" class="zero"/><text x="40" y="64.7" text-anchor="end">0</text><text x="115.0" y="270" text-anchor="middle">oracle</text><text x="115.0" y="286" text-anchor="middle" class="axis-label">binary</text><path id="m68" class="mark" d="M66.8,60.7V105.0Q66.8,109.0 70.8,109.0H93.6Q97.6,109.0 97.6,105.0V60.7Z" fill="var(--s1)"/><rect class="hit" x="65.8" y="22" width="32.8" height="230" data-mark="m68" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.76 pp&lt;/b&gt;"/><rect id="m69" class="mark" x="99.6" y="60.7" width="30.8" height="1.5" fill="var(--s2)"/><rect class="hit" x="98.6" y="22" width="32.8" height="230" data-mark="m69" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.00 pp&lt;/b&gt;"/><path id="m70" class="mark" d="M132.4,60.7V105.2Q132.4,109.2 136.4,109.2H159.2Q163.2,109.2 163.2,105.2V60.7Z" fill="var(--s3)"/><rect class="hit" x="131.4" y="22" width="32.8" height="230" data-mark="m70" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle · binary&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.76 pp&lt;/b&gt;"/><text x="249.0" y="270" text-anchor="middle">oracle</text><text x="249.0" y="286" text-anchor="middle" class="axis-label">multi-class</text><path id="m71" class="mark" d="M200.8,60.7V188.4Q200.8,192.4 204.8,192.4H227.6Q231.6,192.4 231.6,188.4V60.7Z" fill="var(--s1)"/><rect class="hit" x="199.8" y="22" width="32.8" height="230" data-mark="m71" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;恢復正確率差距 &lt;b&gt;-2.06 pp&lt;/b&gt;"/><path id="m72" class="mark" d="M233.6,60.7V38.6Q233.6,34.6 237.6,34.6H260.4Q264.4,34.6 264.4,38.6V60.7Z" fill="var(--s2)"/><rect class="hit" x="232.6" y="22" width="32.8" height="230" data-mark="m72" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;恢復正確率差距 &lt;b&gt;+0.41 pp&lt;/b&gt;"/><path id="m73" class="mark" d="M266.4,60.7V156.3Q266.4,160.3 270.4,160.3H293.2Q297.2,160.3 297.2,156.3V60.7Z" fill="var(--s3)"/><rect class="hit" x="265.4" y="22" width="32.8" height="230" data-mark="m73" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle · multi-class&lt;br&gt;恢復正確率差距 &lt;b&gt;-1.56 pp&lt;/b&gt;"/><text x="383.0" y="270" text-anchor="middle">oracle_pool3</text><text x="383.0" y="286" text-anchor="middle" class="axis-label">binary</text><path id="m74" class="mark" d="M334.8,60.7V105.0Q334.8,109.0 338.8,109.0H361.6Q365.6,109.0 365.6,105.0V60.7Z" fill="var(--s1)"/><rect class="hit" x="333.8" y="22" width="32.8" height="230" data-mark="m74" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.76 pp&lt;/b&gt;"/><rect id="m75" class="mark" x="367.6" y="60.7" width="30.8" height="1.5" fill="var(--s2)"/><rect class="hit" x="366.6" y="22" width="32.8" height="230" data-mark="m75" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.00 pp&lt;/b&gt;"/><path id="m76" class="mark" d="M400.4,60.7V105.2Q400.4,109.2 404.4,109.2H427.2Q431.2,109.2 431.2,105.2V60.7Z" fill="var(--s3)"/><rect class="hit" x="399.4" y="22" width="32.8" height="230" data-mark="m76" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle_pool3 · binary&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.76 pp&lt;/b&gt;"/><text x="517.0" y="270" text-anchor="middle">oracle_pool3</text><text x="517.0" y="286" text-anchor="middle" class="axis-label">multi-class</text><path id="m77" class="mark" d="M468.8,60.7V182.1Q468.8,186.1 472.8,186.1H495.6Q499.6,186.1 499.6,182.1V60.7Z" fill="var(--s1)"/><rect class="hit" x="467.8" y="22" width="32.8" height="230" data-mark="m77" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;恢復正確率差距 &lt;b&gt;-1.97 pp&lt;/b&gt;"/><path id="m78" class="mark" d="M501.6,60.7V43.1Q501.6,39.1 505.6,39.1H528.4Q532.4,39.1 532.4,43.1V60.7Z" fill="var(--s2)"/><rect class="hit" x="500.6" y="22" width="32.8" height="230" data-mark="m78" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;恢復正確率差距 &lt;b&gt;+0.34 pp&lt;/b&gt;"/><path id="m79" class="mark" d="M534.4,60.7V165.7Q534.4,169.7 538.4,169.7H561.2Q565.2,169.7 565.2,165.7V60.7Z" fill="var(--s3)"/><rect class="hit" x="533.4" y="22" width="32.8" height="230" data-mark="m79" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;oracle_pool3 · multi-class&lt;br&gt;恢復正確率差距 &lt;b&gt;-1.71 pp&lt;/b&gt;"/><text x="651.0" y="270" text-anchor="middle">detector</text><text x="651.0" y="286" text-anchor="middle" class="axis-label">binary</text><path id="m80" class="mark" d="M602.8,60.7V82.2Q602.8,86.2 606.8,86.2H629.6Q633.6,86.2 633.6,82.2V60.7Z" fill="var(--s1)"/><rect class="hit" x="601.8" y="22" width="32.8" height="230" data-mark="m80" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.40 pp&lt;/b&gt;"/><path id="m81" class="mark" d="M635.6,60.7V75.3Q635.6,79.3 639.6,79.3H662.4Q666.4,79.3 666.4,75.3V60.7Z" fill="var(--s2)"/><rect class="hit" x="634.6" y="22" width="32.8" height="230" data-mark="m81" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.29 pp&lt;/b&gt;"/><path id="m82" class="mark" d="M668.4,60.7V76.9Q668.4,80.9 672.4,80.9H695.2Q699.2,80.9 699.2,76.9V60.7Z" fill="var(--s3)"/><rect class="hit" x="667.4" y="22" width="32.8" height="230" data-mark="m82" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;detector · binary&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.32 pp&lt;/b&gt;"/><text x="785.0" y="270" text-anchor="middle">detector</text><text x="785.0" y="286" text-anchor="middle" class="axis-label">multi-class</text><path id="m83" class="mark" d="M736.8,60.7V99.9Q736.8,103.9 740.8,103.9H763.6Q767.6,103.9 767.6,99.9V60.7Z" fill="var(--s1)"/><rect class="hit" x="735.8" y="22" width="32.8" height="230" data-mark="m83" data-tip="&lt;b&gt;hoeffding&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.68 pp&lt;/b&gt;"/><path id="m84" class="mark" d="M769.6,60.7V109.1Q769.6,113.1 773.6,113.1H796.4Q800.4,113.1 800.4,109.1V60.7Z" fill="var(--s2)"/><rect class="hit" x="768.6" y="22" width="32.8" height="230" data-mark="m84" data-tip="&lt;b&gt;reuse_value&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;恢復正確率差距 &lt;b&gt;-0.82 pp&lt;/b&gt;"/><path id="m85" class="mark" d="M802.4,60.7V188.2Q802.4,192.2 806.4,192.2H829.2Q833.2,192.2 833.2,188.2V60.7Z" fill="var(--s3)"/><rect class="hit" x="801.4" y="22" width="32.8" height="230" data-mark="m85" data-tip="&lt;b&gt;both&lt;/b&gt;&lt;br&gt;detector · multi-class&lt;br&gt;恢復正確率差距 &lt;b&gt;-2.06 pp&lt;/b&gt;"/></svg></div>
+</div>
+
+<details>
+<summary>查看完整數據表</summary>
+<div class="table-wrap"><table><thead><tr><th>設定</th><th>任務</th><th>變體</th><th class="num">正確率</th><th class="num">Δ pp</th><th class="num">恢復正確率</th><th class="num">換人次數</th><th class="num">池大小</th><th class="num">重用較差比例</th><th class="num">贏/平/輸</th></tr></thead><tbody><tr><td>oracle</td><td>binary</td><td>baseline</td><td class="num">95.67%</td><td class="num">—</td><td class="num">92.84%</td><td class="num">19.8</td><td class="num">2.8</td><td class="num">19%</td><td class="num">—</td></tr><tr><td>oracle</td><td>binary</td><td>hoeffding</td><td class="num">95.21%</td><td class="num">-0.46</td><td class="num">92.08%</td><td class="num">3.0</td><td class="num">2.8</td><td class="num">17%</td><td class="num">1/1/8</td></tr><tr><td>oracle</td><td>binary</td><td>reuse_value</td><td class="num">95.67%</td><td class="num">-0.00</td><td class="num">92.83%</td><td class="num">19.8</td><td class="num">2.8</td><td class="num">19%</td><td class="num">0/9/1</td></tr><tr><td>oracle</td><td>binary</td><td>both</td><td class="num">95.21%</td><td class="num">-0.46</td><td class="num">92.07%</td><td class="num">3.0</td><td class="num">2.8</td><td class="num">17%</td><td class="num">1/1/8</td></tr><tr><td>oracle</td><td>multi-class</td><td>baseline</td><td class="num">63.82%</td><td class="num">—</td><td class="num">54.56%</td><td class="num">26.5</td><td class="num">7.5</td><td class="num">24%</td><td class="num">—</td></tr><tr><td>oracle</td><td>multi-class</td><td>hoeffding</td><td class="num">62.53%</td><td class="num">-1.29</td><td class="num">52.50%</td><td class="num">4.9</td><td class="num">7.1</td><td class="num">24%</td><td class="num">0/0/10</td></tr><tr><td>oracle</td><td>multi-class</td><td>reuse_value</td><td class="num">63.99%</td><td class="num">+0.16</td><td class="num">54.97%</td><td class="num">25.6</td><td class="num">6.5</td><td class="num">22%</td><td class="num">2/8/0</td></tr><tr><td>oracle</td><td>multi-class</td><td>both</td><td class="num">62.86%</td><td class="num">-0.97</td><td class="num">53.00%</td><td class="num">4.6</td><td class="num">6.1</td><td class="num">22%</td><td class="num">2/0/8</td></tr><tr><td>oracle_pool3</td><td>binary</td><td>baseline</td><td class="num">95.67%</td><td class="num">—</td><td class="num">92.84%</td><td class="num">19.8</td><td class="num">2.7</td><td class="num">19%</td><td class="num">—</td></tr><tr><td>oracle_pool3</td><td>binary</td><td>hoeffding</td><td class="num">95.21%</td><td class="num">-0.46</td><td class="num">92.08%</td><td class="num">3.0</td><td class="num">2.7</td><td class="num">17%</td><td class="num">1/1/8</td></tr><tr><td>oracle_pool3</td><td>binary</td><td>reuse_value</td><td class="num">95.67%</td><td class="num">-0.00</td><td class="num">92.83%</td><td class="num">19.8</td><td class="num">2.7</td><td class="num">19%</td><td class="num">0/9/1</td></tr><tr><td>oracle_pool3</td><td>binary</td><td>both</td><td class="num">95.21%</td><td class="num">-0.46</td><td class="num">92.07%</td><td class="num">3.0</td><td class="num">2.7</td><td class="num">17%</td><td class="num">1/1/8</td></tr><tr><td>oracle_pool3</td><td>multi-class</td><td>baseline</td><td class="num">64.09%</td><td class="num">—</td><td class="num">55.15%</td><td class="num">24.0</td><td class="num">3.0</td><td class="num">24%</td><td class="num">—</td></tr><tr><td>oracle_pool3</td><td>multi-class</td><td>hoeffding</td><td class="num">62.82%</td><td class="num">-1.27</td><td class="num">53.19%</td><td class="num">4.9</td><td class="num">3.0</td><td class="num">24%</td><td class="num">1/0/9</td></tr><tr><td>oracle_pool3</td><td>multi-class</td><td>reuse_value</td><td class="num">64.37%</td><td class="num">+0.28</td><td class="num">55.49%</td><td class="num">20.8</td><td class="num">3.0</td><td class="num">22%</td><td class="num">4/3/3</td></tr><tr><td>oracle_pool3</td><td>multi-class</td><td>both</td><td class="num">63.29%</td><td class="num">-0.80</td><td class="num">53.44%</td><td class="num">4.2</td><td class="num">3.0</td><td class="num">22%</td><td class="num">3/0/7</td></tr><tr><td>detector</td><td>binary</td><td>baseline</td><td class="num">95.95%</td><td class="num">—</td><td class="num">92.45%</td><td class="num">21.7</td><td class="num">3.2</td><td class="num">27%</td><td class="num">—</td></tr><tr><td>detector</td><td>binary</td><td>hoeffding</td><td class="num">95.67%</td><td class="num">-0.28</td><td class="num">92.05%</td><td class="num">2.4</td><td class="num">2.9</td><td class="num">30%</td><td class="num">4/0/6</td></tr><tr><td>detector</td><td>binary</td><td>reuse_value</td><td class="num">95.90%</td><td class="num">-0.06</td><td class="num">92.15%</td><td class="num">21.4</td><td class="num">3.3</td><td class="num">28%</td><td class="num">0/8/2</td></tr><tr><td>detector</td><td>binary</td><td>both</td><td class="num">95.59%</td><td class="num">-0.36</td><td class="num">92.13%</td><td class="num">2.7</td><td class="num">2.8</td><td class="num">31%</td><td class="num">4/0/6</td></tr><tr><td>detector</td><td>multi-class</td><td>baseline</td><td class="num">64.35%</td><td class="num">—</td><td class="num">50.25%</td><td class="num">31.1</td><td class="num">5.5</td><td class="num">26%</td><td class="num">—</td></tr><tr><td>detector</td><td>multi-class</td><td>hoeffding</td><td class="num">63.60%</td><td class="num">-0.74</td><td class="num">49.58%</td><td class="num">4.6</td><td class="num">4.7</td><td class="num">34%</td><td class="num">4/0/6</td></tr><tr><td>detector</td><td>multi-class</td><td>reuse_value</td><td class="num">63.67%</td><td class="num">-0.68</td><td class="num">49.43%</td><td class="num">39.8</td><td class="num">5.5</td><td class="num">34%</td><td class="num">3/3/4</td></tr><tr><td>detector</td><td>multi-class</td><td>both</td><td class="num">63.84%</td><td class="num">-0.51</td><td class="num">48.19%</td><td class="num">5.8</td><td class="num">5.5</td><td class="num">41%</td><td class="num">5/0/5</td></tr></tbody></table><p class="muted">數值為每組 10 條串流的平均；「重用較差比例」＝ drift 後 500 筆內，挑回的舊模型比新模型答對更少的 drift 比例。</p></div>
+</details>
+
+<h3>結果三：為什麼少換人反而變差？（診斷）</h3>
+<p>先釐清 ECPF 換人的實際作用：leader 和 shadow <b>每一筆都會同時學習</b>，換人時兩個模型都不會被重置，所以換人本身沒有成本。換人真正決定的是兩件事：</p>
+<ol>
+<li><b>現在用誰的預測輸出。</b></li>
+<li><b>下次 drift 時誰被存進模型池。</b>drift 發生時，當下的 leader 會被存進池子，shadow 則被丟掉（<code>on_drift</code> 會重新訓練一個新的 shadow）。</li>
+</ol>
+<p>原版「多 1 題就換」等於<b>隨時採用目前表現較好的那一個</b>。Hoeffding 規則要領先幅度大到「不可能是運氣」才換，所以兩件事都會變差：drift 後一段時間繼續用較差的模型預測，而且存進池子的可能是較差的模型。</p>
+<p>以 Hoeffding 損失最大的 sudden 串流 <code>recurring_sudden_rbf4_100k_g09</code>（oracle，正確率 67.4% → 64.2%）為例：</p>
+<div class="card">
+  <p class="card-title">每次 drift 後的換人時間點</p>
+  <p class="card-sub">每個點是一次換人，橫軸是距離 drift 的筆數（對數刻度）。drift 剛發生時，原版在第 1–5 筆就換到較好的模型；Hoeffding 最早也要到第 60–142 筆才換。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--baseline)"></i>原版（多 1 題就換）：9 次，正確率 67.36%</span><span><i class="sw" style="background:var(--s1)"></i>Hoeffding：6 次，正確率 64.22%</span></div>
+  <div class="chart"><svg viewBox="0 0 860 200" role="img" aria-label="每次 drift 後的換人時間點"><line x1="90.0" x2="90.0" y1="8" y2="158" class="grid"/><text x="90.0" y="174" text-anchor="middle" class="axis-label">1</text><line x1="265.3" x2="265.3" y1="8" y2="158" class="grid"/><text x="265.3" y="174" text-anchor="middle" class="axis-label">10</text><line x1="440.6" x2="440.6" y1="8" y2="158" class="grid"/><text x="440.6" y="174" text-anchor="middle" class="axis-label">100</text><line x1="615.9" x2="615.9" y1="8" y2="158" class="grid"/><text x="615.9" y="174" text-anchor="middle" class="axis-label">1,000</text><line x1="791.2" x2="791.2" y1="8" y2="158" class="grid"/><text x="791.2" y="174" text-anchor="middle" class="axis-label">10,000</text><text x="467.0" y="194" text-anchor="middle" class="axis-label">drift 後第幾筆（對數刻度）</text><line x1="90" x2="844" y1="23.0" y2="23.0" class="grid"/><text x="80" y="27.0" text-anchor="end">drift #1</text><circle class="mark" cx="212.5" cy="18.0" r="4.5" fill="var(--baseline)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;原版（多 1 題就換）&lt;/b&gt;&lt;br&gt;drift #1 後第 5 筆換人"/><circle class="mark" cx="435.1" cy="28.0" r="4.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;Hoeffding&lt;/b&gt;&lt;br&gt;drift #1 後第 93 筆換人"/><line x1="90" x2="844" y1="53.0" y2="53.0" class="grid"/><text x="80" y="57.0" text-anchor="end">drift #2</text><circle class="mark" cx="195.5" cy="48.0" r="4.5" fill="var(--baseline)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;原版（多 1 題就換）&lt;/b&gt;&lt;br&gt;drift #2 後第 4 筆換人"/><circle class="mark" cx="702.7" cy="48.0" r="4.5" fill="var(--baseline)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;原版（多 1 題就換）&lt;/b&gt;&lt;br&gt;drift #2 後第 3,127 筆換人"/><circle class="mark" cx="467.3" cy="58.0" r="4.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;Hoeffding&lt;/b&gt;&lt;br&gt;drift #2 後第 142 筆換人"/><circle class="mark" cx="728.1" cy="58.0" r="4.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;Hoeffding&lt;/b&gt;&lt;br&gt;drift #2 後第 4,365 筆換人"/><line x1="90" x2="844" y1="83.0" y2="83.0" class="grid"/><text x="80" y="87.0" text-anchor="end">drift #3</text><circle class="mark" cx="90.0" cy="78.0" r="4.5" fill="var(--baseline)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;原版（多 1 題就換）&lt;/b&gt;&lt;br&gt;drift #3 後第 1 筆換人"/><circle class="mark" cx="195.5" cy="78.0" r="4.5" fill="var(--baseline)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;原版（多 1 題就換）&lt;/b&gt;&lt;br&gt;drift #3 後第 4 筆換人"/><circle class="mark" cx="346.4" cy="78.0" r="4.5" fill="var(--baseline)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;原版（多 1 題就換）&lt;/b&gt;&lt;br&gt;drift #3 後第 29 筆換人"/><circle class="mark" cx="358.5" cy="78.0" r="4.5" fill="var(--baseline)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;原版（多 1 題就換）&lt;/b&gt;&lt;br&gt;drift #3 後第 34 筆換人"/><circle class="mark" cx="372.7" cy="78.0" r="4.5" fill="var(--baseline)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;原版（多 1 題就換）&lt;/b&gt;&lt;br&gt;drift #3 後第 41 筆換人"/><circle class="mark" cx="818.4" cy="78.0" r="4.5" fill="var(--baseline)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;原版（多 1 題就換）&lt;/b&gt;&lt;br&gt;drift #3 後第 14,295 筆換人"/><circle class="mark" cx="453.9" cy="88.0" r="4.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;Hoeffding&lt;/b&gt;&lt;br&gt;drift #3 後第 119 筆換人"/><line x1="90" x2="844" y1="113.0" y2="113.0" class="grid"/><text x="80" y="117.0" text-anchor="end">drift #4</text><line x1="90" x2="844" y1="143.0" y2="143.0" class="grid"/><text x="80" y="147.0" text-anchor="end">drift #5</text><circle class="mark" cx="401.7" cy="148.0" r="4.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;Hoeffding&lt;/b&gt;&lt;br&gt;drift #5 後第 60 筆換人"/><circle class="mark" cx="833.9" cy="148.0" r="4.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="2" data-tip="&lt;b&gt;Hoeffding&lt;/b&gt;&lt;br&gt;drift #5 後第 17,512 筆換人"/></svg></div>
+</div>
+<div class="card">
+  <p class="card-title">每段 drift 之間，最後留在場上的 leader 正確率</p>
+  <p class="card-sub">兩個版本在 drift #1–#4 幾乎一樣；到 drift #5，兩者從池子挑回的舊模型不同，這一段正確率差了 13 個百分點。</p>
+  <div class="table-wrap"><table><thead><tr><th>區段</th><th class="num">筆數</th><th class="num">原版 leader</th><th class="num">Hoeffding leader</th><th class="num">差距 pp</th></tr></thead><tbody><tr><td>drift #1 → #2</td><td class="num">14,308</td><td class="num">56.6%</td><td class="num">56.6%</td><td class="num">+0.0</td></tr><tr><td>drift #2 → #3</td><td class="num">18,654</td><td class="num">65.8%</td><td class="num">65.8%</td><td class="num">+0.0</td></tr><tr><td>drift #3 → #4</td><td class="num">14,893</td><td class="num">57.2%</td><td class="num">56.9%</td><td class="num">-0.4</td></tr><tr><td>drift #4 → #5</td><td class="num">17,905</td><td class="num">76.5%</td><td class="num">76.5%</td><td class="num">+0.0</td></tr><tr><td>drift #5 → #6</td><td class="num">19,167</td><td class="num">73.6%</td><td class="num">60.5%</td><td class="num">-13.1</td></tr></tbody></table></div>
+</div>
+<p>drift #5 之後那一段約 19,000 筆，這一段就造成整條串流約 2.5 個百分點的損失，也就是總損失 3.1 個百分點的大部分。換人規則的小差異會改變池子裡存了哪些模型，進而影響之後挑回哪個模型，小差異就這樣被累積放大。</p>
+
+<h3>結果四：重用價值淘汰沒有發揮空間</h3>
+<ul>
+<li><b>池子幾乎不會滿：</b>所有串流都只在兩個概念之間來回切換，binary 的模型池平均只剩 2–3 個模型，淘汰規則幾乎沒有機會刪到不同的模型，因此 binary 有 9/10 條結果與原版完全相同。</li>
+<li><b>池子被迫縮小時結果不一致：</b>multi-class 在 oracle_pool3 下平均 +0.28 pp（4 贏 3 輸 3 平），在 detector 下 −0.68 pp，變異大，無法判定有改善。</li>
+<li><b>副產品，也是最有價值的發現：</b>重用價值的記錄顯示，<b>有 21%（oracle）到 31%（detector）的 drift，挑回來的舊模型在 drift 後 500 筆內比從零訓練的新模型還差</b>。代表 ECPF 用 60 筆 buffer 的正確率來挑模型，常常挑錯。</li>
+</ul>
+
+<h2>3. 結論與建議</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>改動</th><th>結論</th><th>建議</th></tr></thead>
+<tbody>
+<tr><td><b>Hoeffding 換人</b></td><td>換人次數 −83%，但正確率 −0.5 ~ −1.3 pp，drift 後恢復變慢。原本的假設不成立：ECPF 的換人本身沒有成本，換得太慢反而會讓較差的模型繼續輸出、被存進池子。</td><td>維持預設關閉。若要保留「避免亂換」的概念，可改用只看兩者<b>意見不同</b>那些題目的 McNemar 檢定（門檻較緊），或只在 drift 後前 N 筆放寬門檻。優先度低。</td></tr>
+<tr><td><b>重用價值淘汰</b></td><td>在兩概念資料上幾乎沒有作用；池子被迫縮小時結果不一致。</td><td>維持預設關閉。需要<b>三個以上概念</b>、會讓池子真正滿載的資料才測得出效果。</td></tr>
+<tr><td><b>挑模型的準確度</b></td><td>21–31% 的重用比從零訓練更差，這是目前最明確的弱點。</td><td>下一步優先做 <b>FiCSUM 式概念指紋</b>，改善 drift 當下「挑哪個舊模型」的判斷。</td></tr>
+</tbody></table></div>
+
+<div class="warn"><b>限制：</b>（1）資料全部是兩概念交替的合成串流，結論不一定適用於概念更多的情境；（2）multi-class 的基礎正確率只有約 64%（Hoeffding Tree 對 RBF 資料能力有限），差距中有一部分是雜訊；（3）Type-LDD 在實驗中以替身取代（本機沒有 torch），它在 ECPF 路線上只寫標籤，不影響結果。</div>
+
+<h2>4. 程式改動與重現方式</h2>
+<p>兩個機制都是開關，<b>預設關閉</b>，不改設定時行為與原版 ECPF 完全相同。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>檔案</th><th>內容</th></tr></thead>
+<tbody>
+<tr><td><code>src/ecpf.py</code></td><td><code>_shadow_wins</code>（換人規則）、<code>_settle_reuse_value</code>（重用價值結算）、<code>_fade_models</code>（新淘汰規則）</td></tr>
+<tr><td><code>src/config.py</code></td><td><code>ecpf_swap_policy</code>、<code>ecpf_swap_delta</code>、<code>ecpf_fade_policy</code>、<code>ecpf_reuse_value_window</code>、<code>ecpf_reuse_idle_cost</code></td></tr>
+<tr><td><code>tests/test_ecpf.py</code></td><td>新增 3 個單元測試，全部通過</td></tr>
+<tr><td><code>scripts/experiment_ecpf_swap_fade.py</code></td><td>本實驗腳本</td></tr>
+</tbody></table></div>
+<pre>python3 scripts/experiment_ecpf_swap_fade.py --workers 9 \
+  --data-dirs "data/dataset_0921/synthetic_dataset/binary/recurring" \
+              "data/dataset_0921/synthetic_dataset/multi_classification/recurring"</pre>
+<p class="muted">原始結果：<code>outputs/ecpf_swap_fade/runs.csv</code>（每次執行一列）、<code>summary.csv</code>（彙總）。</p>
+
+</main>
+<div id="tip"></div>
+
+<script>
+const tip = document.getElementById("tip");
+document.querySelectorAll(".chart").forEach(host => {
+  host.querySelectorAll("[data-tip]").forEach(n => {
+    const mark = n.dataset.mark ? host.querySelector("#" + n.dataset.mark) : n;
+    n.addEventListener("mousemove", ev => {
+      host.classList.add("dim"); if (mark) mark.classList.add("on");
+      tip.innerHTML = n.dataset.tip; tip.style.display = "block";
+      const w = tip.offsetWidth, h = tip.offsetHeight;
+      let x = ev.clientX + 14, y = ev.clientY + 14;
+      if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+      if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+      tip.style.left = x + "px"; tip.style.top = y + "px";
+    });
+    n.addEventListener("mouseleave", () => { host.classList.remove("dim"); if (mark) mark.classList.remove("on"); tip.style.display = "none"; });
+  });
+});
+</script>
+</body>
+</html>

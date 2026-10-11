@@ -22,6 +22,16 @@ a notion of "wrong".  :class:`ECPFMetaLearner` therefore accepts an optional
 two similarity metrics and :meth:`ECPFMetaLearner._profile_on_buffer` for the
 "higher is better" score that replaces accuracy under regression.  Passing no
 TaskSpec keeps the original classification behaviour byte for byte.
+
+Optional extensions (off by default; defaults reproduce the paper exactly):
+
+* ``swap_policy="hoeffding"`` (ARCUS / ARF-style reliability) — the shadow
+  learner replaces the leader only when its accuracy advantage since the last
+  drift exceeds a Hoeffding bound, instead of on a one-instance lead.
+* ``fade_policy="reuse_value"`` (AiRStream-style memory valuation) — a stored
+  expert earns fade points by the errors it saved when reused (reused copy vs.
+  fresh learner over the first ``reuse_value_window`` post-drift instances),
+  instead of +f merely for being the leader.
 """
 
 from __future__ import annotations
@@ -29,7 +39,9 @@ from __future__ import annotations
 import ast
 import copy
 import logging
+import math
 import pickle
+import sys
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -40,12 +52,23 @@ from .task import TaskSpec
 logger = logging.getLogger(__name__)
 
 
+# deepcopy/pickle recurse once per tree level; deep River trees (e.g. a
+# Hoeffding Forest on electricity) exceed Python's default limit of 1000.
+_CLONE_RECURSION_LIMIT = 20_000
+
+
 def _deep_clone(obj: Any) -> Any:
     """Clone sklearn PredictionModel or River BaseModel via pickle when needed."""
+    old_limit = sys.getrecursionlimit()
+    if old_limit < _CLONE_RECURSION_LIMIT:
+        sys.setrecursionlimit(_CLONE_RECURSION_LIMIT)
     try:
-        return copy.deepcopy(obj)
-    except Exception:
-        return pickle.loads(pickle.dumps(obj))
+        try:
+            return copy.deepcopy(obj)
+        except Exception:
+            return pickle.loads(pickle.dumps(obj))
+    finally:
+        sys.setrecursionlimit(old_limit)
 
 
 def _label(value: float) -> int:
@@ -172,6 +195,11 @@ class ECPFMetaLearner:
         model_kwargs: Optional[Dict[str, Any]] = None,
         task: Optional[TaskSpec] = None,
         similarity_mode: str = "auto",
+        swap_policy: str = "strict",
+        swap_delta: float = 0.05,
+        fade_policy: str = "ecpf",
+        reuse_value_window: int = 500,
+        reuse_idle_cost: float = 1.0,
     ) -> None:
         self.task = task
         # Cached once: every hot-loop branch below asks only this question, and
@@ -198,6 +226,15 @@ class ECPFMetaLearner:
             )
         self.similarity_mode = similarity_mode
         self._use_bitset = similarity_mode == "error_bitset"
+        if swap_policy not in ("strict", "hoeffding"):
+            raise ValueError(f"unknown swap_policy: {swap_policy!r}")
+        if fade_policy not in ("ecpf", "reuse_value"):
+            raise ValueError(f"unknown fade_policy: {fade_policy!r}")
+        self.swap_policy = swap_policy
+        self.swap_delta = float(swap_delta)
+        self.fade_policy = fade_policy
+        self.reuse_value_window = max(1, int(reuse_value_window))
+        self.reuse_idle_cost = float(reuse_idle_cost)
         self.similarity_margin = float(similarity_margin)
         self.fade_points = int(fade_points)
         self.model_check_freq = int(model_check_freq)
@@ -239,6 +276,17 @@ class ECPFMetaLearner:
         # cross-concept merges.
         self.last_merge_pairs: List[Tuple[int, int]] = []
         self.slot_eras: Dict[int, int] = {}
+
+        # Reuse-value bookkeeping (fade_policy="reuse_value"). ``_reuse_source``
+        # is the stored slot whose copy became leader at the last drift; the
+        # leader/shadow roles flip on every swap, so track which one is the
+        # reused copy to attribute per-instance correctness.
+        self._reuse_source: Optional[int] = None
+        self._leader_is_reused = True
+        self._rv_reused_correct = 0
+        self._rv_fresh_correct = 0
+        self._rv_n = 0
+        self.reuse_value_log: List[Dict[str, Any]] = []
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -410,10 +458,21 @@ class ECPFMetaLearner:
             y_pred = self._predict_one(prediction_model, x)
         else:
             y_pred = float(y_pred_leader)
+        leader_credit = self._instance_credit(y_pred, y_true)
         if self.new_model is not None:
             ny = self._predict_one(self.new_model, x)
-            self.new_correct += self._instance_credit(ny, y_true)
-        self.curr_correct += self._instance_credit(y_pred, y_true)
+            shadow_credit = self._instance_credit(ny, y_true)
+            self.new_correct += shadow_credit
+            if self._rv_n < self.reuse_value_window:
+                reused, fresh = (
+                    (leader_credit, shadow_credit)
+                    if self._leader_is_reused
+                    else (shadow_credit, leader_credit)
+                )
+                self._rv_reused_correct += reused
+                self._rv_fresh_correct += fresh
+                self._rv_n += 1
+        self.curr_correct += leader_credit
         self.total_inst += 1
 
         if self.total_inst % self.model_check_freq == 0:
@@ -423,11 +482,29 @@ class ECPFMetaLearner:
         if self.new_model is not None:
             self._train_one(self.new_model, x, y_true)
 
+    def _shadow_wins(self) -> bool:
+        """Whether the shadow learner should replace the leader now.
+
+        ``strict`` (paper): any lead in correct count since the last drift.
+        ``hoeffding``: the mean of the paired per-instance difference
+        d_t = 1[shadow ok] - 1[leader ok] (range R = 2) must exceed the
+        Hoeffding bound eps = sqrt(R^2 ln(1/delta) / (2n)), i.e. the shadow is
+        better with confidence 1 - delta rather than by chance.
+        """
+        if self.swap_policy == "strict":
+            return self.curr_correct < self.new_correct
+        n = self.total_inst
+        if n <= 0:
+            return False
+        lead = (self.new_correct - self.curr_correct) / n
+        eps = math.sqrt(2.0 * math.log(1.0 / self.swap_delta) / n)
+        return lead > eps
+
     def _compare_classifiers(self, prediction_model: Any) -> None:
-        """Swap leader if shadow ``new_model`` is strictly more accurate since last drift."""
+        """Swap leader if shadow ``new_model`` wins under ``swap_policy``."""
         if self.new_model is None:
             return
-        if self.curr_correct < self.new_correct:
+        if self._shadow_wins():
             self.curr_correct, self.new_correct = self.new_correct, self.curr_correct
             if self.use_advanced:
                 tmp = prediction_model.get_model()
@@ -449,6 +526,7 @@ class ECPFMetaLearner:
             self.slots[self.current_idx] = _deep_clone(prediction_model)
             self.slot_eras[self.current_idx] = self.num_drifts  # mid-era re-freeze
             self.leader_swaps += 1
+            self._leader_is_reused = not self._leader_is_reused
             logger.info("ECPF: swapped leader in favour of shadow learner")
 
     def on_drift(
@@ -467,6 +545,7 @@ class ECPFMetaLearner:
         """
         self.num_drifts += 1
         details: Dict[str, Any] = {"buffer_len": len(buffer)}
+        details.update(self._settle_reuse_value())
 
         # Freeze current leader into its slot before buffer comparisons
         self.slots[self.current_idx] = _deep_clone(prediction_model)
@@ -544,6 +623,13 @@ class ECPFMetaLearner:
         # Install leader weights into pipeline model = copy of best
         self._copy_model_into(prediction_model, clone_best)
 
+        # Start measuring what this reuse is worth against the fresh learner.
+        self._reuse_source = best_i
+        self._leader_is_reused = True
+        self._rv_reused_correct = 0
+        self._rv_fresh_correct = 0
+        self._rv_n = 0
+
         if self.fade_enabled:
             self._fade_models()
         self._enforce_pool_cap()
@@ -575,6 +661,33 @@ class ECPFMetaLearner:
                 "1_minus_mean_normalized_residual" if self._is_regression else "accuracy"
             )
         return details
+
+    def _settle_reuse_value(self) -> Dict[str, Any]:
+        """Close the previous reuse episode and credit its source slot.
+
+        value = errors the reused copy avoided vs. the fresh learner over the
+        first ``reuse_value_window`` instances after the last drift. Under
+        ``fade_policy="reuse_value"`` it is added to the source's fade score
+        (negative when reuse did worse than starting fresh).
+        """
+        src = self._reuse_source
+        if src is None or self._rv_n == 0:
+            return {}
+        value = self._rv_reused_correct - self._rv_fresh_correct
+        record = {
+            "reuse_value": float(value) if self._is_regression else int(value),
+            "reuse_value_source": int(src),
+            "reuse_value_n": int(self._rv_n),
+        }
+        self.reuse_value_log.append(dict(record, drift=self.num_drifts))
+        if (
+            self.fade_policy == "reuse_value"
+            and src < len(self.slots)
+            and self.slots[src] is not None
+        ):
+            self.fade_scores[src] = self.fade_scores.get(src, 0) + value
+        self._reuse_source = None
+        return record
 
     def _fresh_model(self) -> Any:
         """Build the shadow ("new") learner that duels the reused expert.
@@ -671,14 +784,24 @@ class ECPFMetaLearner:
             self._pair_agreed.pop(k, None)
 
     def _fade_models(self) -> None:
-        """MOA-style fade: current gains f; others lose 1; at 0 remove."""
+        """Fade stored experts; at 0 remove.
+
+        ``ecpf`` (MOA): current gains f; others lose 1.
+        ``reuse_value``: current is only topped up to a grace of f (so a new
+        leader is not evicted before it can prove itself); others lose
+        ``reuse_idle_cost``. Gains come from ``_settle_reuse_value`` instead.
+        """
         for i in range(len(self.slots)):
             if self.slots[i] is None:
                 continue
             if i == self.current_idx:
-                self.fade_scores[i] = self.fade_scores.get(i, 0) + self.fade_points
+                if self.fade_policy == "reuse_value":
+                    self.fade_scores[i] = max(self.fade_scores.get(i, 0), self.fade_points)
+                else:
+                    self.fade_scores[i] = self.fade_scores.get(i, 0) + self.fade_points
             else:
-                fs = self.fade_scores.get(i, 0) - 1
+                cost = self.reuse_idle_cost if self.fade_policy == "reuse_value" else 1
+                fs = self.fade_scores.get(i, 0) - cost
                 if fs <= 0:
                     self._remove_slot(i)
                     self.fade_scores.pop(i, None)

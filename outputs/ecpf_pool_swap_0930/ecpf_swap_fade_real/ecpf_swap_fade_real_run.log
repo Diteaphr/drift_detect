@@ -1,0 +1,42 @@
+32 runs (4 streams x 2 settings x 4 variants)
+[1/32] detector      reuse_value electricity.csv                               acc=0.8300 swaps=143 
+[2/32] detector      baseline    electricity.csv                               acc=0.8277 swaps=161 
+[3/32] detector      hoeffding   electricity.csv                               acc=0.8065 swaps=21 
+[4/32] detector      both        electricity.csv                               acc=0.8200 swaps=17 
+[5/32] detector      both        airlines.csv                                  acc=0.6526 swaps=1 
+[6/32] detector      hoeffding   airlines.csv                                  acc=0.6526 swaps=1 
+[7/32] detector      baseline    airlines.csv                                  acc=0.6583 swaps=105 
+[8/32] detector      reuse_value airlines.csv                                  acc=0.6583 swaps=105 
+[9/32] detector      hoeffding   gas_sensor_drift.csv                          acc=0.8245 swaps=10 
+[10/32] detector      both        gas_sensor_drift.csv                          acc=0.8256 swaps=8 
+[11/32] detector      reuse_value gas_sensor_drift.csv                          acc=0.8451 swaps=24 
+[12/32] detector      baseline    gas_sensor_drift.csv                          acc=0.8381 swaps=20 
+[13/32] detector_pool3 baseline    electricity.csv                               acc=0.8297 swaps=166 
+[14/32] detector_pool3 hoeffding   electricity.csv                               acc=0.8089 swaps=24 
+[15/32] detector_pool3 reuse_value electricity.csv                               acc=0.8275 swaps=152 
+[16/32] detector_pool3 both        electricity.csv                               acc=0.8112 swaps=26 
+[17/32] detector_pool3 hoeffding   airlines.csv                                  acc=0.6526 swaps=1 
+[18/32] detector_pool3 baseline    airlines.csv                                  acc=0.6583 swaps=105 
+[19/32] detector_pool3 both        airlines.csv                                  acc=0.6526 swaps=1 
+[20/32] detector_pool3 reuse_value airlines.csv                                  acc=0.6583 swaps=105 
+[21/32] detector      both        covertype.csv                                 acc=0.7836 swaps=97 
+[22/32] detector      baseline    covertype.csv                                 acc=0.8115 swaps=408 
+[23/32] detector      hoeffding   covertype.csv                                 acc=0.7947 swaps=53 
+[24/32] detector      reuse_value covertype.csv                                 acc=0.8166 swaps=470 
+[25/32] detector_pool3 baseline    gas_sensor_drift.csv                          acc=0.8381 swaps=20 
+[26/32] detector_pool3 reuse_value gas_sensor_drift.csv                          acc=0.8457 swaps=23 
+[27/32] detector_pool3 hoeffding   gas_sensor_drift.csv                          acc=0.8175 swaps=10 
+[28/32] detector_pool3 both        gas_sensor_drift.csv                          acc=0.8254 swaps=8 
+[29/32] detector_pool3 hoeffding   covertype.csv                                 acc=0.7836 swaps=60 
+[30/32] detector_pool3 both        covertype.csv                                 acc=0.7938 swaps=73 
+[31/32] detector_pool3 baseline    covertype.csv                                 acc=0.8155 swaps=425 
+[32/32] detector_pool3 reuse_value covertype.csv                                 acc=0.8153 swaps=470 
+       setting     variant  files  accuracy  recovery_acc  leader_swaps  ecpf_drifts  pool_alive  merges  reuse_value_mean
+      detector    baseline      4  0.783887           NaN        173.50       102.50        5.75   86.75        -19.389611
+      detector        both      4  0.770458           NaN         30.75       123.00        5.50  103.75         -9.240956
+      detector   hoeffding      4  0.769570           NaN         21.25       120.00        5.50  102.50         -8.297082
+      detector reuse_value      4  0.787503           NaN        185.50        99.25        3.00   84.75        -14.274599
+detector_pool3    baseline      4  0.785385           NaN        179.00        97.50        3.00   67.25        -17.128896
+detector_pool3        both      4  0.770751           NaN         27.00       117.75        2.50   82.25         -8.555384
+detector_pool3   hoeffding      4  0.765640           NaN         23.75       124.75        2.75   94.25         -9.296622
+detector_pool3 reuse_value      4  0.786693           NaN        187.50        96.25        3.00   67.75        -12.532340

@@ -41,3 +41,62 @@ def test_ecpf_stream_duel_counts():
         yp = float(pm.predict(X[i : i + 1])[0])
         ec.on_stream_instance(pm, X[i], float(y[i]), y_pred_leader=yp)
     assert ec.total_inst == 10
+
+
+def _duel_learner(swap_policy, **kw):
+    """ECPF with a leader and a shadow ready to duel (counters set by hand)."""
+    pm = PredictionModel("linear")
+    rng = np.random.default_rng(2)
+    X = rng.standard_normal((20, 2))
+    y = (X[:, 0] > 0).astype(float)
+    pm.fit(X, y)
+    ec = ECPFMetaLearner(use_advanced=False, model_type="linear", swap_policy=swap_policy, **kw)
+    ec.bootstrap_first_expert(pm)
+    ec.new_model = PredictionModel("linear")
+    ec.new_model.fit(X, y)
+    return ec, pm
+
+
+def test_hoeffding_swap_ignores_small_lead():
+    strict, pm_s = _duel_learner("strict")
+    hoeff, pm_h = _duel_learner("hoeffding", swap_delta=0.05)
+    for ec in (strict, hoeff):
+        ec.curr_correct, ec.new_correct, ec.total_inst = 50, 51, 60
+    strict._compare_classifiers(pm_s)
+    hoeff._compare_classifiers(pm_h)
+    assert strict.leader_swaps == 1
+    assert hoeff.leader_swaps == 0
+
+
+def test_hoeffding_swap_accepts_clear_lead():
+    ec, pm = _duel_learner("hoeffding", swap_delta=0.05)
+    # lead 0.4 > eps = sqrt(2 ln 20 / 200) ~= 0.173
+    ec.curr_correct, ec.new_correct, ec.total_inst = 100, 180, 200
+    ec._compare_classifiers(pm)
+    assert ec.leader_swaps == 1
+    assert ec._leader_is_reused is False
+
+
+def test_reuse_value_credits_source_slot():
+    pm = PredictionModel("linear")
+    rng = np.random.default_rng(3)
+    X = rng.standard_normal((400, 2))
+    y = (X[:, 0] + X[:, 1] > 0).astype(float)
+    pm.fit(X[:50], y[:50])
+    ec = ECPFMetaLearner(
+        use_advanced=False, model_type="linear", fade_policy="reuse_value",
+        reuse_value_window=100, fade_points=15,
+    )
+    ec.bootstrap_first_expert(pm)
+    ec.on_drift(pm, [(X[i], y[i]) for i in range(50, 110)])
+    src = ec._reuse_source
+    assert src is not None
+    # Pretend the reused copy beat the fresh learner by 30 over the window.
+    ec._rv_reused_correct, ec._rv_fresh_correct, ec._rv_n = 95, 65, 100
+    before = ec.fade_scores.get(src, 0)
+    det = ec.on_drift(pm, [(X[i], y[i]) for i in range(110, 170)])
+    assert det["reuse_value"] == 30
+    assert det["reuse_value_source"] == src
+    if ec.slots[src] is not None:
+        # +30 credit, then idle cost 1 if it is not the leader any more
+        assert ec.fade_scores[src] >= before + 30 - 1
