@@ -1,0 +1,22 @@
+{
+  "_about": "Defaults for scripts/run_benchmark.py and the dataset0921-benchmark skill. main_preset is 'our system' whenever an experiment does not name one. A suite is a named set of presets; presets whose 'tasks' do not include the dataset's task are skipped (e.g. arf100 on a regression stream, htr on a classification stream).",
+  "main_preset": "e10bft",
+  "suites": {
+    "standard": {
+      "presets": ["e10bft", "arf100", "srp10", "ht", "nb", "htr"],
+      "description": "Main method + strong baselines (ARF 100 trees, SRP) + no-drift-handling baselines (HT, NB; HT regressor on regression streams). The default set for a SOTA comparison."
+    },
+    "quick": {
+      "presets": ["e10bft", "arf10", "ht", "nb", "htr"],
+      "description": "Cheaper version of standard (ARF with 10 trees, no SRP) for a first look; ARF10 is not the configuration the literature reports."
+    },
+    "ablation": {
+      "presets": ["e10bft", "ecpf_paper", "ecpf_reuse_value"],
+      "description": "Main method vs plain ECPF (paper settings) and ECPF with reuse-value fading, all on a single Hoeffding Tree."
+    },
+    "main_only": {
+      "presets": ["e10bft"],
+      "description": "Only the main method."
+    }
+  }
+}

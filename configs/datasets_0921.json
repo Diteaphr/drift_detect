@@ -1,0 +1,428 @@
+{
+  "_about": "Dataset registry for data/dataset_0921: the single source of evaluation protocol and literature reference values. Runners read it by dataset name; do not override these fields per run. Values are fractions (0.9008 = 90.08%). Source of every SOTA number: docs/literature_sota_dataset_0921.md.",
+  "_policy": {
+    "role": "'report' datasets are where SOTA claims are made; system settings must be frozen before running them and may not be chosen by looking at their results. 'dev' datasets are for tuning and mechanism experiments.",
+    "comparable": "true = same data version and protocol as the cited literature, numbers may be put side by side. false = report only, never claim SOTA; comparability_note says what is missing.",
+    "gt": "null = no ground truth (detection fields are null); 'sibling' = <stem>_drift_times.txt next to each CSV, intervals [[start, end], ...] in output-row coordinates; 'generator' = produced with the stream.",
+    "generator": "Stream generated in memory from a deterministic seed (no CSV on disk) with the listed injection parameters; one run per method x abruptness x trial.",
+    "coordinates": "'input' = alarms, drift points and stream length counted in input rows, including rows the injection dropped (Cerqueira et al.'s convention). Default: rows the system saw.",
+    "detect_from_fraction": "Alarms before int(fraction * n_input) + 1 are ignored by the evaluator (Cerqueira et al. do not feed the detector in the first 25%).",
+    "comparable_kinds": "If set, only presets of these kinds produce comparable rows (others follow a different protocol).",
+    "delta_max": "Cerqueira et al. maximum detection delay; the evaluator scores alarms in [d_s, d_s + delta_max] (their code) and also [d_s, d_e + delta_max] (their paper text)."
+  },
+  "datasets": {
+    "electricity": {
+      "group": "real", "task": "binary", "role": "report",
+      "files": "data/dataset_0921/real_dataset/binary/electricity/electricity.csv",
+      "gt": null, "delta_max": null, "order": "original", "truncated": false,
+      "protocol": "real_prequential", "window": 1000,
+      "comparable": true,
+      "comparability_note": "OpenML 151 / MOA elecNormNew, 45,312 rows, same as literature. Calibrated: baseline_no_change_acc reproduces Souza et al. 85.33%.",
+      "required_metrics": ["acc_prequential", "kappa_t", "kappa_m", "baseline_no_change_acc", "baseline_majority_acc"],
+      "sota": [
+        {"metric": "acc_prequential", "value": 0.950, "method": "TabFM+FIFO", "tier": "overall", "source": "Verma et al. 2026, arXiv:2610.05352, Table 9", "note": "tabular foundation model on GPU, >10x latency"},
+        {"metric": "acc_prequential", "value": 0.9008, "std": 0.0004, "method": "ARF (MOA, 100 trees)", "tier": "classic", "source": "Aspis et al. 2025 (DriftMoE), arXiv:2507.18464, Table 2"},
+        {"metric": "kappa_t", "value": 0.3237, "method": "ARF (MOA, 100 trees)", "tier": "classic", "source": "DriftMoE 2025, Table 4 (column mislabelled Kappa M)"},
+        {"metric": "baseline_no_change_acc", "value": 0.8533, "method": "No-Change", "tier": "baseline", "source": "Souza et al. 2020, arXiv:2005.00113"}
+      ]
+    },
+    "airlines": {
+      "group": "real", "task": "binary", "role": "report",
+      "files": "data/dataset_0921/real_dataset/binary/airlines/airlines.csv",
+      "gt": null, "delta_max": null, "order": "original", "truncated": true,
+      "protocol": "real_prequential", "window": 1000,
+      "comparable": false,
+      "comparability_note": "First 100,000 of 539,383 rows; literature uses the full stream. Compare on airlines_full instead.",
+      "required_metrics": ["acc_prequential", "kappa_m", "kappa_t", "baseline_no_change_acc", "baseline_majority_acc"],
+      "sota": [
+        {"metric": "acc_prequential", "value": 0.7033, "std": 0.0018, "method": "DriftMoE (MoEData)", "tier": "overall", "source": "DriftMoE 2025, Table 2", "note": "full 539,383 rows"},
+        {"metric": "acc_prequential", "value": 0.6855, "std": 0.0004, "method": "SRP", "tier": "classic", "source": "DriftMoE 2025, Table 2", "note": "full 539,383 rows"},
+        {"metric": "kappa_m", "value": 0.3339, "method": "DriftMoE (MoEData)", "tier": "overall", "source": "DriftMoE 2025", "note": "full 539,383 rows"}
+      ]
+    },
+    "covertype": {
+      "group": "real", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/real_dataset/multi_classification/covertype/covertype.csv",
+      "gt": null, "delta_max": null, "order": "original", "truncated": true,
+      "protocol": "real_prequential", "window": 1000,
+      "comparable": false,
+      "comparability_note": "First 100,000 of 581,012 rows; literature accuracy uses the full stream (our no-change 90.64% vs Souza 95.07% on full). Compare on covertype_full instead.",
+      "required_metrics": ["acc_prequential", "kappa_t", "kappa_m", "baseline_no_change_acc", "baseline_majority_acc"],
+      "sota": [
+        {"metric": "acc_prequential", "value": 0.9551, "method": "LTM (TabPFN)", "tier": "overall", "source": "Lourenco et al. 2025, arXiv:2502.16840, Table 1", "note": "full 581,012 rows"},
+        {"metric": "acc_prequential", "value": 0.9527, "std": 0.0001, "method": "SRP", "tier": "classic", "source": "DriftMoE 2025, Table 2", "note": "full 581,012 rows"},
+        {"metric": "baseline_no_change_acc", "value": 0.9507, "method": "No-Change", "tier": "baseline", "source": "Souza et al. 2020", "note": "full 581,012 rows"}
+      ]
+    },
+    "airlines_full": {
+      "group": "real", "task": "binary", "role": "report",
+      "files": "data/dataset_0921/real_dataset/_full/binary/airlines/airlines.csv",
+      "files_hint": "not in git; generate with: cd data/dataset_0921/real_dataset/script && python3 prepare_all.py --full",
+      "gt": null, "delta_max": null, "order": "original", "truncated": false,
+      "protocol": "real_prequential", "window": 1000,
+      "comparable": true,
+      "comparability_note": "Full OpenML airlines stream, 539,383 rows, same as DriftMoE. Airline / AirportFrom / AirportTo are integer codes, so River trees split them as numeric while MOA treats them as nominal; re-run SRP/ARF here rather than relying only on the cited values.",
+      "required_metrics": ["acc_prequential", "kappa_m", "kappa_t", "baseline_no_change_acc", "baseline_majority_acc"],
+      "sota": [
+        {"metric": "acc_prequential", "value": 0.7033, "std": 0.0018, "method": "DriftMoE (MoEData)", "tier": "overall", "source": "DriftMoE 2025, Table 2"},
+        {"metric": "acc_prequential", "value": 0.6855, "std": 0.0004, "method": "SRP", "tier": "classic", "source": "DriftMoE 2025, Table 2"},
+        {"metric": "kappa_m", "value": 0.3339, "method": "DriftMoE (MoEData)", "tier": "overall", "source": "DriftMoE 2025"}
+      ]
+    },
+    "covertype_full": {
+      "group": "real", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/real_dataset/_full/multi_classification/covertype/covertype.csv",
+      "files_hint": "not in git; generate with: cd data/dataset_0921/real_dataset/script && python3 prepare_all.py --full",
+      "gt": null, "delta_max": null, "order": "original", "truncated": false,
+      "protocol": "real_prequential", "window": 1000,
+      "comparable": true,
+      "comparability_note": "Full 581,012 rows in UCI order. Calibrated: baseline_no_change_acc 95.06% vs Souza et al. 95.07%. Features are not min-max normalised as in MOA covtypeNorm; tree learners are unaffected, distance-based ones are not.",
+      "required_metrics": ["acc_prequential", "kappa_t", "kappa_m", "baseline_no_change_acc", "baseline_majority_acc"],
+      "sota": [
+        {"metric": "acc_prequential", "value": 0.9551, "method": "LTM (TabPFN)", "tier": "overall", "source": "Lourenco et al. 2025, arXiv:2502.16840, Table 1"},
+        {"metric": "acc_prequential", "value": 0.9527, "std": 0.0001, "method": "SRP", "tier": "classic", "source": "DriftMoE 2025, Table 2"},
+        {"metric": "baseline_no_change_acc", "value": 0.9507, "method": "No-Change", "tier": "baseline", "source": "Souza et al. 2020"}
+      ]
+    },
+    "gas_sensor_drift": {
+      "group": "real", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/real_dataset/multi_classification/gas_sensor_drift/gas_sensor_drift.csv",
+      "gt": null, "delta_max": null, "order": "original", "truncated": false,
+      "protocol": "real_prequential", "window": 1000,
+      "comparable": false,
+      "comparability_note": "Literature uses batch domain adaptation (train batch 1, test batches 2-10), not prequential.",
+      "required_metrics": ["acc_prequential", "kappa_t", "baseline_no_change_acc"],
+      "sota": []
+    },
+    "ai4i2020": {
+      "group": "real", "task": "binary", "role": "report",
+      "files": "data/dataset_0921/real_dataset/binary/ai4i2020/ai4i2020.csv",
+      "gt": null, "delta_max": null, "order": "original", "truncated": false,
+      "protocol": "real_prequential", "window": 1000,
+      "comparable": false,
+      "comparability_note": "No prequential benchmark exists; 3.4% failure rate makes accuracy uninformative (look at macro_f1 / kappa).",
+      "required_metrics": ["macro_f1", "kappa", "acc_prequential"],
+      "sota": []
+    },
+    "metro_interstate_traffic": {
+      "group": "real", "task": "regression", "role": "report",
+      "files": "data/dataset_0921/real_dataset/regression/metro_interstate_traffic/metro_interstate_traffic.csv",
+      "gt": null, "delta_max": null, "order": "original", "truncated": false,
+      "protocol": "real_prequential", "window": 1000,
+      "comparable": false, "comparability_note": "Regression literature not surveyed.",
+      "required_metrics": ["mae", "rmse"], "sota": []
+    },
+    "bike_sharing": {
+      "group": "real", "task": "regression", "role": "report",
+      "files": "data/dataset_0921/real_dataset/regression/bike_sharing/bike_sharing.csv",
+      "gt": null, "delta_max": null, "order": "original", "truncated": false,
+      "protocol": "real_prequential", "window": 1000,
+      "comparable": false, "comparability_note": "Regression literature not surveyed.",
+      "required_metrics": ["mae", "rmse"], "sota": []
+    },
+
+    "insects_abrupt_balanced": {
+      "group": "insects", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/insects_dataset/multi_classification/abrupt_balanced/abrupt_balanced.csv",
+      "gt": "sibling", "delta_max": 1000, "order": "original", "truncated": false,
+      "protocol": "insects", "window": 1000,
+      "comparable": true,
+      "comparability_note": "Same data and change points as Souza et al. 2020. Table 5 is sliding-window (1000) accuracy -> compare acc_window1000_mean; Table 6 (NB + detector) -> compare acc_prequential. delta_max is not from the paper (it reports detection counts only).",
+      "required_metrics": ["acc_window1000_mean", "acc_prequential", "kappa", "n_alarms", "f1", "episode_recall"],
+      "sota": [
+        {"metric": "acc_window1000_mean", "value": 0.7434, "method": "ARF", "tier": "classic", "source": "Souza et al. 2020, Table 5"},
+        {"metric": "acc_prequential", "value": 0.6602, "method": "NB + STEPD", "tier": "detector+NB", "source": "Souza et al. 2020, Table 6"},
+        {"metric": "baseline_no_change_acc", "value": 0.2898, "method": "No-Change", "tier": "baseline", "source": "Souza et al. 2020, Table 5"}
+      ]
+    },
+    "insects_incremental_balanced": {
+      "group": "insects", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/insects_dataset/multi_classification/incremental_balanced/incremental_balanced.csv",
+      "gt": "sibling", "delta_max": 1000, "order": "original", "truncated": false,
+      "protocol": "insects", "window": 1000,
+      "comparable": true,
+      "comparability_note": "Continuous drift, empty ground truth: detection fields are null. See insects_abrupt_balanced for the metric mapping.",
+      "required_metrics": ["acc_window1000_mean", "acc_prequential", "kappa", "n_alarms"],
+      "sota": [
+        {"metric": "acc_window1000_mean", "value": 0.6429, "method": "ARF", "tier": "classic", "source": "Souza et al. 2020, Table 5"},
+        {"metric": "acc_prequential", "value": 0.5663, "method": "NB + CUSUM", "tier": "detector+NB", "source": "Souza et al. 2020, Table 6"},
+        {"metric": "baseline_no_change_acc", "value": 0.1604, "method": "No-Change", "tier": "baseline", "source": "Souza et al. 2020, Table 5"}
+      ]
+    },
+    "insects_incremental_gradual_balanced": {
+      "group": "insects", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/insects_dataset/multi_classification/incremental_gradual_balanced/incremental_gradual_balanced.csv",
+      "gt": "sibling", "delta_max": 1000, "order": "original", "truncated": false,
+      "protocol": "insects", "window": 1000,
+      "comparable": true,
+      "comparability_note": "See insects_abrupt_balanced for the metric mapping.",
+      "required_metrics": ["acc_window1000_mean", "acc_prequential", "kappa", "n_alarms", "f1", "episode_recall"],
+      "sota": [
+        {"metric": "acc_window1000_mean", "value": 0.7792, "method": "ARF", "tier": "classic", "source": "Souza et al. 2020, Table 5"},
+        {"metric": "acc_prequential", "value": 0.7226, "method": "NB + ADWIN", "tier": "detector+NB", "source": "Souza et al. 2020, Table 6"},
+        {"metric": "f1", "value": 0.25, "method": "PHT + HT", "tier": "detection", "source": "Minato et al. 2026, arXiv:2610.05853, Table II", "note": "their F1 definition not verified against ours"},
+        {"metric": "baseline_no_change_acc", "value": 0.3843, "method": "No-Change", "tier": "baseline", "source": "Souza et al. 2020, Table 5"}
+      ]
+    },
+    "insects_incremental_abrupt_reoccurring_balanced": {
+      "group": "insects", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/insects_dataset/multi_classification/incremental_abrupt_reoccurring_balanced/incremental_abrupt_reoccurring_balanced.csv",
+      "gt": "sibling", "delta_max": 1000, "order": "original", "truncated": false,
+      "protocol": "insects", "window": 1000,
+      "comparable": true,
+      "comparability_note": "See insects_abrupt_balanced for the metric mapping.",
+      "required_metrics": ["acc_window1000_mean", "acc_prequential", "kappa", "n_alarms", "f1", "episode_recall"],
+      "sota": [
+        {"metric": "acc_window1000_mean", "value": 0.7495, "method": "ARF", "tier": "classic", "source": "Souza et al. 2020, Table 5"},
+        {"metric": "acc_prequential", "value": 0.6877, "method": "NB + STEPD", "tier": "detector+NB", "source": "Souza et al. 2020, Table 6"},
+        {"metric": "baseline_no_change_acc", "value": 0.4239, "method": "No-Change", "tier": "baseline", "source": "Souza et al. 2020, Table 5"}
+      ]
+    },
+    "insects_incremental_reoccurring_balanced": {
+      "group": "insects", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/insects_dataset/multi_classification/incremental_reoccurring_balanced/incremental_reoccurring_balanced.csv",
+      "gt": "sibling", "delta_max": 1000, "order": "original", "truncated": false,
+      "protocol": "insects", "window": 1000,
+      "comparable": true,
+      "comparability_note": "See insects_abrupt_balanced for the metric mapping.",
+      "required_metrics": ["acc_window1000_mean", "acc_prequential", "kappa", "n_alarms", "f1", "episode_recall"],
+      "sota": [
+        {"metric": "acc_window1000_mean", "value": 0.7713, "method": "ARF", "tier": "classic", "source": "Souza et al. 2020, Table 5"},
+        {"metric": "acc_prequential", "value": 0.6982, "method": "NB + SEED", "tier": "detector+NB", "source": "Souza et al. 2020, Table 6"},
+        {"metric": "baseline_no_change_acc", "value": 0.4046, "method": "No-Change", "tier": "baseline", "source": "Souza et al. 2020, Table 5"}
+      ]
+    },
+
+    "injected_electricity": {
+      "group": "injected", "task": "binary", "role": "report",
+      "files": "data/dataset_0921/injected_real_dataset/binary/*/*/electricity_*_g*.csv",
+      "gt": "sibling", "delta_max": 2500, "order": "shuffled", "truncated": false,
+      "protocol": "injected_detection", "window": 1000,
+      "cell_from_meta": ["abruptness", "method"],
+      "comparable": false,
+      "comparability_note": "Generated with gradual width <= 1000 and 10 trials; Cerqueira et al. use width 2500 and 50 trials. Compare on injected_paper_electricity instead. Their numbers come from a detection-only workflow (single HT, no detection in the first 25%, model never reset on alarm).",
+      "required_metrics": ["f1", "precision", "recall", "episode_recall", "mdt", "ndt", "far"],
+      "sota_by_cell": {
+        "abrupt/class_prior": {"metric": "f1", "value": 0.698, "method": "ADWIN", "mdt": 1202},
+        "abrupt/label_swap": {"metric": "f1", "value": 0.566, "method": "SEED", "mdt": 277},
+        "abrupt/feature_permutation": {"metric": "f1", "value": 1.000, "method": "ABCD(X)", "mdt": 40},
+        "abrupt/feature_filtering": {"metric": "f1", "value": 0.245, "method": "CUSUM", "mdt": 1154},
+        "gradual/class_prior": {"metric": "f1", "value": 0.295, "method": "STEPD", "mdt": 2044},
+        "gradual/label_swap": {"metric": "f1", "value": 0.383, "method": "STEPD", "mdt": 905},
+        "gradual/feature_permutation": {"metric": "f1", "value": 0.984, "method": "ABCD(X)", "mdt": 709},
+        "gradual/feature_filtering": {"metric": "f1", "value": 0.147, "method": "STUDD", "mdt": 751}
+      },
+      "sota_source": "Cerqueira et al. 2026, arXiv:2606.07789, hypertuned results.csv (github.com/vcerqueira/experiments-drift_evaluation)"
+    },
+    "injected_covertype": {
+      "group": "injected", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/injected_real_dataset/multi_classification/*/*/covertype_*_g*.csv",
+      "gt": "sibling", "delta_max": 2500, "order": "shuffled", "truncated": true,
+      "protocol": "injected_detection", "window": 1000,
+      "cell_from_meta": ["abruptness", "method"],
+      "comparable": false,
+      "comparability_note": "As injected_electricity; additionally ours keeps the first 100k rows then shuffles, theirs shuffles all 581,012 rows then keeps 100k.",
+      "required_metrics": ["f1", "precision", "recall", "episode_recall", "mdt", "ndt", "far"],
+      "sota_by_cell": {
+        "abrupt/class_prior": {"metric": "f1", "value": 0.133, "method": "ABCD", "mdt": 1216},
+        "abrupt/label_swap": {"metric": "f1", "value": 0.172, "method": "SEED", "mdt": 715},
+        "abrupt/feature_permutation": {"metric": "f1", "value": 1.000, "method": "ABCD(X)", "mdt": 72},
+        "abrupt/feature_filtering": {"metric": "f1", "value": 0.092, "method": "STEPD", "mdt": 1342},
+        "gradual/class_prior": {"metric": "f1", "value": 0.189, "method": "STEPD", "mdt": 1527},
+        "gradual/label_swap": {"metric": "f1", "value": 0.175, "method": "ABCD", "mdt": 1396},
+        "gradual/feature_permutation": {"metric": "f1", "value": 0.667, "method": "ABCD(X)", "mdt": 825},
+        "gradual/feature_filtering": {"metric": "f1", "value": 0.065, "method": "HDDM_W", "mdt": 789}
+      },
+      "sota_source": "Cerqueira et al. 2026, hypertuned results.csv"
+    },
+    "injected_gas_sensor_drift": {
+      "group": "injected", "task": "multiclass", "role": "report",
+      "files": "data/dataset_0921/injected_real_dataset/multi_classification/*/*/gas_sensor_drift_*_g*.csv",
+      "gt": "sibling", "delta_max": 1500, "order": "shuffled", "truncated": false,
+      "protocol": "injected_detection", "window": 1000,
+      "cell_from_meta": ["abruptness", "method"],
+      "comparable": false,
+      "comparability_note": "As injected_electricity, with paper width / delta_max 1500.",
+      "required_metrics": ["f1", "precision", "recall", "episode_recall", "mdt", "ndt", "far"],
+      "sota_by_cell": {
+        "abrupt/class_prior": {"metric": "f1", "value": 0.400, "method": "DDM", "mdt": 753},
+        "abrupt/label_swap": {"metric": "f1", "value": 0.525, "method": "SEED", "mdt": 571},
+        "abrupt/feature_permutation": {"metric": "f1", "value": 1.000, "method": "ABCD(X)", "mdt": 406},
+        "abrupt/feature_filtering": {"metric": "f1", "value": 0.571, "method": "SEED", "mdt": 474},
+        "gradual/class_prior": {"metric": "f1", "value": 0.519, "method": "STUDD", "mdt": 509},
+        "gradual/label_swap": {"metric": "f1", "value": 0.384, "method": "STUDD", "mdt": 495},
+        "gradual/feature_permutation": {"metric": "f1", "value": 0.704, "method": "ABCD", "mdt": 1034},
+        "gradual/feature_filtering": {"metric": "f1", "value": 0.404, "method": "STUDD", "mdt": 654}
+      },
+      "sota_source": "Cerqueira et al. 2026, hypertuned results.csv"
+    },
+    "injected_airlines": {
+      "group": "injected", "task": "binary", "role": "dev",
+      "files": "data/dataset_0921/injected_real_dataset/binary/*/*/airlines_*_g*.csv",
+      "gt": "sibling", "delta_max": 1000, "order": "shuffled", "truncated": true,
+      "protocol": "injected_detection", "window": 1000,
+      "cell_from_meta": ["abruptness", "method"],
+      "comparable": false, "comparability_note": "Not in Cerqueira et al.; no literature reference. delta_max = our gradual width.",
+      "required_metrics": ["f1", "precision", "recall", "episode_recall", "mdt", "far"]
+    },
+    "injected_ai4i2020": {
+      "group": "injected", "task": "binary", "role": "dev",
+      "files": "data/dataset_0921/injected_real_dataset/binary/*/*/ai4i2020_*_g*.csv",
+      "gt": "sibling", "delta_max": 500, "order": "shuffled", "truncated": false,
+      "protocol": "injected_detection", "window": 1000,
+      "cell_from_meta": ["abruptness", "method"],
+      "comparable": false, "comparability_note": "Not in Cerqueira et al.; no literature reference. delta_max = our gradual width.",
+      "required_metrics": ["f1", "precision", "recall", "episode_recall", "mdt", "far"]
+    },
+
+    "injected_paper_electricity": {
+      "group": "injected", "task": "binary", "role": "report",
+      "generator": {
+        "name": "electricity", "source": "data/dataset_0921/real_dataset/binary/electricity/electricity.csv",
+        "width": 2500, "n_trials": 50, "max_n": 100000, "truncate_after_shuffle": true,
+        "drift_region": [0.5, 0.8], "label_skip_proba": 0.75, "seed_tag": "paper",
+        "methods": ["class_prior", "label_swap", "feature_permutation", "feature_filtering"],
+        "abruptness": ["abrupt", "gradual"]
+      },
+      "gt": "generator", "delta_max": 2500, "order": "shuffled", "truncated": false,
+      "coordinates": "input", "detect_from_fraction": 0.25,
+      "protocol": "injected_detection", "window": 1000,
+      "comparable": true, "comparable_kinds": ["detector"],
+      "comparability_note": "Generated in memory with Cerqueira et al.'s parameters (shuffle, one drift in 50-80%, width = delta_max = 2500, 50 trials, label_skip_proba 0.75). Scored like their code: input-row coordinates (dropped rows still count), alarms before 25% of the stream ignored, window [d_s, d_s + delta_max]. Only 'detector' presets follow their workflow (one HT never reset on alarm); pipeline presets adapt on alarms, so their F1 is reference only. Remaining differences: River instead of CapyMOA/MOA implementations, and our own random draws.",
+      "required_metrics": ["f1", "precision", "recall", "episode_recall", "mdt", "ndt", "far"],
+      "sota_by_cell": {
+        "abrupt/class_prior": {"metric": "f1", "value": 0.698, "method": "ADWIN", "mdt": 1202},
+        "abrupt/label_swap": {"metric": "f1", "value": 0.566, "method": "SEED", "mdt": 277},
+        "abrupt/feature_permutation": {"metric": "f1", "value": 1.000, "method": "ABCD(X)", "mdt": 40},
+        "abrupt/feature_filtering": {"metric": "f1", "value": 0.245, "method": "CUSUM", "mdt": 1154},
+        "gradual/class_prior": {"metric": "f1", "value": 0.295, "method": "STEPD", "mdt": 2044},
+        "gradual/label_swap": {"metric": "f1", "value": 0.383, "method": "STEPD", "mdt": 905},
+        "gradual/feature_permutation": {"metric": "f1", "value": 0.984, "method": "ABCD(X)", "mdt": 709},
+        "gradual/feature_filtering": {"metric": "f1", "value": 0.147, "method": "STUDD", "mdt": 751}
+      },
+      "sota_source": "Cerqueira et al. 2026, arXiv:2606.07789, hypertuned results.csv (github.com/vcerqueira/experiments-drift_evaluation)",
+      "calibration": {
+      "preset": "det_adwin", "method": "ADWIN delta=0.01 (their hypertuned setup)",
+      "source": "Cerqueira et al. assets/results/real/Electricity,<drift>,<ABRUPT|GRADUAL>,hypertuned,results.csv, row ADWIN (pooled over 50 trials; far = their FAR)",
+      "by_cell": {
+        "abrupt/class_prior": {"f1": 0.698, "episode_recall": 0.56, "mdt": 1202, "far": 2.58},
+        "abrupt/label_swap": {"f1": 0.251, "episode_recall": 0.82, "mdt": 1682, "far": 16.93},
+        "abrupt/feature_permutation": {"f1": 0.737, "episode_recall": 0.8, "mdt": 1093, "far": 1.32},
+        "abrupt/feature_filtering": {"f1": 0.187, "episode_recall": 0.1, "mdt": 1504, "far": 2.47},
+        "gradual/class_prior": {"f1": 0.088, "episode_recall": 0.1, "mdt": 2266, "far": 6.36},
+        "gradual/label_swap": {"f1": 0.0, "episode_recall": 0.0, "mdt": null, "far": 17.66},
+        "gradual/feature_permutation": {"f1": 0.05, "episode_recall": 0.06, "mdt": 2146, "far": 1.48},
+        "gradual/feature_filtering": {"f1": 0.025, "episode_recall": 0.04, "mdt": 1362, "far": 2.38}
+      }
+      }
+    },
+    "injected_paper_covertype": {
+      "group": "injected", "task": "multiclass", "role": "report",
+      "generator": {
+        "name": "covertype", "source": "data/dataset_0921/real_dataset/_full/multi_classification/covertype/covertype.csv",
+        "source_hint": "not in git; generate with: cd data/dataset_0921/real_dataset/script && python3 prepare_all.py --full",
+        "width": 2500, "n_trials": 50, "max_n": 100000, "truncate_after_shuffle": true,
+        "drift_region": [0.5, 0.8], "label_skip_proba": 0.75, "seed_tag": "paper",
+        "methods": ["class_prior", "label_swap", "feature_permutation", "feature_filtering"],
+        "abruptness": ["abrupt", "gradual"]
+      },
+      "gt": "generator", "delta_max": 2500, "order": "shuffled", "truncated": true,
+      "coordinates": "input", "detect_from_fraction": 0.25,
+      "protocol": "injected_detection", "window": 1000,
+      "comparable": true, "comparable_kinds": ["detector"],
+      "comparability_note": "As injected_paper_electricity; shuffles all 581,012 rows then keeps 100,000, as their reader does.",
+      "required_metrics": ["f1", "precision", "recall", "episode_recall", "mdt", "ndt", "far"],
+      "sota_by_cell": {
+        "abrupt/class_prior": {"metric": "f1", "value": 0.133, "method": "ABCD", "mdt": 1216},
+        "abrupt/label_swap": {"metric": "f1", "value": 0.172, "method": "SEED", "mdt": 715},
+        "abrupt/feature_permutation": {"metric": "f1", "value": 1.000, "method": "ABCD(X)", "mdt": 72},
+        "abrupt/feature_filtering": {"metric": "f1", "value": 0.092, "method": "STEPD", "mdt": 1342},
+        "gradual/class_prior": {"metric": "f1", "value": 0.189, "method": "STEPD", "mdt": 1527},
+        "gradual/label_swap": {"metric": "f1", "value": 0.175, "method": "ABCD", "mdt": 1396},
+        "gradual/feature_permutation": {"metric": "f1", "value": 0.667, "method": "ABCD(X)", "mdt": 825},
+        "gradual/feature_filtering": {"metric": "f1", "value": 0.065, "method": "HDDM_W", "mdt": 789}
+      },
+      "sota_source": "Cerqueira et al. 2026, hypertuned results.csv",
+      "calibration": {
+      "preset": "det_adwin", "method": "ADWIN delta=0.01 (their hypertuned setup)",
+      "source": "Cerqueira et al. assets/results/real/Covtype,<drift>,<ABRUPT|GRADUAL>,hypertuned,results.csv, row ADWIN (pooled over 50 trials; far = their FAR)",
+      "by_cell": {
+        "abrupt/class_prior": {"f1": 0.12, "episode_recall": 0.28, "mdt": 1176, "far": 4.49},
+        "abrupt/label_swap": {"f1": 0.12, "episode_recall": 0.24, "mdt": 1294, "far": 5.07},
+        "abrupt/feature_permutation": {"f1": 0.204, "episode_recall": 0.58, "mdt": 900, "far": 5.66},
+        "abrupt/feature_filtering": {"f1": 0.081, "episode_recall": 0.18, "mdt": 1448, "far": 4.34},
+        "gradual/class_prior": {"f1": 0.152, "episode_recall": 0.22, "mdt": 1584, "far": 2.18},
+        "gradual/label_swap": {"f1": 0.1, "episode_recall": 0.2, "mdt": 1669, "far": 5.21},
+        "gradual/feature_permutation": {"f1": 0.063, "episode_recall": 0.28, "mdt": 2008, "far": 6.15},
+        "gradual/feature_filtering": {"f1": 0.05, "episode_recall": 0.16, "mdt": 1134, "far": 4.17}
+      }
+      }
+    },
+    "injected_paper_gas_sensor_drift": {
+      "group": "injected", "task": "multiclass", "role": "report",
+      "generator": {
+        "name": "gas_sensor_drift", "source": "data/dataset_0921/real_dataset/multi_classification/gas_sensor_drift/gas_sensor_drift.csv",
+        "width": 1500, "n_trials": 50, "max_n": 100000, "truncate_after_shuffle": true,
+        "drift_region": [0.5, 0.8], "label_skip_proba": 0.75, "seed_tag": "paper",
+        "methods": ["class_prior", "label_swap", "feature_permutation", "feature_filtering"],
+        "abruptness": ["abrupt", "gradual"]
+      },
+      "gt": "generator", "delta_max": 1500, "order": "shuffled", "truncated": false,
+      "coordinates": "input", "detect_from_fraction": 0.25,
+      "protocol": "injected_detection", "window": 1000,
+      "comparable": true, "comparable_kinds": ["detector"],
+      "comparability_note": "As injected_paper_electricity, with width = delta_max = 1500.",
+      "required_metrics": ["f1", "precision", "recall", "episode_recall", "mdt", "ndt", "far"],
+      "sota_by_cell": {
+        "abrupt/class_prior": {"metric": "f1", "value": 0.400, "method": "DDM", "mdt": 753},
+        "abrupt/label_swap": {"metric": "f1", "value": 0.525, "method": "SEED", "mdt": 571},
+        "abrupt/feature_permutation": {"metric": "f1", "value": 1.000, "method": "ABCD(X)", "mdt": 406},
+        "abrupt/feature_filtering": {"metric": "f1", "value": 0.571, "method": "SEED", "mdt": 474},
+        "gradual/class_prior": {"metric": "f1", "value": 0.519, "method": "STUDD", "mdt": 509},
+        "gradual/label_swap": {"metric": "f1", "value": 0.384, "method": "STUDD", "mdt": 495},
+        "gradual/feature_permutation": {"metric": "f1", "value": 0.704, "method": "ABCD", "mdt": 1034},
+        "gradual/feature_filtering": {"metric": "f1", "value": 0.404, "method": "STUDD", "mdt": 654}
+      },
+      "sota_source": "Cerqueira et al. 2026, hypertuned results.csv",
+      "calibration": {
+      "preset": "det_adwin", "method": "ADWIN delta=0.01 (their hypertuned setup)",
+      "source": "Cerqueira et al. assets/results/real/GasSensorArray,<drift>,<ABRUPT|GRADUAL>,hypertuned,results.csv, row ADWIN (pooled over 50 trials; far = their FAR)",
+      "by_cell": {
+        "abrupt/class_prior": {"f1": 0.394, "episode_recall": 0.38, "mdt": 697, "far": 8.84},
+        "abrupt/label_swap": {"f1": 0.19, "episode_recall": 0.18, "mdt": 992, "far": 8.05},
+        "abrupt/feature_permutation": {"f1": 0.446, "episode_recall": 0.56, "mdt": 982, "far": 11.43},
+        "abrupt/feature_filtering": {"f1": 0.382, "episode_recall": 0.36, "mdt": 446, "far": 10.5},
+        "gradual/class_prior": {"f1": 0.346, "episode_recall": 0.32, "mdt": 692, "far": 10.35},
+        "gradual/label_swap": {"f1": 0.155, "episode_recall": 0.12, "mdt": 65, "far": 5.46},
+        "gradual/feature_permutation": {"f1": 0.081, "episode_recall": 0.08, "mdt": 337, "far": 6.54},
+        "gradual/feature_filtering": {"f1": 0.395, "episode_recall": 0.34, "mdt": 700, "far": 9.06}
+      }
+      }
+    },
+
+    "synthetic_binary": {
+      "group": "synthetic", "task": "binary", "role": "dev",
+      "files": "data/dataset_0921/synthetic_dataset/binary/*/*.csv",
+      "gt": "sibling", "delta_max": 1000, "order": "original", "truncated": false,
+      "protocol": "synthetic", "window": 1000,
+      "comparable": false, "comparability_note": "Generated in-repo with River SEA (100k rows, no label noise); literature uses MOA SEA (1M rows, 10% noise). Compare only against baselines re-run here.",
+      "required_metrics": ["acc_prequential", "kappa", "f1", "episode_recall", "mdt", "far"]
+    },
+    "synthetic_multiclass": {
+      "group": "synthetic", "task": "multiclass", "role": "dev",
+      "files": "data/dataset_0921/synthetic_dataset/multi_classification/*/*.csv",
+      "gt": "sibling", "delta_max": 1000, "order": "original", "truncated": false,
+      "protocol": "synthetic", "window": 1000,
+      "comparable": false, "comparability_note": "In-repo RandomRBF4; compare only against baselines re-run here.",
+      "required_metrics": ["acc_prequential", "kappa", "macro_f1", "f1", "episode_recall", "mdt", "far"]
+    },
+    "synthetic_regression": {
+      "group": "synthetic", "task": "regression", "role": "dev",
+      "files": "data/dataset_0921/synthetic_dataset/regression/*/*.csv",
+      "gt": "sibling", "delta_max": 1000, "order": "original", "truncated": false,
+      "protocol": "synthetic", "window": 1000,
+      "comparable": false, "comparability_note": "In-repo Friedman; compare only against baselines re-run here.",
+      "required_metrics": ["mae", "rmse", "f1", "episode_recall", "mdt", "far"]
+    }
+  }
+}

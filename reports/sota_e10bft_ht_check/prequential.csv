@@ -1,0 +1,56 @@
+dataset,preset,metric,n,mean,std,ci95,sota_value,sota_method,sota_source,diff_vs_sota,classic_value,classic_method,diff_vs_classic
+electricity,arf10,acc_prequential,1,0.8811793785310734,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.06882062146892653,0.9008,"ARF (MOA, 100 trees)",-0.019620621468926625
+electricity,arf10,kappa_t,1,0.1901323706377854,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.13356762936221458,0.3237,"ARF (MOA, 100 trees)",-0.13356762936221458
+electricity,arf10,kappa_m,1,0.7200644725211875,,,,,,,,,
+electricity,arf10,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,arf10,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,arf100,acc_prequential,1,0.8953698799435028,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.054630120056497145,0.9008,"ARF (MOA, 100 trees)",-0.005430120056497234
+electricity,arf100,kappa_t,1,0.2868531889290009,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.036846811070999075,0.3237,"ARF (MOA, 100 trees)",-0.036846811070999075
+electricity,arf100,kappa_m,1,0.7534965943950501,,,,,,,,,
+electricity,arf100,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,arf100,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft,acc_prequential,1,0.8266684322033898,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12333156779661014,0.9008,"ARF (MOA, 100 trees)",-0.07413156779661023
+electricity,e10bft,kappa_t,1,-0.1814079422382675,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5051079422382675,0.3237,"ARF (MOA, 100 trees)",-0.5051079422382675
+electricity,e10bft,kappa_m,1,0.5916393698330994,,,,,,,,,
+electricity,e10bft,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_paper,acc_prequential,1,0.8275953389830508,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12240466101694913,0.9008,"ARF (MOA, 100 trees)",-0.07320466101694922
+electricity,ecpf_paper,kappa_t,1,-0.1750902527075816,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4987902527075816,0.3237,"ARF (MOA, 100 trees)",-0.4987902527075816
+electricity,ecpf_paper,kappa_m,1,0.5938231165184839,,,,,,,,,
+electricity,ecpf_paper,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_paper,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_reuse_value,acc_prequential,1,0.8298905367231638,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12010946327683614,0.9008,"ARF (MOA, 100 trees)",-0.07090946327683623
+electricity,ecpf_reuse_value,kappa_t,1,-0.1594464500601688,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.48314645006016876,0.3237,"ARF (MOA, 100 trees)",-0.48314645006016876
+electricity,ecpf_reuse_value,kappa_m,1,0.5992304892632454,,,,,,,,,
+electricity,ecpf_reuse_value,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_reuse_value,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ht,acc_prequential,1,0.7956170550847458,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.15438294491525417,0.9008,"ARF (MOA, 100 trees)",-0.10518294491525426
+electricity,ht,kappa_t,1,-0.3930505415162456,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.7167505415162456,0.3237,"ARF (MOA, 100 trees)",-0.7167505415162456
+electricity,ht,kappa_m,1,0.5184838558727188,,,,,,,,,
+electricity,ht,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ht,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,nb,acc_prequential,1,0.7287252824858758,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.2212747175141242,0.9008,"ARF (MOA, 100 trees)",-0.1720747175141243
+electricity,nb,kappa_t,1,-0.8489771359807461,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-1.172677135980746,0.3237,"ARF (MOA, 100 trees)",-1.172677135980746
+electricity,nb,kappa_m,1,0.3608901367441379,,,,,,,,,
+electricity,nb,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,nb,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+insects_abrupt_balanced,arf10,acc_window1000_mean,1,0.7309254412739388,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.01247455872606118,0.7434,ARF,-0.01247455872606118
+insects_abrupt_balanced,arf10,acc_prequential,1,0.7350325461701483,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",0.07483254617014834,,,
+insects_abrupt_balanced,arf10,kappa,1,0.6820390554041781,,,,,,,,,
+insects_abrupt_balanced,arf10,n_alarms,1,0.0,,,,,,,,,
+insects_abrupt_balanced,e10bft,acc_window1000_mean,1,0.642487541436087,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10091245856391295,0.7434,ARF,-0.10091245856391295
+insects_abrupt_balanced,e10bft,acc_prequential,1,0.646855131698456,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.013344868301544022,,,
+insects_abrupt_balanced,e10bft,kappa,1,0.5762261580381473,,,,,,,,,
+insects_abrupt_balanced,e10bft,n_alarms,1,14.0,,,,,,,,,
+insects_abrupt_balanced,e10bft,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_paper,acc_window1000_mean,1,0.6384049839126236,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10499501608737638,0.7434,ARF,-0.10499501608737638
+insects_abrupt_balanced,ecpf_paper,acc_prequential,1,0.6426354828943385,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.017564517105661537,,,
+insects_abrupt_balanced,ecpf_paper,kappa,1,0.5711625794732061,,,,,,,,,
+insects_abrupt_balanced,ecpf_paper,n_alarms,1,26.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_paper,f1,1,0.4571428571428572,,,,,,,,,
+insects_abrupt_balanced,ecpf_paper,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,nb,acc_window1000_mean,1,0.5057939642857477,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.2376060357142522,0.7434,ARF,-0.2376060357142522
+insects_abrupt_balanced,nb,acc_prequential,1,0.5067552225249773,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.15344477747502272,,,
+insects_abrupt_balanced,nb,kappa,1,0.4081062670299727,,,,,,,,,
+insects_abrupt_balanced,nb,n_alarms,1,0.0,,,,,,,,,

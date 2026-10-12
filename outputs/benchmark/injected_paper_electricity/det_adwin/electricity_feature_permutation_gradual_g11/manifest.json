@@ -1,0 +1,210 @@
+{
+  "dataset": "injected_paper_electricity",
+  "stream": "electricity_feature_permutation_gradual_g11",
+  "data": {
+    "generator": {
+      "name": "electricity",
+      "source": "data/dataset_0921/real_dataset/binary/electricity/electricity.csv",
+      "width": 2500,
+      "n_trials": 50,
+      "max_n": 100000,
+      "truncate_after_shuffle": true,
+      "drift_region": [
+        0.5,
+        0.8
+      ],
+      "label_skip_proba": 0.75,
+      "seed_tag": "paper",
+      "methods": [
+        "class_prior",
+        "label_swap",
+        "feature_permutation",
+        "feature_filtering"
+      ],
+      "abruptness": [
+        "abrupt",
+        "gradual"
+      ]
+    },
+    "source_sha256": "d9775d0f478b91d2454b21726f906577811ef5abdcd17db8b7d6796f2c9cada4",
+    "seed": 2901416616,
+    "method": "feature_permutation",
+    "abruptness": "gradual",
+    "g_id": 11,
+    "trial_meta": {
+      "n_input": 45312,
+      "n_output": 45312,
+      "drift_onset_input": 24257,
+      "drift_end_input": 26757,
+      "drift_width": 2500,
+      "y_selected": null,
+      "y_swap": null,
+      "x_filter_idx": null
+    }
+  },
+  "cell": "gradual/feature_permutation",
+  "task": "binary",
+  "n_classes": 2,
+  "coordinates": "input",
+  "n_input": 45312,
+  "detect_from": 11329,
+  "gt_intervals": [
+    [
+      24257,
+      26757
+    ]
+  ],
+  "registry_entry": {
+    "group": "injected",
+    "task": "binary",
+    "role": "report",
+    "generator": {
+      "name": "electricity",
+      "source": "data/dataset_0921/real_dataset/binary/electricity/electricity.csv",
+      "width": 2500,
+      "n_trials": 50,
+      "max_n": 100000,
+      "truncate_after_shuffle": true,
+      "drift_region": [
+        0.5,
+        0.8
+      ],
+      "label_skip_proba": 0.75,
+      "seed_tag": "paper",
+      "methods": [
+        "class_prior",
+        "label_swap",
+        "feature_permutation",
+        "feature_filtering"
+      ],
+      "abruptness": [
+        "abrupt",
+        "gradual"
+      ]
+    },
+    "gt": "generator",
+    "delta_max": 2500,
+    "order": "shuffled",
+    "truncated": false,
+    "coordinates": "input",
+    "detect_from_fraction": 0.25,
+    "protocol": "injected_detection",
+    "window": 1000,
+    "comparable": true,
+    "comparable_kinds": [
+      "detector"
+    ],
+    "comparability_note": "Generated in memory with Cerqueira et al.'s parameters (shuffle, one drift in 50-80%, width = delta_max = 2500, 50 trials, label_skip_proba 0.75). Scored like their code: input-row coordinates (dropped rows still count), alarms before 25% of the stream ignored, window [d_s, d_s + delta_max]. Only 'detector' presets follow their workflow (one HT never reset on alarm); pipeline presets adapt on alarms, so their F1 is reference only. Remaining differences: River instead of CapyMOA/MOA implementations, and our own random draws.",
+    "required_metrics": [
+      "f1",
+      "precision",
+      "recall",
+      "episode_recall",
+      "mdt",
+      "ndt",
+      "far"
+    ],
+    "sota_by_cell": {
+      "abrupt/class_prior": {
+        "metric": "f1",
+        "value": 0.698,
+        "method": "ADWIN",
+        "mdt": 1202
+      },
+      "abrupt/label_swap": {
+        "metric": "f1",
+        "value": 0.566,
+        "method": "SEED",
+        "mdt": 277
+      },
+      "abrupt/feature_permutation": {
+        "metric": "f1",
+        "value": 1.0,
+        "method": "ABCD(X)",
+        "mdt": 40
+      },
+      "abrupt/feature_filtering": {
+        "metric": "f1",
+        "value": 0.245,
+        "method": "CUSUM",
+        "mdt": 1154
+      },
+      "gradual/class_prior": {
+        "metric": "f1",
+        "value": 0.295,
+        "method": "STEPD",
+        "mdt": 2044
+      },
+      "gradual/label_swap": {
+        "metric": "f1",
+        "value": 0.383,
+        "method": "STEPD",
+        "mdt": 905
+      },
+      "gradual/feature_permutation": {
+        "metric": "f1",
+        "value": 0.984,
+        "method": "ABCD(X)",
+        "mdt": 709
+      },
+      "gradual/feature_filtering": {
+        "metric": "f1",
+        "value": 0.147,
+        "method": "STUDD",
+        "mdt": 751
+      }
+    },
+    "sota_source": "Cerqueira et al. 2026, arXiv:2606.07789, hypertuned results.csv (github.com/vcerqueira/experiments-drift_evaluation)"
+  },
+  "preset": {
+    "name": "det_adwin",
+    "kind": "detector",
+    "description": "Detection-only reference: Hoeffding Tree (library defaults) + ADWIN delta=0.01 with MOA ADWINChangeDetector semantics (window not reset after a detection, only increases of the input mean count), fed int(y == y_pred) after the first 25% of the input stream; the tree is never reset. Reproduces Cerqueira et al.'s hypertuned ADWIN.",
+    "source": "Cerqueira et al. 2026 (github.com/vcerqueira/experiments-drift_evaluation): src/prequential_workflow.py SupervisedStreamingWorkflow, src/config.py DETECTOR_SYNTH_PARAMS ADWIN delta 0.01; CapyMOA ADWIN wraps moa.classifiers.core.driftdetection.ADWINChangeDetector",
+    "requires": {
+      "river": "0.21.2"
+    },
+    "learner": "ht",
+    "params": {},
+    "seed_param": null,
+    "detector": "adwin_moa",
+    "detector_params": {
+      "delta": 0.01
+    },
+    "signal": "correct",
+    "min_train_fraction": 0.25,
+    "tasks": [
+      "binary",
+      "multiclass"
+    ]
+  },
+  "effective_config": {
+    "learner": "ht",
+    "detector": "adwin_moa",
+    "detector_params": {
+      "delta": 0.01
+    },
+    "min_train": 11328,
+    "signal": "correct"
+  },
+  "seed": null,
+  "warm_start": 0,
+  "prequential_warm_start": true,
+  "max_steps": null,
+  "emits_alarms": true,
+  "type_ldd_stubbed": false,
+  "version_problems": [],
+  "git": {
+    "commit": "9295c1f675821d245801b33430e74360c0db92f4",
+    "dirty": true
+  },
+  "versions": {
+    "python": "3.9.6",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "river": "0.21.2"
+  },
+  "runtime_s": 3.8,
+  "peak_rss_mb": 198.8,
+  "finished_at": "2026-10-12T03:10:17+0800"
+}

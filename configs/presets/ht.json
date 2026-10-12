@@ -1,0 +1,12 @@
+{
+  "name": "ht",
+  "kind": "baseline",
+  "role": "baseline",
+  "description": "Plain Hoeffding Tree with library defaults (grace period 200, NB-adaptive leaves), the base learner of Cerqueira et al.'s CapyMOA runs.",
+  "source": "Cerqueira et al. src/config.py CLASSIFIER_PARAMS['HoeffdingTree'] = {}",
+  "requires": {"river": "0.21.2"},
+  "learner": "ht",
+  "params": {},
+  "seed_param": null,
+  "tasks": ["binary", "multiclass"]
+}

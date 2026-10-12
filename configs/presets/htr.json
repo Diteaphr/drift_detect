@@ -1,0 +1,12 @@
+{
+  "name": "htr",
+  "kind": "baseline",
+  "role": "baseline",
+  "description": "Plain Hoeffding Tree regressor with library defaults; the regression reference learner.",
+  "source": "river 0.21.2 tree.HoeffdingTreeRegressor defaults",
+  "requires": {"river": "0.21.2"},
+  "learner": "htr",
+  "params": {},
+  "seed_param": null,
+  "tasks": ["regression"]
+}

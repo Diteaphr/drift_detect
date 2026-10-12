@@ -26,6 +26,11 @@ from common import (
 )
 
 
+#: Set by ``prepare_all.py --full``: skip the row cap and write under ``_full/``
+#: (not tracked by git; the full covertype CSV exceeds GitHub's file limit).
+FULL_LENGTH = False
+
+
 def _save_bundle(
     *,
     task: str,
@@ -33,6 +38,16 @@ def _save_bundle(
     df: pd.DataFrame,
     meta: dict,
 ) -> Path:
+    if FULL_LENGTH:
+        meta = {**meta, "n_rows": int(len(df)), "cap_policy": "full length (no cap)"}
+        meta["preprocessing"] = [p for p in meta.get("preprocessing", []) if "cap" not in p]
+        validate_df(df, task, name)
+        out_dir = ROOT / "_full" / task / name
+        csv_path = out_dir / f"{name}.csv"
+        write_csv(csv_path, df)
+        write_meta(out_dir / f"{name}_meta.json", meta)
+        print(f"[{task}/{name}] full length rows={len(df)} cols={df.shape[1]} -> {csv_path}")
+        return csv_path
     df, orig_n = cap_stream_rows(df, MAX_STREAM_ROWS)
     if orig_n is not None:
         meta = {

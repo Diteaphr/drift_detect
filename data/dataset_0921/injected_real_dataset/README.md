@@ -45,6 +45,10 @@ data/injected_real_dataset/
 檔名：`{dataset}_{method}_{abrupt|gradual}_gXX.csv`  
 另附：`*_drift_times.txt`（輸出串流索引 `[[ds, de]]`）、`*.json`（該 trial 的 seed／選類／排列等）。
 
+## 論文參數版本（不落地）
+
+這裡的 CSV 寬度 ≤ 1000、只有 10 次 trial，和論文（寬度 2500/1500、50 次、先打亂整份再取 10 萬筆）不同，登錄表標為不可比。要和論文比時用 `configs/datasets_0921.json` 的 `injected_paper_electricity`、`injected_paper_covertype`、`injected_paper_gas_sensor_drift`：`scripts/run_benchmark.py` 會用 `script/inject.py`（`width_cap=None`、`truncate_after_shuffle=True`）和固定種子即時產生每一次 trial，不寫 CSV。
+
 ## 重跑
 
 ```bash

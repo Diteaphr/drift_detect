@@ -52,3 +52,12 @@ python3 prepare_all.py
 python3 prepare_all.py --tasks binary
 python3 prepare_all.py --datasets ai4i2020,electricity,airlines
 ```
+
+## 全長版本（不進 git）
+
+文獻的 airlines（539,383 筆）和 covertype（581,012 筆）accuracy 都用全長串流。以下指令會把未截斷的檔案寫到 `_full/<task>/<name>/`（已列在 `.gitignore`），供登錄表的 `airlines_full`、`covertype_full` 和 `injected_paper_covertype` 使用：
+
+```bash
+cd data/dataset_0921/real_dataset/script
+python3 prepare_all.py --full                 # 預設只產生 airlines、covertype
+```

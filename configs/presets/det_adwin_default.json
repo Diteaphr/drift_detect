@@ -1,0 +1,16 @@
+{
+  "name": "det_adwin_default",
+  "kind": "detector",
+  "role": "detector_reference",
+  "description": "Same as det_adwin with the default ADWIN delta=0.002 (untuned reference, Cerqueira et al.'s 'default' setup).",
+  "source": "CapyMOA / MOA ADWIN default delta 0.002",
+  "requires": {"river": "0.21.2"},
+  "learner": "ht",
+  "params": {},
+  "seed_param": null,
+  "detector": "adwin_moa",
+  "detector_params": {"delta": 0.002},
+  "signal": "correct",
+  "min_train_fraction": 0.25,
+  "tasks": ["binary", "multiclass"]
+}

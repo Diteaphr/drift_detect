@@ -5,6 +5,7 @@ Examples:
   python3 prepare_all.py
   python3 prepare_all.py --tasks binary
   python3 prepare_all.py --datasets ai4i2020,electricity
+  python3 prepare_all.py --full     # uncapped airlines + covertype under _full/ (not in git)
 """
 
 from __future__ import annotations
@@ -17,8 +18,12 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import datasets as datasets_mod  # noqa: E402
 from common import ensure_layout  # noqa: E402
 from datasets import DATASETS  # noqa: E402
+
+#: Datasets the default run caps at MAX_STREAM_ROWS; --full rebuilds these uncapped.
+CAPPED = {"airlines", "covertype"}
 
 
 def main() -> None:
@@ -33,9 +38,18 @@ def main() -> None:
         default=None,
         help="Comma-separated dataset names, e.g. ai4i2020,airlines,covertype",
     )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Write uncapped versions of the capped datasets under _full/",
+    )
     args = parser.parse_args()
 
     ensure_layout()
+    if args.full:
+        datasets_mod.FULL_LENGTH = True
+        if args.datasets is None:
+            args.datasets = ",".join(sorted(CAPPED))
     wanted_tasks = (
         [t.strip() for t in args.tasks.split(",") if t.strip()]
         if args.tasks

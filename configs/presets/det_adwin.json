@@ -1,0 +1,16 @@
+{
+  "name": "det_adwin",
+  "kind": "detector",
+  "role": "detector_reference",
+  "description": "Detection-only reference: Hoeffding Tree (library defaults) + ADWIN delta=0.01 with MOA ADWINChangeDetector semantics (window not reset after a detection, only increases of the input mean count), fed int(y == y_pred) after the first 25% of the input stream; the tree is never reset. Reproduces Cerqueira et al.'s hypertuned ADWIN.",
+  "source": "Cerqueira et al. 2026 (github.com/vcerqueira/experiments-drift_evaluation): src/prequential_workflow.py SupervisedStreamingWorkflow, src/config.py DETECTOR_SYNTH_PARAMS ADWIN delta 0.01; CapyMOA ADWIN wraps moa.classifiers.core.driftdetection.ADWINChangeDetector",
+  "requires": {"river": "0.21.2"},
+  "learner": "ht",
+  "params": {},
+  "seed_param": null,
+  "detector": "adwin_moa",
+  "detector_params": {"delta": 0.01},
+  "signal": "correct",
+  "min_train_fraction": 0.25,
+  "tasks": ["binary", "multiclass"]
+}

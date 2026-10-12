@@ -500,23 +500,41 @@ class ConceptDriftPipeline:
     # ------------------------------------------------------------------
     # Warm start
     # ------------------------------------------------------------------
-    def warm_start(self, X: np.ndarray, y: np.ndarray) -> None:
+    def warm_start(
+        self, X: np.ndarray, y: np.ndarray, return_predictions: bool = False
+    ) -> Optional[np.ndarray]:
         """Initial fit of the prediction model on first batch.
 
         Binds the task provisionally from this batch when nothing has bound it
         yet, so the ``warm_start`` + ``step`` entry point gets the same backend
         selection, loss and detector validation that ``run_stream`` gets.
         ``run_stream`` binds authoritatively before calling this, so it wins.
+
+        With ``return_predictions`` each sample is predicted before it is
+        learned and the predictions are returned, so the warm-start segment can
+        be scored test-then-train. The model ends in the same state as the batch
+        fit because every streaming backend's ``fit`` is a ``learn_one`` loop;
+        batch backends cannot do this and raise.
         """
         X = np.asarray(X)
         y = np.asarray(y).ravel()
         if X.ndim == 1:
             X = X.reshape(-1, 1)
         self._bind_task(y, authoritative=False)
-        self.prediction_model.fit(X, y)
+        preds = None
+        if return_predictions:
+            if not self._use_advanced:
+                raise ValueError("prequential warm start needs a streaming (BaseModel) backend")
+            preds = np.empty(len(y), dtype=float)
+            for i in range(len(y)):
+                preds[i] = float(self.prediction_model.predict_one(X[i]))
+                self.prediction_model.learn_one(X[i], y[i])
+        else:
+            self.prediction_model.fit(X, y)
         self._warm = True
         if self.config.use_ecpf and self._ecpf is not None:
             self._ecpf.bootstrap_first_expert(self.prediction_model)
+        return preds
 
     # ------------------------------------------------------------------
     # Per-sample step
@@ -1549,9 +1567,14 @@ class ConceptDriftPipeline:
         X: np.ndarray,
         y: np.ndarray,
         warm_start_samples: Optional[int] = None,
+        prequential_warm_start: bool = False,
     ) -> Iterator[Tuple[int, float, float, List[DriftDetection], bool]]:
         """
         Run pipeline over arrays X, y. Yields (index, y_true, y_pred, detections, drift_occurred).
+
+        By default the warm-start samples are trained on without being yielded.
+        ``prequential_warm_start`` also yields them, each predicted before it was
+        learned (see :meth:`warm_start`), so the whole stream is test-then-train.
         """
         X, y = np.asarray(X), np.asarray(y).ravel()
         if X.ndim == 1:
@@ -1561,7 +1584,13 @@ class ConceptDriftPipeline:
         self._bind_task(y)
         n = len(y)
         if warm_start_samples and warm_start_samples > 0:
-            self.warm_start(X[:warm_start_samples], y[:warm_start_samples])
+            preds = self.warm_start(
+                X[:warm_start_samples], y[:warm_start_samples],
+                return_predictions=prequential_warm_start,
+            )
+            if preds is not None:
+                for i, p in enumerate(preds):
+                    yield i, float(y[i]), float(p), [], False
             start = warm_start_samples
         else:
             start = 0

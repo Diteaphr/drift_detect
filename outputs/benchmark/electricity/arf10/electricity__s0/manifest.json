@@ -1,0 +1,102 @@
+{
+  "dataset": "electricity",
+  "file": "data/dataset_0921/real_dataset/binary/electricity/electricity.csv",
+  "file_sha256": "d9775d0f478b91d2454b21726f906577811ef5abdcd17db8b7d6796f2c9cada4",
+  "cell": null,
+  "task": "binary",
+  "n_classes": 2,
+  "gt_intervals": null,
+  "registry_entry": {
+    "group": "real",
+    "task": "binary",
+    "role": "report",
+    "files": "data/dataset_0921/real_dataset/binary/electricity/electricity.csv",
+    "gt": null,
+    "delta_max": null,
+    "order": "original",
+    "truncated": false,
+    "protocol": "real_prequential",
+    "window": 1000,
+    "comparable": true,
+    "comparability_note": "OpenML 151 / MOA elecNormNew, 45,312 rows, same as literature. Calibrated: baseline_no_change_acc reproduces Souza et al. 85.33%.",
+    "required_metrics": [
+      "acc_prequential",
+      "kappa_t",
+      "kappa_m",
+      "baseline_no_change_acc",
+      "baseline_majority_acc"
+    ],
+    "sota": [
+      {
+        "metric": "acc_prequential",
+        "value": 0.95,
+        "method": "TabFM+FIFO",
+        "tier": "overall",
+        "source": "Verma et al. 2026, arXiv:2610.05352, Table 9",
+        "note": "tabular foundation model on GPU, >10x latency"
+      },
+      {
+        "metric": "acc_prequential",
+        "value": 0.9008,
+        "std": 0.0004,
+        "method": "ARF (MOA, 100 trees)",
+        "tier": "classic",
+        "source": "Aspis et al. 2025 (DriftMoE), arXiv:2507.18464, Table 2"
+      },
+      {
+        "metric": "kappa_t",
+        "value": 0.3237,
+        "method": "ARF (MOA, 100 trees)",
+        "tier": "classic",
+        "source": "DriftMoE 2025, Table 4 (column mislabelled Kappa M)"
+      },
+      {
+        "metric": "baseline_no_change_acc",
+        "value": 0.8533,
+        "method": "No-Change",
+        "tier": "baseline",
+        "source": "Souza et al. 2020, arXiv:2005.00113"
+      }
+    ]
+  },
+  "preset": {
+    "name": "arf10",
+    "kind": "baseline",
+    "description": "Adaptive Random Forest with River's default 10 trees; cheaper than arf100 but not the configuration the literature reports.",
+    "source": "river 0.21.2 forest.ARFClassifier defaults",
+    "requires": {
+      "river": "0.21.2"
+    },
+    "learner": "arf",
+    "params": {},
+    "seed_param": "seed",
+    "tasks": [
+      "binary",
+      "multiclass"
+    ]
+  },
+  "effective_config": {
+    "learner": "arf",
+    "seed": 0
+  },
+  "seed": 0,
+  "warm_start": 0,
+  "prequential_warm_start": true,
+  "max_steps": null,
+  "emits_alarms": false,
+  "type_ldd_stubbed": false,
+  "version_problems": [],
+  "git": {
+    "commit": "9295c1f675821d245801b33430e74360c0db92f4",
+    "dirty": true
+  },
+  "versions": {
+    "python": "3.9.6",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "river": "0.21.2"
+  },
+  "runtime_s": 58.26,
+  "peak_rss_mb": 162.3,
+  "finished_at": "2026-10-12T02:40:55+0800"
+}

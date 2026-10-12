@@ -1,0 +1,12 @@
+{
+  "name": "arf10",
+  "kind": "baseline",
+  "role": "baseline",
+  "description": "Adaptive Random Forest with River's default 10 trees; cheaper than arf100 but not the configuration the literature reports.",
+  "source": "river 0.21.2 forest.ARFClassifier defaults",
+  "requires": {"river": "0.21.2"},
+  "learner": "arf",
+  "params": {},
+  "seed_param": "seed",
+  "tasks": ["binary", "multiclass"]
+}

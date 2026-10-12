@@ -1,0 +1,12 @@
+{
+  "name": "nb",
+  "kind": "baseline",
+  "role": "baseline",
+  "description": "Gaussian Naive Bayes with no drift handling; the NB column of Souza et al. 2020 Table 5 (INSECTS).",
+  "source": "Souza et al. 2020, arXiv:2005.00113, Table 5",
+  "requires": {"river": "0.21.2"},
+  "learner": "nb",
+  "params": {},
+  "seed_param": null,
+  "tasks": ["binary", "multiclass"]
+}

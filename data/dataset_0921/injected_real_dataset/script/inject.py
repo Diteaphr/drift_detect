@@ -47,21 +47,29 @@ def inject_stream(
     max_n: int | None = None,
     drift_region: tuple[float, float] = DRIFT_REGION,
     label_skip_proba: float = LABEL_SKIP_PROBA,
+    width_cap: int | None = GRADUAL_WIDTH_MAX,
+    truncate_after_shuffle: bool = False,
 ) -> tuple[pd.DataFrame, list[list[int]], dict[str, Any], pd.DataFrame, list[int]]:
     """Shuffle + inject one drift.
 
     Returns (out_df, drift_times_output, meta, baseline_df, kept_orig_idx).
     baseline_df: shuffled stream without transform (same order).
     kept_orig_idx: shuffle-index of each kept output row (for aligned plots).
+
+    ``width_cap=None`` keeps the requested gradual width (paper widths exceed
+    GRADUAL_WIDTH_MAX). ``truncate_after_shuffle`` shuffles the whole source and
+    then keeps ``max_n`` rows, as Cerqueira et al.'s reader does.
     """
     feat_cols = [c for c in df.columns if c != "y"]
     work = df[feat_cols + ["y"]].copy()
-    if max_n is not None and len(work) > max_n:
+    if max_n is not None and len(work) > max_n and not truncate_after_shuffle:
         # Keep first max_n rows of the (already stream-ordered) source; then shuffle.
         work = work.iloc[:max_n].reset_index(drop=True)
 
     shuffle_idx = rng.permutation(len(work))
     work = work.iloc[shuffle_idx].reset_index(drop=True)
+    if max_n is not None and len(work) > max_n:
+        work = work.iloc[:max_n].reset_index(drop=True)
     baseline = work.rename(columns={c: f"x{i}" for i, c in enumerate(feat_cols)})
     # ensure column order x* + y
     baseline = baseline[[f"x{i}" for i in range(len(feat_cols))] + ["y"]].copy()
@@ -70,11 +78,12 @@ def inject_stream(
 
     n = len(work)
     lo, hi = drift_region
-    # abrupt: w=0; gradual: paper width, hard-capped ≤ GRADUAL_WIDTH_MAX and ≤ 30% of n
+    # abrupt: w=0; gradual: paper width, hard-capped ≤ width_cap and ≤ 30% of n
     if abruptness == "abrupt":
         width = 0
     else:
-        width = min(int(drift_width), int(GRADUAL_WIDTH_MAX), max(0, int(0.3 * n)))
+        cap = int(width_cap) if width_cap is not None else int(drift_width)
+        width = min(int(drift_width), cap, max(0, int(0.3 * n)))
     max_onset = max(1, n - width - 1)
     onset = int(rng.uniform(lo, hi) * n)
     onset = int(np.clip(onset, int(lo * n), max_onset))

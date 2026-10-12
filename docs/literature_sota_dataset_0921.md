@@ -103,7 +103,7 @@ Covertype 的 Kappa-Temporal 幾乎所有方法都 ≤ 4（DriftMoE Table 4）[�
 ### 4.3 INSECTS（`insects_dataset`，5 個 balanced 版本）
 **資料一致性：** ✅ 相同資料、相同 change points（Souza et al. 2020, Table 2）。
 
-**(a) 分類準確率**：Souza et al., *Challenges in Benchmarking Stream Learning Algorithms with Real-world Data*, DMKD 2020（arXiv:2005.00113）**Table 5** [原文]。評估方式為 prequential、MOA、sliding window 1,000。
+**(a) 分類準確率**：Souza et al., *Challenges in Benchmarking Stream Learning Algorithms with Real-world Data*, DMKD 2020（arXiv:2005.00113）**Table 5** [原文]。評估方式為 prequential、MOA、sliding window 1,000（window 1,000 與 ARF 的參數尚未從原文第 7 節核對）。
 
 | 版本（bal.） | No-Change | NB | VFDT | Lev.Bag | **ARF（最佳）** |
 |---|---|---|---|---|---|
@@ -152,7 +152,28 @@ Covertype 的 Kappa-Temporal 幾乎所有方法都 ≤ 4（DriftMoE Table 4）[�
 | 偵測器（14 個） | ADWIN, CUSUM, DDM, EDDM, EWMA, GMA, HDDM_A, HDDM_W, PH, RDDM, SEED, STEPD, ABCD, ABCD(X), STUDD |
 | 基底分類器 | Hoeffding Tree |
 | 調參 | leave-one-dataset-out，random search 30 次，目標為偵測 F1 |
-| 指標 | F1（TP 定義為在 [d_s, d_e + δ_max] 內偵測到；同一窗內多次警報只算 1 次）、MDT（平均偵測延遲）、FAR（誤報率） |
+| 指標 | F1（窗內**每一次**警報都算 TP，所以 recall 可能把同一個漂移算好幾次；「每個漂移只算 1 次」的是另一個指標 Episode Recall）、MDT（平均偵測延遲）、FAR（誤報率）。窗的實際定義見 §5.1.1 |
+
+#### 5.1.1 作者程式碼和論文正文不一致、或正文沒寫的地方
+
+以下讀自作者公開的程式（`src/eval_detector.py`、`src/prequential_workflow.py`、`scripts/experiments/run_workflows/3_real.py`、`src/streams/`）。論文表格的數字是用這份程式跑出來的，所以對齊時以程式為準。
+
+| 項目 | 程式碼的實際做法 |
+|---|---|
+| F1 計分 | `tp += 1` 對窗內每一次警報都加；`episode_recall = 有偵測到的漂移數 / 漂移數` 另外算 |
+| gradual 漂移的窗 | 真實資料實驗把漂移記成 `(onset, onset)`，所以窗是 **[d_s, d_s + δ_max]**，不是正文的 [d_s, d_e + δ_max]。寬度 = δ_max，等於窗在漂移結束時就關閉 |
+| 前段資料 | 前 **25%** 不預測、不送進偵測器（`min_training_size = 0.25 × 串流長度`） |
+| 偵測後 | 只記錄警報，**不重置也不替換模型**（純偵測流程）；偵測器輸入是 `int(y == ŷ)` |
+| shuffle 與截斷 | 先打亂**整個**資料集，再取前 100,000 筆 |
+| 基底分類器 | CapyMOA `HoeffdingTree`，全部預設值 |
+| ADWIN 調參 | 搜尋空間 δ ∈ {0.0001, 0.0005, 0.001, 0.002, 0.005, 0.01}，調完幾乎都是 0.01 |
+| class prior | `label_skip_proba = 0.75` |
+| 一格的數字怎麼算 | 50 次 trial 當成同一次 `calc_performance` 的 50 個 episode：tp/fp/fn **先加總**再算 precision/recall/F1（不是各 trial F1 的平均）；MDT 是所有有偵測到的 trial 的第一次命中延遲平均；FAR = 加總的誤報數 ÷ **一條**串流長度 × 1000（所以等於各 trial FAR 的總和） |
+| 座標 | 被注入丟掉的資料列仍會讓 `instances_processed` 加 1，所以警報位置、漂移點和串流長度都是「輸入資料列」的座標 |
+| feature filtering 門檻 | 用事先算好的整份資料中位數（`STREAM_MEDIANS`），特徵用 Python `random.choice` 選 |
+| ADWIN 的實作 | CapyMOA 的 ADWIN 包的是 MOA `ADWINChangeDetector`：偵測後**不重置**視窗（只丟掉舊的子視窗，所以持續的變化會一直觸發），而且只有在視窗平均值**上升**時才算偵測。偵測器輸入是「答對 = 1」，所以他們的 ADWIN 是在**準確率上升**時（通常是模型在漂移後恢復時）才報警。River 的 ADWIN 每次偵測後整個重置，且升降都算 |
+
+本 repo 的 `src/metrics/evaluate_run.py` 依程式碼的定義計分，並另外輸出正文窗的版本（欄位後綴 `_paper_window`）；`pool_detection_runs` 依上表的方式合併 50 次 trial。驗證：把作者公開的 ADWIN 警報（Electricity / class prior / abrupt 的 `predictions.csv`）丟進我們的評估器，tp/fp/fn、F1 0.698、MDT 1,201.75、FAR 2.58 完全一致（`tests/test_evaluate_run.py::test_pooled_matches_published_cell`）。
 
 ### 5.2 七個資料集的平均偵測 F1（Table 5 / 6）[原文，已二次核對]
 
@@ -182,26 +203,34 @@ Covertype 的 Kappa-Temporal 幾乎所有方法都 ≤ 4（DriftMoE Table 4）[�
 airlines 和 ai4i2020 **不在**論文的資料集中，沒有文獻基準可比。
 
 ### 5.4 與本 repo 版本的差異（直接比之前必看）
-| 項目 | 論文 | 本 repo `injected_real_dataset` |
-|---|---|---|
-| gradual 寬度 | 2,500（elec/covtype）、1,500（gas） | **≤ 1,000** |
-| 容許延遲 δ_max | 同寬度（1,500–2,500） | 須自行設定；要比較的話請設成論文的值 |
-| 試驗次數 | 50 | 10（g00–g09） |
-| 漂移位置 | 50%–80% 隨機 | 相同（`DRIFT_REGION = (0.5, 0.8)`） |
-| 基底模型 | Hoeffding Tree | 本系統的 pipeline 模型 |
-| F1 計分 | 同一窗內多次警報只算 1 次 TP，窗外警報算 FP | 須用相同規則 |
+| 項目 | 論文 | 舊版 `injected_*`（磁碟上的 CSV） | 論文版 `injected_paper_*`（runner 即時產生） |
+|---|---|---|---|
+| gradual 寬度 | 2,500（elec/covtype）、1,500（gas） | **≤ 1,000** | 同論文 |
+| 容許延遲 δ_max | 同寬度（1,500–2,500） | 登錄表設成論文值 | 同論文 |
+| 試驗次數 | 50 | 10（g00–g09） | 50 |
+| shuffle 與截斷 | 先打亂整份再取 10 萬筆 | 先取前 10 萬筆再打亂 | 同論文（covertype 用全長檔） |
+| 漂移位置 | 50%–80% 隨機 | 相同 | 相同 |
+| 座標 | 輸入資料列（含被丟掉的列） | 輸出資料列 | 同論文 |
+| 前 25% | 不偵測 | 沒處理 | 評估器忽略這段的警報 |
+| 偵測流程 | 單一 HT，偵測後不調整模型 | 本系統的 pipeline（偵測後會換模型） | `detector` preset 照論文流程；pipeline preset 只能當參考 |
+| 計分 | 50 次 trial 加總後算 F1 | `pool_detection_runs` | `pool_detection_runs` |
 
-**要宣稱 injected 上的偵測超越 SOTA，最低限度要做到：** 用論文的寬度與 δ_max 重新產生資料（或至少把評估窗設成相同），每格至少跑 50 次，用同樣的 F1 定義計算，再和 §5.3 每格的最佳值比較。
+剩下的差異：我們用 River，論文用 CapyMOA/MOA；隨機抽樣不同；feature filtering 的門檻用漂移前的中位數。
+
+**校準現況（2026-10-12）：** 計分已用作者的警報逐筆驗證一致；但用 River 重現的 `det_adwin` 還追不上他們的 ADWIN（Electricity abrupt/class_prior 合併 F1 0.28 vs 0.698、feature_permutation 0.34 vs 0.74；label_swap 0.22 vs 0.25 較接近）。我們的觸發次數明顯較少，差異來自學習器 / 偵測器的實作（MOA 和 River 的 Hoeffding Tree 成長方式不同，影響「準確率上升」的時機）。在補上 CapyMOA 之前，和 §5.3 的比較只能當參考，偵測器之間的比較應以本 harness 內重跑的 `det_adwin` 為準。
+
+**要宣稱 injected 上的偵測超越 SOTA，最低限度要做到：** 在 `injected_paper_*` 上用 `detector` 類型的 preset 跑滿 50 次 × 8 格，用合併後的 F1 和 §5.3 每格的最佳值比較，並附上同 harness 的 `det_adwin`。
 
 ---
 
 ## 6. 如何拿本系統的結果對比（檢查清單）
 1. **協定一致：** 使用 prequential（test-then-train）、逐筆評估、整條串流平均。INSECTS 的 Souza 表格用 sliding window 1,000。
-2. **資料長度一致：** airlines 和 covertype 要和 accuracy 文獻比的話，必須改用全長資料重跑（目前只有 10 萬筆）。
+2. **資料長度一致：** airlines 和 covertype 要和 accuracy 文獻比的話，用登錄表的 `airlines_full` / `covertype_full`（全長檔不進 git，先執行 `cd data/dataset_0921/real_dataset/script && python3 prepare_all.py --full`）。
 3. **附基準線：** 每個資料集都附上 no-change 和 majority 的結果，以及 Kappa-M 或 Kappa-Temporal（Electricity、Covertype 特別需要）。
 4. **自己重跑對照組：** 用相同框架跑 ARF 和 SRP（River 或 CapyMOA），因為同一方法在不同論文的分數可差 2–5%。
-5. **偵測：** 回報 precision、recall、F1、MDT、FAR，評估窗定義照 Cerqueira 2026。
+5. **偵測：** 回報 precision、recall、F1、Episode Recall、MDT、FAR，評估窗與計分照 Cerqueira 2026 的程式碼（§5.1.1）。
 6. **多次種子：** 回報 mean ± std。
+7. **調參協定：** 要報告的資料集不能參與挑選設定。先在開發用資料集上調好、把設定凍結成 preset 並 commit，再跑報告用資料集（登錄表的 `role` 欄位）。
 
 ---
 
@@ -229,7 +258,7 @@ airlines 和 ai4i2020 **不在**論文的資料集中，沒有文獻基準可比
 | electricity | 沒有 GT，偵測欄位輸出 `null`。須輸出 no-change accuracy 和 κ_T |
 | airlines、covertype | 輸出 `truncated: true`。要和文獻比 accuracy 時改用全長資料（建議全長檔放在 `_raw/`，不進 git） |
 | INSECTS | 另外輸出 sliding-window 1000 的 accuracy（對齊 Souza Table 5）；GT 是單點 `[t, t]`，須指定 δ_max（建議 1000）；`incremental_balanced` 的 GT 是空的，偵測欄位為 `null` |
-| injected | δ_max 依 Cerqueira 設定：electricity、covertype 為 2500，gas 為 1500。F1 用 episode 計分。和論文比時 trial 數要補到 50 |
+| injected | δ_max 依 Cerqueira 設定：electricity、covertype 為 2500，gas 為 1500。F1 用 Cerqueira 程式碼的計分（窗內每次警報都算 TP），另附 `episode_recall`。和論文比時 trial 數要補到 50 |
 | synthetic | 多個漂移時用相同的 F1 定義，δ_max 建議 1000（等於 gradual 寬度） |
 | 所有多類別資料 | 誤差一律用 0/1 loss；不輸出 MAE，改輸出 accuracy 和 macro-F1 |
 
@@ -254,15 +283,23 @@ mae, rmse
 
 # 偵測（有 GT 才填）
 n_gt, n_alerts, delta_max,
-tp, fp, fn, precision, recall, f1,   # Cerqueira 定義：窗 [d_s, d_e + δ_max]，同一窗內只算 1 個 TP
-mdt, ndt, far,
+tp, fp, fn, precision, recall, f1,   # Cerqueira 程式碼定義：窗 [d_s, d_s + δ_max]，窗內每次警報都算 TP
+episode_recall,                      # 每個漂移最多算 1 次
+mdt, ndt, far, ar,
+*_paper_window                       # 正文的窗 [d_s, d_e + δ_max]
 cd_score_legacy                      # 舊的 (TP − FP)/N，只當內部參考
 
 # 成本
 runtime_s, peak_mem_mb
 ```
 
-實作方向：新增一個共用的 `evaluate_run(y, y_pred, alerts, gt_intervals, meta) -> dict`，放在 `src/metrics/` 下，取代 main.py、run_ecpf_recurring.py 和各個 `scripts/experiment_*` 自己計算指標的程式。再加一份資料集登錄表，記錄每個資料集的路徑、任務、δ_max 和 truncated，讓所有 runner 只要給資料集名稱就能切換。
+**已實作（2026-10-12）：**
+- 評估器：[src/metrics/evaluate_run.py](../src/metrics/evaluate_run.py)，校準測試在 [tests/test_evaluate_run.py](../tests/test_evaluate_run.py)（對照 MOA 的計算方式、River、Cerqueira 的範例，以及 electricity no-change = 85.33%）。
+- 資料集登錄表：[configs/datasets_0921.json](../configs/datasets_0921.json)；系統設定：`configs/presets/`。
+- 統一 runner：[scripts/run_benchmark.py](../scripts/run_benchmark.py)，會存逐筆紀錄，`--reeval` 可在指標修正後直接重算。支援即時產生的論文版 injected 資料（`injected_paper_*`）和只偵測模式（`kind: "detector"` 的 preset，例如 `det_adwin`）。
+- 全長資料：`airlines_full`、`covertype_full`（`prepare_all.py --full` 產生）。
+- 彙整與統計：[scripts/compare_sota.py](../scripts/compare_sota.py)，輸出 mean ± std、95% CI、injected 每格合併指標，以及 Friedman + Nemenyi、Wilcoxon（Holm 校正）。
+- 尚未改寫：main.py、run_ecpf_recurring.py 和各個 `scripts/experiment_*` 仍用各自的算法，和文獻比較時請改用 runner。
 
 ---
 

@@ -1,0 +1,16 @@
+{
+  "name": "det_adwin_river",
+  "kind": "detector",
+  "role": "detector_reference",
+  "description": "det_adwin with River's ADWIN semantics instead of MOA's: the detector is reset after every detection and changes in both directions count. Shows how much the implementation alone moves detection F1.",
+  "source": "River 0.21.2 drift.ADWIN",
+  "requires": {"river": "0.21.2"},
+  "learner": "ht",
+  "params": {},
+  "seed_param": null,
+  "detector": "adwin",
+  "detector_params": {"delta": 0.01},
+  "signal": "correct",
+  "min_train_fraction": 0.25,
+  "tasks": ["binary", "multiclass"]
+}

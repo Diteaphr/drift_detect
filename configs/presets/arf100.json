@@ -1,0 +1,12 @@
+{
+  "name": "arf100",
+  "kind": "baseline",
+  "role": "baseline",
+  "description": "Adaptive Random Forest with 100 trees: the MOA default ensembleSize and the size DriftMoE reports ARF with. River's default ADWIN deltas (drift 0.001, warning 0.01) match MOA's.",
+  "source": "MOA AdaptiveRandomForest.java ensembleSizeOption=100; DriftMoE arXiv:2507.18464 Sec. 4",
+  "requires": {"river": "0.21.2"},
+  "learner": "arf",
+  "params": {"n_models": 100},
+  "seed_param": "seed",
+  "tasks": ["binary", "multiclass"]
+}

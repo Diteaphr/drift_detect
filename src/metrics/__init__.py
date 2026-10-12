@@ -8,8 +8,11 @@ from .correct_detection import (
     compute_correct_detection,
 )
 from .detection_evaluation import compute_count_score
+from .evaluate_run import evaluate_run, pool_detection_runs
 
 __all__ = [
+    "evaluate_run",
+    "pool_detection_runs",
     "compute_detection_delays",
     "CorrectDetectionResult",
     "build_perturbation_intervals",
