@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>DET1 階段一｜接線與資料就緒報告</title>
+  <style>
+    :root { --ink:#172339; --muted:#526179; --navy:#0b2744; --teal:#027a79; --line:#d9e1eb; --wash:#f4f7fa; --paper:#ffffff; --amber:#fff2d8; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.72 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+    .masthead { background:var(--navy); color:white; padding:42px max(24px,calc((100vw - 1120px)/2)); }
+    .eyebrow { color:#8dd8d1; font-size:.76rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    .masthead h1 { margin:.5rem 0 .7rem; max-width:900px; font-size:clamp(1.65rem,3vw,2.55rem); line-height:1.25; letter-spacing:-.02em; }
+    .masthead p { margin:0; color:#ced9e6; }
+    .layout { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:225px minmax(0,1fr); gap:30px; padding:30px 24px 70px; }
+    nav { align-self:start; position:sticky; top:22px; font-size:.86rem; }
+    nav .navtitle { margin:0 0 9px 9px; color:var(--muted); font-weight:800; letter-spacing:.07em; }
+    nav ul { list-style:none; margin:0; padding:0; }
+    nav li { margin:0 0 3px; }
+    nav a { display:block; padding:7px 9px; border-radius:6px; color:var(--muted); text-decoration:none; line-height:1.35; }
+    nav a:hover,nav a:focus { background:#e6eff3; color:var(--teal); }
+    nav li ul { display:none; }
+    main { min-width:0; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:30px 38px 44px; box-shadow:0 8px 28px rgba(15,35,60,.05); }
+    main>h1:first-child { display:none; }
+    h2 { margin:2.4rem 0 .85rem; padding-bottom:.42rem; border-bottom:2px solid var(--teal); font-size:1.4rem; line-height:1.4; }
+    h2:first-of-type { margin-top:1.6rem; }
+    p { margin:.72rem 0; }
+    ul,ol { padding-left:1.5rem; }
+    li { margin:.35rem 0; }
+    strong { color:#092d45; }
+    code { padding:.12em .35em; background:#e9f1f5; border-radius:4px; font:.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    pre { overflow:auto; padding:1rem; background:#e9f1f5; border-radius:6px; }
+    pre code { padding:0; }
+    table { width:100%; display:block; overflow-x:auto; border-collapse:collapse; margin:1rem 0 1.4rem; font-size:.88rem; line-height:1.55; }
+    th,td { min-width:95px; padding:.65rem .75rem; border:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { background:#eaf2f5; color:var(--navy); font-weight:750; white-space:nowrap; }
+    tbody tr:nth-child(even) { background:#fafbfd; }
+    tbody tr:hover { background:#f0f6f8; }
+    a { color:#075d75; }
+    .status { display:inline-block; margin-top:14px; padding:5px 12px; border-radius:30px; background:var(--amber); color:#694904; font-size:.83rem; font-weight:750; }
+    .foot { margin-top:36px; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:.78rem; }
+    @media (max-width:860px) { .layout { display:block; padding:14px; } nav { position:static; margin:0 0 15px; } nav ul { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:3px; } main { padding:19px; } }
+    @media print { body { background:white; font-size:10pt; } .masthead { color:var(--ink); background:white; padding:0 0 14px; border-bottom:2px solid var(--teal); } .masthead p { color:var(--ink); } .layout { display:block; padding:0; } nav { display:none; } main { border:0; box-shadow:none; padding:0; } main>h1:first-child { display:none; } h2 { break-after:avoid; } table { display:table; overflow:visible; } tr { break-inside:avoid; } .status { border:1px solid #8b7b5d; } .foot { display:none; } }
+  </style>
+</head>
+<body>
+<header class="masthead"><div class="eyebrow">DET1 · Stage 1 · Readiness review</div><h1>資料齊全，但判定口徑與 oracle 接線需先確認</h1><p>2026-10-12 · branch shawn/ecpf-detector-comparison · base 929dd20 · stage 1 commit c8a2a3a</p><span class="status">階段一完成 · 等待確認</span></header>
+<div class="layout"><nav aria-label="章節導覽"><p class="navtitle">報告導覽</p><div class="toc">
+<ul>
+<li><a href="#det1-oracle">DET1 階段一：資料齊全，但判定口徑與 oracle 接線需先確認</a><ul>
+<li><a href="#zone-dual_adwin-warning-timeout">Zone 可沿用 dual_adwin 模式，warning 訓練與 timeout 均會執行</a></li>
+<li><a href="#incremental-gt">四組資料均存在，但 incremental 沒有可計分的 GT</a></li>
+<li><a href="#e11-episode">超額命中尚未實作，需保留 E11 的 episode 語意</a></li>
+<li><a href="#oracle">Oracle 與診斷紀錄需要後續補線，否則無法完成預定指標</a></li>
+<li><a href="#8868-smoke">正式執行約 8,868 次，時間需由 smoke 更新</a></li>
+<li><a href="#_1">階段二前須確認影響結論的決定</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav><main id="report"><h1 id="det1-oracle">DET1 階段一：資料齊全，但判定口徑與 oracle 接線需先確認</h1>
+<p>日期：2026-10-12（Asia/Taipei）。基準：main <code>929dd20</code>。分支：<code>shawn/ecpf-detector-comparison</code>。
+本階段只讀取架構、檢查資料與記錄待確認事項；未跑新模型實驗、未改 evaluator、既有 preset 或 registry。</p>
+<h2 id="zone-dual_adwin-warning-timeout">Zone 可沿用 dual_adwin 模式，warning 訓練與 timeout 均會執行</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>已確認行為</th>
+<th>來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>接線</td>
+<td><code>use_ecpf=True</code>、<code>ecpf_signal_mode="dual_adwin"</code>、<code>ecpf_zone_detector="ddm"</code> 或 <code>"hddm_a"</code>；非空 zone 名稱優先取代雙 ADWIN。亦接受 ADWIN family 的其他模式，但 DET1 建議固定 dual_adwin</td>
+<td><code>src/pipeline.py:69,204</code></td>
+</tr>
+<tr>
+<td>輸入</td>
+<td>Zone 只使用 <code>drift_value</code>，四捨五入轉成 0/1；不使用 warning_value。預設 error 為 leader 的分類誤差；reference 與 guard 預設關閉</td>
+<td><code>src/ecpf_detector.py:41</code>、<code>src/config.py:204,211,264</code></td>
+</tr>
+<tr>
+<td>Warning 開啟</td>
+<td>detector 的 warning 區開 buffer；drift 當步亦視為 warning，因此可能同一步才開 warning 並確認，不保證實際資料一定先 warning 後 drift</td>
+<td><code>src/ecpf_detector.py:45</code>、<code>src/pipeline.py:817</code></td>
+</tr>
+<tr>
+<td>未確認即離區</td>
+<td>關閉 warning、清除起點、丟掉 buffer；該步回到正常訓練，不重播丟棄資料</td>
+<td><code>src/pipeline.py:828,1170</code></td>
+</tr>
+<tr>
+<td><code>learn_during_warning=False</code></td>
+<td>warning 開啟的非確認步直接返回，不訓練 leader/shadow；確認步由 drift handler 訓練新模型</td>
+<td><code>src/pipeline.py:557,883</code>、<code>src/ecpf.py:597</code></td>
+</tr>
+<tr>
+<td><code>learn_during_warning=True</code></td>
+<td>上述 warning 步會呼叫 ECPF <code>on_stream_instance</code>，訓練 leader 與存在的 shadow，也推進對決與換將</td>
+<td><code>src/pipeline.py:544</code>、<code>src/ecpf.py:449</code></td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>ADWIN family 共用分支，zone 也會執行；条件為 warning age <strong>大於</strong>設定值，1000 因此在 age=1001 時觸發</td>
+<td><code>src/pipeline.py:796</code></td>
+</tr>
+<tr>
+<td>Zone timeout 的限制</td>
+<td>清空 buffer，但 zone 的 <code>reset_warning()</code> 是 no-op，且本步 warning 已在 timeout 前算好；若仍在 warning 區，立即以當步重開 buffer。它不會讓單一 detector 重新建立統計基準</td>
+<td><code>src/ecpf_detector.py:38</code>、<code>src/pipeline.py:814,817</code></td>
+</tr>
+</tbody>
+</table>
+<p>DET1 保守設定：A2–A5 使用 dual_adwin 模式搭配 zone 名稱、error 輸入、timeout=0；只讓 A1t 使用 timeout=1000。所有 lw 值明寫，不依賴預設。</p>
+<p>已閱讀任務指定背景、benchmark skill/protocol、全部既有 preset，以及 archived E9 預註冊與 verdict。Runbook 的「只有 adwin_dual」及預設 delta=0.05 描述已落後於程式：目前另有 zone 路徑，<code>src/config.py</code> 的 delta 預設為 0.01；DET1 應明寫 0.05。</p>
+<h2 id="incremental-gt">四組資料均存在，但 incremental 沒有可計分的 GT</h2>
+<p>實際執行：<code>python3 scripts/run_benchmark.py --list-datasets --json</code>。
+系統 <code>/opt/homebrew/bin/python3</code>（3.14）第一次因缺 numpy 失敗。其後在 <code>/private/tmp/det1-inspect-venv</code> 安裝 numpy/pandas，使用該 venv 的 python3 成功執行同一指令；完整結果保存於 <code>stage1_dataset_inventory.json</code>。
+該 venv 僅供清單檢查，未安裝 river/CapyMOA，不是正式實驗環境。主環境、requirements 未變更；正式環境仍須在後續階段建立並驗證 river==0.21.2。</p>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>可用</th>
+<th>串流 × 筆數</th>
+<th>registry role</th>
+<th>GT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>injected_paper_electricity</td>
+<td>是</td>
+<td>400 × 原始 45,312（50 trials × 8 cells；部分注入方式會刪列）</td>
+<td>report</td>
+<td>generator 提供，input 座標</td>
+</tr>
+<tr>
+<td>insects_abrupt_balanced</td>
+<td>是</td>
+<td>1 × 52,848</td>
+<td>report</td>
+<td>5 個點</td>
+</tr>
+<tr>
+<td>insects_incremental_balanced</td>
+<td>是</td>
+<td>1 × 57,018</td>
+<td>report</td>
+<td>sibling 檔為 <code>[]</code></td>
+</tr>
+<tr>
+<td>synthetic_multiclass</td>
+<td>是</td>
+<td>40 × 100,000</td>
+<td>dev</td>
+<td>40 份 GT 皆非空</td>
+</tr>
+</tbody>
+</table>
+<p>來源：<code>configs/datasets_0921.json</code>、實際 CSV 行數與 sibling GT 檔。無須準備缺失資料。
+incremental 的 <code>tp/fp/episode_recall/mdt/far</code> 在 evaluator 中為 null，不能把所有警報當 FP，更不能以 0 補值加入 P1/P2。</p>
+<h2 id="e11-episode">超額命中尚未實作，需保留 E11 的 episode 語意</h2>
+<p><code>src/metrics/evaluate_run.py</code> 沒有 excess hits。E11 定義：每次執行窗外步數 O，λ=FP/O，C=Σ(1−exp(−λL))，X=命中數−C，跨執行加總。
+來源：tag <code>archive/ecpf-misread-2026-10</code> 的 <code>docs/ECPF_E11_逾時與超額命中_預註冊.md</code> 與 <code>scripts/run_e1_e2.py:648–668</code>。</p>
+<p>现 evaluator 的 TP 計每個窗內警報，可對同一 GT 累計多次；C 卻是各 GT「至少命中一次」的期望。直接使用 evaluator.tp−C 會混合兩種單位。
+建議分析腳本獨立報 <code>episode_hits−C</code>，並並列既有 TP/FP；GT 窗長與聯集以離散座標、評估範圍截斷後計算，O=0 時標為不可估計，不以 λ=0 代替。1000 步窗與 injected registry 的 2500 步窗分開報；不改 evaluator 指標。
+這會影響 P2，必須在預註冊前確認。本階段不寫新分析程式，以遵守「任何新程式碼之前先預註冊」；階段一第 3 步要求立即補寫分析程式與此順序有衝突，列為待確認項目。</p>
+<h2 id="oracle">Oracle 與診斷紀錄需要後續補線，否則無法完成預定指標</h2>
+<ul>
+<li><code>run_benchmark.run_one</code> 取得 GT 後未傳給 <code>run_pipeline</code>，config 的 oracle GT 預設空，因此只新增 A0 preset 會得到零 oracle 警報。後續應傳入 GT 起點，injected 需把 input 座標映射至保留列，明定被刪除起點與延遲的處理。</li>
+<li>現有 oracle 將起點當步放入 buffer，長度到 60 就確認，所以實際在 <code>d_s+59</code>，與任務表「+60 筆」差一筆。需明定沿用現有模式，或在不影響既有結果的新增選項下精確執行 +60。</li>
+<li>Benchmark 目前只保存 y_true/y_pred、alarm_idx/alarm_ts（以及 input alarms）、manifest/metrics；没有完整 warning 開/關事件、未確認 buffer、凍結步數與 reuse 勝出統計。tracer 預設關閉，stage1 又只留漂移附近資料。後續需 observer-only 紀錄，不修改 adaptation 邏輯，不靠事後從警報推算 warning。</li>
+<li>manifest 已有 commit、effective_config、versions；檔案資料保存 CSV hash，generated 保存 source hash、generator、seed。沒有生成串流本身的 hash，若 smoke 要求該項，需要額外記錄。</li>
+<li>runner 有 <code>--trials/--cells/--limit-files</code> 及 merge 舊 runs.csv；<strong>沒有 resume/skip-completed</strong>，重跑同一 job 會覆寫原 run dir，且 runs.csv 到整批完成才保存。正式執行前需補跳過已完成且 provenance 一致的 jobs 或外部續跑機制，smoke 與正式使用不同 out-dir。</li>
+<li>compare_sota 預設排除不具可比性的 ECPF injected 與 synthetic。DET1 必須使用 <code>--include-noncomparable</code>，並只納入本實驗的 presets，ECPF F1 一律為參考。</li>
+<li>本 checkout 未找到 Chen/Koh/Riddle 2015 PDF，<code>docs/refs/</code> 不存在。依任務要求，階段三到 MagSeed 時須停止等待 PDF，不能使用近似 SEED 代替。</li>
+</ul>
+<p>來源：<code>scripts/run_benchmark.py:273–295,435–518,659–714</code>、<code>src/pipeline.py:689–723</code>、<code>src/tracing.py</code>、<code>scripts/compare_sota.py</code>。</p>
+<h2 id="8868-smoke">正式執行約 8,868 次，時間需由 smoke 更新</h2>
+<p>計數假設：14 個 DET1 ECPF presets + 不變的 A6/e10bft；A0 的 lw0/lw1 在無 GT 的 incremental 略過；detector-only 共 5 組；hf10 為指定 A1/A3/A5 × 2 lw，單次種子（尚待預註冊明定）。</p>
+<table>
+<thead>
+<tr>
+<th>工作</th>
+<th>計算</th>
+<th style="text-align: right;">次數</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>injected 正式</td>
+<td>400 × (15 ECPF/reference + 5 detector)</td>
+<td style="text-align: right;">8,000</td>
+</tr>
+<tr>
+<td>insects abrupt</td>
+<td>1 × 15</td>
+<td style="text-align: right;">15</td>
+</tr>
+<tr>
+<td>insects incremental</td>
+<td>1 × 13，略過 2 oracle</td>
+<td style="text-align: right;">13</td>
+</tr>
+<tr>
+<td>synthetic ht</td>
+<td>40 × 15</td>
+<td style="text-align: right;">600</td>
+</tr>
+<tr>
+<td>synthetic hf10</td>
+<td>40 × 6</td>
+<td style="text-align: right;">240</td>
+</tr>
+<tr>
+<td>正式合計</td>
+<td></td>
+<td style="text-align: right;">8,868</td>
+</tr>
+<tr>
+<td>smoke（不含 hf10，依階段五原文）</td>
+<td>24 × 20 + 15 + 13 + 40 × 15</td>
+<td style="text-align: right;">1,108</td>
+</tr>
+<tr>
+<td>smoke + 正式</td>
+<td>不含閘門、MOA check、必要重跑</td>
+<td style="text-align: right;">9,976</td>
+</tr>
+</tbody>
+</table>
+<p>若 A6 不納入正式清單，正式減 442 次至 8,426，smoke 減 66 次至 1,042。完整 trial 重跑 existing det_adwin 是否使用新隔離根目錄，也須於預註冊鎖定，不能覆寫既有輸出。</p>
+<p>本機 10 logical CPUs。仅讀取既有 runs.csv 的 runtime，未使用 report 的品質或偵測結果來選參數：electricity ecpf_paper 21.75s、e10bft 29.84s；insects abrupt ecpf_paper 90.43s；injected det_adwin 的 400 次 runtime 中位數 2.80s。
+粗估 HT 主批約 60–120 CPU 小時；hf10 額外約 20–60 CPU 小時（尚無相同設定實測，僅成本規劃範圍）。以 4–8 個有效 workers 粗估正式約 10–45 小時，另加 smoke 與新 detector 驗證。這不是完成時間承諾：warning 凍結、模型池 deep-copy 與 MagSeed 實作可能明顯改變耗時；階段五需用逐組 smoke 更新。</p>
+<h2 id="_1">階段二前須確認影響結論的決定</h2>
+<ol>
+<li><strong>P1/P2 資料範圍：</strong> 建議用 injected + insects abrupt + synthetic 三個有 GT 家族；INSECTS incremental 只報 adaptation/警報數/runtime，synthetic incremental 仍可獨立判定。保留 registry 的 dev 身分，預註冊宣告此次為鎖參數後的評估，且非全新 holdout（E11–E14 已用過部分種子）。</li>
+<li><strong>超額命中：</strong> 建議依 E11 使用 episode hits−C；Cerqueira TP/FP 原值另報，E11 式一個 episode 一次 hit 與其餘警報的 FP 口徑需在分析定義中明寫。P2 主窗建議統一 1000；injected 2500 另列文獻口徑。</li>
+<li><strong>A0：</strong> 確認「60 筆 buffer」或「真實起點後 +60 筆」及 injected 是否以原始 input 筆數計延遲。</li>
+<li><strong>執行範圍：</strong> 建議 A6 在四組皆跑一次、不乘 lw；hf10 單種子先沿用任務所列 6 組；新分析程式、oracle/observer/resume 補線全部延後預註冊核准後。</li>
+</ol>
+<p>本階段至此停止；未開始階段二預註冊。</p><div class="foot">來源：DET1 階段一報告 Markdown；同目錄的 stage1_dataset_inventory.json 保存完整資料清單。</div></main></div>
+</body></html>
