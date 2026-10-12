@@ -1,0 +1,103 @@
+{
+  "dataset": "airlines_full",
+  "stream": "airlines",
+  "data": {
+    "file": "data/dataset_0921/real_dataset/_full/binary/airlines/airlines.csv",
+    "sha256": "06b4770ec3ceb54bccbede02056131cbb55a47416e1f9b61995fc1a2607edd5c"
+  },
+  "cell": null,
+  "task": "binary",
+  "n_classes": 2,
+  "coordinates": "output",
+  "n_input": 539383,
+  "detect_from": 0,
+  "gt_intervals": null,
+  "registry_entry": {
+    "group": "real",
+    "task": "binary",
+    "role": "report",
+    "files": "data/dataset_0921/real_dataset/_full/binary/airlines/airlines.csv",
+    "files_hint": "not in git; generate with: cd data/dataset_0921/real_dataset/script && python3 prepare_all.py --full",
+    "gt": null,
+    "delta_max": null,
+    "order": "original",
+    "truncated": false,
+    "protocol": "real_prequential",
+    "window": 1000,
+    "comparable": true,
+    "comparability_note": "Full OpenML airlines stream, 539,383 rows, same as DriftMoE. Airline / AirportFrom / AirportTo are integer codes, so River trees split them as numeric while MOA treats them as nominal; re-run SRP/ARF here rather than relying only on the cited values.",
+    "required_metrics": [
+      "acc_prequential",
+      "kappa_m",
+      "kappa_t",
+      "baseline_no_change_acc",
+      "baseline_majority_acc"
+    ],
+    "sota": [
+      {
+        "metric": "acc_prequential",
+        "value": 0.7033,
+        "std": 0.0018,
+        "method": "DriftMoE (MoEData)",
+        "tier": "overall",
+        "source": "DriftMoE 2025, Table 2"
+      },
+      {
+        "metric": "acc_prequential",
+        "value": 0.6855,
+        "std": 0.0004,
+        "method": "SRP",
+        "tier": "classic",
+        "source": "DriftMoE 2025, Table 2"
+      },
+      {
+        "metric": "kappa_m",
+        "value": 0.3339,
+        "method": "DriftMoE (MoEData)",
+        "tier": "overall",
+        "source": "DriftMoE 2025"
+      }
+    ]
+  },
+  "preset": {
+    "name": "srp10",
+    "kind": "baseline",
+    "role": "baseline",
+    "description": "Streaming Random Patches with River's defaults (10 Hoeffding trees, 60% subspaces). MOA's default is 100 members; the ensemble size DriftMoE used for SRP is not recorded in our notes.",
+    "source": "river 0.21.2 ensemble.SRPClassifier defaults",
+    "requires": {
+      "river": "0.21.2"
+    },
+    "learner": "srp",
+    "params": {},
+    "seed_param": "seed",
+    "tasks": [
+      "binary",
+      "multiclass"
+    ]
+  },
+  "effective_config": {
+    "learner": "srp",
+    "seed": 1
+  },
+  "seed": 1,
+  "warm_start": 0,
+  "prequential_warm_start": true,
+  "max_steps": null,
+  "emits_alarms": false,
+  "type_ldd_stubbed": false,
+  "version_problems": [],
+  "git": {
+    "commit": "929dd207eb9d0af359d1d55ccbdf6689145f8db8",
+    "dirty": false
+  },
+  "versions": {
+    "python": "3.12.13",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "river": "0.21.2"
+  },
+  "runtime_s": 1339.49,
+  "peak_rss_mb": 1181.8,
+  "finished_at": "2026-10-12T23:25:45+0800"
+}
