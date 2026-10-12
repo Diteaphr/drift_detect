@@ -337,6 +337,7 @@ class MOAADWINChangeDetector:
 
 def make_detector(name: str, params: Dict[str, Any]):
     from river import drift
+    from detectors.core.rddm_moa import MOARDDM
 
     factories = {
         "adwin_moa": MOAADWINChangeDetector,
@@ -347,6 +348,7 @@ def make_detector(name: str, params: Dict[str, Any]):
         "eddm": drift.binary.EDDM,
         "hddm_a": drift.binary.HDDM_A,
         "hddm_w": drift.binary.HDDM_W,
+        "rddm": MOARDDM,
     }
     if name not in factories:
         raise ValueError(f"unknown detector {name!r}")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Tuple
 
+from detectors.core.rddm_moa import MOARDDM
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
 
 
@@ -12,8 +13,8 @@ class ECPFZoneDetector:
     ZONE drives the buffer. ``zone = True`` tells the pipeline to close the warning
     (and drop the buffer) when the detector leaves its warning zone without a drift.
 
-    river's DDM / HDDM_A with their defaults, which equal MOA's (E9,
-    docs/實驗脈絡總覽.md). 0/1 error only -- classification.
+    River's DDM / HDDM_A with their defaults (E9), or a port of MOA RDDM
+    with its defaults. 0/1 error only -- classification.
     """
 
     zone = True
@@ -21,7 +22,7 @@ class ECPFZoneDetector:
     def __init__(self, kind: str) -> None:
         from river.drift.binary import DDM, HDDM_A
 
-        makers = {"ddm": DDM, "hddm_a": HDDM_A}
+        makers = {"ddm": DDM, "hddm_a": HDDM_A, "rddm": MOARDDM}
         if kind not in makers:
             raise ValueError("ecpf_zone_detector must be one of %s, got %r" % (sorted(makers), kind))
         self.kind = kind
@@ -44,7 +45,8 @@ class ECPFZoneDetector:
         drift = bool(self._det.drift_detected)
         warning = bool(self._det.warning_detected) or drift  # a drift step is also inside the zone
         self.stats = {"drift_value": float(drift_value), "detector_type": self.combo_name}
-        if drift:
+        if drift and self.kind != "rddm":
+            # MOA RDDM performs its own warning-buffer replay on the next input.
             self.reset()
         return warning, drift
 
