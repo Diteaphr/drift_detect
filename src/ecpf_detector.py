@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Tuple
 
 from detectors.core.rddm_moa import MOARDDM
+from detectors.core.magseed_candidate import MagSeedCandidate
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
 
 
@@ -14,7 +15,8 @@ class ECPFZoneDetector:
     (and drop the buffer) when the detector leaves its warning zone without a drift.
 
     River's DDM / HDDM_A with their defaults (E9), or a port of MOA RDDM
-    with its defaults. 0/1 error only -- classification.
+    with its defaults. The explicitly named MagSeed candidate is exploratory;
+    it is not the preregistered A5 detector. 0/1 error only -- classification.
     """
 
     zone = True
@@ -22,7 +24,12 @@ class ECPFZoneDetector:
     def __init__(self, kind: str) -> None:
         from river.drift.binary import DDM, HDDM_A
 
-        makers = {"ddm": DDM, "hddm_a": HDDM_A, "rddm": MOARDDM}
+        makers = {
+            "ddm": DDM,
+            "hddm_a": HDDM_A,
+            "rddm": MOARDDM,
+            "magseed_candidate": MagSeedCandidate,
+        }
         if kind not in makers:
             raise ValueError("ecpf_zone_detector must be one of %s, got %r" % (sorted(makers), kind))
         self.kind = kind
@@ -45,8 +52,8 @@ class ECPFZoneDetector:
         drift = bool(self._det.drift_detected)
         warning = bool(self._det.warning_detected) or drift  # a drift step is also inside the zone
         self.stats = {"drift_value": float(drift_value), "detector_type": self.combo_name}
-        if drift and self.kind != "rddm":
-            # MOA RDDM performs its own warning-buffer replay on the next input.
+        if drift and self.kind not in {"rddm", "magseed_candidate"}:
+            # RDDM replays after drift; the candidate already reset itself.
             self.reset()
         return warning, drift
 

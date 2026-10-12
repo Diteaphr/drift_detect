@@ -223,9 +223,10 @@ class PipelineConfig:
     # increase-only since 2017. Default OFF; binary runs unchanged.
     ecpf_adwin_one_sided: bool = False
 
-    # E9 (docs/實驗脈絡總覽.md): official-ECPF single detector ("ddm" | "hddm_a",
-    # river defaults = MOA defaults) in place of the dual ADWIN, with the official
-    # warning-zone semantics. Classification only. "" = off; binary runs unchanged.
+    # E9 (docs/實驗脈絡總覽.md): a single zone detector in place of dual ADWIN.
+    # "ddm"/"hddm_a" use River defaults; "rddm" follows MOA. The separate
+    # "magseed_candidate" is exploratory, NOT the preregistered MagSeed A5.
+    # Classification only. "" = off; binary runs unchanged.
     ecpf_zone_detector: str = ""
 
     # Close a warning that has stayed open longer than this many steps without
