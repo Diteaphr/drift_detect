@@ -87,14 +87,18 @@ Observer-only warning 事件／reuse 記錄在階段三之後補線；需通過�
 
 ## 以同 lw 的 A1 作對照，P1 與 P2 同時成立才判優
 
-**主判定母體：** injected、INSECTS abrupt、synthetic 的全部 HT 正式 run。三組逐次合計原始 FP 與 X，統計時每條串流算一次；不平均各資料組、也不讓 hf10、A0、A1t、A6、insects incremental 進 P1/P2。這會讓 400 條 injected 的權重大，故同時照常報三組各自數字。Synthetic 已使用過，結論範圍限定為本批已知資料的鎖參數比較。
+**主判定母體：** injected、INSECTS abrupt、synthetic 的全部 HT 正式 run。三組逐次合計原始 FP 與 X，統計時每條串流算一次；不平均各資料組、也不讓 hf10、A0、A6、insects incremental 進 P1/P2。A1t 僅作次要對照，不進 A1 的主判定。這會讓 400 條 injected 的權重大，故同時照常報三組各自數字。Synthetic 已使用過，結論範圍限定為本批已知資料的鎖參數比較。
 
 對每個 `d∈{A2,A3,A4,A5}`、每個 `lw∈{0,1}`，均與同 lw 的 A1 配對判定：
 
 | 條件 | 成立標準 |
 |---|---|
-| P1：誤報 | 三組 FP@1000 合計 `FP(d,lw) ≤ FP(A1,lw)` |
-| P2：扣除機率後命中 | 三組 E11 超額命中@1000 合計 `X(d,lw) ≥ X(A1,lw)` |
+| P1：誤報 | 三組 FP@1000 合計差 `ΔFP=FP(d,lw)−FP(A1,lw)`；負值有利於 d |
+| P2：扣除機率後命中 | 三組 E11 超額命中@1000 合計差 `ΔX=X(d,lw)−X(A1,lw)`；正值有利於 d |
+
+**不確定性與條件狀態：** 對每個 d × lw，以串流為單位做 **10,000 次配對、分層 bootstrap**，固定種子 **20261012**；在 injected（400 條）、INSECTS abrupt（1 條）、synthetic（40 條）三層內各自有放回抽樣，保持每層條數不變，同一抽樣索引同時套用 d 與對照組。每次重算三層合計的 ΔFP、ΔX；各取第 2.5 與 97.5 百分位作 95% percentile CI。單條 INSECTS 串流在 bootstrap 中固定重現，不能假稱該層有抽樣變異；CI 是對這批串流的條件不確定性，不代表全新資料的外推區間。若 P1 的 CI 上界 **<0**，P1「成立」；下界 **>0**，P1「不成立」；其餘（包括碰到或跨越 0）判「持平」。P2 的 CI 下界 **>0** 為「成立」、上界 **<0** 為「不成立」，其餘「持平」。點估計與 CI 均照報。缺少配對串流或 X 不可估時，該比較不可判定，不能改抽樣母體。
+
+**次要對照：** A2–A5 × lw 另各以同 lw 的 A1t（timeout=1000）計算相同 ΔFP、ΔX、分層配對 bootstrap CI、P1/P2 狀態及下表結論；與 A1 主結論並列，清楚標「A1t 次要結論」。A1t 不是 A1 主判定的替代，兩種對照若結論相反仍各自保留。
 
 | P1 | P2 | 對該 detector、該 lw 的結論 |
 |---|---|---|
@@ -102,7 +106,10 @@ Observer-only warning 事件／reuse 記錄在階段三之後補線；需通過�
 | 不成立 | 不成立 | 不如 Dual ADWIN |
 | 成立 | 不成立 | 如實報告，不下勝負結論 |
 | 不成立 | 成立 | 如實報告，不下勝負結論 |
+| 任一條件持平 | 另一條件任意狀態 | 持平；列出兩條件狀態，不下整體優劣結論 |
 | 任一不可估／資料不完整 | — | 不可判定，列原因 |
+
+**三組方向與一致性（描述性，不作判準）：** 對主 A1 與次要 A1t 每一個 d × lw × P1/P2，分別列 injected、INSECTS abrupt、synthetic 的點估計差值及方向：ΔFP <0／=0／>0 對應有利／相同／不利，ΔX >0／=0／<0 對應有利／相同／不利；再列「三組中幾組與三組合計的點估計方向一致」（0–3）。若合計恰為 0，僅報三組方向與合計相同，不賦予勝負意義。不以方向一致數修改 CI 判定或結論。
 
 **型態分層：** 突變、漸變、incremental 各自依同一 P1/P2 方向判定，獨立於總結論；synthetic recurring 依 GT／檔案標籤另列，不事後合併到有利型態。Injected 的 abrupt/gradual 分表；INSECTS incremental 無 GT，只作 adaptation 描述，不能出現 TP/FP 或超額命中結論。漸變與 incremental 即使與總判定相反也必須顯示。
 
@@ -133,7 +140,7 @@ Observer-only warning 事件／reuse 記錄在階段三之後補線；需通過�
 - 兩種 lw 的 A0–A5 及 A6：每資料／每 cell 的 run 數、GT 數、警報數、TP/FP/FN@1000、episode hit/recall、X、MDT、FAR；injected 另報 @2500 及 8 cells pooled F1/precision/recall；A0 不併入勝負。
 - warning 次數、未確認關閉及其原因、已確認／丟棄 buffer 中位長度、凍結步數、timeout 次數、串流結尾 censored 數；A1 與 A1t 的差異。
 - prequential accuracy、kappa、post-drift 1000 步 accuracy、reuse 勝出／平手／無後續樣本、runtime；INSECTS incremental 只列 accuracy、警報數、runtime。
-- 三組主判定的 FP、episode hits、期望機率命中 C、X 分項與合計；每個 A2–A5 × lw 的 P1/P2 真值、結論及型態分層；`lw1−lw0`、MagSeed 對 A1 配對表、hf10 六組敏感性結果。
+- 三組主判定的 FP、episode hits、期望機率命中 C、X 分項與合計；每個 A2–A5 × lw 對 A1 與 A1t 的 ΔFP、ΔX、10,000 次串流 bootstrap 95% CI、P1/P2 成立／不成立／持平狀態、主與次要結論、三組各自方向及一致組數、型態分層；`lw1−lw0`、MagSeed 對 A1 配對表、hf10 六組敏感性結果。
 - Detector-only 五組與 Cerqueira 每格 SOTA/calibration 的差值；文獻僅在這組並排。比較報告的 Friedman/Wilcoxon/Holm 結果、限制與可比性註記。
 - 所有 gate、版本／commit／資料 hash、正式完整性、失敗和偏離；事後觀察在 verdict 獨立標記，不新增判準。
 
