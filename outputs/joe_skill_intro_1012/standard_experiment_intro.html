@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>標準 SOTA 比較實驗：改了什麼、怎麼跑、輸出長什麼樣</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --ink: #1f2328; --muted: #656d76;
+    --line: #d8dee4; --accent: #0b6bcb; --accent-soft: #e7f1fb;
+    --good: #1a7f37; --good-soft: #e6f4ea; --warn: #9a6700; --warn-soft: #fff4d6;
+    --bad: #cf222e; --bad-soft: #fde8ea; --ours: #8250df; --ours-soft: #f1ebfd;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.7 -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+  header { background: #13294b; color: #fff; padding: 36px 24px 28px; }
+  header h1 { margin: 0 0 8px; font-size: 26px; }
+  header p { margin: 0; opacity: .85; }
+  nav { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line);
+        padding: 8px 24px; display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; }
+  nav a { color: var(--accent); text-decoration: none; }
+  main { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+            padding: 22px 26px; margin-bottom: 22px; }
+  h2 { margin: 0 0 14px; font-size: 21px; border-left: 5px solid var(--accent); padding-left: 10px; }
+  h3 { margin: 22px 0 8px; font-size: 17px; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+  code { background: #eff2f5; padding: 1px 5px; border-radius: 4px; }
+  pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.55; }
+  pre .c { color: #8b949e; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 6px; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: #f3f5f7; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.ours td { background: var(--ours-soft); }
+  tr.lit td { background: #f6f8fa; color: var(--muted); }
+  .tag { display: inline-block; padding: 0 8px; border-radius: 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .t-new { background: var(--good-soft); color: var(--good); }
+  .t-mod { background: var(--warn-soft); color: var(--warn); }
+  .t-main { background: var(--ours-soft); color: var(--ours); }
+  .t-base { background: var(--accent-soft); color: var(--accent); }
+  .t-abl { background: #eef0f2; color: #57606a; }
+  .t-ref { background: var(--bad-soft); color: var(--bad); }
+  .callout { border-radius: 8px; padding: 12px 16px; margin: 12px 0; }
+  .callout.info { background: var(--accent-soft); border-left: 4px solid var(--accent); }
+  .callout.warn { background: var(--warn-soft); border-left: 4px solid var(--warn); }
+  .callout.good { background: var(--good-soft); border-left: 4px solid var(--good); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .box { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .box h4 { margin: 0 0 6px; font-size: 15px; }
+  .box.before { border-top: 4px solid var(--bad); }
+  .box.after { border-top: 4px solid var(--good); }
+  .box ul { margin: 0; padding-left: 20px; }
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  .steps li { counter-increment: s; position: relative; padding: 4px 0 10px 40px; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 4px; width: 26px; height: 26px;
+                      border-radius: 50%; background: var(--accent); color: #fff; text-align: center;
+                      line-height: 26px; font-size: 13px; font-weight: 700; }
+  .bars { margin: 8px 0 4px; }
+  .bar-row { display: grid; grid-template-columns: 190px 1fr 70px; align-items: center; gap: 10px; margin: 4px 0; font-size: 14px; }
+  .bar-track { background: #eef1f4; border-radius: 4px; height: 18px; position: relative; }
+  .bar-fill { height: 100%; border-radius: 4px; background: #8fb8e6; }
+  .bar-fill.ours { background: var(--ours); }
+  .bar-fill.lit { background: repeating-linear-gradient(45deg, #b6bcc4, #b6bcc4 4px, #d0d5db 4px, #d0d5db 8px); }
+  .bar-fill.ref { background: #e0b44c; }
+  .bar-val { text-align: right; font-variant-numeric: tabular-nums; }
+  .axis { font-size: 12px; color: var(--muted); margin-left: 200px; }
+  .tree { background: #f6f8fa; color: var(--ink); border: 1px solid var(--line); }
+  .small { font-size: 13px; color: var(--muted); }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } .bar-row { grid-template-columns: 120px 1fr 60px; } .axis { margin-left: 130px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>標準 SOTA 比較實驗：改了什麼、怎麼跑、輸出長什麼樣</h1>
+  <p>drift_detect ・ commit <code style="background:rgba(255,255,255,.15);color:#fff">929dd20</code>（對照前一版 <code style="background:rgba(255,255,255,.15);color:#fff">9295c1f</code>）・ 2026-10-12</p>
+</header>
+
+<nav>
+  <a href="#tldr">重點</a>
+  <a href="#before-after">之前 vs 現在</a>
+  <a href="#howto">怎麼跑</a>
+  <a href="#presets">主方法與對照組</a>
+  <a href="#datasets">資料集</a>
+  <a href="#files">新增 / 修改的檔案</a>
+  <a href="#outputs">標準輸出</a>
+  <a href="#results">目前結果</a>
+  <a href="#metrics">指標怎麼看</a>
+  <a href="#limits">限制與注意</a>
+</nav>
+
+<main>
+
+<!-- ============================================================ -->
+<section id="tldr">
+  <h2>重點</h2>
+  <ul>
+    <li><b>跑實驗的流程固定了</b>：資料怎麼讀、從哪一筆開始算分、指標公式、和哪篇論文的哪個數字比，都寫在設定檔和一支計分程式裡。每個人跑出來的數字可以直接互相比較，也能和論文比較。</li>
+    <li><b>主方法固定是 <code>e10bft</code></b>（單棵 Hoeffding Tree + E10bFT 偵測設定）。不指定系統時預設就跑它，組員不用記名字。</li>
+    <li><b>受測系統的內部設定可以換，但一定會被記錄</b>：每次執行都會存下完整設定、程式版本（commit）、套件版本和執行時間。</li>
+    <li><b>可以叫 AI 跑，不限工具</b>：在 Cursor、Claude Code、Codex、GitHub Copilot、Gemini CLI 等能執行指令的 AI 裡說「幫我做 dataset_0921 的 SOTA 比較實驗」。AI 會先檢查這台電腦有哪些資料，再用選擇題問你要跑什麼，最後產出報告。</li>
+  </ul>
+  <div class="callout info">
+    一句話：以前每支實驗腳本各算各的分數；現在統一用 <code>run_benchmark.py</code> 跑、<code>evaluate_run.py</code> 計分、<code>compare_sota.py</code> 出報告，三者都依同一份資料集登錄檔 <code>configs/datasets_0921.json</code> 決定規則。
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="before-after">
+  <h2>之前 vs 現在</h2>
+  <div class="grid2">
+    <div class="box before">
+      <h4>之前</h4>
+      <ul>
+        <li><code>main.py</code>、<code>run_ecpf_recurring*.py</code>、<code>scripts/experiment_*</code> 各自計算準確率和偵測分數，定義不一定一樣。</li>
+        <li>和論文比較時，要自己去查論文數字、自己確認資料版本和計分方式。</li>
+        <li>系統設定寫在程式裡或命令列，事後不一定知道當時用了什麼參數。</li>
+        <li>前 200 筆暖機資料只訓練、不計分，準確率的分母和論文不同。</li>
+        <li>airlines / covertype 只有前 10 萬筆，論文用的是全長。</li>
+        <li>注入漂移資料的寬度上限是 1000，論文用 2500 / 1500，而且每格跑 50 次。</li>
+      </ul>
+    </div>
+    <div class="box after">
+      <h4>現在</h4>
+      <ul>
+        <li>所有指標由 <code>src/metrics/evaluate_run.py</code> 一處計算，公式對齊 MOA 和 Cerqueira et al.，並用論文公開的警報資料驗證過計分結果完全一致。</li>
+        <li>每個資料集在 <code>configs/datasets_0921.json</code> 登錄：任務、真實漂移點、可不可以和文獻比、該比哪些指標、文獻 SOTA 數字和出處。</li>
+        <li>系統設定凍結在 <code>configs/presets/*.json</code>，每次執行把實際生效的設定寫進 <code>manifest.json</code>。</li>
+        <li>暖機段改成「先預測再學」，整條資料流都計分，和論文一致（舊做法仍保留，預設不變）。</li>
+        <li>新增 <code>airlines_full</code>、<code>covertype_full</code> 全長版。</li>
+        <li>新增 <code>injected_paper_*</code>：依論文參數即時產生 50 次 × 8 格的注入資料，不需事先存檔。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>新流程長這樣</h3>
+  <table>
+    <tr><th>步驟</th><th>誰負責</th><th>做什麼</th></tr>
+    <tr><td>1. 選資料與系統</td><td><code>datasets_0921.json</code> + <code>presets/*.json</code> + <code>benchmark_defaults.json</code></td><td>決定跑哪個資料集、哪些系統（預設主方法 + 對照組）</td></tr>
+    <tr><td>2. 執行</td><td><code>scripts/run_benchmark.py</code></td><td>讀資料、逐筆預測再學習，存下每筆的預測和警報位置</td></tr>
+    <tr><td>3. 計分</td><td><code>src/metrics/evaluate_run.py</code></td><td>依登錄檔規則算準確率、Kappa、偵測 F1 等，寫進 <code>metrics.json</code> 與 <code>runs.csv</code></td></tr>
+    <tr><td>4. 和文獻比較</td><td><code>scripts/compare_sota.py</code></td><td>彙整所有 <code>runs.csv</code>，算平均 ± 標準差、95% 信賴區間、和 SOTA 的差距、排名檢定，輸出 <code>report.md</code></td></tr>
+  </table>
+</section>
+
+<!-- ============================================================ -->
+<section id="howto">
+  <h2>怎麼跑</h2>
+
+  <h3>方法 A：叫 AI 跑（推薦）</h3>
+  <p>在任何能讀檔、能執行指令的 AI 工具裡輸入：</p>
+  <pre>幫我做 dataset_0921 的 SOTA 比較實驗</pre>
+  <p>操作手冊只有一份：<code>.agents/skills/dataset0921-benchmark/SKILL.md</code>。各工具找到它的方式：</p>
+  <table>
+    <tr><th>工具</th><th>怎麼找到 skill</th><th>注意</th></tr>
+    <tr><td>Cursor</td><td>原生讀 <code>.agents/skills/</code>，也讀根目錄 <code>AGENTS.md</code></td><td>要在 Agent 模式（Ask 模式不能執行指令）</td></tr>
+    <tr><td>Claude Code</td><td><code>.claude/skills/dataset0921-benchmark/SKILL.md</code>（轉址到本體）</td><td>選擇題工具一次最多 4 題、每題 4 個選項，所以會分兩輪問，資料集改用文字清單</td></tr>
+    <tr><td>OpenAI Codex</td><td>原生讀 <code>.agents/skills/</code> 與 <code>AGENTS.md</code></td><td>沒有選擇題介面時，會列出編號選項，回覆例如 <code>1a 2 a,c 3a</code> 或「你決定」</td></tr>
+    <tr><td>GitHub Copilot</td><td><code>AGENTS.md</code>、<code>.github/copilot-instructions.md</code>、<code>.claude/skills/</code></td><td>要用 Agent 模式</td></tr>
+    <tr><td>Gemini CLI</td><td><code>GEMINI.md</code>（匯入 <code>AGENTS.md</code>）</td><td></td></tr>
+    <tr><td>其他工具</td><td>若沒自動抓到，在 prompt 加一句：「先讀 <code>.agents/skills/dataset0921-benchmark/SKILL.md</code> 並照著做」</td><td></td></tr>
+  </table>
+  <p>流程如下：</p>
+  <ol class="steps">
+    <li><b>查這台電腦有哪些資料</b>：執行 <code>run_benchmark.py --list-datasets --json</code>。組員剛 clone 下來通常缺 <code>airlines_full</code>、<code>covertype_full</code>、<code>injected_paper_covertype</code>（這三個不在 git 裡）。</li>
+    <li><b>用選擇題問你</b>（一次全部問完，已經講過的會跳過）：
+      <table>
+        <tr><th>題目</th><th>選項（★ = 建議）</th></tr>
+        <tr><td>實驗目的</td><td>★和文獻 SOTA 比較 ／ 快速看結果 ／ 消融比較 ／ 只用現有結果出報告 ／ 測試新的系統設定</td></tr>
+        <tr><td>資料集（可複選）</td><td>★全部可比且這台有的 ／ 全部 INSECTS ／ 先準備缺少的資料 ／ 再列出登錄檔裡<b>每一個</b>資料集，並標註：可比或僅供參考、筆數、這台有沒有、是否已有結果</td></tr>
+        <tr><td>受測系統</td><td>★主方法 e10bft ／ 其他 preset</td></tr>
+        <tr><td>對照組</td><td>★標準組 ／ 快速組 ／ 只做消融 ／ 不跑 ／ 自己指定</td></tr>
+        <tr><td>種子數（森林才有差）</td><td>★3 ／ 5 ／ 1</td></tr>
+        <tr><td>執行方式</td><td>★先冒煙測試再跑完整 ／ 直接完整 ／ 只做冒煙測試</td></tr>
+        <tr><td>要不要出報告</td><td>★要 ／ 不用</td></tr>
+      </table>
+    </li>
+    <li><b>列出計畫與預估時間</b>，超過約 30 分鐘會再問一次要不要開始。</li>
+    <li><b>執行、檢查 log、出報告</b>，並依報告寫結論。</li>
+  </ol>
+
+  <p>想少回答幾題，把已決定的寫進 prompt：</p>
+  <table>
+    <tr><th>需求</th><th>prompt 範例</th></tr>
+    <tr><td>全部用建議值</td><td><code>幫我做 SOTA 比較實驗，你決定</code></td></tr>
+    <tr><td>指定資料集與設定</td><td><code>在 electricity 和全部 INSECTS 上做 SOTA 比較，主方法配標準對照組，3 個 seed，先冒煙測試再跑完整，最後出報告</code></td></tr>
+    <tr><td>只出報告</td><td><code>用現有結果出 SOTA 比較報告</code></td></tr>
+    <tr><td>消融</td><td><code>在 INSECTS 上做主方法的消融比較</code></td></tr>
+    <tr><td>補資料再跑</td><td><code>幫我準備缺少的資料，然後跑 airlines_full 的 SOTA 比較</code></td></tr>
+  </table>
+
+  <h3>方法 B：自己下指令（在專案根目錄）</h3>
+<pre><span class="c"># 這台電腦有哪些資料（ok / MISSING，以及已有結果的 preset）</span>
+python3 scripts/run_benchmark.py --list-datasets
+
+<span class="c"># 列出資料集、preset（含角色）、suite</span>
+python3 scripts/run_benchmark.py --list
+
+<span class="c"># 只跑主方法（不給 --preset 就是 e10bft）</span>
+python3 scripts/run_benchmark.py --dataset electricity
+
+<span class="c"># 主方法 + 標準對照組，森林跑 3 個 seed，3 個平行</span>
+python3 scripts/run_benchmark.py --dataset electricity --suite standard --seeds 3 --workers 3
+
+<span class="c"># 冒煙測試：只跑前 5000 筆，自動標成「不可比」，不會進報告</span>
+python3 scripts/run_benchmark.py --dataset electricity --suite standard --max-steps 5000
+
+<span class="c"># 補齊全長資料（需網路，數分鐘）</span>
+cd data/dataset_0921/real_dataset/script &amp;&amp; python3 prepare_all.py --full
+
+<span class="c"># 出報告（預設 reports/sota_&lt;時間&gt;/）</span>
+python3 scripts/compare_sota.py --target e10bft
+python3 scripts/compare_sota.py --target e10bft --datasets electricity insects_abrupt_balanced
+
+<span class="c"># 計分程式修正後，不重跑、只重新計分</span>
+python3 scripts/run_benchmark.py --reeval outputs/benchmark</pre>
+
+  <div class="callout warn">
+    <b>預估時間</b>（electricity 4.5 萬筆，單次）：ht / nb 約 5 秒、e10bft / ecpf 約 30 秒、arf10 約 1 分鐘、arf100 每個 seed 約 7 分鐘。<code>airlines_full</code>、<code>covertype_full</code> 長 12–13 倍，arf100 每個 seed 要好幾小時。<code>injected_paper_*</code> 每個資料集有 400 條資料流。<br>
+    ECPF 類 preset（含主方法）需要 <code>river==0.21.2</code>，版本不對 runner 會拒絕執行。
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="presets">
+  <h2>主方法與對照組（preset）</h2>
+  <p>每個 preset 是一個凍結的系統設定檔（<code>configs/presets/&lt;名稱&gt;.json</code>），<code>role</code> 欄位標示它的角色。</p>
+  <table>
+    <tr><th>preset</th><th>角色</th><th>內容</th></tr>
+    <tr class="ours"><td><code>e10bft</code></td><td><span class="tag t-main">主方法</span></td><td>單棵 Hoeffding Tree + E10bFT 偵測：凍結參考模型、leader guard、warning timeout、雙 ADWIN（δ = 0.05）走 ECPF 模型池。迴歸資料自動換成 Hoeffding Tree 迴歸器。</td></tr>
+    <tr><td><code>ecpf_paper</code></td><td><span class="tag t-abl">消融</span></td><td>Anderson et al. 原版 ECPF（strict swap、ECPF fade、模型池上限 10），單棵 HT</td></tr>
+    <tr><td><code>ecpf_reuse_value</code></td><td><span class="tag t-abl">消融</span></td><td>ecpf_paper 改用 AiRStream 式 reuse-value 衰減</td></tr>
+    <tr><td><code>arf100</code></td><td><span class="tag t-base">對照組</span></td><td>Adaptive Random Forest 100 棵（MOA 預設、文獻常用設定）</td></tr>
+    <tr><td><code>arf10</code></td><td><span class="tag t-base">對照組</span></td><td>ARF 10 棵（River 預設，便宜但不是文獻設定）</td></tr>
+    <tr><td><code>srp10</code></td><td><span class="tag t-base">對照組</span></td><td>Streaming Random Patches，10 棵</td></tr>
+    <tr><td><code>ht</code></td><td><span class="tag t-base">對照組</span></td><td>單純 Hoeffding Tree，不處理漂移（主方法的「底座」）</td></tr>
+    <tr><td><code>nb</code></td><td><span class="tag t-base">對照組</span></td><td>Gaussian Naive Bayes，不處理漂移</td></tr>
+    <tr><td><code>htr</code></td><td><span class="tag t-base">對照組</span></td><td>Hoeffding Tree 迴歸器（只用在迴歸資料）</td></tr>
+    <tr><td><code>det_adwin</code> / <code>det_adwin_default</code> / <code>det_adwin_river</code></td><td><span class="tag t-ref">偵測參考</span></td><td>只偵測、不換模型：HT + ADWIN，照 Cerqueira et al. 的流程。只有在要宣稱「偵測器」本身的表現時才需要，不在任何 suite 裡，可以刪。</td></tr>
+  </table>
+
+  <h3>Suite（一組 preset 的捷徑，定義在 <code>configs/benchmark_defaults.json</code>）</h3>
+  <table>
+    <tr><th>suite</th><th>內容</th><th>用途</th></tr>
+    <tr><td><code>standard</code></td><td>e10bft, arf100, srp10, ht, nb, htr</td><td>正式 SOTA 比較的預設組合</td></tr>
+    <tr><td><code>quick</code></td><td>e10bft, arf10, ht, nb, htr</td><td>先快速看趨勢，不當正式結果</td></tr>
+    <tr><td><code>ablation</code></td><td>e10bft, ecpf_paper, ecpf_reuse_value</td><td>主方法的消融比較</td></tr>
+    <tr><td><code>main_only</code></td><td>e10bft</td><td>只跑主方法</td></tr>
+  </table>
+  <p class="small">不支援該任務的 preset 會自動跳過（例如迴歸資料不跑森林分類器、分類資料不跑 htr）。只有森林有隨機種子；e10bft、ht、nb、ecpf_* 是確定性的，只跑一次。</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="datasets">
+  <h2>資料集（登錄在 <code>configs/datasets_0921.json</code>）</h2>
+  <p>每個資料集有兩個關鍵屬性：<b>role</b>（<code>report</code> 用來出最終數字，<code>dev</code> 只能拿來調參）和 <b>comparable</b>（資料和論文是否完全一樣，可不可以直接比數字）。</p>
+  <table>
+    <tr><th>資料集</th><th>任務</th><th class="num">筆數</th><th>可和文獻比？</th><th>備註</th></tr>
+    <tr><td><code>electricity</code></td><td>二分類</td><td class="num">45,312</td><td><span class="tag t-new">可比</span></td><td>和文獻同一份；No-change 基準 85.33% 重現 Souza et al.</td></tr>
+    <tr><td><code>airlines_full</code></td><td>二分類</td><td class="num">539,383</td><td><span class="tag t-new">可比</span></td><td>新增，全長版，不在 git，需 <code>prepare_all.py --full</code></td></tr>
+    <tr><td><code>covertype_full</code></td><td>多分類</td><td class="num">581,012</td><td><span class="tag t-new">可比</span></td><td>新增，全長版，不在 git</td></tr>
+    <tr><td><code>insects_*</code>（5 個 balanced 版本）</td><td>多分類</td><td class="num">24k–80k</td><td><span class="tag t-new">可比</span></td><td>和 Souza et al. 2020 同資料、同漂移點</td></tr>
+    <tr><td><code>injected_paper_electricity</code> / <code>_covertype</code> / <code>_gas_sensor_drift</code></td><td>二／多分類</td><td class="num">400 串</td><td><span class="tag t-mod">只有偵測器可比</span></td><td>新增，依 Cerqueira et al. 參數即時產生（寬度 2500/2500/1500，50 次 × 8 格）。主方法在這裡只供參考，因為它偵測到漂移會換模型，流程和論文的「只偵測」不同。</td></tr>
+    <tr><td><code>airlines</code> / <code>covertype</code></td><td>二／多分類</td><td class="num">100,000</td><td><span class="tag t-ref">僅供參考</span></td><td>只有前 10 萬筆，正式比較請用 <code>_full</code></td></tr>
+    <tr><td><code>gas_sensor_drift</code>、<code>ai4i2020</code>、<code>metro_interstate_traffic</code>、<code>bike_sharing</code></td><td>各種</td><td class="num">1–5 萬</td><td><span class="tag t-ref">僅供參考</span></td><td>文獻沒有同協定的數字</td></tr>
+    <tr><td><code>injected_*</code>（舊版）</td><td>二／多分類</td><td class="num">80 串</td><td><span class="tag t-ref">僅供參考</span></td><td>寬度上限 1000、每格 10 次，和論文不同</td></tr>
+    <tr><td><code>synthetic_*</code></td><td>各種</td><td class="num">40 串</td><td><span class="tag t-abl">開發用</span></td><td>只能拿來調參</td></tr>
+  </table>
+</section>
+
+<!-- ============================================================ -->
+<section id="files">
+  <h2>新增 / 修改的檔案（commit 929dd20）</h2>
+  <p><span class="tag t-new">新增</span> = 這次新寫的檔案；<span class="tag t-mod">修改</span> = 原本就有、這次改過。</p>
+
+  <h3>實驗流程本體</h3>
+  <table>
+    <tr><th style="width:36%">檔案</th><th style="width:70px"></th><th>用途</th></tr>
+    <tr><td><code>scripts/run_benchmark.py</code></td><td><span class="tag t-new">新增</span></td><td>跑實驗的主程式：讀資料（或即時產生注入資料）、執行 preset、存預測與警報、呼叫計分、寫 <code>runs.csv</code>。支援 <code>--suite</code>、<code>--list-datasets</code>、<code>--max-steps</code>、<code>--reeval</code>。</td></tr>
+    <tr><td><code>src/metrics/evaluate_run.py</code></td><td><span class="tag t-new">新增</span></td><td>唯一的計分程式：準確率、Kappa / Kappa-T / Kappa-M、macro-F1、No-change 與多數類基準、偵測 TP/FP/FN、F1、MDT、FAR；<code>pool_detection_runs</code> 把 50 次試驗合併計分（和 Cerqueira 的表一樣）。</td></tr>
+    <tr><td><code>scripts/compare_sota.py</code></td><td><span class="tag t-new">新增</span></td><td>彙整結果並和文獻比較：平均 ± 標準差、95% CI、和 SOTA 及經典方法的差距、Friedman / Nemenyi / Wilcoxon（Holm 校正）排名檢定。</td></tr>
+    <tr><td><code>src/metrics/__init__.py</code></td><td><span class="tag t-mod">修改</span></td><td>匯出 <code>evaluate_run</code>、<code>pool_detection_runs</code></td></tr>
+    <tr><td><code>src/pipeline.py</code></td><td><span class="tag t-mod">修改</span></td><td>新增選項 <code>prequential_warm_start</code>：暖機段每筆先預測再學，讓整條資料流都計分。預設關閉，舊實驗結果不受影響。</td></tr>
+  </table>
+
+  <h3>設定檔</h3>
+  <table>
+    <tr><th style="width:36%">檔案</th><th style="width:70px"></th><th>用途</th></tr>
+    <tr><td><code>configs/datasets_0921.json</code></td><td><span class="tag t-new">新增</span></td><td>資料集登錄檔：每個資料集的任務、檔案、真實漂移點、δ<sub>max</sub>、role、comparable、該比的指標、文獻 SOTA 數字與出處、校準值。</td></tr>
+    <tr><td><code>configs/presets/*.json</code>（12 個）</td><td><span class="tag t-new">新增</span></td><td>凍結的系統設定，見上一節。</td></tr>
+    <tr><td><code>configs/benchmark_defaults.json</code></td><td><span class="tag t-new">新增</span></td><td>主方法名稱（<code>main_preset: e10bft</code>）與 suite 定義。</td></tr>
+    <tr><td><code>requirements.txt</code></td><td><span class="tag t-mod">修改</span></td><td><code>river&gt;=0.21</code> 改成 <code>river==0.21.2</code>：E10bFT 的結果只在這版重現，0.23.0 的 ADWIN 觸發點不同。</td></tr>
+    <tr><td><code>.gitignore</code></td><td><span class="tag t-mod">修改</span></td><td>排除 <code>real_dataset/_full/</code>（全長 covertype 超過 GitHub 檔案上限）</td></tr>
+  </table>
+
+  <h3>資料準備</h3>
+  <table>
+    <tr><th style="width:36%">檔案</th><th style="width:70px"></th><th>用途</th></tr>
+    <tr><td><code>data/dataset_0921/real_dataset/script/prepare_all.py</code></td><td><span class="tag t-mod">修改</span></td><td>新增 <code>--full</code>：產生不截斷的 airlines / covertype 到 <code>_full/</code></td></tr>
+    <tr><td><code>data/dataset_0921/real_dataset/script/datasets.py</code></td><td><span class="tag t-mod">修改</span></td><td>全長模式的輸出邏輯</td></tr>
+    <tr><td><code>data/dataset_0921/injected_real_dataset/script/inject.py</code></td><td><span class="tag t-mod">修改</span></td><td>新增 <code>width_cap=None</code>（可用論文的寬度 2500）與 <code>truncate_after_shuffle</code>（先打亂全部再取 10 萬筆，和論文一樣）。預設行為不變。</td></tr>
+    <tr><td><code>real_dataset/README.md</code>、<code>injected_real_dataset/README.md</code></td><td><span class="tag t-mod">修改</span></td><td>說明全長版與論文參數版</td></tr>
+  </table>
+
+  <h3>測試、文件、skill</h3>
+  <table>
+    <tr><th style="width:36%">檔案</th><th style="width:70px"></th><th>用途</th></tr>
+    <tr><td><code>tests/test_evaluate_run.py</code></td><td><span class="tag t-new">新增</span></td><td>計分程式的 20 個測試，包含用論文公開資料驗證合併計分</td></tr>
+    <tr><td><code>tests/fixtures/cerqueira_electricity_prior_abrupt_adwin.json</code></td><td><span class="tag t-new">新增</span></td><td>Cerqueira et al. 公開的 ADWIN 50 次警報與結果（F1 0.6985、MDT 1201.75），用來確認我們的計分方式和論文完全一致</td></tr>
+    <tr><td><code>.agents/skills/dataset0921-benchmark/SKILL.md</code></td><td><span class="tag t-new">新增</span></td><td>給 AI 的操作手冊（唯一本體，所有工具共用）：先查資料、用選擇題問需求、列計畫、執行、出報告；以及不能自己算指標、不能在 report 資料上調參等規則。commit 929dd20 時放在 <code>.cursor/skills/</code>，之後搬到這裡。</td></tr>
+    <tr><td><code>.agents/skills/dataset0921-benchmark/protocols.md</code></td><td><span class="tag t-new">新增</span></td><td>各類資料集的評估協定與指標定義</td></tr>
+    <tr><td><code>AGENTS.md</code>、<code>GEMINI.md</code>、<code>.github/copilot-instructions.md</code>、<code>.claude/skills/dataset0921-benchmark/SKILL.md</code></td><td><span class="tag t-new">新增</span></td><td>給各家 AI 工具的指路檔，都只指向上面的本體</td></tr>
+    <tr><td><code>tests/test_agent_skill.py</code></td><td><span class="tag t-new">新增</span></td><td>檢查指路檔都存在、Claude Code 那份的名稱與描述和本體一致</td></tr>
+    <tr><td><code>docs/literature_sota_dataset_0921.md</code></td><td><span class="tag t-mod">修改</span></td><td>文獻 SOTA 整理：補上合併計分、座標、ADWIN 實作差異、校準狀態</td></tr>
+    <tr><td><code>docs/實驗脈絡總覽.md</code></td><td><span class="tag t-mod">修改</span></td><td>E10bFT 範例改成單棵 HT，並說明預設主方法與 suite</td></tr>
+  </table>
+  <p class="small">另外 commit 也包含 <code>outputs/benchmark/</code> 與 <code>reports/</code> 底下已跑好的結果（見下文）。</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="outputs">
+  <h2>標準輸出</h2>
+
+  <h3>資料夾結構</h3>
+<pre class="tree">outputs/benchmark/
+└── &lt;資料集&gt;/                       例：electricity
+    └── &lt;preset&gt;/                   例：e10bft
+        ├── runs.csv               ← 這個 資料集 × preset 的所有執行，一列一次
+        └── &lt;資料流&gt;[__s&lt;seed&gt;]/     例：electricity（e10bft 沒有 seed）、electricity__s0（arf100 的 seed 0）
+            ├── manifest.json      ← 這次執行的完整紀錄（設定、版本、時間）
+            ├── metrics.json       ← 這次執行的所有指標
+            └── preds.npz          ← 每一筆的真值、預測值與警報位置（可重新計分）
+
+reports/
+└── sota_&lt;時間&gt;/                    compare_sota.py 的輸出
+    ├── report.md                  ← 可直接閱讀的比較報告
+    ├── prequential.csv            ← 準確率類指標的彙整表
+    └── detection_pooled.csv       ← 注入資料的偵測指標（50 次合併）</pre>
+
+  <div class="callout warn">
+    <b>會不會覆蓋？</b>同一個 資料集 × preset × 資料流 × seed 重跑會覆蓋那個執行資料夾，<code>runs.csv</code> 只替換重跑的那幾列、其他保留。要保留舊版本，加 <code>--out-dir outputs/benchmark_&lt;標籤&gt;</code>，出報告時用 <code>compare_sota.py --root outputs/benchmark_&lt;標籤&gt;</code>。
+  </div>
+
+  <h3><code>runs.csv</code> 的欄位</h3>
+  <table>
+    <tr><th>類別</th><th>欄位</th><th>意思</th></tr>
+    <tr><td>識別</td><td><code>dataset, stream, cell, preset, preset_kind, seed, run_dir</code></td><td>哪個資料集、哪條資料流、哪一格（注入資料才有）、哪個系統、哪個種子、結果放哪</td></tr>
+    <tr><td>能不能比</td><td><code>comparable, not_comparable_reason, smoke</code></td><td><code>comparable=False</code> 的列不可宣稱 SOTA；原因可能是冒煙測試、套件版本不符、或 preset 類型不在允許範圍</td></tr>
+    <tr><td>規模</td><td><code>task, n_samples, n_scored, warm_start, metric_scope, runtime_s</code></td><td><code>metric_scope=full</code> 代表整條資料流都計分</td></tr>
+    <tr><td>準確率類</td><td><code>acc_prequential, acc_post_warmup, acc_window1000_mean, kappa, kappa_m, kappa_t, macro_f1</code></td><td>見「指標怎麼看」</td></tr>
+    <tr><td>基準</td><td><code>baseline_no_change_acc, baseline_majority_acc</code></td><td>「預測和上一筆一樣」與「永遠猜最多的類別」的準確率</td></tr>
+    <tr><td>警報</td><td><code>n_alarms, ar</code></td><td>系統發出幾次漂移警報、每千筆幾次</td></tr>
+    <tr><td>偵測（有真實漂移點才有）</td><td><code>delta_max, detect_from, n_gt, tp, fp, fn, precision, recall, f1, episode_recall, mdt, ndt, far</code></td><td>警報落在漂移開始後 δ<sub>max</sub> 內算抓到（TP）；<code>mdt</code> 為平均延遲筆數</td></tr>
+    <tr><td>論文視窗版</td><td><code>*_paper_window</code></td><td>用論文自己的偵測視窗再算一次，方便對照</td></tr>
+  </table>
+
+  <h3><code>manifest.json</code> 記錄了什麼</h3>
+  <p><code>dataset, stream, data</code>（檔案路徑與 SHA-256）、<code>coordinates, n_input, detect_from, gt_intervals</code>、<code>registry_entry</code>（當時的登錄檔內容）、<code>preset, effective_config</code>（實際生效的完整設定）、<code>seed, warm_start, prequential_warm_start, max_steps</code>、<code>version_problems, git</code>（commit 與是否有未 commit 改動）、<code>versions</code>（Python、river、numpy…）、<code>runtime_s, peak_rss_mb, finished_at</code>。</p>
+  <p class="small">所以任何一個數字都能追回：用哪份資料、哪個設定、哪一版程式跑出來的。</p>
+
+  <h3><code>report.md</code> 包含什麼</h3>
+  <ul>
+    <li><b>準確率類資料集</b>：每個 preset × 指標一列，含 n、平均、標準差、95% CI、文獻最佳值與方法、差距、經典方法值與差距。</li>
+    <li><b>注入偵測資料集</b>：每格 × preset 的合併 F1、precision、recall、episode_recall、MDT、FAR，對照論文 14 個偵測器中最好的那個；以及和論文 ADWIN 的校準表。</li>
+    <li><b>跨資料集排名</b>：平均名次、Friedman 檢定、Nemenyi 臨界差、Wilcoxon（Holm 校正）。資料集太少時會註明「不足以做排名檢定」。</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section id="results">
+  <h2>目前結果</h2>
+  <div class="callout warn">
+    以下都是 <b>每個系統只跑 1 次</b>（森林 1 個 seed），沒有標準差，還不能下統計結論；只看趨勢。這批結果是在 commit 前跑的（manifest 記錄為 <code>9295c1f</code> + 未 commit 改動），要當正式結果請在 <code>929dd20</code> 之後重跑。完整報告：<code>reports/sota_e10bft_ht_check/report.md</code>、<code>reports/sota_injected_paper_electricity/report.md</code>。
+  </div>
+
+  <h3>electricity（可和文獻比）— 整體預測準確率 <code>acc_prequential</code></h3>
+  <div class="bars">
+    <div class="bar-row"><span>文獻最佳 TabFM+FIFO</span><div class="bar-track"><div class="bar-fill lit" style="width:90.0%"></div></div><span class="bar-val">0.9500</span></div>
+    <div class="bar-row"><span>文獻 ARF（MOA 100 棵）</span><div class="bar-track"><div class="bar-fill lit" style="width:80.2%"></div></div><span class="bar-val">0.9008</span></div>
+    <div class="bar-row"><span>arf100</span><div class="bar-track"><div class="bar-fill" style="width:79.1%"></div></div><span class="bar-val">0.8954</span></div>
+    <div class="bar-row"><span>arf10</span><div class="bar-track"><div class="bar-fill" style="width:76.2%"></div></div><span class="bar-val">0.8812</span></div>
+    <div class="bar-row"><span>No-change 基準</span><div class="bar-track"><div class="bar-fill ref" style="width:70.7%"></div></div><span class="bar-val">0.8533</span></div>
+    <div class="bar-row"><span>ecpf_reuse_value</span><div class="bar-track"><div class="bar-fill" style="width:66.0%"></div></div><span class="bar-val">0.8299</span></div>
+    <div class="bar-row"><span>ecpf_paper</span><div class="bar-track"><div class="bar-fill" style="width:65.5%"></div></div><span class="bar-val">0.8276</span></div>
+    <div class="bar-row"><b>e10bft（主方法）</b><div class="bar-track"><div class="bar-fill ours" style="width:65.3%"></div></div><span class="bar-val"><b>0.8267</b></span></div>
+    <div class="bar-row"><span>ht</span><div class="bar-track"><div class="bar-fill" style="width:59.1%"></div></div><span class="bar-val">0.7956</span></div>
+    <div class="bar-row"><span>nb</span><div class="bar-track"><div class="bar-fill" style="width:45.7%"></div></div><span class="bar-val">0.7287</span></div>
+  </div>
+  <div class="axis">長條起點 = 0.50，滿格 = 1.00　｜　紫 = 主方法、藍 = 本 harness 重跑、斜紋 = 文獻數字、黃 = 基準</div>
+
+  <table>
+    <tr><th>系統</th><th class="num">acc_prequential</th><th class="num">kappa_t</th><th class="num">kappa_m</th><th class="num">警報數</th><th>來源</th></tr>
+    <tr class="ours"><td><b>e10bft（主方法）</b></td><td class="num">0.8267</td><td class="num">−0.1814</td><td class="num">0.5916</td><td class="num">139</td><td>本 harness</td></tr>
+    <tr><td>ecpf_paper</td><td class="num">0.8276</td><td class="num">−0.1751</td><td class="num">0.5938</td><td class="num"></td><td>本 harness</td></tr>
+    <tr><td>ecpf_reuse_value</td><td class="num">0.8299</td><td class="num">−0.1594</td><td class="num">0.5992</td><td class="num"></td><td>本 harness</td></tr>
+    <tr><td>arf100</td><td class="num">0.8954</td><td class="num">0.2869</td><td class="num">0.7535</td><td class="num"></td><td>本 harness</td></tr>
+    <tr><td>arf10</td><td class="num">0.8812</td><td class="num">0.1901</td><td class="num">0.7201</td><td class="num"></td><td>本 harness</td></tr>
+    <tr><td>ht</td><td class="num">0.7956</td><td class="num">−0.3931</td><td class="num">0.5185</td><td class="num"></td><td>本 harness</td></tr>
+    <tr><td>nb</td><td class="num">0.7287</td><td class="num">−0.8490</td><td class="num">0.3609</td><td class="num"></td><td>本 harness</td></tr>
+    <tr><td>No-change 基準</td><td class="num">0.8533</td><td class="num">0</td><td class="num"></td><td class="num"></td><td>本 harness（重現 Souza et al. 85.33%）</td></tr>
+    <tr class="lit"><td>ARF（MOA, 100 棵）</td><td class="num">0.9008</td><td class="num">0.3237</td><td class="num"></td><td class="num"></td><td>DriftMoE 2025, Table 2 / 4</td></tr>
+    <tr class="lit"><td>TabFM+FIFO（文獻最佳）</td><td class="num">0.9500</td><td class="num"></td><td class="num"></td><td class="num"></td><td>Verma et al. 2026, Table 9</td></tr>
+  </table>
+  <p><b>解讀</b>：主方法比它的底座 <code>ht</code> 高約 3.1 個百分點，表示漂移處理有效；但和消融版本差不多，也還低於森林與 No-change 基準。<code>kappa_t</code> 為負代表比「照抄上一筆」還差，electricity 前後筆高度相關，這是單棵樹常見的情況。</p>
+
+  <h3>insects_abrupt_balanced（可和文獻比，有真實漂移點）</h3>
+  <table>
+    <tr><th>系統</th><th class="num">acc_window1000_mean</th><th class="num">acc_prequential</th><th class="num">kappa</th><th class="num">警報數</th><th class="num">偵測 F1</th><th class="num">抓到的漂移比例</th></tr>
+    <tr class="ours"><td><b>e10bft（主方法）</b></td><td class="num">0.6425</td><td class="num">0.6469</td><td class="num">0.5762</td><td class="num">14</td><td class="num">0.500</td><td class="num">0.80</td></tr>
+    <tr><td>ecpf_paper</td><td class="num">0.6384</td><td class="num">0.6426</td><td class="num">0.5712</td><td class="num">26</td><td class="num">0.457</td><td class="num">0.80</td></tr>
+    <tr><td>arf10</td><td class="num">0.7309</td><td class="num">0.7350</td><td class="num">0.6820</td><td class="num">0</td><td class="num">–</td><td class="num">–</td></tr>
+    <tr><td>nb</td><td class="num">0.5058</td><td class="num">0.5068</td><td class="num">0.4081</td><td class="num">0</td><td class="num">–</td><td class="num">–</td></tr>
+    <tr class="lit"><td>ARF（Souza et al. 2020, Table 5）</td><td class="num">0.7434</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+    <tr class="lit"><td>NB + STEPD（Souza et al. 2020, Table 6）</td><td class="num"></td><td class="num">0.6602</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+    <tr class="lit"><td>No-change（Souza et al. 2020）</td><td class="num">0.2898</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+  </table>
+  <p><b>解讀</b>：主方法相較 <code>ecpf_paper</code>，準確率略高，警報從 26 次降到 14 次，偵測 F1 從 0.457 升到 0.500，抓到的漂移比例一樣是 80%。和文獻比，<code>acc_prequential</code> 低 NB + STEPD 約 1.3 個百分點，滑動視窗準確率低文獻 ARF 約 10 個百分點。arf10 不發警報，所以沒有偵測 F1。</p>
+
+  <h3>injected_paper_electricity（只有偵測器可比）— 只偵測參考 preset，每格 50 次合併</h3>
+  <table>
+    <tr><th>格</th><th class="num">det_adwin F1</th><th class="num">det_adwin_river F1</th><th class="num">論文該格最佳 F1</th><th>論文最佳方法</th><th class="num">論文 ADWIN F1（校準目標）</th></tr>
+    <tr><td>abrupt / class_prior</td><td class="num">0.278</td><td class="num">0.220</td><td class="num">0.698</td><td>ADWIN</td><td class="num">0.698</td></tr>
+    <tr><td>abrupt / feature_filtering</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.245</td><td>CUSUM</td><td class="num">0.187</td></tr>
+    <tr><td>abrupt / feature_permutation</td><td class="num">0.336</td><td class="num">0.658</td><td class="num">1.000</td><td>ABCD(X)</td><td class="num">0.737</td></tr>
+    <tr><td>abrupt / label_swap</td><td class="num">0.219</td><td class="num">0.456</td><td class="num">0.566</td><td>SEED</td><td class="num">0.251</td></tr>
+    <tr><td>gradual / class_prior</td><td class="num">0.010</td><td class="num">0.022</td><td class="num">0.295</td><td>STEPD</td><td class="num">0.088</td></tr>
+    <tr><td>gradual / feature_filtering</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.147</td><td>STUDD</td><td class="num">0.025</td></tr>
+    <tr><td>gradual / feature_permutation</td><td class="num">0.016</td><td class="num">0.327</td><td class="num">0.984</td><td>ABCD(X)</td><td class="num">0.050</td></tr>
+    <tr><td>gradual / label_swap</td><td class="num">0.004</td><td class="num">0.265</td><td class="num">0.383</td><td>STEPD</td><td class="num">0.000</td></tr>
+  </table>
+  <p><b>解讀</b>：計分方式已用論文公開的警報資料驗證完全一致，但我們用 River 實作的 ADWIN 還沒重現論文用 MOA 跑出的數字（例如第一格 0.278 vs 0.698）。差距主要來自 MOA 與 River 的 Hoeffding Tree 實作不同。這個資料集只在要宣稱「偵測器本身」的表現時需要；主方法在這裡的數字只能當參考。</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="metrics">
+  <h2>指標怎麼看</h2>
+  <table>
+    <tr><th>指標</th><th>意思</th><th>什麼時候看</th></tr>
+    <tr><td><code>acc_prequential</code></td><td>整條資料流「先預測、再學習」的準確率（MOA 定義）</td><td>大部分文獻的主要指標</td></tr>
+    <tr><td><code>acc_window1000_mean</code></td><td>每 1000 筆滑動視窗準確率的平均</td><td>INSECTS（Souza et al. Table 5 用這個）</td></tr>
+    <tr><td><code>kappa</code></td><td>扣掉「隨機猜」之後的一致程度</td><td>類別不平衡時比準確率可靠</td></tr>
+    <tr><td><code>kappa_t</code></td><td>相對於 No-change（照抄上一筆標籤）的進步；&lt; 0 表示比照抄還差</td><td>時間相關性強的資料，例如 electricity</td></tr>
+    <tr><td><code>kappa_m</code></td><td>相對於「永遠猜最多的類別」的進步</td><td>類別不平衡時</td></tr>
+    <tr><td><code>f1</code>（偵測）</td><td>警報落在漂移開始後 δ<sub>max</sub> 筆內算 TP，其他算 FP，沒抓到的漂移算 FN</td><td>有真實漂移點的資料集</td></tr>
+    <tr><td><code>episode_recall</code></td><td>有幾成的漂移至少被抓到一次</td><td>同上</td></tr>
+    <tr><td><code>mdt</code></td><td>平均偵測延遲（筆數），越小越好</td><td>同上</td></tr>
+    <tr><td><code>far</code></td><td>每千筆的誤報次數</td><td>同上</td></tr>
+  </table>
+  <div class="callout info">
+    注入資料的偵測分數一律<b>先把 50 次的 TP/FP/FN 加總再算 F1</b>（和 Cerqueira et al. 填表的方法一樣），不能用「每次 F1 的平均」和論文比。
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="limits">
+  <h2>限制與注意事項</h2>
+  <ul>
+    <li><b>數字只能來自 runner</b>：不要自己算指標；要引用就用 <code>metrics.json</code>、<code>runs.csv</code>、<code>report.md</code> 的值。</li>
+    <li><b>不要在 report 資料集上調參</b>：調參用 <code>role: dev</code> 的資料集，調好後另存成新的 preset、commit，再跑 report 資料集。</li>
+    <li><b>不要改已經有結果的 preset</b>：新設定請另存新檔。要換預設主方法，必須明確改 <code>benchmark_defaults.json</code> 的 <code>main_preset</code>。</li>
+    <li><b>不可比的列不能宣稱 SOTA</b>：<code>comparable=False</code>（冒煙測試、版本不符、僅供參考的資料集）只能當參考，並附上原因。</li>
+    <li><b>正式結果前先 commit</b>：<code>manifest.json</code> 只記錄 commit 編號；有未 commit 的改動時，runner 會警告。</li>
+    <li><b>同方法在不同論文差 2–5%</b>：所以一定要把本 harness 重跑的對照組（standard suite）和文獻數字放在一起看。「贏過同環境重跑的對照組且通過排名檢定」才是強的結論；「高於論文數字」只是弱的結論。</li>
+    <li><b>舊腳本</b>（<code>main.py</code>、<code>run_ecpf_recurring*.py</code>、<code>scripts/experiment_*</code>）還是用自己的算法，它們的數字不能當 benchmark 結果引用。</li>
+    <li><b>只偵測 preset</b>（<code>det_*</code>）用 River，還沒重現論文 MOA 的 ADWIN 數字（見上方校準表）。</li>
+  </ul>
+</section>
+
+<p class="small" style="text-align:center">產生日期 2026-10-12 ・ 數字取自 <code>reports/sota_e10bft_ht_check/</code> 與 <code>reports/sota_injected_paper_electricity/</code></p>
+</main>
+</body>
+</html>

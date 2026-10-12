@@ -5,7 +5,9 @@ description: Runs experiments on data/dataset_0921 through the benchmark harness
 
 # dataset_0921 Benchmark
 
-The harness fixes the protocol and the metric definitions; this skill only drives it.
+The harness fixes the protocol and the metric definitions; this skill only drives it. It is tool-neutral: any coding agent that can read files and run shell commands can follow it (Cursor, Claude Code, Codex, Copilot, Gemini CLI, ...). Commands run from the repo root; use `python` instead of `python3` where that is the interpreter's name (usually Windows).
+
+This file and `protocols.md` are the only copy. `.claude/skills/dataset0921-benchmark/SKILL.md`, `AGENTS.md`, `GEMINI.md` and `.github/copilot-instructions.md` only point here; when you change this skill's `name` or `description`, update the copy in `.claude/skills/` too (`tests/test_agent_skill.py` checks it).
 
 | File | Role |
 |---|---|
@@ -31,7 +33,11 @@ Each entry has `name`, `task`, `role` (report/dev), `comparable`, `comparable_ki
 
 ## Step 1: ask what the user wants (multiple choice)
 
-Collect the experiment plan with the **AskQuestion tool**, all questions in **one call**, prompts and labels in the user's language. Skip a question when the user's message already answers it; if the user says "use the defaults" / "你決定", take every option marked (建議) without asking.
+Collect the experiment plan as multiple-choice questions, prompts and labels in the user's language, and **do not run any experiment before the user has answered**. Skip a question when the user's message already answers it; if the user says "use the defaults" / "你決定", take every option marked (建議) without asking.
+
+How to ask depends on the tool you run in:
+- **A structured question tool** (Cursor `AskQuestion`, Claude Code `AskUserQuestion`, or your environment's equivalent): put all questions in one call. If the tool caps questions or options per call (Claude Code: at most 4 questions, 2-4 options each), ask in rounds — round 1: `goal`, `system`, `baselines`, `scope`; round 2: `seeds`, `report` — and ask `datasets` as the plain-text list below, since it has more options than such tools allow.
+- **No such tool**: send all questions in one message as a numbered list with lettered options, mark the recommended ones (建議), allow several letters where the question is multiple choice, and tell the user they can reply like `1a 2 a,c,f 3a 4a 5a 6a 7a` or just `你決定`. Then stop and wait for the reply.
 
 Use these questions (ids and labels can be shortened, keep the meaning):
 
@@ -82,7 +88,7 @@ Map the answers: `system` → `--preset <name>` (main = no flag needed); `baseli
 
 ## Step 2: show the plan, then run
 
-Print the commands and a rough runtime before starting. Measured on this machine, one run on electricity (45k rows): `ht`/`nb` ~5 s, `e10bft`/`ecpf_*` ~30 s, `arf10` ~1 min, `arf100` ~7 min per seed. Scale roughly with rows x features: `covertype_full` / `airlines_full` are 12-13x longer streams, so `arf100` there takes hours per seed; an `injected_paper_*` dataset is 400 streams. If the plan is longer than about 30 minutes, ask once more (AskQuestion: 開始 / 改成快速組 / 減少資料集) before launching; launch long runs in the background and poll.
+Print the commands and a rough runtime before starting. Measured on this machine, one run on electricity (45k rows): `ht`/`nb` ~5 s, `e10bft`/`ecpf_*` ~30 s, `arf10` ~1 min, `arf100` ~7 min per seed. Scale roughly with rows x features: `covertype_full` / `airlines_full` are 12-13x longer streams, so `arf100` there takes hours per seed; an `injected_paper_*` dataset is 400 streams. If the plan is longer than about 30 minutes, ask once more (開始 / 改成快速組 / 減少資料集, same asking rules as Step 1) before launching. Launch long runs in the background with a log file (e.g. `nohup python3 scripts/run_benchmark.py ... > /tmp/<name>.log 2>&1 &`, or your tool's background-command feature) and check the log periodically instead of blocking the session.
 
 ```
 - [ ] 1. Uncommitted changes? Ask whether to commit first (the manifest records the commit)

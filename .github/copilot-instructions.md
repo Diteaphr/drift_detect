@@ -1,0 +1,1 @@
+For benchmark or SOTA-comparison experiments on `data/dataset_0921`, read `.agents/skills/dataset0921-benchmark/SKILL.md` and follow it step by step: ask the user its multiple-choice questions first, and run experiments only through `scripts/run_benchmark.py` and `scripts/compare_sota.py`. See `AGENTS.md`.
