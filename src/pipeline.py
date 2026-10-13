@@ -193,6 +193,8 @@ class ConceptDriftPipeline:
         self._ecpf_buffer: List[Tuple[np.ndarray, float]] = []
         self._ecpf_oracle_started: set = set()
         self._ecpf_oracle_input_confirm_idx: Optional[int] = None
+        self._ecpf_warning_events: List[dict] = []
+        self._ecpf_frozen_steps = 0
         self._ecpf_ring: deque = deque(maxlen=5000)
         # Frozen-reference detector input (see config.ecpf_reference_signal).
         self._ref_model = None              # frozen copy the detectors are fed with
@@ -556,6 +558,8 @@ class ConceptDriftPipeline:
         Skipped when ``ecpf_learn_during_warning`` is False (old behaviour).
         """
         if not self.config.ecpf_learn_during_warning or self._ecpf is None:
+            if self.config.ecpf_record_warning_events and self._ecpf is not None:
+                self._ecpf_frozen_steps += 1
             return
         _pre_swaps = self._ecpf.leader_swaps
         self._ecpf.on_stream_instance(
@@ -568,6 +572,18 @@ class ConceptDriftPipeline:
             current_idx=self._ecpf.current_idx,
             has_shadow=self._ecpf.new_model is not None,
         )
+
+    def _record_ecpf_warning(self, index: int, event: str, reason: str = "") -> None:
+        """Passive DET1 observer; never changes detector or learner state."""
+        if not self.config.ecpf_record_warning_events:
+            return
+        self._ecpf_warning_events.append({
+            "index": int(index),
+            "event": event,
+            "reason": reason,
+            "warning_start_index": self._ecpf_warning_start_idx,
+            "buffer_len": len(self._ecpf_buffer),
+        })
 
     # ------------------------------------------------------------------
     def step(
@@ -704,6 +720,7 @@ class ConceptDriftPipeline:
                     self._ecpf_warning_start_idx = index
                     self._ecpf_buffer = []
                     self._ecpf_oracle_started.add(index)
+                    self._record_ecpf_warning(index, "open", "oracle_input" if input_oracle else "oracle")
                     self._ecpf_oracle_input_confirm_idx = (
                         scheduled["confirm_index"] if input_oracle else None
                     )
@@ -719,6 +736,7 @@ class ConceptDriftPipeline:
                     ) if input_oracle else len(self._ecpf_buffer) >= L
                     if confirm_due:
                         confirmed_buffer = self._ecpf_buffer if input_oracle else self._ecpf_buffer[:L]
+                        self._record_ecpf_warning(index, "close", "confirmed")
                         self._handle_ecpf_drift(
                             confirmed_buffer,
                             int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
@@ -820,6 +838,7 @@ class ConceptDriftPipeline:
                         "ECPF detector: warning from t=%d timed out at t=%d",
                         self._ecpf_warning_start_idx, index,
                     )
+                    self._record_ecpf_warning(index, "close", "timeout")
                     self._ecpf_warning_active = False
                     self._ecpf_warning_start_idx = None
                     self._ecpf_buffer = []
@@ -829,6 +848,7 @@ class ConceptDriftPipeline:
                     self._ecpf_warning_active = True
                     self._ecpf_warning_start_idx = int(index)
                     self._ecpf_buffer = []
+                    self._record_ecpf_warning(index, "open", "detector")
                     logger.info(
                         "ECPF detector: warning started at t=%d (%s)",
                         index,
@@ -843,6 +863,7 @@ class ConceptDriftPipeline:
                 ):
                     # Official ECPF (E9): leaving the detector's warning zone without a
                     # drift ends the warning and drops its buffer.
+                    self._record_ecpf_warning(index, "close", "zone_exit")
                     self._ecpf_warning_active = False
                     self._ecpf_warning_start_idx = None
                     self._ecpf_buffer = []
@@ -853,6 +874,7 @@ class ConceptDriftPipeline:
                     )
 
                 if is_drift and self._ecpf_warning_active and self._ecpf_buffer:
+                    self._record_ecpf_warning(index, "close", "confirmed")
                     self._handle_ecpf_drift(
                         self._ecpf_buffer[:],
                         int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
@@ -1261,6 +1283,8 @@ class ConceptDriftPipeline:
         self._freeze_reference(index)
         self._ref_switch_due = None
         self._ecpf_detector.reset()
+        if self._ecpf_warning_active:
+            self._record_ecpf_warning(index, "close", "reference_switch")
         self._ecpf_warning_active = False
         self._ecpf_warning_start_idx = None
         self._ecpf_buffer = []

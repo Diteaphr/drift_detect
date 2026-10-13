@@ -150,6 +150,8 @@ class PipelineConfig:
     # DET1-only: (output warning index, output confirm index, raw input coords).
     # Built from GT + retained-row positions by scripts/run_benchmark.py.
     ecpf_oracle_input_schedule: Optional[List[Dict[str, Any]]] = None
+    # DET1 passive instrumentation; default false preserves earlier runs.
+    ecpf_record_warning_events: bool = False
     ecpf_warning_length: int = 60
     ecpf_similarity_margin: float = 0.95  # m
     # Regression uses a different similarity statistic, so the paper's m does not

@@ -28,6 +28,15 @@ class TestOracleInputSchedule(unittest.TestCase):
         out = run_pipeline(X, y, cfg, 0)
         self.assertEqual(out["alarm_idx"], [schedule[0]["confirm_index"]])
         self.assertEqual(int(position[out["alarm_idx"][0]]), 161)
+        cfg["ecpf_record_warning_events"] = True
+        observed = run_pipeline(X, y, cfg, 0)
+        self.assertTrue(np.array_equal(out["y_pred"], observed["y_pred"]))
+        self.assertEqual(out["alarm_idx"], observed["alarm_idx"])
+        self.assertEqual(
+            [(e["event"], e["reason"]) for e in observed["warning_events"]],
+            [("open", "oracle_input"), ("close", "confirmed")],
+        )
+        self.assertGreater(observed["frozen_steps"], 0)
 
     def test_missing_gt_and_nonmonotone_positions_rejected(self):
         with self.assertRaisesRegex(ValueError, "ground truth"):
