@@ -256,6 +256,32 @@ def effective_pipeline_config(preset: Dict[str, Any], task: str, seed: Optional[
     return cfg
 
 
+def oracle_input_schedule(
+    gt: Optional[List[Tuple[int, int]]], position: np.ndarray
+) -> List[Dict[str, Any]]:
+    """Map raw drift start/+60 to first retained rows at or after each point."""
+    if not gt:
+        raise ValueError("oracle_input_60 requires nonempty ground truth")
+    if len(position) and np.any(np.diff(position) <= 0):
+        raise ValueError("input positions must be strictly increasing")
+    schedule: List[Dict[str, Any]] = []
+    for start, _ in gt:
+        warning_idx = int(np.searchsorted(position, start, side="left"))
+        if warning_idx >= len(position):
+            continue
+        confirm_idx = int(np.searchsorted(position, start + 60, side="left"))
+        schedule.append({
+            "warning_index": warning_idx,
+            "confirm_index": confirm_idx if confirm_idx < len(position) else None,
+            "raw_start": int(start),
+            "raw_confirm": int(start + 60),
+        })
+    for left, right in zip(schedule, schedule[1:]):
+        if left["confirm_index"] is None or left["confirm_index"] >= right["warning_index"]:
+            raise ValueError("overlapping or censored oracle schedule cannot be replayed")
+    return schedule
+
+
 def _stub_type_ldd_if_missing() -> bool:
     """Type-LDD only annotates drift types on the ECPF path; stub it when torch is absent."""
     try:
@@ -469,7 +495,10 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
     t0 = time.perf_counter()
     kind = preset["kind"]
     if kind == "pipeline":
-        out = run_pipeline(X, y, effective_pipeline_config(preset, task, seed), warm_start)
+        config = effective_pipeline_config(preset, task, seed)
+        if config.get("ecpf_signal_mode") == "oracle_input_60":
+            config["ecpf_oracle_input_schedule"] = oracle_input_schedule(gt, position)
+        out = run_pipeline(X, y, config, warm_start)
     elif kind == "baseline":
         if task not in preset.get("tasks", [task]):
             raise ValueError(f"preset {preset['name']} does not support task {task}")
@@ -796,8 +825,12 @@ def main() -> None:
     presets = [load_preset(n) for n in names]
     skipped = [p["name"] for p in presets if not supports_task(p, task)]
     presets = [p for p in presets if supports_task(p, task)]
+    excluded = [p["name"] for p in presets if p.get("datasets") and args.dataset not in p["datasets"]]
+    presets = [p for p in presets if not p.get("datasets") or args.dataset in p["datasets"]]
     if skipped:
         print(f"skipping presets that do not support task {task}: {', '.join(skipped)}")
+    if excluded:
+        print(f"skipping presets outside dataset scope: {', '.join(excluded)}")
     if not presets:
         raise SystemExit("no preset left to run")
     if not args.preset and not args.suite:

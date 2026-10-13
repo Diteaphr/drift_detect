@@ -192,6 +192,7 @@ class ConceptDriftPipeline:
         self._ecpf_warning_start_idx: Optional[int] = None
         self._ecpf_buffer: List[Tuple[np.ndarray, float]] = []
         self._ecpf_oracle_started: set = set()
+        self._ecpf_oracle_input_confirm_idx: Optional[int] = None
         self._ecpf_ring: deque = deque(maxlen=5000)
         # Frozen-reference detector input (see config.ecpf_reference_signal).
         self._ref_model = None              # frozen copy the detectors are fed with
@@ -686,33 +687,48 @@ class ConceptDriftPipeline:
                     int(index),
                 )
             )
-            if self.config.ecpf_signal_mode == "oracle_60":
+            if self.config.ecpf_signal_mode in {"oracle_60", "oracle_input_60"}:
+                input_oracle = self.config.ecpf_signal_mode == "oracle_input_60"
                 oset = frozenset(self.config.ecpf_oracle_true_drift_times or [])
+                scheduled = next(
+                    (s for s in (self.config.ecpf_oracle_input_schedule or [])
+                     if int(s["warning_index"]) == index),
+                    None,
+                ) if input_oracle else None
                 if (
                     not self._ecpf_warning_active
-                    and index in oset
+                    and (scheduled is not None if input_oracle else index in oset)
                     and index not in self._ecpf_oracle_started
                 ):
                     self._ecpf_warning_active = True
                     self._ecpf_warning_start_idx = index
                     self._ecpf_buffer = []
                     self._ecpf_oracle_started.add(index)
+                    self._ecpf_oracle_input_confirm_idx = (
+                        scheduled["confirm_index"] if input_oracle else None
+                    )
                     logger.info("ECPF oracle: warning started at t=%d", index)
                 if self._ecpf_warning_active:
                     self._ecpf_buffer.append(
                         (np.asarray(x_.ravel(), dtype=np.float64).copy(), float(y_true))
                     )
                     L = self.config.ecpf_warning_length
-                    if len(self._ecpf_buffer) >= L:
+                    confirm_due = (
+                        self._ecpf_oracle_input_confirm_idx is not None
+                        and index >= self._ecpf_oracle_input_confirm_idx
+                    ) if input_oracle else len(self._ecpf_buffer) >= L
+                    if confirm_due:
+                        confirmed_buffer = self._ecpf_buffer if input_oracle else self._ecpf_buffer[:L]
                         self._handle_ecpf_drift(
-                            self._ecpf_buffer[:L],
+                            confirmed_buffer,
                             int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
-                            "ecpf_oracle_60",
+                            "ecpf_oracle_input_60" if input_oracle else "ecpf_oracle_60",
                             new_detections,
-                            {"ecpf_protocol": f"oracle_warning_then_drift_after_{L}_instances"},
+                            {"ecpf_protocol": "oracle_input_start_plus_60" if input_oracle else f"oracle_warning_then_drift_after_{L}_instances"},
                         )
                         self._ecpf_warning_active = False
                         self._ecpf_warning_start_idx = None
+                        self._ecpf_oracle_input_confirm_idx = None
                         self.meta_detector.reset()
                         self._batch_X.clear()
                         self._batch_y.clear()
@@ -1114,6 +1130,7 @@ class ConceptDriftPipeline:
 
         if self.config.use_ecpf and self.config.ecpf_signal_mode in {
             "oracle_60",
+            "oracle_input_60",
             *ECPF_ADWIN_FAMILY_SIGNAL_MODES,
             "meta_ecpf_dwm",
             "meta_ecpf_hcdt",
