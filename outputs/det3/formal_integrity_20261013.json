@@ -1,0 +1,67 @@
+{
+  "commit": "b86f5d679cba136705214f9fe9a5d5460d6bcaa4",
+  "expected": 615,
+  "completed": 615,
+  "failed": 0,
+  "batches": {
+    "1": {
+      "finished_at": "2026-10-13T08:07:54Z",
+      "completed": 135,
+      "failed": 0,
+      "elapsed_s": 1960
+    },
+    "2": {
+      "finished_at": "2026-10-13T08:26:55Z",
+      "completed": 480,
+      "failed": 0,
+      "elapsed_s": 1141
+    }
+  },
+  "counts": {
+    "synthetic_multiclass": {
+      "det3_full_dual_adwin_lw0": 40,
+      "det3_full_dual_adwin_lw1": 40,
+      "det3_full_hddm_a_lw1": 40
+    },
+    "insects_abrupt_balanced": {
+      "det3_full_dual_adwin_lw0": 1,
+      "det3_full_dual_adwin_lw1": 1,
+      "det3_full_hddm_a_lw1": 1
+    },
+    "insects_incremental_balanced": {
+      "det3_full_dual_adwin_lw0": 1,
+      "det3_full_dual_adwin_lw1": 1,
+      "det3_full_hddm_a_lw1": 1
+    },
+    "insects_incremental_gradual_balanced": {
+      "det3_full_dual_adwin_lw0": 1,
+      "det3_full_dual_adwin_lw1": 1,
+      "det3_full_hddm_a_lw1": 1
+    },
+    "insects_incremental_abrupt_reoccurring_balanced": {
+      "det3_full_dual_adwin_lw0": 1,
+      "det3_full_dual_adwin_lw1": 1,
+      "det3_full_hddm_a_lw1": 1
+    },
+    "insects_incremental_reoccurring_balanced": {
+      "det3_full_dual_adwin_lw0": 1,
+      "det3_full_dual_adwin_lw1": 1,
+      "det3_full_hddm_a_lw1": 1
+    },
+    "injected_paper_electricity": {
+      "det3_full_dual_adwin_lw0": 160,
+      "det3_full_dual_adwin_lw1": 160,
+      "det3_full_hddm_a_lw1": 160
+    }
+  },
+  "elapsed_s": 3101,
+  "raw_bytes": 33999381,
+  "disk_free_bytes": 15384174592,
+  "checks": [
+    "manifest commit clean",
+    "River 0.21.2",
+    "full stream",
+    "warning conservation",
+    "lw1 zero frozen"
+  ]
+}
