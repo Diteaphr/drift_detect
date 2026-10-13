@@ -42,7 +42,10 @@ import hashlib
 import json
 import os
 import platform
-import resource
+try:
+    import resource
+except ImportError:  # Windows has no resource module
+    resource = None
 import subprocess
 import sys
 import threading
@@ -529,7 +532,7 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
     else:
         raise ValueError(f"unknown preset kind {kind!r}")
     runtime = time.perf_counter() - t0
-    peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss if resource else 0
     peak_mb = peak_rss / 1e6 if sys.platform == "darwin" else peak_rss / 1e3
 
     run_dir = Path(job["run_dir"])
@@ -609,7 +612,8 @@ def run_one_big_stack(job: Dict[str, Any]) -> Dict[str, Any]:
         except BaseException as exc:
             error.append(exc)
 
-    old = threading.stack_size(512 * 1024 * 1024)
+    # Windows caps thread stacks below 256 MiB
+    old = threading.stack_size((200 if sys.platform == "win32" else 512) * 1024 * 1024)
     try:
         t = threading.Thread(target=target)
         t.start()
