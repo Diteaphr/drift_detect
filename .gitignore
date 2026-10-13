@@ -86,3 +86,6 @@ data/dataset_0921/real_dataset/_raw/
 
 # Uncapped real streams (prepare_all.py --full); covertype exceeds GitHub file limit
 data/dataset_0921/real_dataset/_full/
+
+# DET1 stage-five raw smoke directories (summaries are committed separately).
+outputs/det1/smoke_*/
