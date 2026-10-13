@@ -6,7 +6,9 @@ from typing import Tuple
 
 from detectors.core.rddm_moa import MOARDDM
 from detectors.core.magseed_candidate import MagSeedCandidate
-from detectors.core.magseed_thesis_candidate import MagSeedThesisCandidate
+from detectors.core.magseed_thesis_candidate import (
+    MagSeed, MagSeedLiteral, MagSeedThesisCandidate, MagSeedUpward,
+)
 from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
 
 
@@ -16,8 +18,9 @@ class ECPFZoneDetector:
     (and drop the buffer) when the detector leaves its warning zone without a drift.
 
     River's DDM / HDDM_A with their defaults (E9), or a port of MOA RDDM
-    with its defaults. Both explicitly named MagSeed candidates are exploratory;
-    neither is the preregistered A5 detector. 0/1 error only -- classification.
+    with its defaults. MagSeed follows Chen's 2016 thesis with the pre-registered
+    interpretation X; MagSeedUpward is the one-sided A5u variant. The older
+    candidate names remain exploratory. 0/1 error only -- classification.
     """
 
     zone = True
@@ -31,6 +34,9 @@ class ECPFZoneDetector:
             "rddm": MOARDDM,
             "magseed_candidate": MagSeedCandidate,
             "magseed_thesis_candidate": MagSeedThesisCandidate,
+            "magseed": MagSeed,
+            "magseed_upward": MagSeedUpward,
+            "magseed_literal_dev": MagSeedLiteral,
         }
         if kind not in makers:
             raise ValueError("ecpf_zone_detector must be one of %s, got %r" % (sorted(makers), kind))
@@ -54,7 +60,7 @@ class ECPFZoneDetector:
         drift = bool(self._det.drift_detected)
         warning = bool(self._det.warning_detected) or drift  # a drift step is also inside the zone
         self.stats = {"drift_value": float(drift_value), "detector_type": self.combo_name}
-        if drift and self.kind not in {"rddm", "magseed_candidate", "magseed_thesis_candidate"}:
+        if drift and self.kind not in {"rddm", "magseed_candidate", "magseed_thesis_candidate", "magseed", "magseed_upward", "magseed_literal_dev"}:
             # RDDM replays; the old candidate resets, and the thesis candidate
             # retains only blocks right of the detected cut.
             self.reset()

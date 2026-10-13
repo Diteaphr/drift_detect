@@ -1,16 +1,16 @@
-"""Thesis-grounded MAGSEED candidate; not a verified reproduction of A5.
+"""MAGSEED from Chen's 2016 thesis, chapter 3 (pp. 36-40).
 
 Sources: Chen (2016), *Characterizing Drifts for Proactive Drift Detection in
 Data Streams*, chapter 3, pp. 36-40, https://hdl.handle.net/2292/28911;
 Huang et al.'s MOA SEED implementation for block/compression defaults:
 https://github.com/Waikato/moa/blob/master/moa/src/main/java/moa/classifiers/core/driftdetection/SEEDChangeDetector.java
 
-The thesis leaves warning standard-deviation convention and Algorithm 1 line 27
-ambiguous. Here drift has priority over warning (as required by its prose and
-Table 3.9), the rolling Bernoulli standard deviation is computed over 100
-observations, and the warning baseline starts only after 100 observations.
-The warning coefficient 2 comes from the thesis's evaluated grid, not a stated
-ECPF setting. These choices preclude claiming this is the preregistered A5.
+Interpretation X (main): drift has priority over either warning condition,
+then no change. Algorithm 1 line 27 literally contradicts this by resetting
+the state when no split-warning was found; literal interpretation Y is exposed
+only for a pre-registered dev sensitivity check. The warning coefficient 2 is
+an evaluated thesis value, not a reported ECPF setting. See the 2026-10-13
+revision of docs/ECPF_DET1_預註冊.md for every source gap and fixed choice.
 """
 
 from __future__ import annotations
@@ -45,6 +45,8 @@ class MagSeedThesisCandidate:
         block_size: int = 32,
         compression_interval: int = 75,
         warning_c: float = 2.0,
+        one_sided: bool = False,
+        state_interpretation: str = "X",
     ) -> None:
         if not (0 < delta < delta_w < 1):
             raise ValueError("require 0 < delta < delta_w < 1")
@@ -52,6 +54,8 @@ class MagSeedThesisCandidate:
             raise ValueError("epsilon must be in [0,1], alpha in (0,1]")
         if block_size < 2 or compression_interval < 1 or not (1 <= warning_c < 3):
             raise ValueError("invalid block or warning parameters")
+        if state_interpretation not in {"X", "Y"}:
+            raise ValueError("state_interpretation must be X or Y")
         self.delta = float(delta)
         self.epsilon = float(epsilon)  # epsilon-hat for compression, not a mean-gap floor
         self.alpha = float(alpha)  # compression growth, not a warning multiplier
@@ -59,6 +63,8 @@ class MagSeedThesisCandidate:
         self.block_size = int(block_size)
         self.compression_interval = int(compression_interval)
         self.warning_c = float(warning_c)
+        self.one_sided = bool(one_sided)
+        self.state_interpretation = state_interpretation
         self.reset()
 
     def reset(self) -> None:
@@ -76,6 +82,7 @@ class MagSeedThesisCandidate:
         self.drift_detected = False
         self.false_warning_detected = False
         self.severity: float | None = None
+        self.last_cut: dict[str, int | float] | None = None
         self.estimation = 0.0
 
     @staticmethod
@@ -114,6 +121,7 @@ class MagSeedThesisCandidate:
         self.drift_detected = False
         self.false_warning_detected = False
         self.severity = None
+        self.last_cut = None
 
         if not self._blocks or self._blocks[-1].n == self.block_size:
             if self._blocks:
@@ -140,33 +148,49 @@ class MagSeedThesisCandidate:
 
         split_warning = False
         cut: int | None = None
+        cut_details: dict[str, int | float] | None = None
         left_n = left_errors = 0
         variance = self.estimation * (1.0 - self.estimation)
         for i, block in enumerate(self._blocks[:-1], start=1):
             left_n += block.n
             left_errors += block.errors
             right_n = self._width - left_n
-            gap = abs(left_errors / left_n - (self._errors - left_errors) / right_n)
+            signed_gap = (self._errors - left_errors) / right_n - left_errors / left_n
+            gap = signed_gap if self.one_sided else abs(signed_gap)
             if gap > self._bound(self.delta, left_n, right_n, self._width, variance):
                 cut = i
+                cut_details = {
+                    "block_index": i,
+                    "left_n": left_n,
+                    "right_n": right_n,
+                    "signed_gap": signed_gap,
+                }
                 break
             if gap > self._bound(self.delta_w, left_n, right_n, self._width, variance):
                 split_warning = True
 
         if cut is not None:
+            self.last_cut = cut_details
             old = self._blocks[:cut]
             self._blocks = self._blocks[cut:]
             self._width -= sum(block.n for block in old)
             self._errors -= sum(block.errors for block in old)
             self.estimation = self._errors / self._width
-            self.drift_detected = True
+            # Y models the literal final assignment of Algorithm 1 line 27:
+            # if no split-warning was found, the outward drift state vanishes
+            # even though line 21 already dropped the left blocks.
+            self.drift_detected = self.state_interpretation == "X" or split_warning
             if self._warning_length:
                 self.severity = (self._warning_errors + bit) / (self._warning_length + 1)
             self._warning_length = self._warning_errors = 0
             self._p_min = self._s_min = math.inf
             return self
 
-        self.warning_detected = rate_warning or split_warning
+        self.warning_detected = (
+            rate_warning or split_warning
+            if self.state_interpretation == "X"
+            else split_warning
+        )
         if self.warning_detected:
             self._warning_length += 1
             self._warning_errors += bit
@@ -180,3 +204,27 @@ class MagSeedThesisCandidate:
             self._compress()
             self._completed_blocks_since_compression = 0
         return self
+
+
+class MagSeed(MagSeedThesisCandidate):
+    """A5: Chen 2016 thesis, with state conflict resolved by interpretation X."""
+
+    source_status = "chen_2016_thesis_interpretation_x"
+
+
+class MagSeedUpward(MagSeedThesisCandidate):
+    """A5u: one-sided experimental variant; differs from Chen's absolute gap."""
+
+    source_status = "one_sided_variant_not_original_magseed"
+
+    def __init__(self, **kwargs: object) -> None:
+        super().__init__(one_sided=True, **kwargs)
+
+
+class MagSeedLiteral(MagSeedThesisCandidate):
+    """Interpretation Y: literal Algorithm 1 line 27, dev sensitivity only."""
+
+    source_status = "chen_2016_pseudocode_literal_dev_only"
+
+    def __init__(self, **kwargs: object) -> None:
+        super().__init__(state_interpretation="Y", **kwargs)

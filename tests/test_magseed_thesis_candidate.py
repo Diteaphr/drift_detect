@@ -3,7 +3,9 @@
 import math
 import unittest
 
-from detectors.core.magseed_thesis_candidate import MagSeedThesisCandidate, _Block
+from detectors.core.magseed_thesis_candidate import (
+    MagSeed, MagSeedLiteral, MagSeedThesisCandidate, MagSeedUpward, _Block,
+)
 from scripts.run_benchmark import make_detector
 from src.ecpf_detector import ECPFZoneDetector
 
@@ -47,10 +49,10 @@ class TestMagSeedThesisCandidate(unittest.TestCase):
         self.assertEqual(zone._det.source_status, "thesis_grounded_candidate_not_verified_a5")
         with self.assertRaises(ValueError):
             zone._det.update(0.2)
-        with self.assertRaises(ValueError):
-            make_detector("magseed", {})
-        with self.assertRaises(ValueError):
-            ECPFZoneDetector("magseed")
+        self.assertIsInstance(make_detector("magseed", {}), MagSeed)
+        self.assertIsInstance(make_detector("magseed_upward", {}), MagSeedUpward)
+        self.assertEqual(ECPFZoneDetector("magseed")._det.source_status,
+                         "chen_2016_thesis_interpretation_x")
 
     def test_zone_propagates_warning_then_drift(self):
         zone = ECPFZoneDetector("magseed_thesis_candidate")
@@ -64,6 +66,37 @@ class TestMagSeedThesisCandidate(unittest.TestCase):
                 drifts.append(i)
         self.assertEqual(warnings[0], 2035)
         self.assertEqual(drifts[0], 2053)
+
+    def test_a5_bidirectional_gate_and_a5u_directional_gate(self):
+        rise = [int(i % 10 == 0) for i in range(2000)] + [i % 2 for i in range(2000)]
+        fall = [i % 2 for i in range(2000)] + [int(i % 10 == 0) for i in range(2000)]
+        for sequence, direction in ((rise, 1), (fall, -1)):
+            detector = MagSeed()
+            warning_idx = drift_idx = None
+            for i, error in enumerate(sequence):
+                detector.update(error)
+                if detector.warning_detected and warning_idx is None:
+                    warning_idx = i
+                if detector.drift_detected and drift_idx is None:
+                    drift_idx = i
+                    self.assertIsNotNone(detector.last_cut)
+                    self.assertGreater(detector.last_cut["left_n"], 0)
+                    self.assertGreater(detector.last_cut["right_n"], 0)
+                    self.assertGreater(direction * detector.last_cut["signed_gap"], 0)
+            self.assertIsNotNone(warning_idx)
+            self.assertIsNotNone(drift_idx)
+            self.assertLess(warning_idx, drift_idx)
+        upward = MagSeedUpward()
+        self.assertFalse(any(upward.update(x).drift_detected for x in fall))
+
+    def test_literal_interpretation_can_override_drift_state(self):
+        main, literal = MagSeed(), MagSeedLiteral()
+        errors = [0] * 1000 + [1] * 1000
+        main_drifts = literal_drifts = 0
+        for error in errors:
+            main_drifts += bool(main.update(error).drift_detected)
+            literal_drifts += bool(literal.update(error).drift_detected)
+        self.assertGreater(main_drifts, literal_drifts)
 
 
 if __name__ == "__main__":

@@ -31,15 +31,14 @@ class TestMagSeedCandidate(unittest.TestCase):
         _, drifts = self._feed(MagSeedCandidate(), errors)
         self.assertEqual(drifts, [])
 
-    def test_entrypoints_are_explicitly_candidate_only(self):
+    def test_historical_candidate_retains_distinct_entrypoint(self):
         self.assertIsInstance(make_detector("magseed_candidate", {}), MagSeedCandidate)
         zone = ECPFZoneDetector("magseed_candidate")
         self.assertEqual(zone.combo_name, "zone_magseed_candidate")
         self.assertEqual(zone._det.source_status, "inferred_candidate_not_original_magseed")
-        with self.assertRaises(ValueError):
-            make_detector("magseed", {})
-        with self.assertRaises(ValueError):
-            ECPFZoneDetector("magseed")
+        self.assertNotEqual(
+            make_detector("magseed", {}).source_status, zone._det.source_status
+        )
 
     def test_window_reset_after_drift_and_binary_input(self):
         detector = MagSeedCandidate()

@@ -339,7 +339,9 @@ def make_detector(name: str, params: Dict[str, Any]):
     from river import drift
     from detectors.core.rddm_moa import MOARDDM
     from detectors.core.magseed_candidate import MagSeedCandidate
-    from detectors.core.magseed_thesis_candidate import MagSeedThesisCandidate
+    from detectors.core.magseed_thesis_candidate import (
+        MagSeed, MagSeedLiteral, MagSeedThesisCandidate, MagSeedUpward,
+    )
 
     factories = {
         "adwin_moa": MOAADWINChangeDetector,
@@ -353,6 +355,9 @@ def make_detector(name: str, params: Dict[str, Any]):
         "rddm": MOARDDM,
         "magseed_candidate": MagSeedCandidate,
         "magseed_thesis_candidate": MagSeedThesisCandidate,
+        "magseed": MagSeed,
+        "magseed_upward": MagSeedUpward,
+        "magseed_literal_dev": MagSeedLiteral,
     }
     if name not in factories:
         raise ValueError(f"unknown detector {name!r}")
