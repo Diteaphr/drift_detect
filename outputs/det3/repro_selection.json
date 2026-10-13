@@ -1,0 +1,26 @@
+{
+  "seed": 20261012,
+  "groups": {
+    "injected": [
+      "electricity_feature_filtering_abrupt_g01",
+      "electricity_feature_filtering_abrupt_g03",
+      "electricity_feature_filtering_abrupt_g12",
+      "electricity_class_prior_gradual_g13",
+      "electricity_label_swap_gradual_g03",
+      "electricity_feature_permutation_gradual_g10",
+      "electricity_feature_filtering_gradual_g00",
+      "electricity_feature_filtering_gradual_g02",
+      "electricity_feature_filtering_gradual_g18"
+    ],
+    "synthetic": [
+      "gradual_rbf4_100k_g02",
+      "gradual_rbf4_100k_g03",
+      "gradual_rbf4_100k_g04",
+      "gradual_rbf4_100k_g05",
+      "sudden_rbf4_100k_g07"
+    ],
+    "INSECTS": [
+      "insects_incremental_abrupt_reoccurring_balanced"
+    ]
+  }
+}

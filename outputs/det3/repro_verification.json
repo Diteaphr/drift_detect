@@ -1,0 +1,21 @@
+{
+  "selection_seed": 20261012,
+  "bitwise_fields": [
+    "y_true",
+    "y_pred",
+    "alarm_idx",
+    "alarm_idx_input where available",
+    "alarm_ts otherwise"
+  ],
+  "matched": {
+    "injected": 36,
+    "synthetic": 20,
+    "INSECTS": 4
+  },
+  "total": 60,
+  "expected": 60,
+  "reuse": true,
+  "extra_synthetic_runs_excluded": 16,
+  "insects_first_filter_zero_runs": true,
+  "insects_retry_isolated": true
+}
