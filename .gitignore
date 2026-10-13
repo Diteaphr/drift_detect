@@ -93,3 +93,11 @@ outputs/det1/smoke_*/
 # DET1 formal raw runs and local execution logs (reviewable verdicts remain tracked).
 outputs/benchmark/det1/
 outputs/det1/logs/
+
+# DET2 isolated gate, smoke, formal runs and local logs.
+outputs/benchmark/det2/
+outputs/det2/repro/
+outputs/det2/smoke/
+outputs/det2/logs/
+outputs/det2/repro_gate.log
+outputs/det2/smoke_run.log
