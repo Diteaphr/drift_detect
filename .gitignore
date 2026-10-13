@@ -101,3 +101,8 @@ outputs/det2/smoke/
 outputs/det2/logs/
 outputs/det2/repro_gate.log
 outputs/det2/smoke_run.log
+
+# DET3 raw runs, wiring checks and local logs (verdict files remain tracked).
+outputs/benchmark/det3/
+outputs/det3/wiring/
+outputs/det3/logs/
