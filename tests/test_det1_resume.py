@@ -7,11 +7,22 @@ import unittest
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 
 import scripts.run_benchmark as benchmark
 
 
 class TestDet1Resume(unittest.TestCase):
+    def test_summary_handles_object_typed_comparability_after_partial_failures(self):
+        df = pd.DataFrame({
+            "preset": ["a", "a"], "cell": [None, None],
+            "acc_prequential": [0.5, 0.6],
+            "comparable": pd.Series([False, False], dtype=object),
+            "not_comparable_reason": ["truncated", "truncated"],
+        })
+        benchmark.print_summary(df, {"required_metrics": ["acc_prequential"],
+                                     "comparability_note": "dev"})
+
     def test_complete_run_skips_but_commit_and_hash_mismatch_refuse(self):
         with tempfile.TemporaryDirectory() as temporary:
             repo = Path(temporary)

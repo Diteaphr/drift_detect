@@ -264,11 +264,13 @@ def effective_pipeline_config(preset: Dict[str, Any], task: str, seed: Optional[
 
 
 def oracle_input_schedule(
-    gt: Optional[List[Tuple[int, int]]], position: np.ndarray
+    gt: Optional[List[Tuple[int, int]]], position: np.ndarray, *, allow_empty: bool = False
 ) -> List[Dict[str, Any]]:
     """Map raw drift start/+60 to first retained rows at or after each point."""
-    if not gt:
+    if not gt and not allow_empty:
         raise ValueError("oracle_input_60 requires nonempty ground truth")
+    if not gt:
+        return []
     if len(position) and np.any(np.diff(position) <= 0):
         raise ValueError("input positions must be strictly increasing")
     schedule: List[Dict[str, Any]] = []
@@ -510,7 +512,9 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
         if job.get("record_warning_events"):
             config["ecpf_record_warning_events"] = True
         if config.get("ecpf_signal_mode") == "oracle_input_60":
-            config["ecpf_oracle_input_schedule"] = oracle_input_schedule(gt, position)
+            config["ecpf_oracle_input_schedule"] = oracle_input_schedule(
+                gt, position, allow_empty=bool(job["max_steps"])
+            )
         out = run_pipeline(X, y, config, warm_start)
     elif kind == "baseline":
         if task not in preset.get("tasks", [task]):
@@ -679,8 +683,8 @@ def print_summary(df: pd.DataFrame, entry: Dict[str, Any]) -> None:
     agg = num.groupby(by, dropna=False)[keys].agg(["mean", "std", "count"])
     with pd.option_context("display.width", 200, "display.max_columns", 50):
         print(agg.round(4).to_string())
-    if "comparable" in df and not df["comparable"].all():
-        reasons = sorted(set(df.loc[~df["comparable"], "not_comparable_reason"]))
+    if "comparable" in df and not df["comparable"].astype(bool).all():
+        reasons = sorted(set(df.loc[~df["comparable"].astype(bool), "not_comparable_reason"]))
         print(f"\n[not comparable] {'; '.join(reasons)}. {entry.get('comparability_note', '')}")
     for ref in entry.get("sota", []):
         if ref["metric"] in df.columns:

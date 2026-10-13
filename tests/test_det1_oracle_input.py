@@ -41,6 +41,7 @@ class TestOracleInputSchedule(unittest.TestCase):
     def test_missing_gt_and_nonmonotone_positions_rejected(self):
         with self.assertRaisesRegex(ValueError, "ground truth"):
             oracle_input_schedule([], np.arange(100))
+        self.assertEqual(oracle_input_schedule([], np.arange(100), allow_empty=True), [])
         with self.assertRaisesRegex(ValueError, "strictly increasing"):
             oracle_input_schedule([(20, 20)], np.array([0, 2, 2, 3]))
 
