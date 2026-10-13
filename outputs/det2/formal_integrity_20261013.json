@@ -1,0 +1,70 @@
+{
+  "complete": 820,
+  "failed": 0,
+  "commit": "55bfc81999c98954ad5a4b4aa05df691faac0cff",
+  "dirty": false,
+  "river": "0.21.2",
+  "batch1": {
+    "complete": 180,
+    "failed": 0,
+    "elapsed_s": 2091
+  },
+  "batch2": {
+    "complete": 640,
+    "failed": 0,
+    "elapsed_s": 1113
+  },
+  "total_elapsed_s": 3204,
+  "raw_size_mb_approx": 53,
+  "frozen_steps": {
+    "det1_zone_hddm_a_lw1": 0,
+    "det2_dual_adwin_d001_lw0": 3728743,
+    "det1_dual_adwin_lw1": 0,
+    "det1_zone_rddm_lw1": 0
+  },
+  "warning_events": {
+    "det1_zone_hddm_a_lw1": 6242,
+    "det2_dual_adwin_d001_lw0": 1860,
+    "det1_dual_adwin_lw1": 2396,
+    "det1_zone_rddm_lw1": 25426
+  },
+  "dataset_preset_counts": {
+    "injected_paper_electricity/det1_dual_adwin_lw1": 160,
+    "injected_paper_electricity/det1_zone_hddm_a_lw1": 160,
+    "injected_paper_electricity/det1_zone_rddm_lw1": 160,
+    "injected_paper_electricity/det2_dual_adwin_d001_lw0": 160,
+    "insects_abrupt_balanced/det1_dual_adwin_lw1": 1,
+    "insects_abrupt_balanced/det1_zone_hddm_a_lw1": 1,
+    "insects_abrupt_balanced/det1_zone_rddm_lw1": 1,
+    "insects_abrupt_balanced/det2_dual_adwin_d001_lw0": 1,
+    "insects_incremental_abrupt_reoccurring_balanced/det1_dual_adwin_lw1": 1,
+    "insects_incremental_abrupt_reoccurring_balanced/det1_zone_hddm_a_lw1": 1,
+    "insects_incremental_abrupt_reoccurring_balanced/det1_zone_rddm_lw1": 1,
+    "insects_incremental_abrupt_reoccurring_balanced/det2_dual_adwin_d001_lw0": 1,
+    "insects_incremental_balanced/det1_dual_adwin_lw1": 1,
+    "insects_incremental_balanced/det1_zone_hddm_a_lw1": 1,
+    "insects_incremental_balanced/det1_zone_rddm_lw1": 1,
+    "insects_incremental_balanced/det2_dual_adwin_d001_lw0": 1,
+    "insects_incremental_gradual_balanced/det1_dual_adwin_lw1": 1,
+    "insects_incremental_gradual_balanced/det1_zone_hddm_a_lw1": 1,
+    "insects_incremental_gradual_balanced/det1_zone_rddm_lw1": 1,
+    "insects_incremental_gradual_balanced/det2_dual_adwin_d001_lw0": 1,
+    "insects_incremental_reoccurring_balanced/det1_dual_adwin_lw1": 1,
+    "insects_incremental_reoccurring_balanced/det1_zone_hddm_a_lw1": 1,
+    "insects_incremental_reoccurring_balanced/det1_zone_rddm_lw1": 1,
+    "insects_incremental_reoccurring_balanced/det2_dual_adwin_d001_lw0": 1,
+    "synthetic_multiclass/det1_dual_adwin_lw1": 40,
+    "synthetic_multiclass/det1_zone_hddm_a_lw1": 40,
+    "synthetic_multiclass/det1_zone_rddm_lw1": 40,
+    "synthetic_multiclass/det2_dual_adwin_d001_lw0": 40
+  },
+  "audits": [
+    "source and registry match DET1",
+    "all 205 streams paired per arm",
+    "y_true bitwise identical to DET1",
+    "manifest commit and clean tree",
+    "River 0.21.2",
+    "warning event conservation",
+    "lw1 frozen steps zero"
+  ]
+}
