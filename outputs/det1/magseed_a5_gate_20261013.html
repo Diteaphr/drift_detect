@@ -1,0 +1,92 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>A5 通過 Chen 2016 雙向閘門；A5u 保持次要變體</title><style>
+    :root { --ink:#172339; --muted:#526179; --navy:#0b2744; --teal:#027a79; --line:#d9e1eb; --wash:#f4f7fa; --paper:#ffffff; --amber:#fff2d8; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.72 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+    .masthead { background:var(--navy); color:white; padding:42px max(24px,calc((100vw - 1120px)/2)); }
+    .eyebrow { color:#8dd8d1; font-size:.76rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    .masthead h1 { margin:.5rem 0 .7rem; max-width:900px; font-size:clamp(1.65rem,3vw,2.55rem); line-height:1.25; letter-spacing:-.02em; }
+    .masthead p { margin:0; color:#ced9e6; }
+    .layout { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:225px minmax(0,1fr); gap:30px; padding:30px 24px 70px; }
+    nav { align-self:start; position:sticky; top:22px; font-size:.86rem; }
+    nav .navtitle { margin:0 0 9px 9px; color:var(--muted); font-weight:800; letter-spacing:.07em; }
+    nav ul { list-style:none; margin:0; padding:0; }
+    nav li { margin:0 0 3px; }
+    nav a { display:block; padding:7px 9px; border-radius:6px; color:var(--muted); text-decoration:none; line-height:1.35; }
+    nav a:hover,nav a:focus { background:#e6eff3; color:var(--teal); }
+    nav li ul { display:none; }
+    main { min-width:0; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:30px 38px 44px; box-shadow:0 8px 28px rgba(15,35,60,.05); }
+    main>h1:first-child { display:none; }
+    h2 { margin:2.4rem 0 .85rem; padding-bottom:.42rem; border-bottom:2px solid var(--teal); font-size:1.4rem; line-height:1.4; }
+    h2:first-of-type { margin-top:1.6rem; }
+    p { margin:.72rem 0; }
+    ul,ol { padding-left:1.5rem; }
+    li { margin:.35rem 0; }
+    strong { color:#092d45; }
+    code { padding:.12em .35em; background:#e9f1f5; border-radius:4px; font:.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    pre { overflow:auto; padding:1rem; background:#e9f1f5; border-radius:6px; }
+    pre code { padding:0; }
+    table { width:100%; display:block; overflow-x:auto; border-collapse:collapse; margin:1rem 0 1.4rem; font-size:.88rem; line-height:1.55; }
+    th,td { min-width:95px; padding:.65rem .75rem; border:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { background:#eaf2f5; color:var(--navy); font-weight:750; white-space:nowrap; }
+    tbody tr:nth-child(even) { background:#fafbfd; }
+    tbody tr:hover { background:#f0f6f8; }
+    a { color:#075d75; }
+    .status { display:inline-block; margin-top:14px; padding:5px 12px; border-radius:30px; background:var(--amber); color:#694904; font-size:.83rem; font-weight:750; }
+    .foot { margin-top:36px; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:.78rem; }
+    @media (max-width:860px) { .layout { display:block; padding:14px; } nav { position:static; margin:0 0 15px; } nav ul { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:3px; } main { padding:19px; } }
+    @media print { body { background:white; font-size:10pt; } .masthead { color:var(--ink); background:white; padding:0 0 14px; border-bottom:2px solid var(--teal); } .masthead p { color:var(--ink); } .layout { display:block; padding:0; } nav { display:none; } main { border:0; box-shadow:none; padding:0; } main>h1:first-child { display:none; } h2 { break-after:avoid; } table { display:table; overflow:visible; } tr { break-inside:avoid; } .status { border:1px solid #8b7b5d; } .foot { display:none; } }
+  </style></head><body><header class="masthead"><div class="eyebrow">DET1 · Stage 3 · A5 gate</div><h1>A5 通過 Chen 2016 雙向閘門；A5u 保持次要變體</h1><p>預註冊修訂後驗證 · 2026-10-13</p><span class="status">A5 方向閘門通過</span></header><div class="layout"><nav aria-label="章節導覽"><p class="navtitle">報告導覽</p><ul><li><a href="#a5-a5u">固定序列顯示 A5 雙向觸發，A5u 只保留正向</a></li><li><a href="#_1">既有路徑與來源限制均有可核對的證據</a></li></ul></nav><main id="report"><h1 id="a5-chen-2016-a5u">A5 按 Chen 2016 的雙向定義通過新閘門；A5u 保持次要變體</h1>
+<p><strong>結論：</strong> 2026-10-13 的<a href="../../docs/ECPF_DET1_預註冊.html">預註冊修訂</a>已先於本輪任何資料執行提交（<code>43dead2</code>）。A5 現以 <code>magseed</code> 公開，按 <a href="https://hdl.handle.net/2292/28911">Chen（2016）學位論文第 3 章</a>式 (3.1) 的絕對差偵測雙向變化，偽碼衝突採修訂中的 <strong>X 解讀：drift &gt; 任一 warning &gt; no change</strong>。A5u 以 <code>magseed_upward</code> 公開，僅正向切點可觸發，明確是偏離原文的次要變體。2015 會議 PDF 與原作者 MAGSEED 程式仍未取得；名稱表示<strong>依 2016 學位論文實作</strong>，不表示逐事件重現原作者程式。</p>
+<h2 id="a5-a5u">固定序列顯示 A5 雙向觸發，A5u 只保留正向</h2>
+<p>每條 4,000 筆固定 0/1 error：前後各 2,000 筆，0.1 以每 10 筆 1 錯表示，0.5 以每 2 筆 1 錯表示。索引從 0 起算。切點欄為首次 drift 時視窗的區塊序號／左側筆數／右側筆數／右減左錯誤率。</p>
+<table>
+<thead>
+<tr>
+<th>序列</th>
+<th>Detector</th>
+<th style="text-align: right;">首次 warning</th>
+<th style="text-align: right;">首次 drift</th>
+<th>首次 drift 切點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1→0.5</td>
+<td>A5 <code>magseed</code></td>
+<td style="text-align: right;">2035</td>
+<td style="text-align: right;">2053</td>
+<td>62／1984／70／+0.29970</td>
+</tr>
+<tr>
+<td>0.5→0.1</td>
+<td>A5 <code>magseed</code></td>
+<td style="text-align: right;">2076</td>
+<td style="text-align: right;">2079</td>
+<td>62／1984／96／−0.33333</td>
+</tr>
+<tr>
+<td>0.1→0.5</td>
+<td>A5u <code>magseed_upward</code></td>
+<td style="text-align: right;">2035</td>
+<td style="text-align: right;">2053</td>
+<td>62／1984／70／+0.29970</td>
+</tr>
+<tr>
+<td>0.5→0.1</td>
+<td>A5u <code>magseed_upward</code></td>
+<td style="text-align: right;">無</td>
+<td style="text-align: right;">無</td>
+<td>無</td>
+</tr>
+</tbody>
+</table>
+<p><strong>判定：</strong> A5 上升時先 warning 後 drift；下降時依絕對差仍可 drift，符合新閘門。A5u 的下降無 drift，符合單側變體定義。這是預設參數的人造序列行為檢查，不是 report 資料的 P1/P2 結果。<a href="../../detectors/core/magseed_thesis_candidate.py">實作</a>保留 <code>last_cut</code> 的左／右筆數與有號均值差，供重現方向與切點。</p>
+<h2 id="_1">既有路徑與來源限制均有可核對的證據</h2>
+<ul>
+<li><code>make_detector("magseed", {})</code> 與 <code>ECPFZoneDetector("magseed")</code> 都使用相同的 A5 類別；<code>magseed_upward</code> 是獨立 A5u 類別，Y 解讀以 <code>magseed_literal_dev</code> 隔離。<a href="../../scripts/run_benchmark.py">入口</a>、<a href="../../src/ecpf_detector.py">zone</a>。</li>
+<li>新入口不改既有基線：electricity／<code>ecpf_paper</code> 全 45,312 筆重跑，<code>y_pred</code>、80 個 <code>alarm_idx</code> 與 80 個 <code>alarm_ts</code> 對既有 <code>preds.npz</code> 逐陣列一致。比對在 <code>river==0.21.2</code> 的主環境執行。</li>
+<li>主專案測試排除已知在本分支事前就無法收集的 <code>tests/test_detection_evaluation.py</code>，結果 <strong>93 passed</strong>；新增測試核對雙向有號切點、A5u 下降無 drift、Y 解讀可覆蓋 drift。<a href="../../tests/test_magseed_thesis_candidate.py">測試</a>。</li>
+<li><code>b=32</code>、壓縮間隔 75 來自 <a href="https://github.com/Waikato/moa/blob/master/moa/src/main/java/moa/classifiers/core/driftdetection/SEEDChangeDetector.java">MOA SEED 預設</a>；<code>cw=2</code> 與 100 筆標準差方式依預註冊修訂固定，仍屬原文未完全交代的選擇。X／Y dev 敏感度執行安排於階段五，<strong>不影響 A5 入主判定的方向閘門</strong>。</li>
+</ul>
+<p><strong>下一步：</strong> 進入階段四生成 preset 和差異表；階段五對每個適用資料短跑，另執行一次 Y 解讀 dev 敏感度檢查。正式 P1/P2 必須再通過 smoke、manifest 來源與續跑閘門。</p></main></div></body></html>

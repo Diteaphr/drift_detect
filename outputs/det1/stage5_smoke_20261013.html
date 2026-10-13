@@ -1,0 +1,77 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>階段五 smoke 完成；正式矩陣仍待停點審閱</title><style>body{margin:0;background:#f2f5f7;color:#182738;font:16px/1.72 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}main{max-width:1100px;margin:32px auto;padding:36px 44px;background:white;border:1px solid #d8e2ea;border-radius:10px;box-shadow:0 5px 25px #09243b0d}h1{font-size:2rem;line-height:1.3;color:#0b2e4c}h2{margin-top:2.4rem;padding-bottom:.4rem;border-bottom:2px solid #07857e;color:#0b2e4c;font-size:1.4rem}table{display:block;overflow:auto;border-collapse:collapse;font-size:.9rem}td,th{border:1px solid #d8e2ea;padding:.55rem .65rem;vertical-align:top;min-width:95px}th{background:#eaf4f5;white-space:nowrap}tr:nth-child(even){background:#f9fbfc}a{color:#096b78}code{background:#eef3f6;padding:.12em .3em;border-radius:3px;overflow-wrap:anywhere}strong{color:#0c4058}@media(max-width:720px){main{margin:0;padding:22px 16px;border-radius:0}h1{font-size:1.55rem}}</style></head><body><main><h1>階段五 smoke 完成；正式矩陣仍待停點審閱</h1>
+<p><strong>結論。</strong> 2026-10-13 的 DET1 階段五已完成 <strong>1,240 次</strong>預註冊 smoke，另完成 <strong>1 次</strong> MagSeed 偽碼 Y 解讀的 dev 敏感度檢查。逐筆完整性稽核錯誤為 <strong>0</strong>；A5（學位論文雙向解讀 X）與 A5u（單側變體）均完成短跑。沒有依 smoke 的結果改動 detector 參數或 P1/P2 判準。依原始 DET1 任務的階段五 <strong>【停】</strong> 要求，正式 report 資料尚未執行，須先審閱本報告。</p>
+<h2>1,240 次短跑皆可追溯；GT 缺席的前綴不作偵測判讀</h2>
+<table>
+<thead>
+<tr>
+<th>資料組</th>
+<th style="text-align: right;">預設 × 串流</th>
+<th style="text-align: right;">完成</th>
+<th style="text-align: right;">前綴中無 GT 的 run</th>
+<th style="text-align: right;">原始警報為 0 的 run</th>
+<th style="text-align: right;">最多原始警報／run</th>
+<th style="text-align: right;">runtime 合計（CPU 秒）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>injected_paper_electricity，3 trials／cell</td>
+<td style="text-align: right;">22 × 24</td>
+<td style="text-align: right;">528</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">148</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">5,121.13</td>
+</tr>
+<tr>
+<td>INSECTS abrupt，前 5,000 筆</td>
+<td style="text-align: right;">17 × 1</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">46.22</td>
+</tr>
+<tr>
+<td>INSECTS incremental，前 5,000 筆</td>
+<td style="text-align: right;">15 × 1</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">15，原 GT 檔為空</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">46.37</td>
+</tr>
+<tr>
+<td>synthetic_multiclass，前 5,000 筆</td>
+<td style="text-align: right;">17 × 40</td>
+<td style="text-align: right;">680</td>
+<td style="text-align: right;">272</td>
+<td style="text-align: right;">309</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">777.28</td>
+</tr>
+<tr>
+<td><strong>合計</strong></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"><strong>1,240</strong></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"><strong>5,991.00</strong></td>
+</tr>
+</tbody>
+</table>
+<p>22 個 injected 預設是 17 個 ECPF（含 A6 與 A5u 兩個 lw）加 5 個 detector-only。INSECTS incremental 依預註冊略過 A0 兩個 lw，且只報準確率、警報數與 runtime；<strong>不計 TP/FP</strong>。<code>injected --trials 3</code> 的 manifest 雖標 <code>smoke=false</code>，但輸出隔離在 <code>outputs/det1/smoke_full_20261013_v2/</code>，不得混入正式分析。原始警報欄含 injected 偵測起點以前的警報；正式評分會依 manifest 的 <code>detect_from</code> 過濾。</p>
+<p>INSECTS abrupt 的 drift 起點不在 5,000 步前綴，17 次短跑無法測試該組命中率。Synthetic 有 272 次短跑的 GT 不在前綴，因此零警報不能直接解讀為失靈；另有 82 次零警報且前綴含 GT，正式全長資料才可判定其影響。Injected 的 148 次零警報前綴均含 GT，屬應保留的觀察，不據以調參。</p>
+<p>稽核逐筆檢查 <code>manifest.json</code>、<code>preds.npz</code>、<code>metrics.json</code>，ECPF 另檢查 <code>warning_events.json</code>；交叉核對預測筆數、依 <code>detect_from</code> 過濾後的警報數、原始輸入座標、資料來源 SHA-256／生成來源 SHA-256、Git commit <code>644dcf1</code> 且工作樹乾淨、River <code>0.21.2</code>。<strong>1,241 筆全通過，錯誤 0</strong>。後一筆為下節 Y 解讀 dev，不列入 1,240 次矩陣。可稽核摘要見 <a href="stage5_smoke_audit.json">JSON</a>；原始 run 位於本機隔離 smoke 目錄，未提交至 Git。</p>
+<h2>A5 的密集 warning 與單串流警報尖峰需在正式分析照報</h2>
+<p>ECPF 16 個新預設與 A6 合計記錄 <strong>33,925</strong> 次 warning 開啟；其中 <strong>1,103</strong> 次確認 drift、<strong>32,710</strong> 次因 detector 離開 warning 區而關閉、<strong>56</strong> 次 timeout、<strong>56</strong> 次串流結尾 censored。開啟數等於關閉或截尾數，沒有未結算的 warning。A5 雙向 <code>lw0/lw1</code> 分別有 5,871／7,642 次開啟，A5u 單側分別有 5,860／7,668 次；絕大多數是 <code>zone_exit</code>，顯示頻繁進出 warning 區，並非 buffer 永久卡住。</p>
+<p>最大的警報尖峰是 injected <code>electricity_label_swap_gradual_g00</code> 的 A5 <code>lw0</code>：<strong>24 次原始警報</strong>，其中 20 次位於 GT 結束後；其 GT 為原始輸入座標 <strong>[35,988, 38,488]</strong>。同一串流 A1 <code>lw0</code> 有 3 次原始警報，A5 <code>lw1</code> 2 次，A5u <code>lw0/lw1</code> 為 3／1 次。A5 <code>lw0</code> 有 330 次 warning 開啟、306 次 <code>zone_exit</code>、24 次確認；事件數守恆。這是 smoke 的可定位異常，不改變雙向 A5 的原文導向設定。正式 P1/P2 必須保留該串流及其他不利資料格，並分列原始警報、Cerqueira TP/FP、episode hit 與扣除機會值後的 X。</p>
+<h2>Y 解讀只做一次 dev；目前無法辨別兩種解讀</h2>
+<p>依 <a href="../../docs/ECPF_DET1_預註冊.md">預註冊修訂</a>，只在 <code>synthetic_multiclass/gradual_rbf4_100k_g00</code> 前 5,000 筆執行一次 <code>magseed_literal_dev</code>，並與同串流 A5 主解讀 X 配對。兩者 <code>y_true</code> 相同；X／Y 均 0 次警報、0 次 warning、prequential accuracy 均為 <strong>0.5776</strong>。此一次檢查<strong>沒有提供區分 X／Y 的事件</strong>，不能推論兩種解讀等價；Y 不參與正式 P1/P2，也不追加第二次 dev。A5 對外名稱 <code>magseed</code> 的意義限於「依 Chen 2016 學位論文實作，偽碼矛盾處採 X 解讀」，不是宣稱取得 Chen、Koh、Riddle 2015 會議原文或作者程式。文獻來源：<a href="https://hdl.handle.net/2292/28911">Chen 學位論文</a>。</p>
+<h2>以 smoke 換算正式約 9,752 次；先維持 4 workers</h2>
+<p>正式矩陣為原定 <strong>8,868 次</strong>加 A5u <strong>884 次</strong>，共 <strong>9,752 次</strong>：injected 8,800、INSECTS abrupt 17、INSECTS incremental 15、synthetic HT 680、synthetic hf10 240。Y 的一次 dev 不納入。依 smoke runtime 線性換算，前四組共約 <strong>101,900 CPU 秒（28.3 CPU 小時）</strong>：injected 以 3→50 trials 乘 50/3，兩個 INSECTS 以全長 52,848／57,018 筆除以 5,000，synthetic HT 以 100,000／5,000。4 workers 的理想下限約 <strong>7.1 小時</strong>，不含資料載入、輸出與 hf10。此次實測每 worker 峰值 RSS 最高 <strong>444.7 MB</strong>；正式先沿用 smoke 成功的 4 workers，並用 <code>--resume</code> 保護中斷進度。</p>
+<p><strong>hf10 未短跑，時間估計不具實測基礎。</strong> 階段一曾粗估 hf10 另需 20–60 CPU 小時；若沿用該規劃區間，總量約 48–88 CPU 小時，4 workers 理想約 <strong>12–22 小時</strong>。考慮長串流非線性成本與 I/O，先預留 <strong>15–30 小時</strong>作執行排程，並在正式首批完成後依實測更新；此為容量規劃，非完成時間承諾。來源：<a href="stage1_readiness.md">階段一資源估計</a>、本次<a href="stage5_smoke_audit.json">逐筆稽核</a>。</p>
+<h2>階段六前保留原有判準與續跑閘門</h2>
+<p><code>--resume</code> 已在 injected ECPF 主批對兩個 A5u 預設各驗證 <strong>24 筆已完成、0 筆待跑</strong>；單元測試亦覆蓋 commit／資料 hash 不符時拒絕誤跳過。Smoke 初次執行曾遇到 A0 的 5,000 步前綴無 GT 與摘要欄位型別問題；修復後以 commit <code>644dcf1</code> 重新完成受影響 smoke，早期失敗輸出保留在不同目錄，本報告只採上述完整批次。現有定向測試 <strong>98 passed</strong>；RDDM／MOA 對照與 A5 行為閘門已在階段三報告／後續修訂驗證。上述修復不變更預註冊判準或 detector 參數。</p>
+<p>正式開始前需維持階段五的 <strong>【停】</strong>：審閱密集 warning／警報尖峰與時間估計後，才可執行階段六 report 資料。正式結果的 P1/P2、A1t 次要判定、10,000 次 bootstrap CI 及三組方向一致性，均不從 smoke 推導。</p></main></body></html>

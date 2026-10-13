@@ -1,0 +1,117 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>找到 MAGSEED 一手演算法；新候選版可執行，但 A5 仍不能結案｜DET1 階段三</title><style>
+    :root { --ink:#172339; --muted:#526179; --navy:#0b2744; --teal:#027a79; --line:#d9e1eb; --wash:#f4f7fa; --paper:#ffffff; --amber:#fff2d8; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.72 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+    .masthead { background:var(--navy); color:white; padding:42px max(24px,calc((100vw - 1120px)/2)); }
+    .eyebrow { color:#8dd8d1; font-size:.76rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    .masthead h1 { margin:.5rem 0 .7rem; max-width:900px; font-size:clamp(1.65rem,3vw,2.55rem); line-height:1.25; letter-spacing:-.02em; }
+    .masthead p { margin:0; color:#ced9e6; }
+    .layout { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:225px minmax(0,1fr); gap:30px; padding:30px 24px 70px; }
+    nav { align-self:start; position:sticky; top:22px; font-size:.86rem; }
+    nav .navtitle { margin:0 0 9px 9px; color:var(--muted); font-weight:800; letter-spacing:.07em; }
+    nav ul { list-style:none; margin:0; padding:0; }
+    nav li { margin:0 0 3px; }
+    nav a { display:block; padding:7px 9px; border-radius:6px; color:var(--muted); text-decoration:none; line-height:1.35; }
+    nav a:hover,nav a:focus { background:#e6eff3; color:var(--teal); }
+    nav li ul { display:none; }
+    main { min-width:0; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:30px 38px 44px; box-shadow:0 8px 28px rgba(15,35,60,.05); }
+    main>h1:first-child { display:none; }
+    h2 { margin:2.4rem 0 .85rem; padding-bottom:.42rem; border-bottom:2px solid var(--teal); font-size:1.4rem; line-height:1.4; }
+    h2:first-of-type { margin-top:1.6rem; }
+    p { margin:.72rem 0; }
+    ul,ol { padding-left:1.5rem; }
+    li { margin:.35rem 0; }
+    strong { color:#092d45; }
+    code { padding:.12em .35em; background:#e9f1f5; border-radius:4px; font:.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    pre { overflow:auto; padding:1rem; background:#e9f1f5; border-radius:6px; }
+    pre code { padding:0; }
+    table { width:100%; display:block; overflow-x:auto; border-collapse:collapse; margin:1rem 0 1.4rem; font-size:.88rem; line-height:1.55; }
+    th,td { min-width:95px; padding:.65rem .75rem; border:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { background:#eaf2f5; color:var(--navy); font-weight:750; white-space:nowrap; }
+    tbody tr:nth-child(even) { background:#fafbfd; }
+    tbody tr:hover { background:#f0f6f8; }
+    a { color:#075d75; }
+    .status { display:inline-block; margin-top:14px; padding:5px 12px; border-radius:30px; background:var(--amber); color:#694904; font-size:.83rem; font-weight:750; }
+    .foot { margin-top:36px; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:.78rem; }
+    @media (max-width:860px) { .layout { display:block; padding:14px; } nav { position:static; margin:0 0 15px; } nav ul { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:3px; } main { padding:19px; } }
+    @media print { body { background:white; font-size:10pt; } .masthead { color:var(--ink); background:white; padding:0 0 14px; border-bottom:2px solid var(--teal); } .masthead p { color:var(--ink); } .layout { display:block; padding:0; } nav { display:none; } main { border:0; box-shadow:none; padding:0; } main>h1:first-child { display:none; } h2 { break-after:avoid; } table { display:table; overflow:visible; } tr { break-inside:avoid; } .status { border:1px solid #8b7b5d; } .foot { display:none; } }
+  </style></head><body><header class="masthead"><div class="eyebrow">DET1 · Stage 3 · Thesis source check</div><h1>找到 MAGSEED 一手演算法；新候選版可執行，但 A5 仍不能結案</h1><p>學位論文原文核對 · 新候選版行為檢查 · 2026-10-12</p><span class="status">A5 尚未解鎖</span></header><div class="layout"><nav aria-label="章節導覽"><p class="navtitle">報告導覽</p><ul><li><a href="#_1">用作者學位論文修正先前候選版的核心假設</a></li><li><a href="#_2">保留三個影響忠實重現的未決點</a></li><li><a href="#drift">新候選版通過基本行為檢查，但下降 drift 與預註冊閘門衝突</a></li></ul></nav><main id="report"><h1 id="magseed-a5">找到 MAGSEED 一手演算法；新候選版可執行，但 A5 仍不能結案</h1>
+<p><strong>結論：</strong> <a href="https://hdl.handle.net/2292/28911">Kylie Chen（2016）奧克蘭大學學位論文</a>第 3 章（印刷頁 36–40；PDF 頁 51–55）包含 MAGSEED 的公式、文字狀態說明與 Algorithm 1。這推翻先前「目前只有間接描述」的來源狀態；<a href="magseed_evidence_audit.html">先前的證據盤點</a>保留作當時查核紀錄，以本報告更新。根據論文與 <a href="https://github.com/Waikato/moa/blob/master/moa/src/main/java/moa/classifiers/core/driftdetection/SEEDChangeDetector.java">MOA 的 SEED 原始碼</a>，已加入獨立的 <code>magseed_thesis_candidate</code>。它仍有原文歧義和 ECPF 參數缺口，且下降錯誤率會觸發 drift，<strong>不列為預註冊 A5，也不啟動正式 P1/P2 比較</strong>。</p>
+<h2 id="_1">用作者學位論文修正先前候選版的核心假設</h2>
+<table>
+<thead>
+<tr>
+<th>議題</th>
+<th>論文與原始碼可確認的行為</th>
+<th>對本專案的影響</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>演算法來源</td>
+<td>學位論文前言明示第 3 章部分內容已發表為 Chen、Koh、Riddle（2015）會議文。這是同一第一作者的一手詳細版本，但不能保證與會議版逐字或逐版一致。<a href="https://hdl.handle.net/2292/28911">學位論文</a> PDF 頁 8、第 3 章。</td>
+<td>可據以做來源註明的試作；尚不能宣稱核對了 2015 會議 PDF 或其實驗程式。</td>
+</tr>
+<tr>
+<td>Drift</td>
+<td>把 0/1 分類誤差分塊，在所有可用區塊邊界比較左右平均值的<strong>絕對差</strong>。超過變異數感知的 Hoeffding–Bonferroni 界後，丟掉切點左側區塊。<a href="https://hdl.handle.net/2292/28911">論文</a> PDF 頁 52，式 (3.1)–(3.2)。</td>
+<td>先前固定兩個相鄰視窗、只偵測錯誤率上升的試作不是 MAGSEED 原文邏輯。下降也可能報 drift。</td>
+</tr>
+<tr>
+<td>Warning</td>
+<td>第一條用相同切點、較寬的 <code>δw</code> 界；第二條用 100 筆滑動錯誤率的 <code>p+s &gt; pmin+cw·smin</code>。正文寫<strong>任一條</strong>成立便進 warning。<a href="https://hdl.handle.net/2292/28911">論文</a> PDF 頁 53，式 (3.3)–(3.4)。</td>
+<td>先前候選版把兩條條件相與，已被原文否定。Warning 解除則回到 no change，恢復壓縮。</td>
+</tr>
+<tr>
+<td><code>ε=0.01</code>、<code>α=0.8</code></td>
+<td><code>ε̂</code> 是壓縮相鄰同質區塊的基值，<code>α</code> 是線性增長項。MOA SEED 由新往舊掃描，容許差依區塊相對位置逐步增加。<a href="https://hdl.handle.net/2292/28911">論文</a> PDF 頁 52；<a href="https://github.com/Waikato/moa/blob/master/moa/src/main/java/moa/classifiers/core/driftdetection/SEEDChangeDetector.java">SEED 程式</a>。</td>
+<td>兩者不是 warning 界的縮放率或均值差下限。舊候選版的參數語意不成立。</td>
+</tr>
+<tr>
+<td>Severity</td>
+<td>有 warning 後到 drift 期間的誤分類比例；沒有 warning 的 drift 可存在。<a href="https://hdl.handle.net/2292/28911">論文</a> PDF 頁 53，式 (3.5)；PDF 頁 61，Table 3.9 與正文。</td>
+<td>不得把「先 warning 才能 drift」寫成原文的硬條件；偵測到 drift 時以既有 warning buffer 計算 <code>Rate</code>，無 warning 則記錄缺值。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">保留三個影響忠實重現的未決點</h2>
+<ol>
+<li><strong>偽碼覆蓋矛盾。</strong> Algorithm 1 第 27 行寫 <code>warningFound=false</code> 時直接把狀態設成 no change，會覆蓋第 18 行已設的 drift，也可能覆蓋第 12 行的第二種 warning；這與相鄰正文及 Table 3.9 的「部分 drift 沒有 warning」相矛盾。<a href="https://hdl.handle.net/2292/28911">論文</a> PDF 頁 53–55、61。試作採 <strong>drift 優先，其次任一 warning，最後 no change</strong>，並明確標示為解讀，不宣稱原作者程式行為。</li>
+<li><strong>參數仍不完整。</strong> <a href="https://arxiv.org/pdf/1905.08848">ECPF 論文</a>只列 <code>δd=0.05</code>、<code>ε̂=0.01</code>、<code>α=0.8</code>、<code>δw=0.1</code>。Chen 論文 Table 3.3 另列壓縮間隔 <code>τ∈{50,75,100}</code>、<code>cw∈{1,2}</code>，沒有給 ECPF 當年所用的 <code>τ</code>、<code>cw</code> 或區塊大小。試作採 <a href="https://github.com/Waikato/moa/blob/master/moa/src/main/java/moa/classifiers/core/driftdetection/SEEDChangeDetector.java">MOA SEED 預設</a>的 <code>block_size=32</code>、<code>τ=75</code>，<code>cw=2</code> 則是 Chen 研究過的值，<strong>不是已知的 ECPF 設定</strong>。正式 A5 不能把這些缺值當作既定事實。</li>
+<li><strong>100 筆統計的初始化與 <code>s</code> 定義。</strong> 論文稱 100-instance sliding window 的平均與標準差，未明示不足 100 筆時的處理及 <code>s</code> 是否為 Bernoulli 樣本標準差或錯誤率的標準誤。試作待滿 100 筆才更新基線，取 <code>sqrt(p(1-p))</code>。兩種解讀可能改變 warning 時間，需原作者程式或數值例比對。</li>
+</ol>
+<h2 id="drift">新候選版通過基本行為檢查，但下降 drift 與預註冊閘門衝突</h2>
+<p>程式：<a href="../../detectors/core/magseed_thesis_candidate.py">來源註解與實作</a>、<a href="../../tests/test_magseed_thesis_candidate.py">行為測試</a>。公開入口為 <code>make_detector("magseed_thesis_candidate", {})</code> 與 <code>ECPFZoneDetector("magseed_thesis_candidate")</code>；<code>magseed</code> 仍拒絕建立。舊 <code>magseed_candidate</code> 留作先前探索版，不以新資料追認其忠實度。PDF 僅存研究過程的暫存路徑，未收入 repo 或對外重製。</p>
+<table>
+<thead>
+<tr>
+<th>固定 0/1 序列，4,000 筆</th>
+<th style="text-align: right;">首次 warning</th>
+<th style="text-align: right;">首次 drift</th>
+<th>判讀</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>前 2,000 筆每 10 筆 1 錯、後 2,000 筆每 2 筆 1 錯</td>
+<td style="text-align: right;">2,035</td>
+<td style="text-align: right;">2,053</td>
+<td>先 warning 後 drift，符合上升序列行為閘門。</td>
+</tr>
+<tr>
+<td>前 2,000 筆每 2 筆 1 錯、後 2,000 筆每 10 筆 1 錯</td>
+<td style="text-align: right;">2,076</td>
+<td style="text-align: right;">2,079</td>
+<td>也觸發 drift，符合式 (3.1) 絕對差，但<strong>不符合預註冊「0.5→0.1 不 drift」閘門</strong>。</td>
+</tr>
+<tr>
+<td>全為 0</td>
+<td style="text-align: right;">無</td>
+<td style="text-align: right;">無</td>
+<td>無虛構警報。</td>
+</tr>
+</tbody>
+</table>
+<p>以上序列只做行為檢查，沒有對原作者 MAGSEED 的逐事件輸出比對，也沒有用 GT 計算 P1/P2。目標測試 9 項通過；主專案測試（排除既有無法收集的 <code>tests/test_detection_evaluation.py</code>）為 <strong>91 passed</strong>。完整 8,868 次正式執行仍未開始。若要把下降 drift 篩除，須先確認「原文雙向偵測」與 DET1「只把錯誤率上升列為 drift」的衝突如何處理，不能在得知測試結果後默默修改 A5 定義。</p>
+<p><strong>階段三狀態：</strong> RDDM 的 MOA 對照已完成；MAGSEED 有一手論文與可執行試作，但未通過原文／預註冊一致性門檻。下一步是取得 2015 會議版或原作者實作，核對 <code>cw</code>、<code>τ</code>、warning 標準差與狀態優先序，再決定 A5 是否可按既定判準執行。</p><p class="foot">DET1 · 2026-10-12 · 來源與判定限制見正文。</p></main></div></body></html>
