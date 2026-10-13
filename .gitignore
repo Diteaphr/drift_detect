@@ -101,3 +101,9 @@ outputs/det2/smoke/
 outputs/det2/logs/
 outputs/det2/repro_gate.log
 outputs/det2/smoke_run.log
+
+# DET3 isolated raw runs and execution logs; commit audited summaries only.
+outputs/benchmark/det3/
+outputs/det3/repro/
+outputs/det3/smoke/
+outputs/det3/logs/
