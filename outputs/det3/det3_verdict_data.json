@@ -1,0 +1,2694 @@
+{
+  "comparisons": {
+    "main_injected": {
+      "streams": {
+        "injected": 160
+      },
+      "delta_fp": 26,
+      "ci_fp": [
+        0.0,
+        50.0
+      ],
+      "p1": "持平",
+      "delta_x": -9.78856877196886,
+      "ci_x": [
+        -17.450606174554068,
+        -2.3735256186937215
+      ],
+      "p2": "不成立",
+      "verdict": "持平",
+      "h2": "相反",
+      "delta_acc": -0.0007319067185328487,
+      "ci_acc": [
+        -0.001940314641002669,
+        0.00041583387416559094
+      ],
+      "h3": "持平"
+    },
+    "secondary_synthetic": {
+      "streams": {
+        "synthetic": 40
+      },
+      "delta_fp": -6,
+      "ci_fp": [
+        -26.0,
+        15.0
+      ],
+      "p1": "持平",
+      "delta_x": -11.454263736558588,
+      "ci_x": [
+        -24.19788493979681,
+        0.3797125760495886
+      ],
+      "p2": "持平",
+      "verdict": "持平",
+      "h2": "沒有差別",
+      "delta_acc": 0.00020849999999994484,
+      "ci_acc": [
+        -0.004780018750000006,
+        0.0057492312499999995
+      ],
+      "h3": "持平"
+    },
+    "secondary_injected_synthetic": {
+      "streams": {
+        "injected": 160,
+        "synthetic": 40
+      },
+      "delta_fp": 20,
+      "ci_fp": [
+        -12.0,
+        52.0
+      ],
+      "p1": "持平",
+      "delta_x": -21.24283250852745,
+      "ci_x": [
+        -36.07017638663441,
+        -7.1362624852137495
+      ],
+      "p2": "不成立",
+      "verdict": "持平",
+      "h2": "相反",
+      "delta_acc": -0.00038347720830078647,
+      "ci_acc": [
+        -0.0023999535654906285,
+        0.0018280872608539744
+      ],
+      "h3": "持平"
+    },
+    "secondary_det1_population": {
+      "streams": {
+        "injected": 160,
+        "synthetic": 40,
+        "INSECTS": 4
+      },
+      "delta_fp": 11,
+      "ci_fp": [
+        -26.0,
+        48.0
+      ],
+      "p1": "持平",
+      "delta_x": -21.188408217605843,
+      "ci_x": [
+        -35.99309406900047,
+        -7.028529068340746
+      ],
+      "p2": "不成立",
+      "verdict": "持平",
+      "h2": "相反",
+      "delta_acc": 0.0001316968004293484,
+      "ci_acc": [
+        -0.001888219652655218,
+        0.002301127340155459
+      ],
+      "h3": "持平"
+    },
+    "h2_gradual": {
+      "streams": {
+        "injected": 80
+      },
+      "delta_fp": 19,
+      "ci_fp": [
+        1.0,
+        37.0
+      ],
+      "p1": "不成立",
+      "delta_x": -8.572241250589952,
+      "ci_x": [
+        -14.594384569331028,
+        -3.4545351142643033
+      ],
+      "p2": "不成立",
+      "verdict": "不如",
+      "h2": "相反",
+      "delta_acc": -0.0005320587336650195,
+      "ci_acc": [
+        -0.002331030643857379,
+        0.0008835419413473982
+      ],
+      "h3": "持平"
+    },
+    "h2_abrupt": {
+      "streams": {
+        "injected": 80
+      },
+      "delta_fp": 7,
+      "ci_fp": [
+        -10.0,
+        24.0
+      ],
+      "p1": "持平",
+      "delta_x": -1.216327521378909,
+      "ci_x": [
+        -6.362350431524197,
+        3.89533823351513
+      ],
+      "p2": "持平",
+      "verdict": "持平",
+      "h2": "沒有差別",
+      "delta_acc": -0.0009339952980617072,
+      "ci_acc": [
+        -0.0026436223018106884,
+        0.000745632456986231
+      ],
+      "h3": "持平"
+    },
+    "s1_without_g00_g02": {
+      "streams": {
+        "injected": 136
+      },
+      "delta_fp": 28,
+      "ci_fp": [
+        5.0,
+        50.0
+      ],
+      "p1": "不成立",
+      "delta_x": -8.843994497896,
+      "ci_x": [
+        -15.902031582413658,
+        -2.3726520198059236
+      ],
+      "p2": "不成立",
+      "verdict": "不如",
+      "h2": "相反",
+      "delta_acc": -0.0004847378554989623,
+      "ci_acc": [
+        -0.0017218117126778538,
+        0.0007089938409730267
+      ],
+      "h3": "持平"
+    },
+    "s2_window2500": {
+      "streams": {
+        "injected": 160
+      },
+      "delta_fp": 7,
+      "ci_fp": [
+        -16.0,
+        29.0
+      ],
+      "p1": "持平",
+      "delta_x": 8.335220412682448,
+      "ci_x": [
+        -1.4907417326301586,
+        18.451048235044723
+      ],
+      "p2": "持平",
+      "verdict": "持平",
+      "h2": "沒有差別",
+      "delta_acc": -0.0007319067185328487,
+      "ci_acc": [
+        -0.001940314641002669,
+        0.00041583387416559094
+      ],
+      "h3": "持平"
+    },
+    "s2_window2500_gradual": {
+      "streams": {
+        "injected": 80
+      },
+      "delta_fp": 9,
+      "ci_fp": [
+        -7.0,
+        24.0
+      ],
+      "p1": "持平",
+      "delta_x": 0.24488943818743258,
+      "ci_x": [
+        -7.058539806790465,
+        7.659541472985033
+      ],
+      "p2": "持平",
+      "verdict": "持平",
+      "h2": "沒有差別",
+      "delta_acc": -0.0005320587336650195,
+      "ci_acc": [
+        -0.002331030643857379,
+        0.0008835419413473982
+      ],
+      "h3": "持平"
+    },
+    "s2_window2500_abrupt": {
+      "streams": {
+        "injected": 80
+      },
+      "delta_fp": -2,
+      "ci_fp": [
+        -19.0,
+        14.0
+      ],
+      "p1": "持平",
+      "delta_x": 8.09033097449501,
+      "ci_x": [
+        1.594682459265894,
+        15.038292270723508
+      ],
+      "p2": "成立",
+      "verdict": "持平",
+      "h2": "支持",
+      "delta_acc": -0.0009339952980617072,
+      "ci_acc": [
+        -0.0026436223018106884,
+        0.000745632456986231
+      ],
+      "h3": "持平"
+    },
+    "s3_vs_dual_adwin_A1": {
+      "streams": {
+        "injected": 160
+      },
+      "delta_fp": -78,
+      "ci_fp": [
+        -100.0,
+        -56.0
+      ],
+      "p1": "成立",
+      "delta_x": 13.270124421921299,
+      "ci_x": [
+        6.029102426961343,
+        21.03453699237385
+      ],
+      "p2": "成立",
+      "verdict": "優於",
+      "h2": "支持",
+      "delta_acc": 0.0022872452820416056,
+      "ci_acc": [
+        0.000932905217612226,
+        0.0036642748110853134
+      ],
+      "h3": "較好"
+    },
+    "s3_vs_rddm_A4": {
+      "streams": {
+        "injected": 160
+      },
+      "delta_fp": -64,
+      "ci_fp": [
+        -103.0,
+        -28.0
+      ],
+      "p1": "成立",
+      "delta_x": -2.2232711559525526,
+      "ci_x": [
+        -10.209555107843455,
+        5.648899400429444
+      ],
+      "p2": "持平",
+      "verdict": "持平",
+      "h2": "沒有差別",
+      "delta_acc": -0.0006793754160567822,
+      "ci_acc": [
+        -0.002099947442787417,
+        0.0006096252509418893
+      ],
+      "h3": "持平"
+    }
+  },
+  "layers": {
+    "injected": {
+      "E": {
+        "runs": 160,
+        "gt": 160,
+        "alarms": 146,
+        "fp": 110,
+        "tp": 36,
+        "hits": 35,
+        "C": 3.2687281164424653,
+        "X": 31.731271883557557,
+        "mdt": 541.2857142857143,
+        "acc": 0.7764535573256299,
+        "kappa": 0.5152751525776478,
+        "runtime_s": 2533.179999999999,
+        "frozen": 117153,
+        "warning": {
+          "open:detector": 275,
+          "close:timeout": 94,
+          "close:confirmed": 181
+        }
+      },
+      "H": {
+        "runs": 160,
+        "gt": 160,
+        "alarms": 130,
+        "fp": 84,
+        "tp": 46,
+        "hits": 44,
+        "C": 2.480159344473605,
+        "X": 41.519840655526416,
+        "mdt": 332.52272727272725,
+        "acc": 0.7771854640441628,
+        "kappa": 0.5169168828259558,
+        "runtime_s": 2148.540000000001,
+        "frozen": 14313,
+        "warning": {
+          "open:detector": 1251,
+          "close:zone_exit": 1060,
+          "close:confirmed": 191
+        }
+      }
+    },
+    "synthetic": {
+      "E": {
+        "runs": 40,
+        "gt": 303,
+        "alarms": 350,
+        "fp": 65,
+        "tp": 285,
+        "hits": 284,
+        "C": 5.347117579106852,
+        "X": 278.6528824208932,
+        "mdt": 537.7535211267606,
+        "acc": 0.62448175,
+        "kappa": 0.49635623741721036,
+        "runtime_s": 3011.26,
+        "frozen": 69866,
+        "warning": {
+          "open:detector": 401,
+          "close:confirmed": 350,
+          "close:timeout": 43,
+          "close:reference_switch": 7,
+          "censored:stream_end": 1
+        }
+      },
+      "H": {
+        "runs": 40,
+        "gt": 303,
+        "alarms": 384,
+        "fp": 71,
+        "tp": 313,
+        "hits": 296,
+        "C": 5.8928538425482655,
+        "X": 290.1071461574518,
+        "mdt": 365.3277027027027,
+        "acc": 0.62427325,
+        "kappa": 0.49605794737536607,
+        "runtime_s": 2491.9499999999994,
+        "frozen": 14486,
+        "warning": {
+          "open:detector": 1584,
+          "close:confirmed": 384,
+          "close:zone_exit": 1200
+        }
+      }
+    },
+    "INSECTS": {
+      "E": {
+        "runs": 4,
+        "gt": 10,
+        "alarms": 88,
+        "fp": 72,
+        "tp": 16,
+        "hits": 9,
+        "C": 2.3822162530739006,
+        "X": 6.617783746926099,
+        "mdt": 50.333333333333336,
+        "acc": 0.6627800987466768,
+        "kappa": 0.5953361184960121,
+        "runtime_s": 415.10999999999996,
+        "frozen": 13175,
+        "warning": {
+          "open:detector": 97,
+          "close:timeout": 8,
+          "close:confirmed": 88,
+          "close:reference_switch": 1
+        }
+      },
+      "H": {
+        "runs": 4,
+        "gt": 10,
+        "alarms": 104,
+        "fp": 81,
+        "tp": 23,
+        "hits": 9,
+        "C": 2.436640543995508,
+        "X": 6.563359456004491,
+        "mdt": 21.77777777777778,
+        "acc": 0.6391779550154028,
+        "kappa": 0.5670135460184834,
+        "runtime_s": 346.76,
+        "frozen": 1744,
+        "warning": {
+          "open:detector": 213,
+          "close:zone_exit": 109,
+          "close:confirmed": 104
+        }
+      }
+    }
+  },
+  "cells": {
+    "abrupt/class_prior": {
+      "E": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 21,
+        "fp": 18,
+        "tp": 3,
+        "hits": 3,
+        "C": 0.5354369434851479,
+        "X": 2.4645630565148515,
+        "mdt": 622.3333333333334,
+        "acc": 0.7687361334736361,
+        "kappa": 0.5095013136464989,
+        "runtime_s": 317.86000000000007,
+        "frozen": 12182,
+        "warning": {
+          "open:detector": 34,
+          "close:timeout": 10,
+          "close:confirmed": 24
+        }
+      },
+      "H": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 3,
+        "fp": 3,
+        "tp": 0,
+        "hits": 0,
+        "C": 0.08968186237967425,
+        "X": -0.08968186237967425,
+        "mdt": null,
+        "acc": 0.7688210758522763,
+        "kappa": 0.5107371035814909,
+        "runtime_s": 256.66999999999996,
+        "frozen": 1034,
+        "warning": {
+          "open:detector": 114,
+          "close:zone_exit": 107,
+          "close:confirmed": 7
+        }
+      }
+    },
+    "abrupt/feature_filtering": {
+      "E": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 5,
+        "fp": 5,
+        "tp": 0,
+        "hits": 0,
+        "C": 0.14946977063279043,
+        "X": -0.14946977063279043,
+        "mdt": null,
+        "acc": 0.7577071724467781,
+        "kappa": 0.4863400628603009,
+        "runtime_s": 272.07000000000005,
+        "frozen": 18585,
+        "warning": {
+          "open:detector": 26,
+          "close:confirmed": 9,
+          "close:timeout": 17
+        }
+      },
+      "H": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 7,
+        "fp": 7,
+        "tp": 0,
+        "hits": 0,
+        "C": 0.20747038189926503,
+        "X": -0.20747038189926503,
+        "mdt": null,
+        "acc": 0.7577123152760028,
+        "kappa": 0.4865014918433116,
+        "runtime_s": 232.33999999999997,
+        "frozen": 2801,
+        "warning": {
+          "open:detector": 102,
+          "close:zone_exit": 90,
+          "close:confirmed": 12
+        }
+      }
+    },
+    "abrupt/feature_permutation": {
+      "E": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 23,
+        "fp": 6,
+        "tp": 17,
+        "hits": 17,
+        "C": 0.17936372475934853,
+        "X": 16.820636275240652,
+        "mdt": 589.7058823529412,
+        "acc": 0.7501842778954803,
+        "kappa": 0.4740829014132197,
+        "runtime_s": 381.71000000000004,
+        "frozen": 17214,
+        "warning": {
+          "open:detector": 43,
+          "close:confirmed": 29,
+          "close:timeout": 14
+        }
+      },
+      "H": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 33,
+        "fp": 13,
+        "tp": 20,
+        "hits": 18,
+        "C": 0.380684627345997,
+        "X": 17.619315372654,
+        "mdt": 164.72222222222223,
+        "acc": 0.7517809851694915,
+        "kappa": 0.4771547843589615,
+        "runtime_s": 310.28000000000003,
+        "frozen": 1253,
+        "warning": {
+          "open:detector": 163,
+          "close:confirmed": 45,
+          "close:zone_exit": 118
+        }
+      }
+    },
+    "abrupt/label_swap": {
+      "E": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 22,
+        "fp": 8,
+        "tp": 14,
+        "hits": 13,
+        "C": 0.23825798451914393,
+        "X": 12.761742015480856,
+        "mdt": 422.9230769230769,
+        "acc": 0.839989406779661,
+        "kappa": 0.6153223222137509,
+        "runtime_s": 361.15,
+        "frozen": 11095,
+        "warning": {
+          "open:detector": 34,
+          "close:confirmed": 25,
+          "close:timeout": 9
+        }
+      },
+      "H": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 23,
+        "fp": 7,
+        "tp": 16,
+        "hits": 16,
+        "C": 0.20836403039258583,
+        "X": 15.791635969607412,
+        "mdt": 211.5625,
+        "acc": 0.841796875,
+        "kappa": 0.6172970437686136,
+        "runtime_s": 329.27000000000004,
+        "frozen": 1397,
+        "warning": {
+          "open:detector": 159,
+          "close:zone_exit": 128,
+          "close:confirmed": 31
+        }
+      }
+    },
+    "gradual/class_prior": {
+      "E": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 20,
+        "fp": 20,
+        "tp": 0,
+        "hits": 0,
+        "C": 0.5960917855445201,
+        "X": -0.5960917855445201,
+        "mdt": null,
+        "acc": 0.768722290096516,
+        "kappa": 0.5000290369647291,
+        "runtime_s": 291.44999999999993,
+        "frozen": 17412,
+        "warning": {
+          "open:detector": 38,
+          "close:timeout": 14,
+          "close:confirmed": 24
+        }
+      },
+      "H": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 13,
+        "fp": 12,
+        "tp": 1,
+        "hits": 1,
+        "C": 0.3560465040387347,
+        "X": 0.6439534959612654,
+        "mdt": 884.0,
+        "acc": 0.76764755658719,
+        "kappa": 0.4985653163365003,
+        "runtime_s": 235.19999999999996,
+        "frozen": 2395,
+        "warning": {
+          "open:detector": 140,
+          "close:zone_exit": 122,
+          "close:confirmed": 18
+        }
+      }
+    },
+    "gradual/feature_filtering": {
+      "E": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 4,
+        "fp": 4,
+        "tp": 0,
+        "hits": 0,
+        "C": 0.11957581650623234,
+        "X": -0.11957581650623234,
+        "mdt": null,
+        "acc": 0.7586777753596844,
+        "kappa": 0.4854752329567389,
+        "runtime_s": 251.06,
+        "frozen": 9197,
+        "warning": {
+          "open:detector": 14,
+          "close:timeout": 6,
+          "close:confirmed": 8
+        }
+      },
+      "H": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 7,
+        "fp": 7,
+        "tp": 0,
+        "hits": 0,
+        "C": 0.20836403039258583,
+        "X": -0.20836403039258583,
+        "mdt": null,
+        "acc": 0.758232454810657,
+        "kappa": 0.48373658542724984,
+        "runtime_s": 251.11999999999998,
+        "frozen": 500,
+        "warning": {
+          "open:detector": 141,
+          "close:zone_exit": 125,
+          "close:confirmed": 16
+        }
+      }
+    },
+    "gradual/feature_permutation": {
+      "E": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 23,
+        "fp": 23,
+        "tp": 0,
+        "hits": 0,
+        "C": 0.683092702444232,
+        "X": -0.683092702444232,
+        "mdt": null,
+        "acc": 0.7461566472457627,
+        "kappa": 0.4633789992069916,
+        "runtime_s": 317.99,
+        "frozen": 16987,
+        "warning": {
+          "open:detector": 42,
+          "close:confirmed": 29,
+          "close:timeout": 13
+        }
+      },
+      "H": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 24,
+        "fp": 21,
+        "tp": 3,
+        "hits": 3,
+        "C": 0.612819847239589,
+        "X": 2.387180152760411,
+        "mdt": 840.0,
+        "acc": 0.7470327948446328,
+        "kappa": 0.46572679229209996,
+        "runtime_s": 265.81,
+        "frozen": 2328,
+        "warning": {
+          "open:detector": 243,
+          "close:zone_exit": 214,
+          "close:confirmed": 29
+        }
+      }
+    },
+    "gradual/label_swap": {
+      "E": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 28,
+        "fp": 26,
+        "tp": 2,
+        "hits": 2,
+        "C": 0.7674393885510463,
+        "X": 1.2325606114489536,
+        "mdt": 777.5,
+        "acc": 0.8147885769774011,
+        "kappa": 0.5779338604587015,
+        "runtime_s": 339.88999999999993,
+        "frozen": 14481,
+        "warning": {
+          "open:detector": 44,
+          "close:timeout": 11,
+          "close:confirmed": 33
+        }
+      },
+      "H": {
+        "runs": 20,
+        "gt": 20,
+        "alarms": 20,
+        "fp": 14,
+        "tp": 6,
+        "hits": 6,
+        "C": 0.4167280607851717,
+        "X": 5.5832719392148284,
+        "mdt": 812.8333333333334,
+        "acc": 0.8172691560734463,
+        "kappa": 0.5844693240019533,
+        "runtime_s": 267.8500000000001,
+        "frozen": 2605,
+        "warning": {
+          "open:detector": 189,
+          "close:zone_exit": 156,
+          "close:confirmed": 33
+        }
+      }
+    }
+  },
+  "types": {
+    "突變": {
+      "E": {
+        "runs": 93,
+        "gt": 180,
+        "alarms": 181,
+        "fp": 47,
+        "tp": 134,
+        "hits": 133,
+        "C": 1.9770179159882253,
+        "X": 131.02298208401163,
+        "mdt": 348.6466165413534,
+        "acc": 0.7394337119301599,
+        "kappa": 0.5186920870889127,
+        "runtime_s": 2224.0599999999995,
+        "frozen": 72580,
+        "warning": {
+          "open:detector": 257,
+          "close:confirmed": 197,
+          "close:reference_switch": 1,
+          "close:timeout": 59
+        }
+      },
+      "H": {
+        "runs": 93,
+        "gt": 180,
+        "alarms": 183,
+        "fp": 47,
+        "tp": 136,
+        "hits": 132,
+        "C": 2.251225245751147,
+        "X": 129.74877475424876,
+        "mdt": 121.67424242424242,
+        "acc": 0.7386707336047285,
+        "kappa": 0.5179331653492536,
+        "runtime_s": 1944.9100000000003,
+        "frozen": 9242,
+        "warning": {
+          "open:detector": 969,
+          "close:confirmed": 212,
+          "close:zone_exit": 757
+        }
+      }
+    },
+    "漸變": {
+      "E": {
+        "runs": 95,
+        "gt": 190,
+        "alarms": 202,
+        "fp": 98,
+        "tp": 104,
+        "hits": 103,
+        "C": 4.136247466249948,
+        "X": 98.8637525337498,
+        "mdt": 651.5339805825242,
+        "acc": 0.7260158603482345,
+        "kappa": 0.5023538969196806,
+        "runtime_s": 2415.0999999999995,
+        "frozen": 88614,
+        "warning": {
+          "open:detector": 289,
+          "close:confirmed": 221,
+          "close:timeout": 63,
+          "close:reference_switch": 4,
+          "censored:stream_end": 1
+        }
+      },
+      "H": {
+        "runs": 95,
+        "gt": 190,
+        "alarms": 203,
+        "fp": 79,
+        "tp": 124,
+        "hits": 116,
+        "C": 3.7012381763178603,
+        "X": 112.298761823682,
+        "mdt": 520.6379310344828,
+        "acc": 0.7281047713648149,
+        "kappa": 0.5058440872630257,
+        "runtime_s": 1962.7299999999993,
+        "frozen": 13778,
+        "warning": {
+          "open:detector": 1327,
+          "close:confirmed": 235,
+          "close:zone_exit": 1092
+        }
+      }
+    },
+    "incremental": {
+      "E": {
+        "runs": 12,
+        "gt": 93,
+        "alarms": 113,
+        "fp": 30,
+        "tp": 83,
+        "hits": 83,
+        "C": 2.502580313311144,
+        "X": 80.49741968668886,
+        "mdt": 701.0722891566265,
+        "acc": 0.6208933333333333,
+        "kappa": 0.4918327543467223,
+        "runtime_s": 905.2799999999999,
+        "frozen": 25825,
+        "warning": {
+          "open:detector": 130,
+          "close:confirmed": 113,
+          "close:timeout": 15,
+          "close:reference_switch": 2
+        }
+      },
+      "H": {
+        "runs": 12,
+        "gt": 93,
+        "alarms": 128,
+        "fp": 29,
+        "tp": 99,
+        "hits": 92,
+        "C": 2.4205497649528644,
+        "X": 89.57945023504713,
+        "mdt": 503.4021739130435,
+        "acc": 0.6187591666666666,
+        "kappa": 0.4887944206744478,
+        "runtime_s": 732.85,
+        "frozen": 5779,
+        "warning": {
+          "open:detector": 539,
+          "close:zone_exit": 411,
+          "close:confirmed": 128
+        }
+      }
+    },
+    "recurring": {
+      "E": {
+        "runs": 10,
+        "gt": 72,
+        "alarms": 85,
+        "fp": 18,
+        "tp": 67,
+        "hits": 67,
+        "C": 1.4773301448271616,
+        "X": 65.52266985517284,
+        "mdt": 531.3731343283582,
+        "acc": 0.651024,
+        "kappa": 0.529619438125647,
+        "runtime_s": 761.54,
+        "frozen": 14325,
+        "warning": {
+          "open:detector": 97,
+          "close:confirmed": 85,
+          "close:reference_switch": 3,
+          "close:timeout": 9
+        }
+      },
+      "H": {
+        "runs": 10,
+        "gt": 72,
+        "alarms": 99,
+        "fp": 22,
+        "tp": 77,
+        "hits": 71,
+        "C": 1.8090521311297634,
+        "X": 69.19094786887024,
+        "mdt": 349.6478873239437,
+        "acc": 0.642394,
+        "kappa": 0.5181284708759488,
+        "runtime_s": 576.27,
+        "frozen": 3342,
+        "warning": {
+          "open:detector": 376,
+          "close:zone_exit": 277,
+          "close:confirmed": 99
+        }
+      }
+    }
+  },
+  "all_205_accuracy": {
+    "E": {
+      "acc": 0.7181276790055416
+    },
+    "H": {
+      "acc": 0.7179901669405486
+    }
+  },
+  "injected_window2500": {
+    "E": {
+      "fp": 71,
+      "hits": 69,
+      "C": 5.40467517109124,
+      "X": 63.595324828908765
+    },
+    "H": {
+      "fp": 64,
+      "hits": 60,
+      "C": 4.739895583773686,
+      "X": 55.26010441622632
+    }
+  },
+  "gates": {
+    "commit": "e4c05521eedbe75e2699c9c7ccab23e88a20a8b3",
+    "g2_mismatches": [
+      [
+        "synthetic_multiclass",
+        "gradual_rbf4_100k_g02",
+        "kappa",
+        "0.514768967554223",
+        "0.5147704630841513"
+      ],
+      [
+        "synthetic_multiclass",
+        "gradual_rbf4_100k_g03",
+        "acc",
+        "0.61886",
+        "0.61887"
+      ],
+      [
+        "synthetic_multiclass",
+        "gradual_rbf4_100k_g03",
+        "kappa",
+        "0.4904693646217466",
+        "0.4904822013720701"
+      ],
+      [
+        "synthetic_multiclass",
+        "gradual_rbf4_100k_g05",
+        "acc",
+        "0.59544",
+        "0.5954"
+      ],
+      [
+        "synthetic_multiclass",
+        "gradual_rbf4_100k_g05",
+        "kappa",
+        "0.45618694138780036",
+        "0.4561346553556033"
+      ],
+      [
+        "synthetic_multiclass",
+        "gradual_rbf4_100k_g08",
+        "alarms",
+        "9",
+        "8"
+      ],
+      [
+        "synthetic_multiclass",
+        "gradual_rbf4_100k_g08",
+        "acc",
+        "0.66959",
+        "0.66269"
+      ],
+      [
+        "synthetic_multiclass",
+        "gradual_rbf4_100k_g08",
+        "kappa",
+        "0.5581902622657658",
+        "0.5486084985727103"
+      ],
+      [
+        "synthetic_multiclass",
+        "gradual_rbf4_100k_g08",
+        "tp",
+        "7",
+        "6"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g02",
+        "acc",
+        "0.62188",
+        "0.62983"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g02",
+        "kappa",
+        "0.49344229243687815",
+        "0.5041741748799258"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g08",
+        "alarms",
+        "7",
+        "8"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g08",
+        "acc",
+        "0.60638",
+        "0.60244"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g08",
+        "kappa",
+        "0.4753294292640863",
+        "0.47008334490123416"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g08",
+        "fp",
+        "0",
+        "1"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g08",
+        "C",
+        "0.0",
+        "0.075106330188654"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g08",
+        "X",
+        "7.0",
+        "6.924893669811346"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g09",
+        "acc",
+        "0.62433",
+        "0.62515"
+      ],
+      [
+        "synthetic_multiclass",
+        "incremental_rbf4_100k_g09",
+        "kappa",
+        "0.49792738397952346",
+        "0.4990122031561818"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_gradual_rbf4_100k_g04",
+        "acc",
+        "0.61224",
+        "0.6234"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_gradual_rbf4_100k_g04",
+        "kappa",
+        "0.47172504572751334",
+        "0.48770964836326464"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_gradual_rbf4_100k_g06",
+        "acc",
+        "0.64965",
+        "0.64962"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_gradual_rbf4_100k_g06",
+        "kappa",
+        "0.5292824338265985",
+        "0.5292442829465738"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_incremental_rbf4_100k_g02",
+        "alarms",
+        "14",
+        "11"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_incremental_rbf4_100k_g02",
+        "acc",
+        "0.61949",
+        "0.63142"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_incremental_rbf4_100k_g02",
+        "kappa",
+        "0.4905664363625358",
+        "0.5070455765750734"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_incremental_rbf4_100k_g02",
+        "fp",
+        "6",
+        "3"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_incremental_rbf4_100k_g02",
+        "C",
+        "0.5066871480660691",
+        "0.2574873060826404"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_incremental_rbf4_100k_g02",
+        "X",
+        "7.493312851933931",
+        "7.74251269391736"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_sudden_rbf4_100k_g07",
+        "alarms",
+        "12",
+        "10"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_sudden_rbf4_100k_g07",
+        "acc",
+        "0.68003",
+        "0.66902"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_sudden_rbf4_100k_g07",
+        "kappa",
+        "0.5696972663745099",
+        "0.5545864503166654"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_sudden_rbf4_100k_g07",
+        "fp",
+        "3",
+        "1"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_sudden_rbf4_100k_g07",
+        "C",
+        "0.29281443609017094",
+        "0.09868289207606525"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_sudden_rbf4_100k_g07",
+        "X",
+        "8.70718556390983",
+        "8.901317107923935"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_sudden_rbf4_100k_g09",
+        "acc",
+        "0.59161",
+        "0.59159"
+      ],
+      [
+        "synthetic_multiclass",
+        "recurring_sudden_rbf4_100k_g09",
+        "kappa",
+        "0.45345767417534943",
+        "0.4534299838959415"
+      ],
+      [
+        "synthetic_multiclass",
+        "sudden_rbf4_100k_g01",
+        "acc",
+        "0.62905",
+        "0.62904"
+      ],
+      [
+        "synthetic_multiclass",
+        "sudden_rbf4_100k_g01",
+        "kappa",
+        "0.5046410947680346",
+        "0.5046274583129792"
+      ],
+      [
+        "synthetic_multiclass",
+        "sudden_rbf4_100k_g03",
+        "acc",
+        "0.63658",
+        "0.63958"
+      ],
+      [
+        "synthetic_multiclass",
+        "sudden_rbf4_100k_g03",
+        "kappa",
+        "0.5125521609677643",
+        "0.5165355953243416"
+      ],
+      [
+        "synthetic_multiclass",
+        "sudden_rbf4_100k_g07",
+        "acc",
+        "0.60924",
+        "0.60918"
+      ],
+      [
+        "synthetic_multiclass",
+        "sudden_rbf4_100k_g07",
+        "kappa",
+        "0.47668125655556465",
+        "0.47659719407647594"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g00",
+        "kappa",
+        "0.4963021830140971",
+        "0.4962717113429974"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g01",
+        "acc",
+        "0.7737733391228832",
+        "0.773700969749602"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g01",
+        "kappa",
+        "0.4949483206232811",
+        "0.4949762326225444"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g03",
+        "acc",
+        "0.77488441175766",
+        "0.7750521045444745"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g03",
+        "kappa",
+        "0.5024451266066299",
+        "0.5028879484298503"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g04",
+        "acc",
+        "0.7718608529902311",
+        "0.7718370264474624"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g04",
+        "kappa",
+        "0.5013410132198325",
+        "0.5012952336135126"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g05",
+        "alarms",
+        "1",
+        "0"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g05",
+        "acc",
+        "0.7606640281442393",
+        "0.7630277044854882"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g05",
+        "kappa",
+        "0.5241333926708938",
+        "0.5290281912397463"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g05",
+        "fp",
+        "1",
+        "0"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g05",
+        "C",
+        "0.029893954126558084",
+        "0.0"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g05",
+        "X",
+        "-0.029893954126558084",
+        "0.0"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g06",
+        "acc",
+        "0.7610021607724078",
+        "0.7613577309154563"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g06",
+        "kappa",
+        "0.5236479516441102",
+        "0.5242630136183007"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g09",
+        "acc",
+        "0.7620217436755174",
+        "0.7619172067739912"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g09",
+        "kappa",
+        "0.5243871642088144",
+        "0.524181242048855"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g10",
+        "acc",
+        "0.7980349905084398",
+        "0.7979323790467395"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g10",
+        "kappa",
+        "0.518982614312393",
+        "0.5178825140824272"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g11",
+        "acc",
+        "0.792810224553185",
+        "0.7934212536279851"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g11",
+        "kappa",
+        "0.5102742895051628",
+        "0.5126028593289731"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g15",
+        "acc",
+        "0.7593831985864967",
+        "0.7593564276918134"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g15",
+        "kappa",
+        "0.5201453092171944",
+        "0.5200926890636757"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g16",
+        "acc",
+        "0.7571265973407832",
+        "0.7569713901391691"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g16",
+        "kappa",
+        "0.5138343072726036",
+        "0.5135233853888032"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g17",
+        "acc",
+        "0.7612864859507409",
+        "0.7613855988899351"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g17",
+        "kappa",
+        "0.5177759807630394",
+        "0.5179761983338249"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g18",
+        "kappa",
+        "0.5067791365900766",
+        "0.5067773383832773"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_abrupt_g19",
+        "kappa",
+        "0.5106357228768467",
+        "0.5108772726703253"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_gradual_g00",
+        "acc",
+        "0.7467404850925127",
+        "0.746668584028377"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_gradual_g00",
+        "kappa",
+        "0.4844884226880404",
+        "0.4843440270462593"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_gradual_g04",
+        "kappa",
+        "0.504076576317813",
+        "0.5040785974539436"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_gradual_g05",
+        "acc",
+        "0.7670088456918205",
+        "0.765671071311565"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_gradual_g05",
+        "kappa",
+        "0.5363031062798647",
+        "0.5337619715462657"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_gradual_g15",
+        "kappa",
+        "0.5026185250605724",
+        "0.5026055194744038"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_gradual_g19",
+        "acc",
+        "0.7803050906124064",
+        "0.7803792617499443"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_class_prior_gradual_g19",
+        "kappa",
+        "0.49689715769016074",
+        "0.49705877102392304"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g00",
+        "acc",
+        "0.762804186105157",
+        "0.7628798386079939"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g00",
+        "kappa",
+        "0.49304507925088004",
+        "0.4932419801967646"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g02",
+        "acc",
+        "0.7586803838164012",
+        "0.758532001187061"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g02",
+        "kappa",
+        "0.49276824840888367",
+        "0.4925798492806383"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g04",
+        "acc",
+        "0.7557750251088048",
+        "0.756038069730738"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g04",
+        "kappa",
+        "0.4671802876194131",
+        "0.46732862562473587"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g05",
+        "acc",
+        "0.7478190672117914",
+        "0.7478451082003073"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g05",
+        "kappa",
+        "0.46695270861938504",
+        "0.4667525478945058"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g06",
+        "alarms",
+        "0",
+        "2"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g06",
+        "acc",
+        "0.76608640496159",
+        "0.763220335001292"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g06",
+        "kappa",
+        "0.5086650054163924",
+        "0.4989961180947315"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g06",
+        "fp",
+        "0",
+        "2"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g06",
+        "C",
+        "0.0",
+        "0.058894259759795405"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g06",
+        "X",
+        "0.0",
+        "-0.058894259759795405"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g07",
+        "acc",
+        "0.7617530520454059",
+        "0.7618065967016492"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g07",
+        "kappa",
+        "0.48389454411302557",
+        "0.48413462317602607"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g09",
+        "acc",
+        "0.7592883038078831",
+        "0.7592625922402488"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g09",
+        "kappa",
+        "0.5003453144387642",
+        "0.5003179443608298"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g12",
+        "acc",
+        "0.7626732590761368",
+        "0.762895475125691"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g12",
+        "kappa",
+        "0.5018813019534526",
+        "0.5025424803187635"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g15",
+        "acc",
+        "0.7556952918920359",
+        "0.7552156883642855"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g15",
+        "kappa",
+        "0.49049786352569785",
+        "0.48923991983415493"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g18",
+        "acc",
+        "0.754720590244569",
+        "0.7550211777565241"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g18",
+        "kappa",
+        "0.45120805636756345",
+        "0.4517426145166083"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g19",
+        "acc",
+        "0.76004255760847",
+        "0.7600166078472078"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_abrupt_g19",
+        "kappa",
+        "0.5011238623659227",
+        "0.5011962427295428"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g00",
+        "acc",
+        "0.7599754136147109",
+        "0.7600010244327203"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g00",
+        "kappa",
+        "0.47610285341415043",
+        "0.4758659610247122"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g01",
+        "acc",
+        "0.7595233975230514",
+        "0.7602897189330828"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g01",
+        "kappa",
+        "0.4823956308083753",
+        "0.48402043688864343"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g03",
+        "acc",
+        "0.7614955932536273",
+        "0.7614710431345592"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g03",
+        "kappa",
+        "0.4935230186002926",
+        "0.49347554956106765"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g04",
+        "alarms",
+        "0",
+        "1"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g04",
+        "acc",
+        "0.7536096879366558",
+        "0.7537028411737308"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g04",
+        "kappa",
+        "0.4695489371583584",
+        "0.4700138072185246"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g04",
+        "fp",
+        "0",
+        "1"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g04",
+        "C",
+        "0.0",
+        "0.029893954126558084"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g04",
+        "X",
+        "0.0",
+        "-0.029893954126558084"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g06",
+        "acc",
+        "0.7652124562009575",
+        "0.7651384296501011"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g06",
+        "kappa",
+        "0.5008001763582258",
+        "0.5006005743178351"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g07",
+        "kappa",
+        "0.4985122644924321",
+        "0.4983375429891139"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g08",
+        "acc",
+        "0.7592122286645263",
+        "0.7590445157889693"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g08",
+        "kappa",
+        "0.49681924000101707",
+        "0.4964874656659548"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g10",
+        "acc",
+        "0.7483181449496636",
+        "0.7480080156496016"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g10",
+        "kappa",
+        "0.4699159204124521",
+        "0.4690782497824482"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g13",
+        "acc",
+        "0.7535174045455689",
+        "0.7535929123354559"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g13",
+        "kappa",
+        "0.46559700999548775",
+        "0.46579067412872777"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g14",
+        "acc",
+        "0.7551214411331337",
+        "0.7545986025951804"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g14",
+        "kappa",
+        "0.46065029725406875",
+        "0.4596231080565471"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g15",
+        "acc",
+        "0.7595283998220377",
+        "0.7595531168124969"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g15",
+        "kappa",
+        "0.4933526156027882",
+        "0.4934007308953967"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g16",
+        "acc",
+        "0.7574318474011492",
+        "0.7574580851677906"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_filtering_gradual_g16",
+        "kappa",
+        "0.49352853569262783",
+        "0.49359485113189544"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g00",
+        "acc",
+        "0.749955861581921",
+        "0.7498455155367232"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g00",
+        "kappa",
+        "0.47184153399159906",
+        "0.471612171440211"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g03",
+        "acc",
+        "0.7548110875706214",
+        "0.7549214336158192"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g03",
+        "kappa",
+        "0.48426662295498435",
+        "0.48454566807707355"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g04",
+        "acc",
+        "0.7533986581920904",
+        "0.75342072740113"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g04",
+        "kappa",
+        "0.4802397887665547",
+        "0.4802534683566661"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g06",
+        "kappa",
+        "0.4743023533554789",
+        "0.47452393770557527"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g07",
+        "acc",
+        "0.7616304731638418",
+        "0.76171875"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g07",
+        "kappa",
+        "0.49848061060713694",
+        "0.49880681818577627"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g09",
+        "acc",
+        "0.753023481638418",
+        "0.7533765889830508"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g09",
+        "kappa",
+        "0.4816793617319823",
+        "0.48223223078595706"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g10",
+        "acc",
+        "0.7512800141242938",
+        "0.7513241525423728"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g10",
+        "kappa",
+        "0.4777174192931651",
+        "0.4778174085724405"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g11",
+        "acc",
+        "0.7474841101694916",
+        "0.7474179025423728"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g11",
+        "kappa",
+        "0.46805005061631016",
+        "0.4679516385376344"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g12",
+        "acc",
+        "0.7555393714689266",
+        "0.7554510946327684"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g12",
+        "kappa",
+        "0.4834936570882446",
+        "0.48320531931053906"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g14",
+        "acc",
+        "0.751169668079096",
+        "0.7507944915254238"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g14",
+        "kappa",
+        "0.4761338066916471",
+        "0.4748763306161112"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g15",
+        "acc",
+        "0.7492055084745762",
+        "0.7492496468926554"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g15",
+        "kappa",
+        "0.47428036378939875",
+        "0.47436554821813454"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g17",
+        "acc",
+        "0.7496248234463276",
+        "0.7496468926553672"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g17",
+        "kappa",
+        "0.47449529923390144",
+        "0.4744644743358129"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g18",
+        "acc",
+        "0.7490951624293786",
+        "0.7482123940677966"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g18",
+        "kappa",
+        "0.47319948878094736",
+        "0.4725925558351539"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g19",
+        "acc",
+        "0.7523614053672316",
+        "0.753663488700565"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_abrupt_g19",
+        "kappa",
+        "0.47971531547260976",
+        "0.4794459671367825"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g00",
+        "acc",
+        "0.7512358757062146",
+        "0.7514344985875706"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g00",
+        "kappa",
+        "0.4723328943401746",
+        "0.47281751595021526"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g01",
+        "acc",
+        "0.7354563912429378",
+        "0.7353239759887006"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g01",
+        "kappa",
+        "0.4423407722292433",
+        "0.4421556338790347"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g03",
+        "acc",
+        "0.7535972810734464",
+        "0.7534869350282486"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g03",
+        "kappa",
+        "0.48230462550106384",
+        "0.48248922337713424"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g04",
+        "acc",
+        "0.74657927259887",
+        "0.7466013418079096"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g04",
+        "kappa",
+        "0.4624821010457794",
+        "0.4625251141833185"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g05",
+        "acc",
+        "0.7453875353107344",
+        "0.7473958333333334"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g05",
+        "kappa",
+        "0.46157464157503536",
+        "0.4647774113535688"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g06",
+        "kappa",
+        "0.46882833232146776",
+        "0.468843304397132"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g07",
+        "acc",
+        "0.7505737994350282",
+        "0.7504193149717514"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g07",
+        "kappa",
+        "0.47183892601269534",
+        "0.47150807743320194"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g08",
+        "acc",
+        "0.738722634180791",
+        "0.7414150776836158"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g08",
+        "kappa",
+        "0.449427026745824",
+        "0.4543884227468861"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g10",
+        "acc",
+        "0.7443944209039548",
+        "0.7480358403954802"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g10",
+        "kappa",
+        "0.46012470330541977",
+        "0.47054586986479474"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g11",
+        "acc",
+        "0.7399364406779662",
+        "0.7401129943502824"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g11",
+        "kappa",
+        "0.4452849300795581",
+        "0.4456930203809852"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g12",
+        "acc",
+        "0.7525600282485876",
+        "0.7525158898305084"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g12",
+        "kappa",
+        "0.4766795540445549",
+        "0.47659357741216435"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g14",
+        "acc",
+        "0.7473296257062146",
+        "0.747462040960452"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g14",
+        "kappa",
+        "0.46824318982862795",
+        "0.4686484898250438"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g15",
+        "acc",
+        "0.75342072740113",
+        "0.7534427966101694"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g15",
+        "kappa",
+        "0.48048687551086167",
+        "0.4805151469495911"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g16",
+        "acc",
+        "0.7383474576271186",
+        "0.7382150423728814"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g16",
+        "kappa",
+        "0.4507219176903296",
+        "0.4503286522464497"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g17",
+        "alarms",
+        "1",
+        "4"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g17",
+        "acc",
+        "0.743114406779661",
+        "0.7421654307909604"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g17",
+        "kappa",
+        "0.4524136225186237",
+        "0.4477679635943605"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g17",
+        "fp",
+        "1",
+        "4"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g17",
+        "C",
+        "0.029893954126558084",
+        "0.11431998568693656"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g17",
+        "X",
+        "-0.029893954126558084",
+        "-0.11431998568693656"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g18",
+        "acc",
+        "0.7510813912429378",
+        "0.7514344985875706"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g18",
+        "kappa",
+        "0.474244836311875",
+        "0.475175246543864"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g19",
+        "acc",
+        "0.748874470338983",
+        "0.7505737994350282"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_feature_permutation_gradual_g19",
+        "kappa",
+        "0.46953869513279334",
+        "0.4734505208554768"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g00",
+        "acc",
+        "0.8462658898305084",
+        "0.8464203742937854"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g00",
+        "kappa",
+        "0.6797121991559396",
+        "0.6798932460323341"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g01",
+        "acc",
+        "0.8515404307909604",
+        "0.8512756002824858"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g01",
+        "kappa",
+        "0.6795889883312106",
+        "0.6787652813938186"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g02",
+        "acc",
+        "0.8702992584745762",
+        "0.8701889124293786"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g02",
+        "kappa",
+        "0.7004688556097382",
+        "0.7000826377117683"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g03",
+        "acc",
+        "0.8541887358757062",
+        "0.8541666666666666"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g03",
+        "kappa",
+        "0.6897574539703125",
+        "0.6894875784462275"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g05",
+        "acc",
+        "0.8089468573446328",
+        "0.8089689265536724"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g05",
+        "kappa",
+        "0.6184344287302318",
+        "0.6185082048704891"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g09",
+        "acc",
+        "0.837107168079096",
+        "0.8362906073446328"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g09",
+        "kappa",
+        "0.6626276508783634",
+        "0.6609178018593457"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g10",
+        "acc",
+        "0.7850238347457628",
+        "0.7872307556497176"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g10",
+        "kappa",
+        "0.45249158371029974",
+        "0.457257895282474"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g11",
+        "acc",
+        "0.8343043785310734",
+        "0.8347236935028248"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g11",
+        "kappa",
+        "0.656384950235048",
+        "0.6569152650094601"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g12",
+        "acc",
+        "0.833598163841808",
+        "0.8333774717514124"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g12",
+        "kappa",
+        "0.5531157434955152",
+        "0.549293084823853"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g13",
+        "alarms",
+        "0",
+        "1"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g13",
+        "acc",
+        "0.84032927259887",
+        "0.8505252471751412"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g13",
+        "kappa",
+        "0.524167106301817",
+        "0.54719096408164"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g13",
+        "tp",
+        "0",
+        "1"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g13",
+        "fn",
+        "1",
+        "0"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g13",
+        "hits",
+        "0",
+        "1"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g13",
+        "X",
+        "0.0",
+        "1.0"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g16",
+        "acc",
+        "0.8355402542372882",
+        "0.8353637005649718"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g16",
+        "kappa",
+        "0.49709423357966454",
+        "0.4977330362037094"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g18",
+        "acc",
+        "0.8447651836158192",
+        "0.8447431144067796"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g18",
+        "kappa",
+        "0.6690565308792115",
+        "0.6687226933618953"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_abrupt_g19",
+        "kappa",
+        "0.7068157428852438",
+        "0.7071692498351121"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g00",
+        "acc",
+        "0.7930570268361582",
+        "0.7933659957627118"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g00",
+        "kappa",
+        "0.5308360623141017",
+        "0.531649212377953"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g03",
+        "acc",
+        "0.8490466101694916",
+        "0.8487155720338984"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g03",
+        "kappa",
+        "0.5601625395787837",
+        "0.560478103474074"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g04",
+        "acc",
+        "0.8018185028248588",
+        "0.8015757415254238"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g04",
+        "kappa",
+        "0.5125900523416366",
+        "0.511848359744881"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g06",
+        "acc",
+        "0.7923949505649718",
+        "0.7924170197740112"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g06",
+        "kappa",
+        "0.5093004519289477",
+        "0.5093817114223055"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g10",
+        "acc",
+        "0.7989053672316384",
+        "0.798927436440678"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g10",
+        "kappa",
+        "0.5989632337168981",
+        "0.599009055205289"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g11",
+        "acc",
+        "0.8499293785310734",
+        "0.8496204096045198"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g11",
+        "kappa",
+        "0.6709091292309107",
+        "0.6706120081285518"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g15",
+        "acc",
+        "0.8081744350282486",
+        "0.8086820268361582"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g15",
+        "kappa",
+        "0.535551053575732",
+        "0.5368262672883569"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g17",
+        "acc",
+        "0.7704360875706214",
+        "0.7704802259887006"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g17",
+        "kappa",
+        "0.47534399619577844",
+        "0.4755774625226661"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g19",
+        "acc",
+        "0.8323843573446328",
+        "0.8321636652542372"
+      ],
+      [
+        "injected_paper_electricity",
+        "electricity_label_swap_gradual_g19",
+        "kappa",
+        "0.6493268098904786",
+        "0.6493206949671277"
+      ]
+    ],
+    "runs_per_arm": 205
+  }
+}

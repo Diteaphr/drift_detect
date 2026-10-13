@@ -147,3 +147,5 @@
 ## 修訂（只追加）
 
 提交時沒有修訂。
+
+- **2026-10-13 23:22，G2 之後、DET3-E 之前。** G2 有 245 個欄位和 DET1 存檔不相同（injected 95 條、synthetic 15 條、INSECTS 0 條）。依第八節的規定，判定用本機重跑的 DET3-H，S3 改標「參考」。啟動腳本在 G2 不相同時會停下，所以 DET3-E 是診斷後另行啟動的，仍只跑一次。診斷多跑了 12 次，都不是 `e10bft`：`det1_zone_hddm_a_lw0` 和 `det_adwin` 各在 injected 的 abrupt/class_prior g00–g05 上跑一次，輸出在 `outputs/det3/wiring/g2diag/`，不進入任何判定。判定規則沒有更動。
