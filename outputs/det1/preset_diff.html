@@ -1,0 +1,152 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DET1 preset 差異通過固定底座檢查</title><style>
+    :root { --ink:#172339; --muted:#526179; --navy:#0b2744; --teal:#027a79; --line:#d9e1eb; --wash:#f4f7fa; --paper:#ffffff; --amber:#fff2d8; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.72 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+    .masthead { background:var(--navy); color:white; padding:42px max(24px,calc((100vw - 1120px)/2)); }
+    .eyebrow { color:#8dd8d1; font-size:.76rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    .masthead h1 { margin:.5rem 0 .7rem; max-width:900px; font-size:clamp(1.65rem,3vw,2.55rem); line-height:1.25; letter-spacing:-.02em; }
+    .masthead p { margin:0; color:#ced9e6; }
+    .layout { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:225px minmax(0,1fr); gap:30px; padding:30px 24px 70px; }
+    nav { align-self:start; position:sticky; top:22px; font-size:.86rem; }
+    nav .navtitle { margin:0 0 9px 9px; color:var(--muted); font-weight:800; letter-spacing:.07em; }
+    nav ul { list-style:none; margin:0; padding:0; }
+    nav li { margin:0 0 3px; }
+    nav a { display:block; padding:7px 9px; border-radius:6px; color:var(--muted); text-decoration:none; line-height:1.35; }
+    nav a:hover,nav a:focus { background:#e6eff3; color:var(--teal); }
+    nav li ul { display:none; }
+    main { min-width:0; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:30px 38px 44px; box-shadow:0 8px 28px rgba(15,35,60,.05); }
+    main>h1:first-child { display:none; }
+    h2 { margin:2.4rem 0 .85rem; padding-bottom:.42rem; border-bottom:2px solid var(--teal); font-size:1.4rem; line-height:1.4; }
+    h2:first-of-type { margin-top:1.6rem; }
+    p { margin:.72rem 0; }
+    ul,ol { padding-left:1.5rem; }
+    li { margin:.35rem 0; }
+    strong { color:#092d45; }
+    code { padding:.12em .35em; background:#e9f1f5; border-radius:4px; font:.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    pre { overflow:auto; padding:1rem; background:#e9f1f5; border-radius:6px; }
+    pre code { padding:0; }
+    table { width:100%; display:block; overflow-x:auto; border-collapse:collapse; margin:1rem 0 1.4rem; font-size:.88rem; line-height:1.55; }
+    th,td { min-width:95px; padding:.65rem .75rem; border:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { background:#eaf2f5; color:var(--navy); font-weight:750; white-space:nowrap; }
+    tbody tr:nth-child(even) { background:#fafbfd; }
+    tbody tr:hover { background:#f0f6f8; }
+    a { color:#075d75; }
+    .status { display:inline-block; margin-top:14px; padding:5px 12px; border-radius:30px; background:var(--amber); color:#694904; font-size:.83rem; font-weight:750; }
+    .foot { margin-top:36px; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:.78rem; }
+    @media (max-width:860px) { .layout { display:block; padding:14px; } nav { position:static; margin:0 0 15px; } nav ul { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:3px; } main { padding:19px; } }
+    @media print { body { background:white; font-size:10pt; } .masthead { color:var(--ink); background:white; padding:0 0 14px; border-bottom:2px solid var(--teal); } .masthead p { color:var(--ink); } .layout { display:block; padding:0; } nav { display:none; } main { border:0; box-shadow:none; padding:0; } main>h1:first-child { display:none; } h2 { break-after:avoid; } table { display:table; overflow:visible; } tr { break-inside:avoid; } .status { border:1px solid #8b7b5d; } .foot { display:none; } }
+  </style></head><body><header class="masthead"><div class="eyebrow">DET1 · Stage 4 · Presets</div><h1>DET1 preset 差異通過固定底座檢查</h1><p>16 個 ECPF preset · 4 個 detector-only preset · 2026-10-13</p><span class="status">差異檢查通過</span></header><div class="layout"><nav aria-label="章節導覽"><p class="navtitle">報告導覽</p><ul><li><a href="#detector-only-cerqueira">Detector-only 四組保持 Cerqueira 的訓練協定</a></li></ul></nav><main id="report"><h1 id="16-det1-ecpf-preset-a6">16 個 DET1 ECPF preset 只改已核准欄位；A6 沿用既有檔</h1>
+<p><strong>結論：</strong> 與 <code>ecpf_paper.json</code> 比對，16 個 ECPF preset 均保留 HT、ECPF strict swap、fade、pool cap 10、warm start 200 及 River 0.21.2 要求。兩種 warning 訓練開關明寫，A0 只限有 GT 的三組資料，A5u 只作次要分析。<code>det1</code> suite 含 16 個新 ECPF preset 與既有 <code>e10bft</code> 一次。Detector-only 四組另列，不在 suite 中。來源：<a href="../../docs/ECPF_DET1_預註冊.html">DET1 預註冊與 2026-10-13 修訂</a>。</p>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>與 <code>ecpf_paper.config</code> 不同或新加的欄位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>det1_oracle60_lw0</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=false</code>, <code>ecpf_signal_mode="oracle_input_60"</code>, <code>ecpf_warning_length=60</code>, <code>ecpf_warning_signal="error"</code></td>
+</tr>
+<tr>
+<td><code>det1_oracle60_lw1</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=true</code>, <code>ecpf_signal_mode="oracle_input_60"</code>, <code>ecpf_warning_length=60</code>, <code>ecpf_warning_signal="error"</code></td>
+</tr>
+<tr>
+<td><code>det1_dual_adwin_lw0</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_adwin_one_sided=false</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=false</code>, <code>ecpf_warning_signal="error"</code></td>
+</tr>
+<tr>
+<td><code>det1_dual_adwin_lw1</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_adwin_one_sided=false</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=true</code>, <code>ecpf_warning_signal="error"</code></td>
+</tr>
+<tr>
+<td><code>det1_dual_adwin_t1000_lw0</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_adwin_one_sided=false</code>, <code>ecpf_detector_warning_timeout=1000</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=false</code>, <code>ecpf_warning_signal="error"</code></td>
+</tr>
+<tr>
+<td><code>det1_dual_adwin_t1000_lw1</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_adwin_one_sided=false</code>, <code>ecpf_detector_warning_timeout=1000</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=true</code>, <code>ecpf_warning_signal="error"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_ddm_lw0</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=false</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="ddm"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_ddm_lw1</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=true</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="ddm"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_hddm_a_lw0</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=false</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="hddm_a"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_hddm_a_lw1</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=true</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="hddm_a"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_rddm_lw0</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=false</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="rddm"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_rddm_lw1</code></td>
+<td><code>detector_delta_w=0.1</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=true</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="rddm"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_magseed_lw0</code></td>
+<td><code>detector_alpha=0.8</code>, <code>detector_delta_w=0.1</code>, <code>detector_epsilon=0.01</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=false</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="magseed"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_magseed_lw1</code></td>
+<td><code>detector_alpha=0.8</code>, <code>detector_delta_w=0.1</code>, <code>detector_epsilon=0.01</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=true</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="magseed"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_magseed_upward_lw0</code></td>
+<td><code>detector_alpha=0.8</code>, <code>detector_delta_w=0.1</code>, <code>detector_epsilon=0.01</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=false</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="magseed_upward"</code></td>
+</tr>
+<tr>
+<td><code>det1_zone_magseed_upward_lw1</code></td>
+<td><code>detector_alpha=0.8</code>, <code>detector_delta_w=0.1</code>, <code>detector_epsilon=0.01</code>, <code>ecpf_detector_warning_timeout=0</code>, <code>ecpf_drift_signal="error"</code>, <code>ecpf_learn_during_warning=true</code>, <code>ecpf_warning_signal="error"</code>, <code>ecpf_zone_detector="magseed_upward"</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="detector-only-cerqueira">Detector-only 四組保持 Cerqueira 的訓練協定</h2>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Detector</th>
+<th>輸入</th>
+<th>訓練與 reset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>det_ddm</code></td>
+<td><code>ddm</code></td>
+<td>0/1 error，前 25% 原始 input 不餵 detector</td>
+<td>單棵 HT 持續訓練，不因警報重置；detector 自身依原始語意維持／重置</td>
+</tr>
+<tr>
+<td><code>det_hddm_a</code></td>
+<td><code>hddm_a</code></td>
+<td>0/1 error，前 25% 原始 input 不餵 detector</td>
+<td>單棵 HT 持續訓練，不因警報重置；detector 自身依原始語意維持／重置</td>
+</tr>
+<tr>
+<td><code>det_rddm</code></td>
+<td><code>rddm</code></td>
+<td>0/1 error，前 25% 原始 input 不餵 detector</td>
+<td>單棵 HT 持續訓練，不因警報重置；detector 自身依原始語意維持／重置</td>
+</tr>
+<tr>
+<td><code>det_magseed</code></td>
+<td><code>magseed</code></td>
+<td>0/1 error，前 25% 原始 input 不餵 detector</td>
+<td>單棵 HT 持續訓練，不因警報重置；detector 自身依原始語意維持／重置</td>
+</tr>
+</tbody>
+</table>
+<p><strong>來源限制：</strong> <code>det_magseed</code> 依 Chen（2016）學位論文、X 解讀與雙向絕對差；尚無 2015 會議版或原作者實作的逐事件對照。A0 使用新增的 <code>oracle_input_60</code>，不改既有 <code>oracle_60</code>。</p></main></div></body></html>

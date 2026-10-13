@@ -1,0 +1,121 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>MagSeed 候選版檢查｜DET1 階段三</title><style>
+    :root { --ink:#172339; --muted:#526179; --navy:#0b2744; --teal:#027a79; --line:#d9e1eb; --wash:#f4f7fa; --paper:#ffffff; --amber:#fff2d8; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.72 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+    .masthead { background:var(--navy); color:white; padding:42px max(24px,calc((100vw - 1120px)/2)); }
+    .eyebrow { color:#8dd8d1; font-size:.76rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    .masthead h1 { margin:.5rem 0 .7rem; max-width:900px; font-size:clamp(1.65rem,3vw,2.55rem); line-height:1.25; letter-spacing:-.02em; }
+    .masthead p { margin:0; color:#ced9e6; }
+    .layout { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:225px minmax(0,1fr); gap:30px; padding:30px 24px 70px; }
+    nav { align-self:start; position:sticky; top:22px; font-size:.86rem; }
+    nav .navtitle { margin:0 0 9px 9px; color:var(--muted); font-weight:800; letter-spacing:.07em; }
+    nav ul { list-style:none; margin:0; padding:0; }
+    nav li { margin:0 0 3px; }
+    nav a { display:block; padding:7px 9px; border-radius:6px; color:var(--muted); text-decoration:none; line-height:1.35; }
+    nav a:hover,nav a:focus { background:#e6eff3; color:var(--teal); }
+    nav li ul { display:none; }
+    main { min-width:0; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:30px 38px 44px; box-shadow:0 8px 28px rgba(15,35,60,.05); }
+    main>h1:first-child { display:none; }
+    h2 { margin:2.4rem 0 .85rem; padding-bottom:.42rem; border-bottom:2px solid var(--teal); font-size:1.4rem; line-height:1.4; }
+    h2:first-of-type { margin-top:1.6rem; }
+    p { margin:.72rem 0; }
+    ul,ol { padding-left:1.5rem; }
+    li { margin:.35rem 0; }
+    strong { color:#092d45; }
+    code { padding:.12em .35em; background:#e9f1f5; border-radius:4px; font:.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    pre { overflow:auto; padding:1rem; background:#e9f1f5; border-radius:6px; }
+    pre code { padding:0; }
+    table { width:100%; display:block; overflow-x:auto; border-collapse:collapse; margin:1rem 0 1.4rem; font-size:.88rem; line-height:1.55; }
+    th,td { min-width:95px; padding:.65rem .75rem; border:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { background:#eaf2f5; color:var(--navy); font-weight:750; white-space:nowrap; }
+    tbody tr:nth-child(even) { background:#fafbfd; }
+    tbody tr:hover { background:#f0f6f8; }
+    a { color:#075d75; }
+    .status { display:inline-block; margin-top:14px; padding:5px 12px; border-radius:30px; background:var(--amber); color:#694904; font-size:.83rem; font-weight:750; }
+    .foot { margin-top:36px; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:.78rem; }
+    @media (max-width:860px) { .layout { display:block; padding:14px; } nav { position:static; margin:0 0 15px; } nav ul { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:3px; } main { padding:19px; } }
+    @media print { body { background:white; font-size:10pt; } .masthead { color:var(--ink); background:white; padding:0 0 14px; border-bottom:2px solid var(--teal); } .masthead p { color:var(--ink); } .layout { display:block; padding:0; } nav { display:none; } main { border:0; box-shadow:none; padding:0; } main>h1:first-child { display:none; } h2 { break-after:avoid; } table { display:table; overflow:visible; } tr { break-inside:avoid; } .status { border:1px solid #8b7b5d; } .foot { display:none; } }
+  </style></head><body><header class="masthead"><div class="eyebrow">DET1 · Stage 3 · Experimental Candidate</div><h1>MagSeed 候選版已接通，A5 仍待原文</h1><p>推定規則 · 行為閘門 · 二元基線檢查 · 2026-10-12</p><span class="status">候選版；不能作為正式 A5</span></header><div class="layout"><nav aria-label="章節導覽"><p class="navtitle">報告導覽</p><div class="toc">
+<ul>
+<li><a href="#magseed-a5">MagSeed 候選版通過行為閘門；仍不能作為預註冊 A5</a><ul>
+<li><a href="#_1">用明示的推定規則建立可測試候選版</a></li>
+<li><a href="#_2">入口已接通；既有二元結果未改變</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav><main id="report"><h1 id="magseed-a5">MagSeed 候選版通過行為閘門；仍不能作為預註冊 A5</h1>
+<p><strong>結論：</strong> 已加入可執行的 <code>magseed_candidate</code>，可用於探索 <a href="https://arxiv.org/pdf/1905.08848">ECPF 論文 §2.2、§4.0.1</a>描述的「相鄰錯誤率視窗、兩個 warning 條件、warning 先於 drift」是否能在本 repo 的 ECPF zone 路徑運作。它<strong>不是</strong> Chen、Koh、Riddle（2015）原文 MagSeed；<a href="https://link.springer.com/chapter/10.1007/978-3-319-26350-2_9">原文章節</a>目前只取得摘要，公式、視窗管理和重置順序未能核對。<code>magseed</code> 原名仍拒絕建立；本候選版不得列為已核准<a href="../../docs/ECPF_DET1_預註冊.html">預註冊</a>的 A5、<code>det_magseed</code> 或正式 P1/P2 比較。</p>
+<h2 id="_1">用明示的推定規則建立可測試候選版</h2>
+<p>程式位於 <code>detectors/core/magseed_candidate.py</code>，對 0/1 分類錯誤以固定長度 128 的兩個相鄰視窗維持均值，至少要求舊窗 32 筆。每筆更新為 O(1) 時間，因為兩窗計數與總和增量維護。令 <code>g = mean(recent) − mean(older)</code>，<code>H(q)=sqrt[ln(2/q)/2 × (1/n_old+1/n_new)]</code>：</p>
+<table>
+<thead>
+<tr>
+<th>步驟</th>
+<th>本候選版的操作規則</th>
+<th>原文證據狀態</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>warning</td>
+<td><code>g &gt; ε</code> 且 <code>g &gt; α·H(δw)</code>；使用 <code>ε=.01</code>、<code>α=.8</code>、<code>δw=.1</code>。</td>
+<td>ECPF 只描述「較鬆 Hoeffding bound」與視窗均值變化，<strong>未給出這組公式或 AND 邏輯</strong>。</td>
+</tr>
+<tr>
+<td>drift</td>
+<td>前一筆已在 warning，且本筆 <code>g &gt; H(δ)</code>，<code>δ=.05</code>；只偵測錯誤率上升。</td>
+<td>先 warning 再 drift 符合 ECPF 的文字方向；精確閾值、方向及是否另有 SEED 檢驗<strong>未經原文證實</strong>。</td>
+</tr>
+<tr>
+<td>結束 warning／reset</td>
+<td>warning 條件失效即離區；drift 後清空兩窗。<code>mean_gap_proxy</code> 只作診斷，不稱為論文的 severity 指標。</td>
+<td>清除與重置語意、severity 公式和 SEED volatility 權重<strong>未知</strong>。</td>
+</tr>
+</tbody>
+</table>
+<p>四個數值取自 <a href="https://arxiv.org/pdf/1905.08848">ECPF 論文 §4.0.1</a>，但 <code>α</code> 乘 warning bound、<code>ε</code> 作絕對均值差門檻、固定窗長 128 等都是<strong>本次自行判斷</strong>，不是文獻公式。這個候選版提供一種可反駁的操作化版本，不能由測試通過推論原文忠實度。</p>
+<h2 id="_2">入口已接通；既有二元結果未改變</h2>
+<table>
+<thead>
+<tr>
+<th>檢查</th>
+<th>結果</th>
+<th>範圍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1→0.5 人造錯誤率</td>
+<td>通過</td>
+<td>4,000 筆固定序列；首次 warning 在索引 2,037，首次 drift 在 2,055。</td>
+</tr>
+<tr>
+<td>0.5→0.1 人造錯誤率</td>
+<td>通過</td>
+<td>同長度序列；0 次 warning、0 次 drift。</td>
+</tr>
+<tr>
+<td>ECPF zone 與 detector-only 入口</td>
+<td>通過</td>
+<td><code>ECPFZoneDetector("magseed_candidate")</code>、<code>make_detector("magseed_candidate", {})</code>；<code>"magseed"</code> 在兩入口均拒絕。</td>
+</tr>
+<tr>
+<td>ECPF 實際短跑</td>
+<td>通過</td>
+<td>electricity 前 5,000 筆、<code>ecpf_paper</code> 固定底座加候選 zone：5,000 筆皆有預測，7 次警報；此數只表示流程可跑，不代表偵測品質。</td>
+</tr>
+<tr>
+<td>未啟用候選版的二元基線</td>
+<td>通過</td>
+<td>electricity 全長 45,312 筆、原 <code>ecpf_paper</code>；<code>y_true</code>、<code>y_pred</code>、80 個 <code>alarm_idx</code>、80 個 <code>alarm_ts</code> 之 dtype、shape、bytes 與既有輸出完全相同。</td>
+</tr>
+<tr>
+<td>主專案測試</td>
+<td>通過</td>
+<td>排除先前已知匯入失敗的 <code>tests/test_detection_evaluation.py</code>，<code>pytest tests</code> 共 <strong>86 passed</strong>（含候選版新增 4 項測試）。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>判定：</strong> 這是可執行、可檢查的探索原型，並未解除 A5 的來源閘門。下一步若取得可讀原文 PDF 或可核驗的原作者程式，先核對視窗、兩條 warning 不等式、SEED／severity／volatility、狀態機及 reset，再決定能否改成正式 <code>magseed</code>。在此之前不新增 A5 preset、不跑正式 P1/P2，也不將本候選版與 ECPF Table 4 當作同一演算法比較。</p><p class="foot">DET1 · MagSeed candidate · All inferred rules are labelled in the body.</p></main></div></body></html>

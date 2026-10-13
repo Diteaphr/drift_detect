@@ -1,0 +1,173 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>RDDM／MOA 觸發同一步｜DET1 階段三</title><style>
+    :root { --ink:#172339; --muted:#526179; --navy:#0b2744; --teal:#027a79; --line:#d9e1eb; --wash:#f4f7fa; --paper:#ffffff; --amber:#fff2d8; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.72 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+    .masthead { background:var(--navy); color:white; padding:42px max(24px,calc((100vw - 1120px)/2)); }
+    .eyebrow { color:#8dd8d1; font-size:.76rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    .masthead h1 { margin:.5rem 0 .7rem; max-width:900px; font-size:clamp(1.65rem,3vw,2.55rem); line-height:1.25; letter-spacing:-.02em; }
+    .masthead p { margin:0; color:#ced9e6; }
+    .layout { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:225px minmax(0,1fr); gap:30px; padding:30px 24px 70px; }
+    nav { align-self:start; position:sticky; top:22px; font-size:.86rem; }
+    nav .navtitle { margin:0 0 9px 9px; color:var(--muted); font-weight:800; letter-spacing:.07em; }
+    nav ul { list-style:none; margin:0; padding:0; }
+    nav li { margin:0 0 3px; }
+    nav a { display:block; padding:7px 9px; border-radius:6px; color:var(--muted); text-decoration:none; line-height:1.35; }
+    nav a:hover,nav a:focus { background:#e6eff3; color:var(--teal); }
+    nav li ul { display:none; }
+    main { min-width:0; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:30px 38px 44px; box-shadow:0 8px 28px rgba(15,35,60,.05); }
+    main>h1:first-child { display:none; }
+    h2 { margin:2.4rem 0 .85rem; padding-bottom:.42rem; border-bottom:2px solid var(--teal); font-size:1.4rem; line-height:1.4; }
+    h2:first-of-type { margin-top:1.6rem; }
+    p { margin:.72rem 0; }
+    ul,ol { padding-left:1.5rem; }
+    li { margin:.35rem 0; }
+    strong { color:#092d45; }
+    code { padding:.12em .35em; background:#e9f1f5; border-radius:4px; font:.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    pre { overflow:auto; padding:1rem; background:#e9f1f5; border-radius:6px; }
+    pre code { padding:0; }
+    table { width:100%; display:block; overflow-x:auto; border-collapse:collapse; margin:1rem 0 1.4rem; font-size:.88rem; line-height:1.55; }
+    th,td { min-width:95px; padding:.65rem .75rem; border:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { background:#eaf2f5; color:var(--navy); font-weight:750; white-space:nowrap; }
+    tbody tr:nth-child(even) { background:#fafbfd; }
+    tbody tr:hover { background:#f0f6f8; }
+    a { color:#075d75; }
+    .status { display:inline-block; margin-top:14px; padding:5px 12px; border-radius:30px; background:var(--amber); color:#694904; font-size:.83rem; font-weight:750; }
+    .foot { margin-top:36px; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:.78rem; }
+    @media (max-width:860px) { .layout { display:block; padding:14px; } nav { position:static; margin:0 0 15px; } nav ul { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:3px; } main { padding:19px; } }
+    @media print { body { background:white; font-size:10pt; } .masthead { color:var(--ink); background:white; padding:0 0 14px; border-bottom:2px solid var(--teal); } .masthead p { color:var(--ink); } .layout { display:block; padding:0; } nav { display:none; } main { border:0; box-shadow:none; padding:0; } main>h1:first-child { display:none; } h2 { break-after:avoid; } table { display:table; overflow:visible; } tr { break-inside:avoid; } .status { border:1px solid #8b7b5d; } .foot { display:none; } }
+  </style></head><body><header class="masthead"><div class="eyebrow">DET1 · Stage 3 · RDDM</div><h1>RDDM／MOA 觸發同一步</h1><p>五條固定序列，drift 28/28、warning 進區 374/374，同步率 1.000 · 2026-10-12</p><span class="status">MOA 一致性通過</span></header><div class="layout"><nav aria-label="章節導覽"><p class="navtitle">報告導覽</p><div class="toc">
+<ul>
+<li><a href="#det1-rddm-moa">DET1 RDDM 與 MOA 觸發全部同一步</a><ul>
+<li><a href="#28-drift-moa">28 次 drift 全部通過 MOA 雙向重合率閘門</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav><main id="report"><h1 id="det1-rddm-moa">DET1 RDDM 與 MOA 觸發全部同一步</h1>
+<p>執行時間：2026-10-12T14:34:38.601395+00:00；Python 3.14.5；CapyMOA 0.14.0；numpy 2.5.4。
+輸入：同一 0/1 誤差序列，固定 RNG seed=20261012；各 detector 全程依自身語意運作，沒有外部重置。warning 只計進入 warning 區的時點；drift 計每次確認。
+±32 步內重合：每個方向各用自己的觸發總數作分母；exact 為同一步觸發。</p>
+<table>
+<thead>
+<tr>
+<th>序列</th>
+<th style="text-align: right;">步數</th>
+<th>事件</th>
+<th style="text-align: right;">Python 次數</th>
+<th style="text-align: right;">MOA 次數</th>
+<th style="text-align: right;">Python→MOA</th>
+<th style="text-align: right;">MOA→Python</th>
+<th style="text-align: right;">同步</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>up_0.1_to_0.5</td>
+<td style="text-align: right;">4,000</td>
+<td>warning</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr>
+<td>up_0.1_to_0.5</td>
+<td style="text-align: right;">4,000</td>
+<td>drift</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr>
+<td>down_0.5_to_0.1</td>
+<td style="text-align: right;">4,000</td>
+<td>warning</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">n/a</td>
+</tr>
+<tr>
+<td>down_0.5_to_0.1</td>
+<td style="text-align: right;">4,000</td>
+<td>drift</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">n/a</td>
+</tr>
+<tr>
+<td>alternating_8_cycles</td>
+<td style="text-align: right;">32,000</td>
+<td>warning</td>
+<td style="text-align: right;">111</td>
+<td style="text-align: right;">111</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr>
+<td>alternating_8_cycles</td>
+<td style="text-align: right;">32,000</td>
+<td>drift</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr>
+<td>gradual_rise</td>
+<td style="text-align: right;">11,000</td>
+<td>warning</td>
+<td style="text-align: right;">144</td>
+<td style="text-align: right;">144</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr>
+<td>gradual_rise</td>
+<td style="text-align: right;">11,000</td>
+<td>drift</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr>
+<td>stable_45k_then_up</td>
+<td style="text-align: right;">47,500</td>
+<td>warning</td>
+<td style="text-align: right;">102</td>
+<td style="text-align: right;">102</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+<tr>
+<td>stable_45k_then_up</td>
+<td style="text-align: right;">47,500</td>
+<td>drift</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">1.000</td>
+</tr>
+</tbody>
+</table>
+<h2 id="28-drift-moa">28 次 drift 全部通過 MOA 雙向重合率閘門</h2>
+<ul>
+<li>warning: Python 374、MOA 374；Python→MOA 1.000；MOA→Python 1.000；同一步 1.000。</li>
+<li>drift: Python 28、MOA 28；Python→MOA 1.000；MOA→Python 1.000；同一步 1.000。</li>
+</ul>
+<p><strong>RDDM drift 雙向重合率 ≥0.90：通過。</strong></p>
+<p>來源：<a href="https://github.com/Waikato/moa/blob/master/moa/src/main/java/moa/classifiers/core/driftdetection/RDDM.java">Waikato MOA RDDM.java</a>、<a href="https://capymoa.org/api/modules/capymoa.drift.detectors.RDDM.html">CapyMOA RDDM API</a>。</p><p class="foot">DET1 · 2026-10-12 · 來源與驗證範圍見正文。</p></main></div></body></html>

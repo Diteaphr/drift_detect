@@ -1,0 +1,173 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>MagSeed 間接證據與演算法缺口｜DET1 階段三</title><style>
+    :root { --ink:#172339; --muted:#526179; --navy:#0b2744; --teal:#027a79; --line:#d9e1eb; --wash:#f4f7fa; --paper:#ffffff; --amber:#fff2d8; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.72 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+    .masthead { background:var(--navy); color:white; padding:42px max(24px,calc((100vw - 1120px)/2)); }
+    .eyebrow { color:#8dd8d1; font-size:.76rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    .masthead h1 { margin:.5rem 0 .7rem; max-width:900px; font-size:clamp(1.65rem,3vw,2.55rem); line-height:1.25; letter-spacing:-.02em; }
+    .masthead p { margin:0; color:#ced9e6; }
+    .layout { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:225px minmax(0,1fr); gap:30px; padding:30px 24px 70px; }
+    nav { align-self:start; position:sticky; top:22px; font-size:.86rem; }
+    nav .navtitle { margin:0 0 9px 9px; color:var(--muted); font-weight:800; letter-spacing:.07em; }
+    nav ul { list-style:none; margin:0; padding:0; }
+    nav li { margin:0 0 3px; }
+    nav a { display:block; padding:7px 9px; border-radius:6px; color:var(--muted); text-decoration:none; line-height:1.35; }
+    nav a:hover,nav a:focus { background:#e6eff3; color:var(--teal); }
+    nav li ul { display:none; }
+    main { min-width:0; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:30px 38px 44px; box-shadow:0 8px 28px rgba(15,35,60,.05); }
+    main>h1:first-child { display:none; }
+    h2 { margin:2.4rem 0 .85rem; padding-bottom:.42rem; border-bottom:2px solid var(--teal); font-size:1.4rem; line-height:1.4; }
+    h2:first-of-type { margin-top:1.6rem; }
+    p { margin:.72rem 0; }
+    ul,ol { padding-left:1.5rem; }
+    li { margin:.35rem 0; }
+    strong { color:#092d45; }
+    code { padding:.12em .35em; background:#e9f1f5; border-radius:4px; font:.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    pre { overflow:auto; padding:1rem; background:#e9f1f5; border-radius:6px; }
+    pre code { padding:0; }
+    table { width:100%; display:block; overflow-x:auto; border-collapse:collapse; margin:1rem 0 1.4rem; font-size:.88rem; line-height:1.55; }
+    th,td { min-width:95px; padding:.65rem .75rem; border:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { background:#eaf2f5; color:var(--navy); font-weight:750; white-space:nowrap; }
+    tbody tr:nth-child(even) { background:#fafbfd; }
+    tbody tr:hover { background:#f0f6f8; }
+    a { color:#075d75; }
+    .status { display:inline-block; margin-top:14px; padding:5px 12px; border-radius:30px; background:var(--amber); color:#694904; font-size:.83rem; font-weight:750; }
+    .foot { margin-top:36px; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:.78rem; }
+    @media (max-width:860px) { .layout { display:block; padding:14px; } nav { position:static; margin:0 0 15px; } nav ul { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:3px; } main { padding:19px; } }
+    @media print { body { background:white; font-size:10pt; } .masthead { color:var(--ink); background:white; padding:0 0 14px; border-bottom:2px solid var(--teal); } .masthead p { color:var(--ink); } .layout { display:block; padding:0; } nav { display:none; } main { border:0; box-shadow:none; padding:0; } main>h1:first-child { display:none; } h2 { break-after:avoid; } table { display:table; overflow:visible; } tr { break-inside:avoid; } .status { border:1px solid #8b7b5d; } .foot { display:none; } }
+  </style></head><body><header class="masthead"><div class="eyebrow">DET1 · Stage 3 · Evidence Audit</div><h1>MagSeed 可確認外形，但缺公式與狀態機</h1><p>來源分層 · 六項演算法缺口 · 2026-10-12</p><span class="status">A5 等待原文／原作者程式</span></header><div class="layout"><nav aria-label="章節導覽"><p class="navtitle">報告導覽</p><div class="toc">
+<ul>
+<li><a href="#magseed-a5">MagSeed 可確認外形，但缺公式與狀態機；A5 暫不能忠實實作</a><ul>
+<li><a href="#_1">用三層證據界定目前能下的結論</a></li>
+<li><a href="#ecpf-magseed">從 ECPF 轉述可鎖定比較方向，卻不能推回完整 MagSeed</a></li>
+<li><a href="#warning">六個缺口會直接改變警報、warning 與重置結果</a></li>
+<li><a href="#a5">取得原文或原作者程式後，先關閉六個缺口再接 A5</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav><main id="report"><h1 id="magseed-a5">MagSeed 可確認外形，但缺公式與狀態機；A5 暫不能忠實實作</h1>
+<p><strong>結論：</strong> 截至 2026-10-12，公開可讀的一手資料只有 <a href="https://link.springer.com/chapter/10.1007/978-3-319-26350-2_9">Chen、Koh、Riddle（2015）的出版社摘要</a>；<a href="https://arxiv.org/pdf/1905.08848">ECPF 論文</a>提供對 MagSeed 的<strong>間接描述</strong>、四個實驗參數與結果，但沒有足以重建 detector 的公式和狀態更新順序。<a href="https://github.com/rand079/CPF">ECPF 作者公開的 CPF 程式庫</a>也沒有 MagSeed 類別。這些證據可界定 A5 的研究問題，<strong>不能</strong>把雙 ADWIN、SEED 近似版或自行設計的 warning 閘門標成「原文 MagSeed」。本報告只做來源查核；依已核准<a href="../../docs/ECPF_DET1_預註冊.html">預註冊</a>的停點，A5 與正式實驗仍等可讀原文或可核驗的原作者實作。</p>
+<h2 id="_1">用三層證據界定目前能下的結論</h2>
+<table>
+<thead>
+<tr>
+<th>層級</th>
+<th>已查來源</th>
+<th>可核實內容</th>
+<th>界限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原作者的一手摘要</td>
+<td><a href="https://link.springer.com/chapter/10.1007/978-3-319-26350-2_9">Springer 章節頁，DOI 10.1007/978-3-319-26350-2_9</a></td>
+<td>作者、2015 年、頁 96–108；MagSeed 旨在追蹤 drift severity；摘要稱以合成與真實資料比較 ADWIN2、DDM。</td>
+<td>頁面明示「subscription content」；摘要沒有偵測公式、演算法步驟或程式碼。摘要的「高 TP／低 FP」是作者主張，不能當成 DET1 已驗證結果。</td>
+</tr>
+<tr>
+<td>引用者的間接描述與實驗</td>
+<td><a href="https://arxiv.org/pdf/1905.08848">Anderson 等，ECPF 論文 §2.2、§4.0.1、Table 4</a></td>
+<td>描述 MagSeed 為 SEED 的後續延伸，使用兩種 warning 條件，warning 先於 drift；在 ECPF 實驗中設 <code>δ=0.05</code>、<code>ε=0.01</code>、<code>α=0.8</code>、<code>δw=0.1</code>，並公開 synthetic 結果。</td>
+<td>對 MagSeed 而言屬轉述與使用紀錄，不是 Chen 等人的演算法規格；參數<strong>名稱與值</strong>可知，各參數在公式中的精確作用未知。</td>
+</tr>
+<tr>
+<td>引用者的公開程式</td>
+<td><a href="https://github.com/rand079/CPF">rand079/CPF</a>，查核提交 <code>8142b0c9b789e4452f0e9044ab4dfbb51b8d3327</code></td>
+<td>提交樹只有 <code>meta/AbstractCPF.java</code>、<code>meta/CPF.java</code>、<code>meta/ECPF.java</code>、<code>drift/DriftDetectionMethodClassifierExt.java</code> 等七個檔案；<code>ECPF.java</code> 使用 MOA 通用 <code>ChangeDetector</code> 選項。</td>
+<td>此提交沒有 MagSeed 類別或可用來回推其內部邏輯的 detector 原始碼。結論只限這個已查提交，不能聲稱全網不存在其他實作。</td>
+</tr>
+</tbody>
+</table>
+<p>網路以精確題名、作者組合、<code>MagSeed</code> 加 <code>code</code>／<code>GitHub</code>／<code>algorithm</code> 搜尋；可見的 <a href="https://www.researchgate.net/publication/315528399_Tracking_Drift_Severity_in_Data_Streams">ResearchGate 書目頁</a>標示全文不可用、須向作者索取。搜尋未找到可驗證為原文的開放 PDF 或原作者程式；這是<strong>本次查核範圍的陰性結果</strong>，不是不存在的證明。</p>
+<h2 id="ecpf-magseed">從 ECPF 轉述可鎖定比較方向，卻不能推回完整 MagSeed</h2>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>目前可取得的間接資料</th>
+<th>對 DET1 的含義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>監看的訊號</td>
+<td>ECPF §2.2 說 MagSeed 比較串流中相鄰視窗的底層平均錯誤率，而非 DDM 那種自上次 drift 起的累積平均；ADWIN 的輸入通常是分類器錯誤。</td>
+<td>A5 應以 0/1 分類誤差作候選輸入；但原文如何定義兩窗、何時更新、是否另用 severity 統計，仍未證實。</td>
+</tr>
+<tr>
+<td>兩個 warning 條件</td>
+<td>ECPF §2.2 描述為較寬鬆的 Hoeffding bound 與視窗間平均錯誤率變化；drift 前需觸發 warning flags。</td>
+<td>可以確定 A5 不宜簡化成「單一 ADWIN 警報就是 drift」。但 <code>flags</code> 是兩者同時、先後、保持多久、清除條件為何，轉述沒有形式化。</td>
+</tr>
+<tr>
+<td>drift 與參數</td>
+<td>ECPF §4.0.1 稱它是加上 warning bound 的 ADWIN 版本，使用 <code>δ=0.05</code>、<code>ε=0.01</code>、<code>α=0.8</code>、<code>δw=0.1</code>。</td>
+<td>四個數值可預先鎖定；不能只依名稱猜 <code>ε</code>、<code>α</code> 乘在哪個閾值，也不能把 <code>δw=0.1</code> 當成第二個獨立 ADWIN 就宣稱同演算法。</td>
+</tr>
+<tr>
+<td>ECPF 使用結果</td>
+<td>ECPF Table 4 每個 synthetic stream 有 400 個真 drift。使用 MagSeed 時，ECPF 的報告警報均數依次為 Agrawal 930、CIRCLES 689、LED 993、RandomRBF 838、STAGGER 1,052；作者亦討論部分配置警報偏多。</td>
+<td>這是外部<strong>量級參考</strong>，可用來發現極端偏離；警報數大於 400 不等於可直接算出 FP，因為需要逐筆 GT 配對規則。資料生成、模型回饋及框架也須匹配才可嚴格對照。</td>
+</tr>
+</tbody>
+</table>
+<p>以上 MagSeed 特性均是 <a href="https://arxiv.org/pdf/1905.08848">ECPF 論文</a>對先前工作的描述；Table 4 則是 ECPF 作者自己的實驗結果。它們的證據角色不同，不能合併成「原作者提供的 pseudocode」。</p>
+<h2 id="warning">六個缺口會直接改變警報、warning 與重置結果</h2>
+<table>
+<thead>
+<tr>
+<th>待核對細節</th>
+<th>現有材料缺什麼</th>
+<th>猜錯後的實質影響</th>
+<th>優先級</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. 視窗與切點</td>
+<td>SEED／MagSeed 的視窗維護、候選切點、最小樣本量、壓縮與更新時序。</td>
+<td>改變每一步使用的樣本、計算量及 drift 時點。</td>
+<td>阻斷</td>
+</tr>
+<tr>
+<td>2. 兩個 warning 的精確不等式</td>
+<td>Hoeffding bound 的形式、均值差的定義、方向性與 <code>ε</code>、<code>α</code>、<code>δw</code> 的作用。</td>
+<td>直接改變 warning 誤報、進區時點；無法與雙 ADWIN 做有效機制消融。</td>
+<td>阻斷</td>
+</tr>
+<tr>
+<td>3. warning 到 drift 的狀態機</td>
+<td>兩條件是 AND／OR、同步或序列觸發；如何保持、撤銷 warning；正式 drift 判定是否須再過原 SEED／ADWIN 檢驗。</td>
+<td>改變 A5 的 warning buffer、凍結區段、FP 與超額命中 X。</td>
+<td>阻斷</td>
+</tr>
+<tr>
+<td>4. severity 與 volatility 的用途</td>
+<td>severity 的計算、是否回饋偵測門檻；SEED 的 drift-frequency／volatility 權重是否在 MagSeed 沿用。</td>
+<td>若省略核心修正，實作可能只剩「ADWIN 加 warning」，已不是原文 MagSeed。</td>
+<td>阻斷</td>
+</tr>
+<tr>
+<td>5. drift 後 reset 與輸出語意</td>
+<td>截窗或重建、保留哪些統計、同筆能否同時 warning/drift、下一筆如何開始。</td>
+<td>連續 drift 的警報數與時間偏移會變，且影響 DET1 接線。</td>
+<td>阻斷</td>
+</tr>
+<tr>
+<td>6. 可比性與驗證</td>
+<td>原作者實作、數值例、測試序列或完整偽碼；ECPF 當年使用的 MagSeed 版本與輸入／reset 包裝。</td>
+<td>目前無法建立如 RDDM 對 MOA 的逐事件忠實度檢查；ECPF Table 4 只能提供弱外部參考。</td>
+<td>阻斷</td>
+</tr>
+</tbody>
+</table>
+<p><strong>推論邊界：</strong> 以上「缺什麼」指已查來源<strong>未提供足以定案的細節</strong>，不主張原文一定沒有寫。<code>SEEDDetector</code> 或現有雙 ADWIN 的行為也不能代填，因為同樣參數可對應多種不等式、視窗管理與 reset 實作。</p>
+<h2 id="a5">取得原文或原作者程式後，先關閉六個缺口再接 A5</h2>
+<ol>
+<li>透過學校機構訂閱開啟 <a href="https://link.springer.com/chapter/10.1007/978-3-319-26350-2_9">Springer 原文章節</a>，或以 <a href="https://www.researchgate.net/publication/315528399_Tracking_Drift_Severity_in_Data_Streams">ResearchGate 的 Request full-text</a>向作者索取。取得合法可讀的 PDF、作者預印本，或明確來源的原作者程式均可啟動下一輪核對。</li>
+<li>逐項記錄上表六個細節的<strong>原文頁碼／公式／圖號或原碼行號</strong>，再定義 <code>warning</code>、<code>drift</code>、<code>reset</code> 的逐筆語意，特別核對四參數及錯誤輸入方向。</li>
+<li>先跑預註冊的人造 0/1 序列、警報方向、未啟用 zone 的二元基線閘門；有可執行參考實作時再做逐事件對照。完成後才可將 A5 標為「原文 MagSeed」，並進入後續正式實驗。</li>
+</ol>
+<p><strong>目前決策：</strong> RDDM 已依<a href="stage3_rddm_status.html">階段三狀態報告</a>完成；MagSeed 的 A5、<code>det_magseed</code> 與正式 8,868 次規模執行保持暫停。本報告沒有改動預註冊、演算法或任何實驗結果。</p><p class="foot">DET1 · MagSeed 證據查核 · 來源與限制均列於正文</p></main></div></body></html>

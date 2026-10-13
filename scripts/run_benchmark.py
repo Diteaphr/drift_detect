@@ -160,6 +160,13 @@ def sha256_of(path: Path) -> str:
     return h.hexdigest()
 
 
+def source_hash_path(source: Dict[str, Any], entry: Dict[str, Any]) -> Path:
+    """Underlying bytes determining a file or reproducible injected trial."""
+    if source["kind"] == "file":
+        return Path(source["csv"])
+    return REPO / entry["generator"]["source"]
+
+
 def load_stream(source: Dict[str, Any], entry: Dict[str, Any]) -> Dict[str, Any]:
     """Return X, y (rows the system sees) and ground truth in evaluation coordinates.
 
@@ -256,6 +263,34 @@ def effective_pipeline_config(preset: Dict[str, Any], task: str, seed: Optional[
     return cfg
 
 
+def oracle_input_schedule(
+    gt: Optional[List[Tuple[int, int]]], position: np.ndarray, *, allow_empty: bool = False
+) -> List[Dict[str, Any]]:
+    """Map raw drift start/+60 to first retained rows at or after each point."""
+    if not gt and not allow_empty:
+        raise ValueError("oracle_input_60 requires nonempty ground truth")
+    if not gt:
+        return []
+    if len(position) and np.any(np.diff(position) <= 0):
+        raise ValueError("input positions must be strictly increasing")
+    schedule: List[Dict[str, Any]] = []
+    for start, _ in gt:
+        warning_idx = int(np.searchsorted(position, start, side="left"))
+        if warning_idx >= len(position):
+            continue
+        confirm_idx = int(np.searchsorted(position, start + 60, side="left"))
+        schedule.append({
+            "warning_index": warning_idx,
+            "confirm_index": confirm_idx if confirm_idx < len(position) else None,
+            "raw_start": int(start),
+            "raw_confirm": int(start + 60),
+        })
+    for left, right in zip(schedule, schedule[1:]):
+        if left["confirm_index"] is None or left["confirm_index"] >= right["warning_index"]:
+            raise ValueError("overlapping or censored oracle schedule cannot be replayed")
+    return schedule
+
+
 def _stub_type_ldd_if_missing() -> bool:
     """Type-LDD only annotates drift types on the ECPF path; stub it when torch is absent."""
     try:
@@ -290,9 +325,13 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, cfg_dict: Dict[str, Any], warm_st
         if raw:
             alarm_idx.append(i)
             alarm_ts.append(int(raw[0].timestamp))
+    if cfg.ecpf_record_warning_events and pipe._ecpf_warning_active:
+        pipe._record_ecpf_warning(len(y) - 1, "censored", "stream_end")
     effective = {k: v for k, v in dataclasses.asdict(cfg).items() if k in fields}
     return {"y_pred": y_pred, "alarm_idx": alarm_idx, "alarm_ts": alarm_ts, "emits_alarms": True,
-            "type_ldd_stubbed": stubbed, "effective_config": effective}
+            "type_ldd_stubbed": stubbed, "effective_config": effective,
+            "warning_events": pipe._ecpf_warning_events,
+            "frozen_steps": pipe._ecpf_frozen_steps}
 
 
 def make_learner(learner: str, params: Dict[str, Any]):
@@ -337,6 +376,11 @@ class MOAADWINChangeDetector:
 
 def make_detector(name: str, params: Dict[str, Any]):
     from river import drift
+    from detectors.core.rddm_moa import MOARDDM
+    from detectors.core.magseed_candidate import MagSeedCandidate
+    from detectors.core.magseed_thesis_candidate import (
+        MagSeed, MagSeedLiteral, MagSeedThesisCandidate, MagSeedUpward,
+    )
 
     factories = {
         "adwin_moa": MOAADWINChangeDetector,
@@ -347,6 +391,12 @@ def make_detector(name: str, params: Dict[str, Any]):
         "eddm": drift.binary.EDDM,
         "hddm_a": drift.binary.HDDM_A,
         "hddm_w": drift.binary.HDDM_W,
+        "rddm": MOARDDM,
+        "magseed_candidate": MagSeedCandidate,
+        "magseed_thesis_candidate": MagSeedThesisCandidate,
+        "magseed": MagSeed,
+        "magseed_upward": MagSeedUpward,
+        "magseed_literal_dev": MagSeedLiteral,
     }
     if name not in factories:
         raise ValueError(f"unknown detector {name!r}")
@@ -458,7 +508,14 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
     t0 = time.perf_counter()
     kind = preset["kind"]
     if kind == "pipeline":
-        out = run_pipeline(X, y, effective_pipeline_config(preset, task, seed), warm_start)
+        config = effective_pipeline_config(preset, task, seed)
+        if job.get("record_warning_events"):
+            config["ecpf_record_warning_events"] = True
+        if config.get("ecpf_signal_mode") == "oracle_input_60":
+            config["ecpf_oracle_input_schedule"] = oracle_input_schedule(
+                gt, position, allow_empty=bool(job["max_steps"])
+            )
+        out = run_pipeline(X, y, config, warm_start)
     elif kind == "baseline":
         if task not in preset.get("tasks", [task]):
             raise ValueError(f"preset {preset['name']} does not support task {task}")
@@ -484,6 +541,11 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
         rec["alarm_idx_input"] = position[alarm_idx] if len(alarm_idx) else alarm_idx
     np.savez_compressed(run_dir / "preds.npz", **rec)
 
+    events = [dict(event, input_index=int(position[event["index"]]))
+              for event in out.get("warning_events", [])]
+    if job.get("record_warning_events"):
+        (run_dir / "warning_events.json").write_text(json.dumps(events, indent=2))
+
     manifest = {
         "dataset": job["dataset"],
         "stream": job["source"]["stem"],
@@ -502,6 +564,7 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
         "warm_start": warm_start,
         "prequential_warm_start": True,
         "max_steps": job["max_steps"] or None,
+        "record_warning_events": bool(job.get("record_warning_events")),
         "emits_alarms": out["emits_alarms"],
         "type_ldd_stubbed": out.get("type_ldd_stubbed", False),
         "version_problems": job["version_problems"],
@@ -513,6 +576,14 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
     }
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False, default=_json_default))
     metrics = evaluate_record(rec, entry, manifest)
+    if job.get("record_warning_events"):
+        metrics.update({
+            "warning_open_count": sum(e["event"] == "open" for e in events),
+            "warning_close_count": sum(e["event"] == "close" for e in events),
+            "warning_censored_count": sum(e["event"] == "censored" for e in events),
+            "warning_timeout_count": sum(e["reason"] == "timeout" for e in events),
+            "warning_frozen_steps": int(out.get("frozen_steps", 0)),
+        })
     (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2))
     return summary_row(manifest, metrics, run_dir)
 
@@ -612,8 +683,8 @@ def print_summary(df: pd.DataFrame, entry: Dict[str, Any]) -> None:
     agg = num.groupby(by, dropna=False)[keys].agg(["mean", "std", "count"])
     with pd.option_context("display.width", 200, "display.max_columns", 50):
         print(agg.round(4).to_string())
-    if "comparable" in df and not df["comparable"].all():
-        reasons = sorted(set(df.loc[~df["comparable"], "not_comparable_reason"]))
+    if "comparable" in df and not df["comparable"].astype(bool).all():
+        reasons = sorted(set(df.loc[~df["comparable"].astype(bool), "not_comparable_reason"]))
         print(f"\n[not comparable] {'; '.join(reasons)}. {entry.get('comparability_note', '')}")
     for ref in entry.get("sota", []):
         if ref["metric"] in df.columns:
@@ -656,6 +727,52 @@ def supports_task(preset: Dict[str, Any], task: str) -> bool:
     return tasks is None or task in tasks
 
 
+def resumable_row(job: Dict[str, Any], source_hash: str) -> Optional[Dict[str, Any]]:
+    """Return a completed row; reject any conflicting provenance before work starts."""
+    run_dir = Path(job["run_dir"])
+    manifest_path = run_dir / "manifest.json"
+    if not manifest_path.exists():
+        return None  # an interrupted run is safe to regenerate
+    try:
+        manifest = json.loads(manifest_path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot resume corrupt manifest {manifest_path}: {exc}") from exc
+    expected = {
+        "dataset": job["dataset"],
+        "stream": job["source"]["stem"],
+        "preset": job["preset"],
+        "registry_entry": job["entry"],
+        "seed": job["seed"],
+        "max_steps": job["max_steps"] or None,
+        "record_warning_events": bool(job.get("record_warning_events")),
+        "git": job["git"],
+        "version_problems": job["version_problems"],
+    }
+    for key, value in expected.items():
+        if manifest.get(key) != value:
+            raise ValueError(f"resume mismatch at {manifest_path}: {key}")
+    data = manifest.get("data") or {}
+    actual_hash = data.get("sha256") if job["source"]["kind"] == "file" else data.get("source_sha256")
+    if actual_hash != source_hash:
+        raise ValueError(f"resume mismatch at {manifest_path}: data SHA-256")
+    if job["source"]["kind"] == "file":
+        expected_file = str(source_hash_path(job["source"], job["entry"]).relative_to(REPO))
+        if data.get("file") != expected_file:
+            raise ValueError(f"resume mismatch at {manifest_path}: data path")
+    if not (run_dir / "preds.npz").exists() or not (run_dir / "metrics.json").exists():
+        return None
+    if job.get("record_warning_events") and not (run_dir / "warning_events.json").exists():
+        return None
+    try:
+        with np.load(run_dir / "preds.npz") as rec:
+            for required in ("y_true", "y_pred", "alarm_idx", "alarm_ts"):
+                _ = rec[required].shape
+        metrics = json.loads((run_dir / "metrics.json").read_text())
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot resume corrupt completed run {run_dir}: {exc}") from exc
+    return summary_row(manifest, metrics, run_dir)
+
+
 def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str, Any], git: Dict[str, Any]) -> None:
     version_problems = check_requirements(preset, args.allow_version_mismatch)
     sources = dataset_sources(entry, args.trials)
@@ -672,6 +789,7 @@ def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str
     jobs = [{
         "source": s, "dataset": args.dataset, "entry": entry, "preset": preset, "seed": seed,
         "max_steps": args.max_steps, "version_problems": version_problems, "git": git,
+        "record_warning_events": bool(args.record_warning_events or preset["name"].startswith("det1_")),
         "run_dir": str(root / (s["stem"] + ("" if seed is None else f"__s{seed}"))),
     } for s in sources for seed in seeds]
     role = preset.get("role", preset["kind"])
@@ -679,8 +797,26 @@ def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str
           f"({len(sources)} streams x {len(seeds)} seeds) -> {root}")
 
     rows: List[Dict[str, Any]] = []
+    if args.resume:
+        if git["dirty"]:
+            raise SystemExit("--resume requires a clean worktree so the commit identifies the code")
+        hashes: Dict[Path, str] = {}
+        pending = []
+        for job in jobs:
+            path = source_hash_path(job["source"], entry)
+            if path not in hashes:
+                hashes[path] = sha256_of(path)
+            previous = resumable_row(job, hashes[path])
+            if previous is None:
+                pending.append(job)
+            else:
+                rows.append(previous)
+        print(f"resume: {len(rows)} verified complete, {len(pending)} pending", flush=True)
+        jobs_to_run = pending
+    else:
+        jobs_to_run = jobs
     with ProcessPoolExecutor(max_workers=max(1, args.workers)) as pool:
-        futs = {pool.submit(run_one_big_stack, j): j for j in jobs}
+        futs = {pool.submit(run_one_big_stack, j): j for j in jobs_to_run}
         for n, fut in enumerate(as_completed(futs), 1):
             j = futs[fut]
             try:
@@ -728,6 +864,8 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--out-dir", default=DEFAULT_OUT)
     ap.add_argument("--allow-version-mismatch", action="store_true")
+    ap.add_argument("--resume", action="store_true", help="skip only complete runs whose commit, preset, protocol and source hash match")
+    ap.add_argument("--record-warning-events", action="store_true", help="passively record ECPF warning lifecycle events")
     ap.add_argument("--reeval", metavar="DIR", help="recompute metrics.json under DIR from stored preds.npz")
     ap.add_argument("--list", action="store_true", help="list registered datasets and presets")
     ap.add_argument("--list-datasets", action="store_true",
@@ -785,8 +923,12 @@ def main() -> None:
     presets = [load_preset(n) for n in names]
     skipped = [p["name"] for p in presets if not supports_task(p, task)]
     presets = [p for p in presets if supports_task(p, task)]
+    excluded = [p["name"] for p in presets if p.get("datasets") and args.dataset not in p["datasets"]]
+    presets = [p for p in presets if not p.get("datasets") or args.dataset in p["datasets"]]
     if skipped:
         print(f"skipping presets that do not support task {task}: {', '.join(skipped)}")
+    if excluded:
+        print(f"skipping presets outside dataset scope: {', '.join(excluded)}")
     if not presets:
         raise SystemExit("no preset left to run")
     if not args.preset and not args.suite:
