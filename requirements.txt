@@ -6,6 +6,8 @@ scipy>=1.7.0
 # Pinned: E10bFT results only reproduce on 0.21.2 (0.23.0's ADWIN fires at different points).
 river==0.21.2
 matplotlib>=3.5
+# Memory cost (RSS) of benchmark runs: scripts/run_benchmark.py, src/metrics/run_cost.py
+psutil>=5.9
 
 # Required for Type-LDD FAN ProtoNet (src/type_ldd) and optional model_type='gru'
 torch>=2.0

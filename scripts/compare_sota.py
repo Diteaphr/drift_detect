@@ -13,7 +13,10 @@ markdown report plus CSV tables:
   their table;
 * across datasets (or cells): average ranks, Friedman test with Nemenyi
   critical difference, and Wilcoxon signed-rank tests of ``--target`` against
-  every other preset (Holm-corrected).
+  every other preset (Holm-corrected);
+* cost: wall and CPU time, memory increment, RAM-hours and final model size
+  per dataset x preset (``cost.csv``), with the machine and the number of runs
+  that executed concurrently.
 
 Usage:
     python3 scripts/compare_sota.py
@@ -67,7 +70,9 @@ def ci95(x: np.ndarray) -> Optional[float]:
 def fmt(v: Any, nd: int = 4) -> str:
     if v is None or (isinstance(v, float) and math.isnan(v)):
         return "-"
-    return f"{v:.{nd}f}" if isinstance(v, (float, np.floating)) else str(v)
+    if isinstance(v, (float, np.floating)):
+        return f"{v:.2e}" if 0 < abs(v) < 10 ** -nd else f"{v:.{nd}f}"
+    return str(v)
 
 
 def prequential_table(df: pd.DataFrame, entry: Dict[str, Any], name: str) -> pd.DataFrame:
@@ -115,6 +120,38 @@ def detection_table(df: pd.DataFrame, entry: Dict[str, Any], name: str) -> pd.Da
                      "diff_f1_vs_sota": p["f1"] - ref["value"] if ref else None,
                      "calib_f1": cref.get("f1"), "calib_episode_recall": cref.get("episode_recall"),
                      "calib_mdt": cref.get("mdt"), "calib_far": cref.get("far")})
+    return pd.DataFrame(rows)
+
+
+def cost_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Time and memory per dataset x preset, from runs that recorded cost (run_benchmark.py with run_cost)."""
+    if "cpu_time_s" not in df:
+        return pd.DataFrame()
+    df = df[pd.to_numeric(df["cpu_time_s"], errors="coerce").notna()]
+    rows = []
+    for (name, preset), g in df.groupby(["dataset", "preset"]):
+        def col(c: str) -> np.ndarray:
+            return pd.to_numeric(g[c], errors="coerce").to_numpy(dtype=float) if c in g else np.array([np.nan])
+
+        def sd(x: np.ndarray) -> Optional[float]:
+            x = x[~np.isnan(x)]
+            return float(x.std(ddof=1)) if len(x) > 1 else None
+
+        wall, cpu = col("runtime_s"), col("cpu_time_s")
+        rows.append({
+            "dataset": name, "preset": preset, "n": len(g),
+            "runtime_s": float(np.nanmean(wall)), "runtime_std": sd(wall),
+            "cpu_time_s": float(np.nanmean(cpu)), "cpu_time_std": sd(cpu),
+            "instances_per_s": float(np.nanmean(col("instances_per_s"))),
+            "rss_increment_mb": float(np.nanmean(col("rss_increment_mb"))),
+            "rss_increment_max_mb": float(np.nanmax(col("rss_increment_mb"))),
+            "model_size_final_mb": float(np.nanmean(col("model_size_final_mb"))),
+            "ram_hours_gb": float(np.nanmean(col("ram_hours_gb"))),
+            "process_peak_rss_mb": float(np.nanmean(col("process_peak_rss_mb"))),
+            "workers": ",".join(sorted({str(int(w)) for w in col("workers") if not np.isnan(w)})),
+            "concurrent_runs": ",".join(sorted({str(int(c)) for c in col("concurrent_runs") if not np.isnan(c)})),
+            "machine": "; ".join(sorted(set(g["machine"].dropna().astype(str)))) if "machine" in g else "",
+        })
     return pd.DataFrame(rows)
 
 
@@ -264,6 +301,40 @@ def main() -> None:
         det = det.assign(block=det["dataset"] + ":" + det["cell"])
         lines += rank_tests(det.pivot_table(index="block", columns="preset", values="f1"), args.target)
         lines.append("")
+
+    cost = cost_table(df)
+    lines.append("## Cost (time and memory)\n")
+    if len(cost):
+        cost.to_csv(out_dir / "cost.csv", index=False)
+        n_without = len(df) - int(cost["n"].sum())
+        lines.append("Mean per run. `runtime_s` is wall time, `cpu_time_s` process CPU time (both exclude data loading); "
+                     "`rss_increment_mb` is the peak resident memory of the run's own process minus its level before the "
+                     "system was built, `ram_hours_gb` that increment integrated over the run (GB x hours), "
+                     "`model_size_final_mb` the system's Python object size after the last instance. "
+                     "`concurrent_runs` is the most runs that executed at the same time as a run. "
+                     "Memory is per process and valid at any concurrency; times are strict only where "
+                     "`concurrent_runs` is 1 (`--workers 1`) and comparable only between rows with the same machine "
+                     "and the same `concurrent_runs` (CPU time is less affected by parallel load than wall time).\n")
+        if n_without:
+            lines.append(f"{n_without} run(s) predate cost tracking and are not in this table.\n")
+        if cost["machine"].str.contains(";").any() or cost["machine"].nunique() > 1:
+            lines.append("**Runs come from more than one machine: do not compare their times directly.**\n")
+        mixed = [name for name, g in cost.groupby("dataset")
+                 if g["concurrent_runs"].str.contains(",").any() or g["concurrent_runs"].nunique() > 1]
+        if mixed:
+            lines.append(f"**Different `concurrent_runs` within {', '.join(mixed)}: those times were measured under "
+                         "different parallel load and are not directly comparable; re-run with `--workers 1` for a "
+                         "strict time comparison.**\n")
+        elif (cost["concurrent_runs"] != "1").any():
+            lines.append("Some runs shared the machine with other runs (`concurrent_runs` > 1): their times are "
+                         "indicative only.\n")
+        lines += md_table(cost.sort_values(["dataset", "preset"]),
+                          ["dataset", "preset", "n", "runtime_s", "runtime_std", "cpu_time_s", "instances_per_s",
+                           "rss_increment_mb", "rss_increment_max_mb", "model_size_final_mb", "ram_hours_gb",
+                           "concurrent_runs", "machine"])
+    else:
+        lines.append("_No run in this selection recorded cost; re-run with the current scripts/run_benchmark.py._")
+    lines.append("")
 
     (out_dir / "report.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))

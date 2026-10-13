@@ -4,7 +4,8 @@ dataset, treated as a black box.
 
 Every run writes its raw record (``preds.npz``: y_true, y_pred, alarm indices)
 plus a ``manifest.json`` (data hash, preset, effective config, seed, git commit,
-package versions, runtime), and the metrics come from the single evaluator in
+package versions, machine, time and memory cost from ``src/metrics/run_cost.py``),
+and the metrics come from the single evaluator in
 ``src/metrics/evaluate_run.py``. ``--reeval`` recomputes every ``metrics.json``
 from the stored records, so a metric fix never needs a re-run.
 
@@ -20,6 +21,9 @@ Cerqueira et al.'s detection-only workflow).
 
 Without --preset / --suite the main method (``main_preset`` in
 configs/benchmark_defaults.json, currently e10bft) is run.
+
+Every run executes in its own freshly spawned process (``--workers`` of them at
+a time), so its memory numbers are its own even when runs execute in parallel.
 
 Usage:
     python3 scripts/run_benchmark.py --list
@@ -40,18 +44,24 @@ import dataclasses
 import glob
 import hashlib
 import json
+import multiprocessing
 import os
 import platform
-import resource
 import subprocess
 import sys
 import threading
 import time
 import types
 import warnings
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+# One BLAS/OpenMP thread per run, set before numpy loads (spawned runs re-import this
+# module): idle BLAS pools spin and inflate CPU time, and --workers would oversubscribe cores.
+for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VECLIB_MAXIMUM_THREADS",
+             "NUMEXPR_NUM_THREADS"):
+    os.environ.setdefault(_var, "1")
 
 import numpy as np
 import pandas as pd
@@ -270,6 +280,21 @@ def _stub_type_ldd_if_missing() -> bool:
         return True
 
 
+def preload_libraries(preset: Dict[str, Any]) -> None:
+    """Import what a run needs before its memory baseline, so library code is not counted as system memory."""
+    import importlib
+
+    import river.drift.binary  # noqa: F401
+    from river import ensemble, forest, naive_bayes, tree  # noqa: F401
+
+    if preset["kind"] == "pipeline":
+        if preset.get("config", {}).get("use_ecpf"):
+            _stub_type_ldd_if_missing()
+        for mod in ("src.config", "src.pipeline", "src.ecpf", "src.ecpf_detector", "src.model_adapter",
+                    "src.prediction_model", "src.models.base_model"):
+            importlib.import_module(mod)
+
+
 def run_pipeline(X: np.ndarray, y: np.ndarray, cfg_dict: Dict[str, Any], warm_start: int) -> Dict[str, Any]:
     stubbed = _stub_type_ldd_if_missing() if cfg_dict.get("use_ecpf") else False
     from src.config import PipelineConfig
@@ -292,7 +317,7 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, cfg_dict: Dict[str, Any], warm_st
             alarm_ts.append(int(raw[0].timestamp))
     effective = {k: v for k, v in dataclasses.asdict(cfg).items() if k in fields}
     return {"y_pred": y_pred, "alarm_idx": alarm_idx, "alarm_ts": alarm_ts, "emits_alarms": True,
-            "type_ldd_stubbed": stubbed, "effective_config": effective}
+            "type_ldd_stubbed": stubbed, "effective_config": effective, "system": pipe}
 
 
 def make_learner(learner: str, params: Dict[str, Any]):
@@ -373,7 +398,7 @@ def run_baseline(X: np.ndarray, y: np.ndarray, preset: Dict[str, Any], task: str
         y_pred[i] = 0.0 if p is None else float(p)
         model.learn_one(x, labels[i].item())
     return {"y_pred": y_pred, "alarm_idx": [], "alarm_ts": [], "emits_alarms": False,
-            "effective_config": {"learner": preset["learner"], **params}}
+            "effective_config": {"learner": preset["learner"], **params}, "system": model}
 
 
 def run_detector(X: np.ndarray, y: np.ndarray, preset: Dict[str, Any], position: np.ndarray,
@@ -402,7 +427,8 @@ def run_detector(X: np.ndarray, y: np.ndarray, preset: Dict[str, Any], position:
     return {"y_pred": y_pred, "alarm_idx": alarms, "alarm_ts": alarms, "emits_alarms": True,
             "effective_config": {"learner": preset["learner"], "detector": preset["detector"],
                                  "detector_params": preset.get("detector_params", {}),
-                                 "min_train": min_train, "signal": preset.get("signal", "correct")}}
+                                 "min_train": min_train, "signal": preset.get("signal", "correct")},
+            "system": (model, det)}
 
 
 # ---------------------------------------------------------------------------
@@ -454,8 +480,12 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
         gt = None if gt is None else [iv for iv in gt if iv[0] < n_input]
     position = kept if kept is not None else np.arange(len(y))
 
+    from src.metrics.run_cost import CostMeter, deep_sizeof, process_peak_rss_mb
+
     warm_start = int(preset.get("warm_start", 0))
-    t0 = time.perf_counter()
+    preload_libraries(preset)
+    meter = CostMeter()
+    meter.start()
     kind = preset["kind"]
     if kind == "pipeline":
         out = run_pipeline(X, y, effective_pipeline_config(preset, task, seed), warm_start)
@@ -471,9 +501,14 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
         out = run_detector(X, y, preset, position, n_input, seed)
     else:
         raise ValueError(f"unknown preset kind {kind!r}")
-    runtime = time.perf_counter() - t0
-    peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    peak_mb = peak_rss / 1e6 if sys.platform == "darwin" else peak_rss / 1e3
+    cost = meter.stop(len(y))
+    cost["process_peak_rss_mb"] = process_peak_rss_mb()
+    cost["model_size_final_mb"] = None
+    if job["model_size"]:
+        t_size = time.perf_counter()
+        cost["model_size_final_mb"] = round(deep_sizeof(out["system"], exclude=(X, y, df)) / 2 ** 20, 2)
+        cost["model_size_time_s"] = round(time.perf_counter() - t_size, 2)
+    cost["workers"] = job["workers"]
 
     run_dir = Path(job["run_dir"])
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -507,8 +542,10 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
         "version_problems": job["version_problems"],
         "git": job["git"],
         "versions": versions(),
-        "runtime_s": round(runtime, 2),
-        "peak_rss_mb": round(peak_mb, 1),
+        "machine": job["machine"],
+        "cost": cost,
+        "runtime_s": round(cost["runtime_s"], 2),
+        "peak_rss_mb": cost["process_peak_rss_mb"],
         "finished_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
     }
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False, default=_json_default))
@@ -525,6 +562,40 @@ def _json_default(o: Any) -> Any:
     if isinstance(o, np.ndarray):
         return o.tolist()
     raise TypeError(f"not JSON serializable: {type(o)}")
+
+
+def run_isolated(job: Dict[str, Any]) -> Dict[str, Any]:
+    """One run in its own freshly spawned process, so its memory numbers start from zero."""
+    with ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context("spawn")) as pool:
+        return pool.submit(run_one_big_stack, job).result()
+
+
+class ConcurrencyTracker:
+    """Highest number of runs executing at the same time during each run's lifetime."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._peak: Dict[str, int] = {}
+
+    def enter(self, key: str) -> None:
+        with self._lock:
+            self._peak[key] = 0
+            n = len(self._peak)
+            for k in self._peak:
+                self._peak[k] = max(self._peak[k], n)
+
+    def leave(self, key: str) -> int:
+        with self._lock:
+            return self._peak.pop(key)
+
+
+def record_concurrency(row: Dict[str, Any], peak: int) -> None:
+    """Store the observed concurrency in the run's manifest and summary row."""
+    path = REPO / row["run_dir"] / "manifest.json"
+    manifest = json.loads(path.read_text())
+    manifest.setdefault("cost", {})["concurrent_runs"] = peak
+    path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+    row["concurrent_runs"] = peak
 
 
 def run_one_big_stack(job: Dict[str, Any]) -> Dict[str, Any]:
@@ -564,8 +635,14 @@ def comparability(manifest: Dict[str, Any]) -> Tuple[bool, str]:
     return True, ""
 
 
+COST_COLUMNS = ["cpu_time_s", "instances_per_s", "rss_before_mb", "rss_peak_mb", "rss_increment_mb",
+                "ram_hours_gb", "process_peak_rss_mb", "model_size_final_mb", "workers", "concurrent_runs"]
+
+
 def summary_row(manifest: Dict[str, Any], metrics: Dict[str, Any], run_dir: Path) -> Dict[str, Any]:
     ok, why = comparability(manifest)
+    cost = manifest.get("cost", {})
+    machine = manifest.get("machine") or {}
     return {
         "dataset": manifest["dataset"],
         "stream": manifest.get("stream") or Path(manifest.get("file", "")).stem,
@@ -577,6 +654,8 @@ def summary_row(manifest: Dict[str, Any], metrics: Dict[str, Any], run_dir: Path
         "not_comparable_reason": why,
         "smoke": bool(manifest["max_steps"]),
         "runtime_s": manifest["runtime_s"],
+        **{c: cost.get(c) for c in COST_COLUMNS},
+        "machine": f"{machine.get('cpu', '')} / {machine.get('ram_gb', '')} GB" if machine else None,
         "run_dir": str(run_dir.relative_to(REPO)),
         **metrics,
     }
@@ -612,6 +691,16 @@ def print_summary(df: pd.DataFrame, entry: Dict[str, Any]) -> None:
     agg = num.groupby(by, dropna=False)[keys].agg(["mean", "std", "count"])
     with pd.option_context("display.width", 200, "display.max_columns", 50):
         print(agg.round(4).to_string())
+    cost_keys = [c for c in ("runtime_s", "cpu_time_s", "rss_increment_mb", "ram_hours_gb", "model_size_final_mb",
+                             "concurrent_runs")
+                 if c in df.columns and pd.to_numeric(df[c], errors="coerce").notna().any()]
+    if cost_keys:
+        cost = df[["preset"] + cost_keys].copy()
+        for k in cost_keys:
+            cost[k] = pd.to_numeric(cost[k], errors="coerce")
+        print("\ncost (mean per run; memory is per process; wall time is only strict where concurrent_runs = 1):")
+        with pd.option_context("display.width", 200, "display.max_columns", 50):
+            print(cost.groupby("preset")[cost_keys].mean().round(4).to_string())
     if "comparable" in df and not df["comparable"].all():
         reasons = sorted(set(df.loc[~df["comparable"], "not_comparable_reason"]))
         print(f"\n[not comparable] {'; '.join(reasons)}. {entry.get('comparability_note', '')}")
@@ -672,6 +761,7 @@ def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str
     jobs = [{
         "source": s, "dataset": args.dataset, "entry": entry, "preset": preset, "seed": seed,
         "max_steps": args.max_steps, "version_problems": version_problems, "git": git,
+        "machine": args.machine, "workers": max(1, args.workers), "model_size": args.model_size,
         "run_dir": str(root / (s["stem"] + ("" if seed is None else f"__s{seed}"))),
     } for s in sources for seed in seeds]
     role = preset.get("role", preset["kind"])
@@ -679,12 +769,23 @@ def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str
           f"({len(sources)} streams x {len(seeds)} seeds) -> {root}")
 
     rows: List[Dict[str, Any]] = []
-    with ProcessPoolExecutor(max_workers=max(1, args.workers)) as pool:
-        futs = {pool.submit(run_one_big_stack, j): j for j in jobs}
+    tracker = ConcurrencyTracker()
+    peaks: Dict[str, int] = {}
+
+    def run_tracked(job: Dict[str, Any]) -> Dict[str, Any]:
+        tracker.enter(job["run_dir"])
+        try:
+            return run_isolated(job)
+        finally:
+            peaks[job["run_dir"]] = tracker.leave(job["run_dir"])
+
+    with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
+        futs = {pool.submit(run_tracked, j): j for j in jobs}
         for n, fut in enumerate(as_completed(futs), 1):
             j = futs[fut]
             try:
                 r = fut.result()
+                record_concurrency(r, peaks[j["run_dir"]])
             except Exception as exc:
                 r = {"dataset": args.dataset, "stream": j["source"]["stem"], "preset": preset["name"],
                      "seed": j["seed"], "error": repr(exc)}
@@ -728,6 +829,9 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--out-dir", default=DEFAULT_OUT)
     ap.add_argument("--allow-version-mismatch", action="store_true")
+    ap.add_argument("--model-size", action=argparse.BooleanOptionalAction, default=True,
+                    help="measure the final system's object size after each run (can take a minute for 100-tree "
+                         "forests on long streams; --no-model-size skips it)")
     ap.add_argument("--reeval", metavar="DIR", help="recompute metrics.json under DIR from stored preds.npz")
     ap.add_argument("--list", action="store_true", help="list registered datasets and presets")
     ap.add_argument("--list-datasets", action="store_true",
@@ -794,6 +898,13 @@ def main() -> None:
     git = git_state()
     if git["dirty"]:
         print("warning: working tree has uncommitted changes; the manifest records the commit only")
+    from src.metrics.run_cost import machine_info, rss_available
+
+    if not rss_available():
+        print("warning: psutil is not installed, so memory (RSS) is not recorded; pip install -r requirements.txt")
+    args.machine = machine_info()
+    print(f"machine: {args.machine['cpu']}, {args.machine['cpu_count']} cores, {args.machine['ram_gb']} GB RAM; "
+          f"{max(1, args.workers)} parallel run(s), each in its own process")
     for preset in presets:
         run_preset(args, entry, preset, git)
 
