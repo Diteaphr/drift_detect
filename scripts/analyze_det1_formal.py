@@ -220,7 +220,7 @@ def main():
  score_csv=REPO/'outputs/det1/det1_run_scores.csv'
  fields=['dataset','stream','cell','arm','group','n_input','n_output','n_scored','gt','alarms','tp','fp','fn','hits','C','X','O','acc','kappa','post_correct','post_count','runtime','rss','frozen','y_true_sha256','path']
  with score_csv.open('w',newline='') as f:
-  w=csv.DictWriter(f,fieldnames=fields);w.writeheader();w.writerows({k:r.get(k) for k in fields} for r in rows)
+  w=csv.DictWriter(f,fieldnames=fields,lineterminator='\n');w.writeheader();w.writerows({k:r.get(k) for k in fields} for r in rows)
  print('rows',len(rows),'summary',out,'scores',score_csv)
  for arm, cmp in s['comparisons'].items(): print(arm,cmp['p1'],cmp['p2'],cmp['verdict'])
 
