@@ -3,20 +3,61 @@
   "main_preset": "e10bft",
   "suites": {
     "standard": {
-      "presets": ["e10bft", "arf100", "srp10", "ht", "nb", "htr"],
+      "presets": [
+        "e10bft",
+        "arf100",
+        "srp10",
+        "ht",
+        "nb",
+        "htr"
+      ],
       "description": "Main method + strong baselines (ARF 100 trees, SRP) + no-drift-handling baselines (HT, NB; HT regressor on regression streams). The default set for a SOTA comparison."
     },
     "quick": {
-      "presets": ["e10bft", "arf10", "ht", "nb", "htr"],
+      "presets": [
+        "e10bft",
+        "arf10",
+        "ht",
+        "nb",
+        "htr"
+      ],
       "description": "Cheaper version of standard (ARF with 10 trees, no SRP) for a first look; ARF10 is not the configuration the literature reports."
     },
     "ablation": {
-      "presets": ["e10bft", "ecpf_paper", "ecpf_reuse_value"],
+      "presets": [
+        "e10bft",
+        "ecpf_paper",
+        "ecpf_reuse_value"
+      ],
       "description": "Main method vs plain ECPF (paper settings) and ECPF with reuse-value fading, all on a single Hoeffding Tree."
     },
     "main_only": {
-      "presets": ["e10bft"],
+      "presets": [
+        "e10bft"
+      ],
       "description": "Only the main method."
+    },
+    "det1": {
+      "presets": [
+        "e10bft",
+        "det1_oracle60_lw0",
+        "det1_oracle60_lw1",
+        "det1_dual_adwin_lw0",
+        "det1_dual_adwin_lw1",
+        "det1_dual_adwin_t1000_lw0",
+        "det1_dual_adwin_t1000_lw1",
+        "det1_zone_ddm_lw0",
+        "det1_zone_ddm_lw1",
+        "det1_zone_hddm_a_lw0",
+        "det1_zone_hddm_a_lw1",
+        "det1_zone_rddm_lw0",
+        "det1_zone_rddm_lw1",
+        "det1_zone_magseed_lw0",
+        "det1_zone_magseed_lw1",
+        "det1_zone_magseed_upward_lw0",
+        "det1_zone_magseed_upward_lw1"
+      ],
+      "description": "DET1 A0-A5 and A5u secondary ECPF arms plus A6 E10bFT; dataset scope skips A0 on incremental. Detector-only presets are run separately on injected data."
     }
   }
 }
