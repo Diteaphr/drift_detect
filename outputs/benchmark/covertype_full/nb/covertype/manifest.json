@@ -1,0 +1,101 @@
+{
+  "dataset": "covertype_full",
+  "stream": "covertype",
+  "data": {
+    "file": "data/dataset_0921/real_dataset/_full/multi_classification/covertype/covertype.csv",
+    "sha256": "89d20e289990a618aaad4f6a08188f46363295c1d6fdd6add5984a919b13ffb3"
+  },
+  "cell": null,
+  "task": "multiclass",
+  "n_classes": 7,
+  "coordinates": "output",
+  "n_input": 581012,
+  "detect_from": 0,
+  "gt_intervals": null,
+  "registry_entry": {
+    "group": "real",
+    "task": "multiclass",
+    "role": "report",
+    "files": "data/dataset_0921/real_dataset/_full/multi_classification/covertype/covertype.csv",
+    "files_hint": "not in git; generate with: cd data/dataset_0921/real_dataset/script && python3 prepare_all.py --full",
+    "gt": null,
+    "delta_max": null,
+    "order": "original",
+    "truncated": false,
+    "protocol": "real_prequential",
+    "window": 1000,
+    "comparable": true,
+    "comparability_note": "Full 581,012 rows in UCI order. Calibrated: baseline_no_change_acc 95.06% vs Souza et al. 95.07%. Features are not min-max normalised as in MOA covtypeNorm; tree learners are unaffected, distance-based ones are not.",
+    "required_metrics": [
+      "acc_prequential",
+      "kappa_t",
+      "kappa_m",
+      "baseline_no_change_acc",
+      "baseline_majority_acc"
+    ],
+    "sota": [
+      {
+        "metric": "acc_prequential",
+        "value": 0.9551,
+        "method": "LTM (TabPFN)",
+        "tier": "overall",
+        "source": "Lourenco et al. 2025, arXiv:2502.16840, Table 1"
+      },
+      {
+        "metric": "acc_prequential",
+        "value": 0.9527,
+        "std": 0.0001,
+        "method": "SRP",
+        "tier": "classic",
+        "source": "DriftMoE 2025, Table 2"
+      },
+      {
+        "metric": "baseline_no_change_acc",
+        "value": 0.9507,
+        "method": "No-Change",
+        "tier": "baseline",
+        "source": "Souza et al. 2020"
+      }
+    ]
+  },
+  "preset": {
+    "name": "nb",
+    "kind": "baseline",
+    "role": "baseline",
+    "description": "Gaussian Naive Bayes with no drift handling; the NB column of Souza et al. 2020 Table 5 (INSECTS).",
+    "source": "Souza et al. 2020, arXiv:2005.00113, Table 5",
+    "requires": {
+      "river": "0.21.2"
+    },
+    "learner": "nb",
+    "params": {},
+    "seed_param": null,
+    "tasks": [
+      "binary",
+      "multiclass"
+    ]
+  },
+  "effective_config": {
+    "learner": "nb"
+  },
+  "seed": null,
+  "warm_start": 0,
+  "prequential_warm_start": true,
+  "max_steps": null,
+  "emits_alarms": false,
+  "type_ldd_stubbed": false,
+  "version_problems": [],
+  "git": {
+    "commit": "929dd207eb9d0af359d1d55ccbdf6689145f8db8",
+    "dirty": false
+  },
+  "versions": {
+    "python": "3.9.6",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "river": "0.21.2"
+  },
+  "runtime_s": 111.44,
+  "peak_rss_mb": 1173.3,
+  "finished_at": "2026-10-13T04:18:30+0800"
+}
