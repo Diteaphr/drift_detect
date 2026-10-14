@@ -33,6 +33,8 @@ ROOT = REPO / "outputs/benchmark/det3"
 OUT = REPO / "outputs/det3"
 STORED = REPO / "outputs/det1/det1_run_scores.csv"
 ARMS = {"E": "e10bft", "H": "det1_zone_hddm_a_lw0"}
+MODEL = "ht"
+TRIALS = (0, 20)  # injected trials per cell, [first, end); later rounds override these
 SEED, DRAWS = 20261012, 10000
 INJ = "injected_paper_electricity"
 TYPES = ("突變", "漸變", "incremental", "recurring")
@@ -62,7 +64,7 @@ def score_one(path, arm, commit, source_hashes):
     assert m["git"] == {"commit": commit, "dirty": False}, (path, m["git"])
     assert m["registry_entry"] == REGISTRY[ds] and ds in DATASETS
     assert m["max_steps"] is None and m["record_warning_events"] and m["versions"]["river"] == "0.21.2"
-    assert m["effective_config"]["model_type"] == "ht" and m["effective_config"]["ecpf_learn_during_warning"] is False
+    assert m["effective_config"]["model_type"] == MODEL and m["effective_config"]["ecpf_learn_during_warning"] is False
     source = REPO / m["data"].get("file", m["data"].get("generator", {}).get("source", ""))
     if source not in source_hashes:
         source_hashes[source] = sha256(source)
@@ -95,16 +97,17 @@ def score_one(path, arm, commit, source_hashes):
     return row
 
 
-def load_arm(arm, commit):
+def load_arm(arm, commit, datasets=DATASETS):
     rows, sources = [], {}
-    for ds in DATASETS:
+    for ds in datasets:
         paths = sorted((ROOT / ds / ARMS[arm]).glob("*/manifest.json"))
         if len(paths) != EXPECTED[ds]:
             raise ValueError(f"{ds}/{ARMS[arm]}: {len(paths)} runs, expected {EXPECTED[ds]}")
         rows += [score_one(p.parent, arm, commit, sources) for p in paths]
-        registered = {z["stem"] for z in dataset_sources(REGISTRY[ds], 20 if ds == INJ else None)}
+        registered = {z["stem"] for z in dataset_sources(REGISTRY[ds], TRIALS[1] if ds == INJ else None)
+                      if ds != INJ or int(z["stem"].rsplit("_g", 1)[1]) >= TRIALS[0]}
         assert {r["stream"] for r in rows if r["dataset"] == ds} == registered, ds
-    assert len(rows) == 205
+    assert len(rows) == sum(EXPECTED[ds] for ds in datasets)
     return rows
 
 
