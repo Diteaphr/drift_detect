@@ -1,0 +1,36 @@
+{
+  "name": "det4_zone_hddm_a_lw0_hf10",
+  "kind": "pipeline",
+  "role": "ablation",
+  "description": "DET4-H: HDDM-A warning/drift zone, learn during warning=False on a 10-tree Hoeffding forest (max_features sqrt). Identical to `det1_zone_hddm_a_lw0` except model_type and model_kwargs.",
+  "source": "docs/ECPF_DET4_預註冊.md",
+  "requires": {
+    "river": "0.21.2"
+  },
+  "warm_start": 200,
+  "seed_param": null,
+  "config": {
+    "model_type": "hf",
+    "use_ecpf": true,
+    "ecpf_signal_mode": "dual_adwin",
+    "detector_delta": 0.05,
+    "ecpf_swap_policy": "strict",
+    "ecpf_fade_policy": "ecpf",
+    "ecpf_fade_enabled": true,
+    "ecpf_max_pool_size": 10,
+    "detector_delta_w": 0.1,
+    "ecpf_warning_signal": "error",
+    "ecpf_drift_signal": "error",
+    "ecpf_learn_during_warning": false,
+    "ecpf_zone_detector": "hddm_a",
+    "ecpf_detector_warning_timeout": 0,
+    "model_kwargs": {
+      "n_trees": 10,
+      "max_features": "sqrt"
+    }
+  },
+  "tasks": [
+    "binary",
+    "multiclass"
+  ]
+}

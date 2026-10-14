@@ -1,0 +1,34 @@
+{
+  "name": "det4_e10bft_hf10",
+  "kind": "pipeline",
+  "role": "ablation",
+  "description": "DET4-E: E10bFT (frozen reference + leader guard + warning timeout + frozen guard scale) on a 10-tree Hoeffding forest (max_features sqrt). Identical to `e10bft` except model_type and model_kwargs.",
+  "source": "docs/ECPF_DET4_預註冊.md",
+  "requires": {
+    "river": "0.21.2"
+  },
+  "warm_start": 200,
+  "seed_param": null,
+  "config": {
+    "model_type": "hf",
+    "use_ecpf": true,
+    "ecpf_signal_mode": "dual_adwin",
+    "ecpf_warning_signal": "error",
+    "ecpf_drift_signal": "error",
+    "ecpf_reference_signal": true,
+    "ecpf_reference_warmup": 500,
+    "ecpf_leader_guard": true,
+    "ecpf_detector_warning_timeout": 1000,
+    "ecpf_guard_frozen_scale": 500,
+    "detector_delta": 0.05,
+    "ecpf_learn_during_warning": false,
+    "model_kwargs": {
+      "n_trees": 10,
+      "max_features": "sqrt"
+    }
+  },
+  "tasks": [
+    "binary",
+    "multiclass"
+  ]
+}
