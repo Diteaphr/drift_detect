@@ -195,3 +195,7 @@ workers 6 的 wall time 只作參考，因 `concurrent_runs>1`；RSS 仍可比�
 ## 修訂（只追加，不改寫原始預測）
 
 預註冊提交時無修訂。後續任何語意調整、無法重現、跳過資料、成本或執行偏離均在此追加日期、原因、影響 run 與對結論的限制。
+
+### 2026-10-15：更正無 active warning 時的 confirm reset 範圍
+
+在將既有行為寫成單元測試時重新逐行核對 `ECPFAdwinFamilyDetector.update_values()`：confirm arm 觸發 drift 後會在回傳前呼叫 `self.reset()`，因此即使 pipeline 因沒有 active warning 而不產生 drift detection，**warning 與 confirm 兩個 arm都會 reset**。上文「既有路徑查核結果」第 2 點及「DET4 預設混搭語意」第 4 點中「warning 保持原狀」的描述不正確，由本修訂取代；其他行為與假設不變。DET4 統一採既有 Dual ADWIN 行為：任一 confirm drift 都 reset 兩個 detector 實例；只有 active warning 下的 confirm 才會產生 ECPF drift、模型切換及 confirmed 關閉事件。
