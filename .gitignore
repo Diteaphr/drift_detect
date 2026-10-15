@@ -110,6 +110,7 @@ outputs/det3/logs/
 
 # DET4 isolated gate, smoke, formal runs and execution logs.
 outputs/benchmark/det4/
+outputs/benchmark/det4_strict_timing/
 outputs/det4/gates_raw/
 outputs/det4/smoke/
 outputs/det4/logs/
