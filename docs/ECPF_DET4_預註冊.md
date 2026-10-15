@@ -199,3 +199,7 @@ workers 6 的 wall time 只作參考，因 `concurrent_runs>1`；RSS 仍可比�
 ### 2026-10-15：更正無 active warning 時的 confirm reset 範圍
 
 在將既有行為寫成單元測試時重新逐行核對 `ECPFAdwinFamilyDetector.update_values()`：confirm arm 觸發 drift 後會在回傳前呼叫 `self.reset()`，因此即使 pipeline 因沒有 active warning 而不產生 drift detection，**warning 與 confirm 兩個 arm都會 reset**。上文「既有路徑查核結果」第 2 點及「DET4 預設混搭語意」第 4 點中「warning 保持原狀」的描述不正確，由本修訂取代；其他行為與假設不變。DET4 統一採既有 Dual ADWIN 行為：任一 confirm drift 都 reset 兩個 detector 實例；只有 active warning 下的 confirm 才會產生 ECPF drift、模型切換及 confirmed 關閉事件。
+
+### 2026-10-15：registry 實際為 25 個資料集，非迴歸為 22 個
+
+首次 smoke 在任何 run 啟動前由範圍 assertion 發現：附件敘述稱 registry 有 26 個、排除 3 個迴歸後為 23 個，但 `configs/datasets_0921.json` 與 `--list-datasets --json` 實際逐項均只有 **25 個**；本文件上方盤點表也實際列出 25 列，其中 3 個迴歸，因此納入母體是 **22 個**。附件第 2 節列名本身亦為 7 個真實 + 5 個 INSECTS + 5 個注入 CSV + 3 個注入 paper + 2 個合成 = 22。不存在的第 26 個資料集不補造、不以其他資料替代。上文所有「26/26」「23 個」及 Q4「23 × 9」由本修訂改為「25/25」「22 個」及「22 × 9」。正式矩陣總量 **30,456 不變**，因原估算已按實際列名相加；smoke 由誤列的 450 runs 更正為每組 24 條、共 **432 runs**。Q1–Q3、假設、指標與判準不變；Q4 的涵蓋範圍限制須在 verdict 明列。

@@ -40,8 +40,8 @@ def datasets() -> list[tuple[str, int]]:
     ordered = list(PRIMARY)
     ordered.extend(name for name in included if name not in PRIMARY)
     result = [(name, PRIMARY.get(name, 1)) for name in ordered]
-    if len(result) != 23:
-        raise AssertionError(f"expected 23 non-regression datasets, got {len(result)}")
+    if len(result) != 22:
+        raise AssertionError(f"expected 22 registered non-regression datasets, got {len(result)}")
     return result
 
 
@@ -139,7 +139,7 @@ def audit_smoke(run_info: dict | None = None) -> dict:
     lines = [
         "# DET4 階段三：18 組 × 23 資料集 smoke",
         "",
-        f"**結論：{status}。** 完成 `{len(rows)}/{expected}` runs，涵蓋 `{result['presets']}/18` presets 與 `{result['datasets']}/23` 非迴歸資料集；runner error rows `{result['failed_runs']}`。",
+        f"**結論：{status}。** 完成 `{len(rows)}/{expected}` runs，涵蓋 `{result['presets']}/18` presets 與 `{result['datasets']}/22` 非迴歸資料集；runner error rows `{result['failed_runs']}`。",
         "",
         "| 核對 | 結果 |",
         "|---|---|",
