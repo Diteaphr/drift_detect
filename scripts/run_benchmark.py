@@ -91,10 +91,16 @@ def load_preset(name: str) -> Dict[str, Any]:
     return json.loads(path.read_text())
 
 
-def dataset_sources(entry: Dict[str, Any], n_trials: Optional[int]) -> List[Dict[str, Any]]:
+def dataset_sources(
+    entry: Dict[str, Any],
+    n_trials: Optional[int],
+    trial_start: int = 0,
+) -> List[Dict[str, Any]]:
     """One source spec per stream: a CSV file or a generator trial."""
     gen = entry.get("generator")
     if gen is None:
+        if trial_start:
+            raise ValueError("trial_start applies only to generated datasets")
         files = sorted(Path(p) for p in glob.glob(str(REPO / entry["files"])))
         if not files:
             raise SystemExit(f"no files match {entry['files']}. {entry.get('files_hint', '')}")
@@ -102,11 +108,22 @@ def dataset_sources(entry: Dict[str, Any], n_trials: Optional[int]) -> List[Dict
     src = REPO / gen["source"]
     if not src.exists():
         raise SystemExit(f"generator source {gen['source']} is missing; {gen.get('source_hint', '')}")
+    if trial_start < 0:
+        raise ValueError("trial_start must be non-negative")
     trials = gen["n_trials"] if n_trials is None else n_trials
+    if trials < 1:
+        raise ValueError("n_trials must be positive")
+    trial_stop = trial_start + trials
+    if trial_stop > gen["n_trials"]:
+        raise ValueError(
+            f"trial range [{trial_start}, {trial_stop}) exceeds registered "
+            f"n_trials={gen['n_trials']}"
+        )
     name = gen["name"]
     return [{"kind": "generated", "method": m, "abruptness": a, "g_id": g,
              "stem": f"{name}_{m}_{a}_g{g:02d}"}
-            for a in gen["abruptness"] for m in gen["methods"] for g in range(trials)]
+            for a in gen["abruptness"] for m in gen["methods"]
+            for g in range(trial_start, trial_stop)]
 
 
 def _count_rows(path: Path) -> int:
@@ -865,7 +882,7 @@ def resumable_row(job: Dict[str, Any], source_hash: str) -> Optional[Dict[str, A
 
 def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str, Any], git: Dict[str, Any]) -> None:
     version_problems = check_requirements(preset, args.allow_version_mismatch)
-    sources = dataset_sources(entry, args.trials)
+    sources = dataset_sources(entry, args.trials, args.trial_start)
     if args.cells:
         sources = [s for s in sources if f"{s.get('abruptness')}/{s.get('method')}" in args.cells
                    or any(c in s["stem"] for c in args.cells)]
@@ -961,6 +978,8 @@ def main() -> None:
     ap.add_argument("--seeds", type=int, default=1, help="seeds 0..N-1; ignored for deterministic presets")
     ap.add_argument("--limit-files", type=int, default=0)
     ap.add_argument("--trials", type=int, default=None, help="generated datasets: trials per cell (default: registry)")
+    ap.add_argument("--trial-start", type=int, default=0,
+                    help="generated datasets: zero-based first trial; use with --trials")
     ap.add_argument("--cells", nargs="+", default=None, help="only these cells, e.g. abrupt/class_prior")
     ap.add_argument("--max-steps", type=int, default=0, help="truncate streams (smoke test; marks runs non-comparable)")
     ap.add_argument("--workers", type=int, default=1)
@@ -1023,6 +1042,8 @@ def main() -> None:
     if args.dataset not in registry:
         raise SystemExit(f"unknown dataset {args.dataset!r}; see --list")
     entry = registry[args.dataset]
+    if args.trial_start and args.trials is None:
+        ap.error("--trial-start requires --trials")
     task = TASK_ALIASES.get(entry["task"], entry["task"])
     names = resolve_presets(args.preset, args.suite, defaults)
     presets = [load_preset(n) for n in names]
