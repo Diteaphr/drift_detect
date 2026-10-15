@@ -37,6 +37,25 @@ Per-run rows hold one stream each. A literature cell is the pool of its 50 trial
 
 On `injected_paper_*` (`coordinates: "input"`) alarm indices, drift points and the stream length count the rows the injection dropped, as their workflow does; `alarm_idx_input` in `preds.npz` holds the mapped alarms. Alarms before `int(0.25 x n_input) + 1` are ignored (`detect_from`).
 
+## Cost metrics (`src/metrics/run_cost.py`)
+
+Recorded for every run in `manifest.json` (`cost`, `machine`) and in `runs.csv`; `compare_sota.py` aggregates them into `cost.csv` and the report's cost table. Every run executes in its own freshly spawned process with one BLAS/OpenMP thread, and the libraries it needs are imported before the memory baseline.
+
+| Column | Definition |
+|---|---|
+| `runtime_s` | Wall time of the predict-then-learn loop (data loading, evaluation and model sizing excluded) |
+| `cpu_time_s` | Process CPU time over the same window; less sensitive to parallel load than wall time |
+| `instances_per_s` | Stream length / `runtime_s` |
+| `rss_before_mb`, `rss_peak_mb` | Resident memory (RSS, what the operating system reports) of the run's process right before the system is built, and the highest value sampled every 0.2 s while it runs |
+| `rss_increment_mb` | `rss_peak_mb - rss_before_mb`: real memory the system needed. Memory freed while loading the data can be reused, so for very small models it can read slightly below `model_size_final_mb` |
+| `ram_hours_gb` | The RSS increment integrated over wall time, in GB x hours (MOA reports RAM-Hours from model size; this one uses real memory) |
+| `process_peak_rss_mb` | Peak RSS of the whole process (interpreter, libraries and data included) |
+| `model_size_final_mb` | Python object graph of the system after the last instance (`deep_sizeof`; input data excluded; memory inside C extensions without Python references is not seen). Measured after the timed window; `--no-model-size` skips it |
+| `concurrent_runs` | Most runs (this one included) that executed at the same time as this run; 1 = it ran alone |
+| `workers`, `machine` | The `--workers` setting and the hardware (`manifest.machine`: CPU, cores, RAM, BLAS threads) |
+
+Memory numbers are per process and stay valid with `--workers > 1` as long as the machine does not swap. Presets run one after another and only the seeds / streams of one preset run in parallel, so `workers` overstates the load of single-run presets; use `concurrent_runs`. Times are strict only where `concurrent_runs` is 1 (`--workers 1`) and comparable only between runs on the same machine with the same `concurrent_runs`. Runs made before cost tracking have empty cost columns; re-run them to get costs.
+
 ## Protocols
 
 | Protocol | Datasets | Compare with |

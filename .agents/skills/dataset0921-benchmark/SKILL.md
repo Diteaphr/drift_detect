@@ -5,7 +5,9 @@ description: Runs experiments on data/dataset_0921 through the benchmark harness
 
 # dataset_0921 Benchmark
 
-The harness fixes the protocol and the metric definitions; this skill only drives it.
+The harness fixes the protocol and the metric definitions; this skill only drives it. It is tool-neutral: any coding agent that can read files and run shell commands can follow it (Cursor, Claude Code, Codex, Copilot, Gemini CLI, ...). Commands run from the repo root; use `python` instead of `python3` where that is the interpreter's name (usually Windows).
+
+This file and `protocols.md` are the only copy. `.claude/skills/dataset0921-benchmark/SKILL.md`, `AGENTS.md`, `GEMINI.md` and `.github/copilot-instructions.md` only point here; when you change this skill's `name` or `description`, update the copy in `.claude/skills/` too (`tests/test_agent_skill.py` checks it).
 
 | File | Role |
 |---|---|
@@ -31,7 +33,11 @@ Each entry has `name`, `task`, `role` (report/dev), `comparable`, `comparable_ki
 
 ## Step 1: ask what the user wants (multiple choice)
 
-Collect the experiment plan with the **AskQuestion tool**, all questions in **one call**, prompts and labels in the user's language. Skip a question when the user's message already answers it; if the user says "use the defaults" / "你決定", take every option marked (建議) without asking.
+Collect the experiment plan as multiple-choice questions, prompts and labels in the user's language, and **do not run any experiment before the user has answered**. Skip a question when the user's message already answers it; if the user says "use the defaults" / "你決定", take every option marked (建議) without asking.
+
+How to ask depends on the tool you run in:
+- **A structured question tool** (Cursor `AskQuestion`, Claude Code `AskUserQuestion`, or your environment's equivalent): put all questions in one call. If the tool caps questions or options per call (Claude Code: at most 4 questions, 2-4 options each), ask in rounds — round 1: `goal`, `system`, `baselines`, `scope`; round 2: `seeds`, `report`, `timing` — and ask `datasets` as the plain-text list below, since it has more options than such tools allow.
+- **No such tool**: send all questions in one message as a numbered list with lettered options, mark the recommended ones (建議), allow several letters where the question is multiple choice, and tell the user they can reply like `1a 2 a,c,f 3a 4a 5a 6a 7a 8a` or just `你決定`. Then stop and wait for the reply.
 
 Use these questions (ids and labels can be shortened, keep the meaning):
 
@@ -77,20 +83,25 @@ Use these questions (ids and labels can be shortened, keep the meaning):
 7. `report` — 跑完要不要出 SOTA 比較報告（compare_sota）？ (single)
    - `yes`: 要，以受測系統為 target (建議)
    - `no`: 不用，只要 runs.csv
+8. `timing` — 時間成本要量多嚴格？ (single; skip for `report_only`, or when only one run per preset is planned: one dataset stream and no forest preset or one seed. Then every run is alone anyway)
+   - `parallel`: 平常模式：同一個 preset 的多個種子 / 串流同時跑（較快；記憶體照樣準，時間只能當參考）(建議)
+   - `strict`: 嚴格量時間：一次只跑一個 run（`--workers 1`，時間可以正式比較；森林部分總時間約變成「種子數」倍）
 
-Map the answers: `system` → `--preset <name>` (main = no flag needed); `baselines` → `--suite standard|quick|ablation` or an explicit `--preset` list (when the system is not `e10bft`, pass `--preset <system> <baselines...>` instead of a suite, since suites start with `e10bft`); dataset ids are registry names, one `--dataset` command each; `all_comparable` / `all_insects` expand to their lists (print them in the plan); `prepare_missing`, or picking a missing dataset directly → run each distinct `missing_hint` command first (it downloads from OpenML/UCI, so it needs network and may take minutes), re-run Step 0 to confirm the data is now `available`, then include those datasets in the run (with `prepare_missing` alone, add every newly available comparable one). If preparing fails, tell the user and continue with the datasets that exist. A `missing_hint` of the form `missing: <path>` means the file is normally in git: tell the user to pull instead of generating it.
+Map the answers: `system` → `--preset <name>` (main = no flag needed); `timing` → `parallel`: `--workers <seeds>` on single-stream datasets (3 with the default seeds), `--workers 8` on multi-stream datasets (`injected_paper_*`, INSECTS sets with several streams, synthetic), never more than the machine's performance cores minus one; `strict`: `--workers 1` (multiply the forest part of the runtime estimate by the number of seeds); `baselines` → `--suite standard|quick|ablation` or an explicit `--preset` list (when the system is not `e10bft`, pass `--preset <system> <baselines...>` instead of a suite, since suites start with `e10bft`); dataset ids are registry names, one `--dataset` command each; `all_comparable` / `all_insects` expand to their lists (print them in the plan); `prepare_missing`, or picking a missing dataset directly → run each distinct `missing_hint` command first (it downloads from OpenML/UCI, so it needs network and may take minutes), re-run Step 0 to confirm the data is now `available`, then include those datasets in the run (with `prepare_missing` alone, add every newly available comparable one). If preparing fails, tell the user and continue with the datasets that exist. A `missing_hint` of the form `missing: <path>` means the file is normally in git: tell the user to pull instead of generating it.
 
 ## Step 2: show the plan, then run
 
-Print the commands and a rough runtime before starting. Measured on this machine, one run on electricity (45k rows): `ht`/`nb` ~5 s, `e10bft`/`ecpf_*` ~30 s, `arf10` ~1 min, `arf100` ~7 min per seed. Scale roughly with rows x features: `covertype_full` / `airlines_full` are 12-13x longer streams, so `arf100` there takes hours per seed; an `injected_paper_*` dataset is 400 streams. If the plan is longer than about 30 minutes, ask once more (AskQuestion: 開始 / 改成快速組 / 減少資料集) before launching; launch long runs in the background and poll.
+Print the commands and a rough runtime before starting. Measured on this machine, one run on electricity (45k rows): `ht`/`nb` ~5 s, `e10bft`/`ecpf_*` ~30 s, `arf10` ~1 min, `arf100` ~7 min per seed. Scale roughly with rows x features: `covertype_full` / `airlines_full` are 12-13x longer streams, so `arf100` there takes hours per seed; an `injected_paper_*` dataset is 400 streams. If the plan is longer than about 30 minutes, ask once more (開始 / 改成快速組 / 減少資料集, same asking rules as Step 1) before launching. Launch long runs in the background with a log file (e.g. `nohup python3 scripts/run_benchmark.py ... > /tmp/<name>.log 2>&1 &`, or your tool's background-command feature) and check the log periodically instead of blocking the session.
 
 ```
 - [ ] 1. Uncommitted changes? Ask whether to commit first (the manifest records the commit)
 - [ ] 2. Smoke test: add --max-steps 5000 (marked non-comparable, never reported)
 - [ ] 3. Full run, one command per dataset
-- [ ] 4. Check the log: no error rows, versions OK, comparable column as expected
-- [ ] 5. python3 scripts/compare_sota.py --target <system> [--datasets ...]; write the summary from its report.md
+- [ ] 4. Check the log: no error rows, versions OK, comparable column as expected, no psutil warning, a "cost" block per preset
+- [ ] 5. python3 scripts/compare_sota.py --target <system> [--datasets ...]; write the summary from its report.md, including its cost table
 ```
+
+Time and memory cost are recorded automatically for every run (definitions: "Cost metrics" in [protocols.md](protocols.md)); memory needs `psutil` from `requirements.txt`. Memory stays valid with `--workers > 1`. Presets run one after another and only the seeds / streams of one preset run in parallel, so the runner records for each run `concurrent_runs`, the most runs that executed at the same time as it (deterministic presets with one stream show 1 even with `--workers 3`). Times are strict only where `concurrent_runs` is 1 and comparable only between rows with the same machine and the same `concurrent_runs`; `compare_sota.py` warns when a dataset mixes values. This is what the `timing` question decides. Measuring the final model size runs at roughly 100 MB of model per second after each run (seconds for most systems, longer for 100-tree forests on full-length streams); `--no-model-size` skips it if the user does not need it.
 
 Commands (repo root; ECPF presets need `river==0.21.2`, the runner refuses otherwise):
 
@@ -98,7 +109,8 @@ Commands (repo root; ECPF presets need `river==0.21.2`, the runner refuses other
 python3 scripts/run_benchmark.py --list-datasets                                   # every dataset, ok / MISSING on this machine
 python3 scripts/run_benchmark.py --list                                            # datasets, presets (with role), suites
 python3 scripts/run_benchmark.py --dataset electricity                             # main method only
-python3 scripts/run_benchmark.py --dataset electricity --suite standard --seeds 3 --workers 3
+python3 scripts/run_benchmark.py --dataset electricity --suite standard --seeds 3 --workers 3   # timing = parallel
+python3 scripts/run_benchmark.py --dataset electricity --suite standard --seeds 3 --workers 1   # timing = strict
 python3 scripts/run_benchmark.py --dataset covertype_full --preset e10bft arf100 --seeds 3 --workers 3
 python3 scripts/run_benchmark.py --dataset injected_paper_electricity --workers 8   # 400 streams
 python3 scripts/run_benchmark.py --dataset electricity --suite standard --max-steps 5000   # smoke
@@ -108,7 +120,7 @@ python3 scripts/compare_sota.py --target e10bft                                 
 
 Presets that do not support the dataset's task are skipped automatically (forests on regression, `htr` on classification). Seeds only matter for presets with a `seed_param` (forests); `e10bft`, `ht`, `nb`, `ecpf_*` are deterministic and run once.
 
-Outputs: `outputs/benchmark/<dataset>/<preset>/runs.csv` (one row per run, merged with earlier runs of the same pair) and one directory per run with `preds.npz`, `manifest.json`, `metrics.json`. Re-running the same dataset x preset x stream x seed overwrites that run directory; use `--out-dir outputs/benchmark_<tag>` to keep a separate version, and `compare_sota.py --root` to report on it.
+Outputs: `outputs/benchmark/<dataset>/<preset>/runs.csv` (one row per run, merged with earlier runs of the same pair; includes the cost columns and `machine`) and one directory per run with `preds.npz`, `manifest.json` (with `cost` and `machine`), `metrics.json`. `compare_sota.py` also writes `cost.csv`. Re-running the same dataset x preset x stream x seed overwrites that run directory; use `--out-dir outputs/benchmark_<tag>` to keep a separate version, and `compare_sota.py --root` to report on it.
 
 Data that is not in git: `airlines_full` / `covertype_full` and the source of `injected_paper_covertype` need `cd data/dataset_0921/real_dataset/script && python3 prepare_all.py --full` once. `injected_paper_*` streams are generated in memory from a fixed seed per trial (50 trials x 8 cells); `--trials` / `--cells` select a subset, but only the full set is comparable with the paper's cells.
 
@@ -119,6 +131,7 @@ Data that is not in git: `airlines_full` / `covertype_full` and the source of `i
 - Never claim SOTA on a dataset whose registry entry has `"comparable": false`, or from a row whose `comparable` column is `False` (smoke run, version mismatch, or a preset kind outside the entry's `comparable_kinds`). Report those numbers as reference only, quoting `comparability_note` and `not_comparable_reason`.
 - Datasets with `"role": "report"` are for final numbers. Do not tune or pick settings by looking at their results; tune on `"role": "dev"` datasets, freeze a new preset, commit, then run the report datasets.
 - New system settings go into a **new** preset file (copy an existing one, change `name`, set `role`). Do not change a preset that already has reported results. Changing `main_preset` in `configs/benchmark_defaults.json` needs the user's explicit request.
+- Never compare times of runs from different machines (`machine` column) or with different `concurrent_runs`; say so when a report mixes them. Present a time difference as a result only from rows with `concurrent_runs` = 1; otherwise call the times indicative. Never compare our cost numbers with costs printed in papers (different hardware and implementations); compare only with baselines re-run here.
 
 ## Which metric to compare
 
@@ -144,6 +157,13 @@ Runs: <n streams> x <n seeds>, commit <sha>, river <version>
 | arf100 (re-run) | mean ± std | ... | | | this harness |
 | No-change | ... | | | | this harness |
 | <literature method> | value | ... | | | <source from registry> |
+
+Cost (from compare_sota's cost table; machine <cpu / RAM>; times strict / indicative):
+
+| System | runtime_s | cpu_time_s | rss_increment_mb | model_size_final_mb | ram_hours_gb | concurrent_runs |
+|---|---|---|---|---|---|---|
+| e10bft (ours, main) | mean ± std | ... | | | | 1 |
+| arf100 (re-run) | mean ± std | ... | | | | 3 |
 
 Claim strength: "beats re-run baselines in the same harness, significant in compare_sota's tests" (strong) vs "above the published number" (weak, implementations differ).
 ```
