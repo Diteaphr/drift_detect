@@ -38,7 +38,11 @@ from detectors import (
 from .ecpf import ECPFMetaLearner, _deep_clone, load_drift_times_file, load_drift_intervals_file
 from .ecpf_detector import ECPFWarningDriftDetector, ECPFZoneDetector
 from .uq_warning_detector import UQWarningDetector
-from detectors.meta_ecpf.adwin_family import ECPFAdwinFamilyDetector
+from detectors.meta_ecpf.adwin_family import (
+    ECPFAdwinFamilyDetector,
+    SUPPORTED_DETECTORS,
+    normalize_detector_type,
+)
 from detectors.meta_ecpf.signal_routing import extract_signal, normalize_signal_name
 from .drift_type_classifier_type_ldd import classify_drift_type
 from .model_pool import ModelPool
@@ -290,13 +294,13 @@ class ConceptDriftPipeline:
 
     def _resolve_ecpf_adwin_family_detectors(self) -> Tuple[str, str]:
         if self.config.ecpf_warning_detector or self.config.ecpf_drift_detector:
-            warning_detector = (self.config.ecpf_warning_detector or "adwin").lower()
-            drift_detector = (self.config.ecpf_drift_detector or "adwin").lower()
+            warning_detector = normalize_detector_type(self.config.ecpf_warning_detector or "adwin")
+            drift_detector = normalize_detector_type(self.config.ecpf_drift_detector or "adwin")
             for detector_type in (warning_detector, drift_detector):
-                if detector_type not in {"adwin", "seed", "seqdrift2"}:
+                if detector_type not in SUPPORTED_DETECTORS:
                     raise ValueError(
                         f"Unknown ECPF detector type {detector_type!r}; "
-                        "choose from adwin, seed, seqdrift2"
+                        f"choose from {', '.join(sorted(SUPPORTED_DETECTORS))}"
                     )
             return warning_detector, drift_detector
         return ECPFAdwinFamilyDetector.COMBOS[self._resolve_ecpf_adwin_family_combo()]

@@ -265,7 +265,9 @@ class PipelineConfig:
     detector_alpha: float = 0.8
     detector_delta_w: float = 0.1
 
-    # ADWIN/SEED/SeqDrift2 family routing
+    # Independent warning/confirm routing. DET4 additionally permits the
+    # official-ECPF zone detectors "hddm_a" and "rddm" in either arm. None on
+    # both fields preserves the historical combo/zone paths byte-for-byte.
     ecpf_adwin_family_combo: str = "seed_warning_adwin_drift"
     ecpf_warning_detector: Optional[str] = None
     ecpf_drift_detector: Optional[str] = None

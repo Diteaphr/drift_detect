@@ -6,8 +6,19 @@ from typing import Dict, Tuple
 
 from river import drift
 
+from detectors.core.rddm_moa import MOARDDM
+
 from .seed import SEEDDetector
 from .seqdrift2 import SeqDrift2Detector
+
+
+DETECTOR_ALIASES = {"hddma": "hddm_a"}
+SUPPORTED_DETECTORS = frozenset({"adwin", "hddm_a", "rddm", "seed", "seqdrift2"})
+
+
+def normalize_detector_type(detector_type: str) -> str:
+    kind = detector_type.lower()
+    return DETECTOR_ALIASES.get(kind, kind)
 
 
 class _OneSidedADWIN(drift.ADWIN):
@@ -42,6 +53,53 @@ class _ADWINAdapter:
         self.drift_detected = bool(self._detector.drift_detected)
         return self.drift_detected
 
+    def reset_after_confirmation(self) -> None:
+        self.reset()
+
+
+class _ZoneDetectorAdapter:
+    """Expose a zone detector as one arm of an independent warning/confirm pair.
+
+    HDDM-A resets immediately after a drift in the existing ``ECPFZoneDetector``.
+    MOA RDDM instead keeps its replay buffer and re-baselines on the next update;
+    ``reset_after_confirmation`` preserves that behavior when this arm itself
+    fired, while still resetting it when the other arm confirmed first.
+    """
+
+    zone_capable = True
+
+    def __init__(self, kind: str, role: str) -> None:
+        from river.drift.binary import HDDM_A
+
+        makers = {"hddm_a": HDDM_A, "rddm": MOARDDM}
+        self.kind = normalize_detector_type(kind)
+        self.role = role
+        self._make = makers[self.kind]
+        self._detector = self._make()
+        self.warning_detected = False
+        self.drift_detected = False
+
+    def reset(self) -> None:
+        self._detector = self._make()
+        self.warning_detected = False
+        self.drift_detected = False
+
+    def update(self, value: float) -> bool:
+        self._detector.update(int(round(float(value))))
+        self.drift_detected = bool(self._detector.drift_detected)
+        self.warning_detected = bool(self._detector.warning_detected) or self.drift_detected
+        result = self.warning_detected if self.role == "warning" else self.drift_detected
+        if self.drift_detected and self.kind == "hddm_a":
+            # Match ECPFZoneDetector: keep this step's outward flags but start
+            # the next step from a fresh River HDDM-A instance.
+            self._detector = self._make()
+        return result
+
+    def reset_after_confirmation(self) -> None:
+        if self.kind == "rddm" and self.drift_detected:
+            return  # preserve MOA's post-drift replay state
+        self.reset()
+
 
 def _make_detector(
     detector_type: str,
@@ -53,9 +111,11 @@ def _make_detector(
     value_range: float,
     one_sided: bool = False,
 ):
-    kind = detector_type.lower()
+    kind = normalize_detector_type(detector_type)
     if kind == "adwin":
         return _ADWINAdapter(delta=delta, min_num_instances=min_num_instances, one_sided=one_sided)
+    if kind in {"hddm_a", "rddm"}:
+        return _ZoneDetectorAdapter(kind, role)
     if kind == "seed":
         return SEEDDetector(
             role=role,
@@ -101,8 +161,14 @@ class ECPFAdwinFamilyDetector:
         drift_value_range: float = 1.0,
         one_sided: bool = False,
     ) -> None:
-        self.warning_detector_type = warning_detector_type.lower()
-        self.drift_detector_type = drift_detector_type.lower()
+        self.warning_detector_type = normalize_detector_type(warning_detector_type)
+        self.drift_detector_type = normalize_detector_type(drift_detector_type)
+        for detector_type in (self.warning_detector_type, self.drift_detector_type):
+            if detector_type not in SUPPORTED_DETECTORS:
+                raise ValueError(
+                    f"Unknown ECPF detector type {detector_type!r}; "
+                    f"choose from {', '.join(sorted(SUPPORTED_DETECTORS))}"
+                )
         self.min_num_instances = int(min_num_instances)
         self.delta = float(delta)
         self.delta_w = float(delta_w)
@@ -160,13 +226,24 @@ class ECPFAdwinFamilyDetector:
                 return name
         return f"{self.warning_detector_type}_warning_{self.drift_detector_type}_drift"
 
+    @property
+    def zone(self) -> bool:
+        """Whether the warning arm has a persistent zone that can close itself."""
+        return bool(getattr(self._warn, "zone_capable", False))
+
     def reset(self) -> None:
         self._warn.reset()
         self._drift.reset()
 
     def reset_warning(self) -> None:
         """Re-baseline only the warning arm (used by the warning timeout)."""
-        self._warn.reset()
+        if not self.zone:
+            self._warn.reset()
+
+    def _reset_after_confirmation(self) -> None:
+        for detector in (self._warn, self._drift):
+            reset = getattr(detector, "reset_after_confirmation", detector.reset)
+            reset()
 
     def update(self, err: float) -> Tuple[bool, bool]:
         return self.update_values(err, err)
@@ -184,6 +261,6 @@ class ECPFAdwinFamilyDetector:
             "drift_detector": self.drift_detector_type,
         }
         if drifted:
-            self.reset()
+            self._reset_after_confirmation()
             return warning, True
         return warning, False
