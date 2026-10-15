@@ -137,7 +137,7 @@ def audit_smoke(run_info: dict | None = None) -> dict:
     AUDIT_JSON.write_text(json.dumps(result, indent=2, ensure_ascii=False))
     status = "通過" if not errors else "失敗"
     lines = [
-        "# DET4 階段三：18 組 × 23 資料集 smoke",
+        f"# DET4 階段三：18 組 × {len(datasets())} 資料集 smoke",
         "",
         f"**結論：{status}。** 完成 `{len(rows)}/{expected}` runs，涵蓋 `{result['presets']}/18` presets 與 `{result['datasets']}/22` 非迴歸資料集；runner error rows `{result['failed_runs']}`。",
         "",
