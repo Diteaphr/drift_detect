@@ -116,3 +116,9 @@ outputs/det4/logs/
 outputs/benchmark/det5/
 outputs/det5/wiring/
 outputs/det5/logs/
+
+# DET6: generated streams and raw runs (docs/ECPF_DET6_預註冊.md)
+data/det6_slow_gradual/
+outputs/benchmark/det6/
+outputs/det6/wiring/
+outputs/det6/logs/
