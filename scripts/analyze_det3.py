@@ -37,6 +37,7 @@ MODEL = "ht"
 TRIALS = (0, 20)  # injected trials per cell, [first, end); later rounds override these
 SEED, DRAWS = 20261012, 10000
 INJ = "injected_paper_electricity"
+LONG = 2500  # long window (steps) scored on INJ only, stored as "w2500"; later rounds override it
 TYPES = ("突變", "漸變", "incremental", "recurring")
 
 
@@ -93,7 +94,7 @@ def score_one(path, arm, commit, source_hashes):
     bench = detection_metrics(al[al >= m["detect_from"]], gt, n_instances=n, delta_max=REGISTRY[ds]["delta_max"], anchor="start")
     assert (bench["tp"], bench["fp"], bench["fn"]) == (v["tp"], v["fp"], v["fn"]), (path, bench, v)
     row.update(score_window(alarms, scored_gt, n, start, 1000))
-    row["w2500"] = score_window(alarms, scored_gt, n, start, 2500) if ds == INJ else None
+    row["w2500"] = score_window(alarms, scored_gt, n, start, LONG) if ds == INJ else None
     return row
 
 

@@ -111,3 +111,8 @@ outputs/det3/logs/
 outputs/benchmark/det4/
 outputs/det4/wiring/
 outputs/det4/logs/
+
+# DET5 raw runs, wiring checks and local logs (verdict files remain tracked).
+outputs/benchmark/det5/
+outputs/det5/wiring/
+outputs/det5/logs/
