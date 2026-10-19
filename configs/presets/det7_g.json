@@ -1,0 +1,31 @@
+{
+  "name": "det7_g",
+  "kind": "pipeline",
+  "role": "ablation",
+  "description": "DET7 arm: e10bft with HDDM-A at River defaults reading the frozen reference in place of dual ADWIN, leader guard on. Config identical to b3dev_ref_hddm_a_guard (B3-dev, 6965dca).",
+  "source": "docs/ECPF_DET7_預註冊.md",
+  "requires": {
+    "river": "0.21.2"
+  },
+  "warm_start": 200,
+  "seed_param": null,
+  "config": {
+    "model_type": "ht",
+    "use_ecpf": true,
+    "ecpf_signal_mode": "dual_adwin",
+    "ecpf_warning_signal": "error",
+    "ecpf_drift_signal": "error",
+    "ecpf_reference_signal": true,
+    "ecpf_reference_warmup": 500,
+    "ecpf_leader_guard": true,
+    "ecpf_detector_warning_timeout": 1000,
+    "ecpf_guard_frozen_scale": 500,
+    "detector_delta": 0.05,
+    "ecpf_learn_during_warning": false,
+    "ecpf_zone_detector": "hddm_a"
+  },
+  "tasks": [
+    "binary",
+    "multiclass"
+  ]
+}

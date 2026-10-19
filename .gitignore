@@ -126,3 +126,8 @@ outputs/det6/logs/
 # B3-dev (development check on DET3 streams)
 outputs/benchmark/b3dev/
 outputs/benchmark/b3dev_gate/
+
+# DET7 (docs/ECPF_DET7_預註冊.md)
+outputs/benchmark/det7/
+outputs/det7/wiring/
+outputs/det7/logs/
