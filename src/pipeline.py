@@ -207,7 +207,8 @@ class ConceptDriftPipeline:
         if (self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES
                 and self.config.ecpf_zone_detector):
             # E9: the official-ECPF single detector replaces the dual ADWIN.
-            self._ecpf_detector = ECPFZoneDetector(self.config.ecpf_zone_detector)
+            self._ecpf_detector = ECPFZoneDetector(
+                self.config.ecpf_zone_detector, self.config.ecpf_zone_drift_confidence)
         elif self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES:
             warning_detector, drift_detector = self._resolve_ecpf_adwin_family_detectors()
             if warning_detector == "adwin" and drift_detector == "adwin":

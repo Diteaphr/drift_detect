@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 from detectors.core.rddm_moa import MOARDDM
 from detectors.core.magseed_candidate import MagSeedCandidate
@@ -25,7 +25,7 @@ class ECPFZoneDetector:
 
     zone = True
 
-    def __init__(self, kind: str) -> None:
+    def __init__(self, kind: str, drift_confidence: Optional[float] = None) -> None:
         from river.drift.binary import DDM, HDDM_A
 
         makers = {
@@ -42,6 +42,11 @@ class ECPFZoneDetector:
             raise ValueError("ecpf_zone_detector must be one of %s, got %r" % (sorted(makers), kind))
         self.kind = kind
         self._make = makers[kind]
+        if drift_confidence is not None:
+            if kind != "hddm_a":
+                raise ValueError("ecpf_zone_drift_confidence is only defined for hddm_a, got %r" % kind)
+            c = float(drift_confidence)
+            self._make = lambda: HDDM_A(drift_confidence=c, warning_confidence=5 * c)
         self._det = self._make()
         self.stats: dict = {}
 

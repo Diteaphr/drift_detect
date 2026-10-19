@@ -122,3 +122,7 @@ data/det6_slow_gradual/
 outputs/benchmark/det6/
 outputs/det6/wiring/
 outputs/det6/logs/
+
+# B3-dev (development check on DET3 streams)
+outputs/benchmark/b3dev/
+outputs/benchmark/b3dev_gate/

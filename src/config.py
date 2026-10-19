@@ -235,6 +235,9 @@ class PipelineConfig:
     # "magseed_upward" is the explicitly non-original one-sided A5u.
     # Classification only. "" = off; binary runs unchanged.
     ecpf_zone_detector: str = ""
+    # B3-dev: HDDM-A's drift confidence for the zone detector; warning = 5x, River's
+    # default ratio (0.001 / 0.005). None = River defaults; existing runs unchanged.
+    ecpf_zone_drift_confidence: Optional[float] = None
 
     # Close a warning that has stayed open longer than this many steps without
     # a confirmation (0 = off). Measured failure it prevents: a warning opened

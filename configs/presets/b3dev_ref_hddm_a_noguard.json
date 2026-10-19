@@ -1,0 +1,31 @@
+{
+  "name": "b3dev_ref_hddm_a_noguard",
+  "kind": "pipeline",
+  "role": "ablation",
+  "description": "B3-dev (dev only): e10bft with HDDM-A (River defaults) reading the frozen reference in place of dual ADWIN; leader guard off.",
+  "source": "B2 replay (session notes); not preregistered",
+  "requires": {
+    "river": "0.21.2"
+  },
+  "warm_start": 200,
+  "seed_param": null,
+  "config": {
+    "model_type": "ht",
+    "use_ecpf": true,
+    "ecpf_signal_mode": "dual_adwin",
+    "ecpf_warning_signal": "error",
+    "ecpf_drift_signal": "error",
+    "ecpf_reference_signal": true,
+    "ecpf_reference_warmup": 500,
+    "ecpf_leader_guard": false,
+    "ecpf_detector_warning_timeout": 1000,
+    "ecpf_guard_frozen_scale": 500,
+    "detector_delta": 0.05,
+    "ecpf_learn_during_warning": false,
+    "ecpf_zone_detector": "hddm_a"
+  },
+  "tasks": [
+    "binary",
+    "multiclass"
+  ]
+}
