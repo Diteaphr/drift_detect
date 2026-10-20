@@ -131,3 +131,8 @@ outputs/benchmark/b3dev_gate/
 outputs/benchmark/det7/
 outputs/det7/wiring/
 outputs/det7/logs/
+outputs/benchmark/det8/
+outputs/det8/pilot/
+outputs/det8/wiring/
+outputs/det8/logs/
+outputs/det8/partial/
