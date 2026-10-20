@@ -32,6 +32,23 @@ Optional extensions (off by default; defaults reproduce the paper exactly):
   expert earns fade points by the errors it saved when reused (reused copy vs.
   fresh learner over the first ``reuse_value_window`` post-drift instances),
   instead of +f merely for being the leader.
+* Memory-aware variants of ``reuse_value`` (same gains, different costs or
+  eviction order; slot sizes are measured with ``deep_sizeof`` in KB):
+
+  - ``density``: evict by fade score per KB (non-positive scores first).
+  - ``rent``: idle cost per drift = ``fade_lambda * kb / mean_kb``.
+  - ``entry``: one-off fee ``fade_lambda * kb / mean_kb`` the first time a
+    slot is stored, then the fixed ``reuse_idle_cost``.
+  - ``freq``: evict by ``(reuses + 1) / (age + 2) * max(score, 0) / kb``.
+  - ``decay``: idle scores shrink by ``decay_gamma`` each drift before the
+    idle cost, so old credit fades.
+  - ``subst``: reuse value is measured against the better of the fresh
+    learner and the second-best stored expert (what is lost without it).
+
+  ``memory_budget_factor > 0`` adds a pool cap in KB: total stored size
+  <= factor x the current leader's size. ``pool_trace`` records the pool
+  timeline, evictions, regret against recently evicted experts and the time
+  spent in pool operations (observability only, no decision effect).
 """
 
 from __future__ import annotations
@@ -42,6 +59,8 @@ import logging
 import math
 import pickle
 import sys
+import time
+from collections import deque
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -55,6 +74,10 @@ logger = logging.getLogger(__name__)
 # deepcopy/pickle recurse once per tree level; deep River trees (e.g. a
 # Hoeffding Forest on electricity) exceed Python's default limit of 1000.
 _CLONE_RECURSION_LIMIT = 20_000
+
+FADE_POLICIES = ("ecpf", "reuse_value", "density", "rent", "entry", "freq", "decay", "subst")
+# Policies whose decisions read slot sizes.
+_MEMORY_POLICIES = ("density", "rent", "entry", "freq")
 
 
 def _deep_clone(obj: Any) -> Any:
@@ -200,6 +223,11 @@ class ECPFMetaLearner:
         fade_policy: str = "ecpf",
         reuse_value_window: int = 500,
         reuse_idle_cost: float = 1.0,
+        fade_lambda: float = 1.0,
+        decay_gamma: float = 0.8,
+        memory_budget_factor: float = 0.0,
+        pool_trace: bool = False,
+        ghost_archive_size: int = 20,
     ) -> None:
         self.task = task
         # Cached once: every hot-loop branch below asks only this question, and
@@ -228,13 +256,22 @@ class ECPFMetaLearner:
         self._use_bitset = similarity_mode == "error_bitset"
         if swap_policy not in ("strict", "hoeffding"):
             raise ValueError(f"unknown swap_policy: {swap_policy!r}")
-        if fade_policy not in ("ecpf", "reuse_value"):
+        if fade_policy not in FADE_POLICIES:
             raise ValueError(f"unknown fade_policy: {fade_policy!r}")
         self.swap_policy = swap_policy
         self.swap_delta = float(swap_delta)
         self.fade_policy = fade_policy
         self.reuse_value_window = max(1, int(reuse_value_window))
         self.reuse_idle_cost = float(reuse_idle_cost)
+        self.fade_lambda = float(fade_lambda)
+        self.decay_gamma = float(decay_gamma)
+        self.memory_budget_factor = float(memory_budget_factor)
+        self.pool_trace = bool(pool_trace)
+        # Sizes are only measured when a decision or the trace needs them, so
+        # the default configuration does no extra work.
+        self._track_sizes = (
+            fade_policy in _MEMORY_POLICIES or self.memory_budget_factor > 0 or self.pool_trace
+        )
         self.similarity_margin = float(similarity_margin)
         self.fade_points = int(fade_points)
         self.model_check_freq = int(model_check_freq)
@@ -287,6 +324,101 @@ class ECPFMetaLearner:
         self._rv_fresh_correct = 0
         self._rv_n = 0
         self.reuse_value_log: List[Dict[str, Any]] = []
+        # ``subst``: copy of the second-best stored expert, run beside the
+        # fresh learner over the reuse-value window.
+        self._rv_alt: Optional[Any] = None
+        self._rv_alt_correct = 0
+        self._rv_has_alt = False
+
+        # Memory / lifetime bookkeeping per slot.
+        self.slot_kb: Dict[int, float] = {}
+        self._slot_birth: Dict[int, int] = {}
+        self._slot_reuses: Dict[int, int] = {}
+        self._slot_rv_sum: Dict[int, float] = {}
+        self._entry_paid: set = set()
+
+        # Pool trace (pool_trace=True). ``clock`` is the stream index, set by
+        # the pipeline every step.
+        self.clock: int = 0
+        self.pool_timeline: List[Tuple[int, int, float]] = []
+        self.eviction_log: List[Dict[str, Any]] = []
+        self.regret_log: List[Dict[str, Any]] = []
+        self._ghosts: deque = deque(maxlen=max(1, int(ghost_archive_size)))
+        self.pool_time_s = 0.0
+        self.sizing_time_s = 0.0
+        self.trace_time_s = 0.0
+
+    # ------------------------------------------------------------------
+    # Memory bookkeeping
+    # ------------------------------------------------------------------
+    def _measure_slot(self, idx: int) -> None:
+        """Size of the stored expert's model in KB.
+
+        Only the estimator is measured: a frozen ``BaseModelAdapter`` also
+        carries a copy of the live adapter's ``data_buffer`` (recent samples,
+        ~1 MB at the default 1000 rows), which reuse never reads and which is
+        the same for every slot, so counting it would hide the size
+        differences the memory-aware policies act on.
+        """
+        if not self._track_sizes or self.slots[idx] is None:
+            return
+        from .metrics.run_cost import deep_sizeof
+
+        t0 = time.perf_counter()
+        slot = self.slots[idx]
+        model = slot.get_model() if hasattr(slot, "get_model") else slot
+        self.slot_kb[idx] = deep_sizeof(model) / 1024.0
+        self.sizing_time_s += time.perf_counter() - t0
+
+    def _alive(self) -> List[int]:
+        return [i for i, s in enumerate(self.slots) if s is not None]
+
+    def pool_kb(self) -> float:
+        return float(sum(self.slot_kb.get(i, 0.0) for i in self._alive()))
+
+    def _mean_kb(self) -> float:
+        alive = self._alive()
+        if not alive:
+            return 1.0
+        m = sum(self.slot_kb.get(i, 0.0) for i in alive) / len(alive)
+        return m if m > 0 else 1.0
+
+    def _record_timeline(self) -> None:
+        if self.pool_trace:
+            self.pool_timeline.append((int(self.clock), len(self._alive()), round(self.pool_kb(), 3)))
+
+    def _evict(self, idx: int, reason: str) -> None:
+        """Remove a slot (fade, cap or memory budget) and log it."""
+        if self.pool_trace:
+            self.eviction_log.append({
+                "t": int(self.clock),
+                "drift": int(self.num_drifts),
+                "slot": int(idx),
+                "reason": reason,
+                "score": float(self.fade_scores.get(idx, 0)),
+                "kb": round(float(self.slot_kb.get(idx, 0.0)), 3),
+                "age_drifts": int(self.num_drifts - self._slot_birth.get(idx, 0)),
+                "reuses": int(self._slot_reuses.get(idx, 0)),
+                "rv_sum": float(self._slot_rv_sum.get(idx, 0.0)),
+                "era": int(self.slot_eras.get(idx, -1)),
+            })
+            self._ghosts.append((int(idx), int(self.slot_eras.get(idx, -1)), self.slots[idx]))
+        self._remove_slot(idx)
+        self.fade_scores.pop(idx, None)
+
+    def _eviction_key(self, idx: int) -> Tuple[float, ...]:
+        """Lower key = evicted first (cap and memory budget)."""
+        score = float(self.fade_scores.get(idx, 0))
+        if self.fade_policy in ("density", "freq"):
+            kb = max(self.slot_kb.get(idx, 0.0), 1e-6)
+            if score <= 0:
+                return (0.0, score)
+            if self.fade_policy == "density":
+                return (1.0, score / kb)
+            age = self.num_drifts - self._slot_birth.get(idx, 0)
+            p_reuse = (self._slot_reuses.get(idx, 0) + 1) / (age + 2)
+            return (1.0, p_reuse * score / kb)
+        return (score,)
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -297,6 +429,13 @@ class ECPFMetaLearner:
         self.slot_stats = [_SlotStats()]
         self.fade_scores = {0: self.fade_points}
         self.slot_eras = {0: 0}
+        self.slot_kb = {}
+        self._slot_birth = {0: self.num_drifts}
+        self._slot_reuses = {}
+        self._slot_rv_sum = {}
+        self._entry_paid = set()
+        self._measure_slot(0)
+        self._record_timeline()
         self.current_idx = 0
         self.new_model = None
         self.curr_correct = 0
@@ -471,7 +610,14 @@ class ECPFMetaLearner:
                 )
                 self._rv_reused_correct += reused
                 self._rv_fresh_correct += fresh
+                if self._rv_alt is not None:
+                    self._rv_alt_correct += self._instance_credit(
+                        self._predict_one(self._rv_alt, x), y_true
+                    )
+                    self._train_one(self._rv_alt, x, y_true)
                 self._rv_n += 1
+                if self._rv_n >= self.reuse_value_window:
+                    self._rv_alt = None
         self.curr_correct += leader_credit
         self.total_inst += 1
 
@@ -525,6 +671,8 @@ class ECPFMetaLearner:
                 self.new_model._scaler_fitted = fit_a
             self.slots[self.current_idx] = _deep_clone(prediction_model)
             self.slot_eras[self.current_idx] = self.num_drifts  # mid-era re-freeze
+            self._measure_slot(self.current_idx)
+            self._record_timeline()
             self.leader_swaps += 1
             self._leader_is_reused = not self._leader_is_reused
             logger.info("ECPF: swapped leader in favour of shadow learner")
@@ -543,6 +691,8 @@ class ECPFMetaLearner:
         residual)`` (see :meth:`_profile_on_buffer`) and must not be reported as
         accuracies.
         """
+        t_start = time.perf_counter()
+        trace_before = self.trace_time_s
         self.num_drifts += 1
         details: Dict[str, Any] = {"buffer_len": len(buffer)}
         details.update(self._settle_reuse_value())
@@ -551,6 +701,7 @@ class ECPFMetaLearner:
         self.slots[self.current_idx] = _deep_clone(prediction_model)
         # The frozen slot represents the era that just ended.
         self.slot_eras[self.current_idx] = self.num_drifts - 1
+        self._measure_slot(self.current_idx)
 
         # Update lifetime stats for current leader slot (MOA getNextModel start)
         st = self.slot_stats[self.current_idx]
@@ -610,6 +761,39 @@ class ECPFMetaLearner:
         acc_current = float(acc_on_buffer.get(self.current_idx, 0.0))
         acc_new = float(self._profile_on_buffer(self.new_model, buffer)[1])
 
+        # Regret diagnostic: would a recently evicted expert have beaten the
+        # best one still stored on this buffer?
+        if self.pool_trace and self._ghosts:
+            t_trace = time.perf_counter()
+            ghost_scores = [
+                (self._profile_on_buffer(model, buffer)[1], slot, era)
+                for slot, era, model in self._ghosts
+            ]
+            g_score, g_slot, g_era = max(ghost_scores, key=lambda r: r[0])
+            self.regret_log.append({
+                "t": int(self.clock),
+                "drift": int(self.num_drifts),
+                "best_alive_score": acc_best,
+                "best_ghost_score": float(g_score),
+                "ghost_slot": int(g_slot),
+                "ghost_era": int(g_era),
+                "regret": float(g_score) > acc_best,
+                "gap": float(g_score) - acc_best,
+            })
+            self.trace_time_s += time.perf_counter() - t_trace
+
+        # ``subst``: the alternative to this reuse is the next-best stored
+        # expert (or the fresh learner, whichever does better).
+        self._rv_alt = None
+        self._rv_alt_correct = 0
+        self._rv_has_alt = False
+        if self.fade_policy == "subst":
+            others = [i for i in alive if i != best_i]
+            if others:
+                second = max(others, key=lambda idx: acc_on_buffer.get(idx, 0.0))
+                self._rv_alt = _deep_clone(self.slots[second])
+                self._rv_has_alt = True
+
         # Copy of best → new slot becomes active (MOA addModel(copy of best))
         clone_best = _deep_clone(self.slots[best_i])
         self.slots.append(clone_best)
@@ -618,6 +802,9 @@ class ECPFMetaLearner:
         self.fade_scores.setdefault(new_idx, 0)
         # The clone becomes the leader for the era that starts now.
         self.slot_eras[new_idx] = self.num_drifts
+        self._slot_birth[new_idx] = self.num_drifts
+        if best_i in self.slot_kb:
+            self.slot_kb[new_idx] = self.slot_kb[best_i]
         self.current_idx = new_idx
 
         # Install leader weights into pipeline model = copy of best
@@ -633,11 +820,14 @@ class ECPFMetaLearner:
         if self.fade_enabled:
             self._fade_models()
         self._enforce_pool_cap()
+        self._enforce_memory_budget()
+        self._record_timeline()
 
         self.curr_correct = 0
         self.new_correct = 0
         self.total_inst = 0
         self.model_reuses += 1
+        self.pool_time_s += (time.perf_counter() - t_start) - (self.trace_time_s - trace_before)
 
         details["collection_size"] = sum(1 for s in self.slots if s is not None)
         details["current_idx"] = self.current_idx
@@ -673,20 +863,38 @@ class ECPFMetaLearner:
         src = self._reuse_source
         if src is None or self._rv_n == 0:
             return {}
-        value = self._rv_reused_correct - self._rv_fresh_correct
+        baseline = self._rv_fresh_correct
+        has_alt = self._rv_has_alt
+        if has_alt:
+            baseline = max(baseline, self._rv_alt_correct)
+        value = self._rv_reused_correct - baseline
         record = {
             "reuse_value": float(value) if self._is_regression else int(value),
             "reuse_value_source": int(src),
             "reuse_value_n": int(self._rv_n),
         }
-        self.reuse_value_log.append(dict(record, drift=self.num_drifts))
+        log = dict(record, drift=self.num_drifts)
+        if self.pool_trace:
+            log.update(
+                t=int(self.clock),
+                reused_correct=float(self._rv_reused_correct),
+                fresh_correct=float(self._rv_fresh_correct),
+                alt_correct=float(self._rv_alt_correct) if has_alt else None,
+                leader_is_reused_at_end=bool(self._leader_is_reused),
+            )
+        self.reuse_value_log.append(log)
         if (
-            self.fade_policy == "reuse_value"
+            self.fade_policy != "ecpf"
             and src < len(self.slots)
             and self.slots[src] is not None
         ):
             self.fade_scores[src] = self.fade_scores.get(src, 0) + value
+            self._slot_reuses[src] = self._slot_reuses.get(src, 0) + 1
+            self._slot_rv_sum[src] = self._slot_rv_sum.get(src, 0.0) + float(value)
         self._reuse_source = None
+        self._rv_alt = None
+        self._rv_alt_correct = 0
+        self._rv_has_alt = False
         return record
 
     def _fresh_model(self) -> Any:
@@ -763,6 +971,16 @@ class ECPFMetaLearner:
                 acc_i = ai.n_correct / max(1, ai.n_inst)
                 acc_j = aj.n_correct / max(1, aj.n_inst)
                 lose, keep = (j, i) if acc_i >= acc_j else (i, j)
+                if self.pool_trace:
+                    self.eviction_log.append({
+                        "t": int(self.clock),
+                        "drift": int(self.num_drifts),
+                        "slot": int(lose),
+                        "reason": "merge",
+                        "kept": int(keep),
+                        "kb": round(float(self.slot_kb.get(lose, 0.0)), 3),
+                        "era": int(self.slot_eras.get(lose, -1)),
+                    })
                 self._remove_slot(lose)
                 removed.append(lose)
                 self.last_merge_pairs.append((int(keep), int(lose)))
@@ -776,6 +994,7 @@ class ECPFMetaLearner:
 
     def _remove_slot(self, idx: int) -> None:
         self.slots[idx] = None
+        self.slot_kb.pop(idx, None)
         if idx < len(self.slot_stats):
             self.slot_stats[idx] = _SlotStats()
         keys = [k for k in self._pair_seen if idx in k]
@@ -790,37 +1009,92 @@ class ECPFMetaLearner:
         ``reuse_value``: current is only topped up to a grace of f (so a new
         leader is not evicted before it can prove itself); others lose
         ``reuse_idle_cost``. Gains come from ``_settle_reuse_value`` instead.
+        The memory-aware policies (module docstring) share the reuse_value
+        gains and leader grace and differ in the idle cost.
         """
+        mean_kb = self._mean_kb() if self._track_sizes else 1.0
         for i in range(len(self.slots)):
             if self.slots[i] is None:
                 continue
             if i == self.current_idx:
-                if self.fade_policy == "reuse_value":
+                if self.fade_policy != "ecpf":
                     self.fade_scores[i] = max(self.fade_scores.get(i, 0), self.fade_points)
                 else:
                     self.fade_scores[i] = self.fade_scores.get(i, 0) + self.fade_points
             else:
-                cost = self.reuse_idle_cost if self.fade_policy == "reuse_value" else 1
-                fs = self.fade_scores.get(i, 0) - cost
+                fs = self.fade_scores.get(i, 0)
+                if self.fade_policy == "ecpf":
+                    cost = 1
+                elif self.fade_policy == "rent":
+                    cost = self.fade_lambda * self.slot_kb.get(i, mean_kb) / mean_kb
+                else:
+                    cost = self.reuse_idle_cost
+                if self.fade_policy == "decay":
+                    fs = self.decay_gamma * fs
+                if self.fade_policy == "entry" and i not in self._entry_paid:
+                    fs -= self.fade_lambda * self.slot_kb.get(i, mean_kb) / mean_kb
+                    self._entry_paid.add(i)
+                fs -= cost
                 if fs <= 0:
-                    self._remove_slot(i)
-                    self.fade_scores.pop(i, None)
+                    self.fade_scores[i] = fs
+                    self._evict(i, "fade")
                 else:
                     self.fade_scores[i] = fs
 
     def _enforce_pool_cap(self) -> None:
         """Keep at most ``max_pool_size`` alive snapshots, excluding current leader."""
         while sum(1 for s in self.slots if s is not None) > self.max_pool_size:
-            candidates: List[Tuple[int, int]] = []
-            for i, slot in enumerate(self.slots):
-                if slot is None or i == self.current_idx:
-                    continue
-                candidates.append((self.fade_scores.get(i, 0), i))
+            candidates = [
+                (self._eviction_key(i), i)
+                for i, slot in enumerate(self.slots)
+                if slot is not None and i != self.current_idx
+            ]
             if not candidates:
                 break
             _, rm_idx = min(candidates)
-            self._remove_slot(rm_idx)
-            self.fade_scores.pop(rm_idx, None)
+            self._evict(rm_idx, "cap")
+
+    def _enforce_memory_budget(self) -> None:
+        """Keep stored KB <= ``memory_budget_factor`` x the leader's KB."""
+        if self.memory_budget_factor <= 0:
+            return
+        budget = self.memory_budget_factor * self.slot_kb.get(self.current_idx, 0.0)
+        while self.pool_kb() > budget:
+            candidates = [
+                (self._eviction_key(i), i)
+                for i in self._alive()
+                if i != self.current_idx
+            ]
+            if not candidates:
+                break
+            _, rm_idx = min(candidates)
+            self._evict(rm_idx, "budget")
+
+    def pool_trace_dict(self) -> Dict[str, Any]:
+        """Everything the pool trace recorded, JSON-serialisable."""
+        return {
+            "fade_policy": self.fade_policy,
+            "fade_lambda": self.fade_lambda,
+            "decay_gamma": self.decay_gamma,
+            "memory_budget_factor": self.memory_budget_factor,
+            "max_pool_size": self.max_pool_size,
+            "reuse_value_window": self.reuse_value_window,
+            "num_drifts": int(self.num_drifts),
+            "model_reuses": int(self.model_reuses),
+            "model_merges": int(self.model_merges),
+            "leader_swaps": int(self.leader_swaps),
+            "pool_time_s": round(self.pool_time_s, 4),
+            "sizing_time_s": round(self.sizing_time_s, 4),
+            "trace_time_s": round(self.trace_time_s, 4),
+            "timeline": [list(r) for r in self.pool_timeline],
+            "evictions": self.eviction_log,
+            "regret": self.regret_log,
+            "reuse_values": self.reuse_value_log,
+        }
+
+    def ghost_models(self) -> List[Any]:
+        """Evicted experts kept only for the regret diagnostic."""
+        return [m for _, _, m in self._ghosts]
 
 
 def load_drift_times_file(path: str) -> List[int]:
