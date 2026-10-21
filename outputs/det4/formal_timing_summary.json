@@ -1,0 +1,30 @@
+{
+  "batch": "timing",
+  "commit": "59db00f71ce20198fab4d17c853333a428368042",
+  "expected_runs": 18,
+  "completed_runs": 18,
+  "failed_runs": 0,
+  "elapsed_s": 358.69,
+  "free_gib_after": 53.28,
+  "results": [
+    {
+      "dataset": "electricity",
+      "out_dir": "outputs/benchmark/det4_strict_timing",
+      "workers": 1,
+      "trials": null,
+      "trial_start": 0,
+      "presets": 18,
+      "streams": 1,
+      "expected": 18,
+      "complete": 18,
+      "failed": 0,
+      "errors": [],
+      "attempts": 1,
+      "elapsed_s": 358.67,
+      "log": "outputs/det4/logs/formal_timing_01_electricity.log",
+      "free_gib_after": 53.28
+    }
+  ],
+  "skipped": [],
+  "errors": []
+}
