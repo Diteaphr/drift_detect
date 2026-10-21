@@ -2910,4 +2910,3 @@ Some runs shared the machine with other runs (`concurrent_runs` > 1): their time
 | synthetic_multiclass | det4_s1_wrddm_cadwin | 40 | 46.2542 | 3.6531 | 46.2245 | 2176.7000 | 5.0875 | 16.6000 | 12.4078 | 2.41e-06 | 6 | Apple M4 / 24.0 GB |
 | synthetic_multiclass | det4_s1_wrddm_chddma | 40 | 52.8388 | 8.2777 | 50.2601 | 1937.1350 | 6.4000 | 19.0000 | 13.7468 | 5.21e-06 | 6 | Apple M4 / 24.0 GB |
 | synthetic_multiclass | det4_s1_wrddm_crddm | 40 | 52.7220 | 4.5735 | 52.3395 | 1913.4975 | 9.2475 | 21.5000 | 16.9295 | 8.06e-06 | 6 | Apple M4 / 24.0 GB |
-

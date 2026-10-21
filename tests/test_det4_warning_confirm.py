@@ -138,4 +138,3 @@ def test_s1_timeout_rebaselines_warning_and_guard_confirmation_resets_both():
     assert drifted and detections
     assert main.resets == guard.resets == 1
     assert not guard_pipe._ecpf_warning_active
-

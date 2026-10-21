@@ -336,7 +336,7 @@ def main() -> None:
         lines.append("_No run in this selection recorded cost; re-run with the current scripts/run_benchmark.py._")
     lines.append("")
 
-    (out_dir / "report.md").write_text("\n".join(lines) + "\n")
+    (out_dir / "report.md").write_text("\n".join(lines).rstrip() + "\n")
     print("\n".join(lines))
     print(f"\nreport -> {out_dir / 'report.md'}")
 

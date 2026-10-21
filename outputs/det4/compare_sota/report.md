@@ -901,4 +901,3 @@ Mean per run. `runtime_s` is wall time, `cpu_time_s` process CPU time (both excl
 | insects_incremental_reoccurring_balanced | det4_s1_wrddm_cadwin | 1 | 52.6400 | - | 52.2490 | 1519.4000 | 12.0000 | 12.0000 | 33.3000 | 3.07e-06 | 1 | Apple M4 / 24.0 GB |
 | insects_incremental_reoccurring_balanced | det4_s1_wrddm_chddma | 1 | 48.0900 | - | 47.9130 | 1663.3000 | 11.6000 | 11.6000 | 26.1800 | 6.52e-07 | 1 | Apple M4 / 24.0 GB |
 | insects_incremental_reoccurring_balanced | det4_s1_wrddm_crddm | 1 | 63.0600 | - | 62.4530 | 1268.5000 | 34.3000 | 34.3000 | 46.6600 | 3.11e-05 | 1 | Apple M4 / 24.0 GB |
-
