@@ -1,0 +1,635 @@
+dataset,preset,metric,n,mean,std,ci95,sota_value,sota_method,sota_source,diff_vs_sota,classic_value,classic_method,diff_vs_classic
+airlines_full,det4_s0_wadwin_cadwin,acc_prequential,1,0.6338130790180633,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.06948692098193676,0.6855,SRP,-0.051686920981936724
+airlines_full,det4_s0_wadwin_cadwin,kappa_m,1,0.1779216941435011,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.15597830585649888,,,
+airlines_full,det4_s0_wadwin_cadwin,kappa_t,1,0.1270633991116611,,,,,,,,,
+airlines_full,det4_s0_wadwin_cadwin,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s0_wadwin_cadwin,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s0_wadwin_chddma,acc_prequential,1,0.6386018840045015,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.06469811599549857,0.6855,SRP,-0.046898115995498535
+airlines_full,det4_s0_wadwin_chddma,kappa_m,1,0.1886724131472595,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.14522758685274048,,,
+airlines_full,det4_s0_wadwin_chddma,kappa_t,1,0.1384792168475017,,,,,,,,,
+airlines_full,det4_s0_wadwin_chddma,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s0_wadwin_chddma,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s0_wadwin_crddm,acc_prequential,1,0.6334422849811729,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.0698577150188271,0.6855,SRP,-0.052057715018827055
+airlines_full,det4_s0_wadwin_crddm,kappa_m,1,0.1770892730049987,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.1568107269950013,,,
+airlines_full,det4_s0_wadwin_crddm,kappa_t,1,0.1261794798134929,,,,,,,,,
+airlines_full,det4_s0_wadwin_crddm,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s0_wadwin_crddm,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s0_whddma_cadwin,acc_prequential,1,0.6450499923060238,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.05825000769397626,0.6855,SRP,-0.04045000769397622
+airlines_full,det4_s0_whddma_cadwin,kappa_m,1,0.2031482167458161,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.13075178325418388,,,
+airlines_full,det4_s0_whddma_cadwin,kappa_t,1,0.1538505734426447,,,,,,,,,
+airlines_full,det4_s0_whddma_cadwin,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s0_whddma_cadwin,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s0_whddma_chddma,acc_prequential,1,0.6304889104773417,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.07281108952265836,0.6855,SRP,-0.05501108952265832
+airlines_full,det4_s0_whddma_chddma,kappa_m,1,0.170459038636827,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.163440961363173,,,
+airlines_full,det4_s0_whddma_chddma,kappa_t,1,0.1191390626035841,,,,,,,,,
+airlines_full,det4_s0_whddma_chddma,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s0_whddma_chddma,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s0_whddma_crddm,acc_prequential,1,0.6503041438087592,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.05299585619124081,0.6855,SRP,-0.03519585619124077
+airlines_full,det4_s0_whddma_crddm,kappa_m,1,0.2149436242783948,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.11895637572160517,,,
+airlines_full,det4_s0_whddma_crddm,kappa_t,1,0.1663757098976861,,,,,,,,,
+airlines_full,det4_s0_whddma_crddm,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s0_whddma_crddm,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s0_wrddm_cadwin,acc_prequential,1,0.6426806184102948,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.06061938158970526,0.6855,SRP,-0.04281938158970522
+airlines_full,det4_s0_wrddm_cadwin,kappa_m,1,0.1978290456707858,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.13607095432921418,,,
+airlines_full,det4_s0_wrddm_cadwin,kappa_t,1,0.1482023291273507,,,,,,,,,
+airlines_full,det4_s0_wrddm_cadwin,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s0_wrddm_cadwin,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s0_wrddm_chddma,acc_prequential,1,0.6406801845812715,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.06261981541872852,0.6855,SRP,-0.04481981541872848
+airlines_full,det4_s0_wrddm_chddma,kappa_m,1,0.1933381336285652,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.14056186637143478,,,
+airlines_full,det4_s0_wrddm_chddma,kappa_t,1,0.1434335845137337,,,,,,,,,
+airlines_full,det4_s0_wrddm_chddma,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s0_wrddm_chddma,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s0_wrddm_crddm,acc_prequential,1,0.6325931666366942,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.07070683336330585,0.6855,SRP,-0.052906833363305816
+airlines_full,det4_s0_wrddm_crddm,kappa_m,1,0.1751830285978282,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.15871697140217178,,,
+airlines_full,det4_s0_wrddm_crddm,kappa_t,1,0.1241553046206881,,,,,,,,,
+airlines_full,det4_s0_wrddm_crddm,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s0_wrddm_crddm,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s1_wadwin_cadwin,acc_prequential,1,0.6325542332628207,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.07074576673717936,0.6855,SRP,-0.05294576673717932
+airlines_full,det4_s1_wadwin_cadwin,kappa_m,1,0.1750956243782854,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.15880437562171457,,,
+airlines_full,det4_s1_wadwin_cadwin,kappa_t,1,0.1240624930943804,,,,,,,,,
+airlines_full,det4_s1_wadwin_cadwin,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s1_wadwin_cadwin,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s1_wadwin_chddma,acc_prequential,1,0.6397198280257257,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.06358017197427435,0.6855,SRP,-0.04578017197427431
+airlines_full,det4_s1_wadwin_chddma,kappa_m,1,0.1911821628798441,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.14271783712015587,,,
+airlines_full,det4_s1_wadwin_chddma,kappa_t,1,0.1411442335314784,,,,,,,,,
+airlines_full,det4_s1_wadwin_chddma,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s1_wadwin_chddma,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s1_wadwin_crddm,acc_prequential,1,0.6395381389476494,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.0637618610523506,0.6855,SRP,-0.04596186105235056
+airlines_full,det4_s1_wadwin_crddm,kappa_m,1,0.1907742765219779,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.14312572347802208,,,
+airlines_full,det4_s1_wadwin_crddm,kappa_t,1,0.1407111130753761,,,,,,,,,
+airlines_full,det4_s1_wadwin_crddm,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s1_wadwin_crddm,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s1_whddma_cadwin,acc_prequential,1,0.6462921523296062,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.057007847670393796,0.6855,SRP,-0.03920784767039376
+airlines_full,det4_s1_whddma_cadwin,kappa_m,1,0.205936827559799,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.12796317244020097,,,
+airlines_full,det4_s1_whddma_cadwin,kappa_t,1,0.1568117030915076,,,,,,,,,
+airlines_full,det4_s1_whddma_cadwin,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s1_whddma_cadwin,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s1_whddma_chddma,acc_prequential,1,0.6279063300104007,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.07539366998959929,0.6855,SRP,-0.05759366998959925
+airlines_full,det4_s1_whddma_chddma,kappa_m,1,0.1646612254071579,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.16923877459284206,,,
+airlines_full,det4_s1_whddma_chddma,kappa_t,1,0.1129825646918434,,,,,,,,,
+airlines_full,det4_s1_whddma_chddma,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s1_whddma_chddma,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s1_whddma_crddm,acc_prequential,1,0.6398440440280839,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.06345595597191611,0.6855,SRP,-0.04565595597191607
+airlines_full,det4_s1_whddma_crddm,kappa_m,1,0.1914610239612424,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.14243897603875758,,,
+airlines_full,det4_s1_whddma_crddm,kappa_t,1,0.1414403464963647,,,,,,,,,
+airlines_full,det4_s1_whddma_crddm,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s1_whddma_crddm,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s1_wrddm_cadwin,acc_prequential,1,0.6442787407092919,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.05902125929070812,0.6855,SRP,-0.04122125929070808
+airlines_full,det4_s1_wrddm_cadwin,kappa_m,1,0.201416780777731,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.13248321922226897,,,
+airlines_full,det4_s1_wrddm_cadwin,kappa_t,1,0.152012021302455,,,,,,,,,
+airlines_full,det4_s1_wrddm_cadwin,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s1_wrddm_cadwin,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s1_wrddm_chddma,acc_prequential,1,0.6373282064877832,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.06597179351221683,0.6855,SRP,-0.04817179351221679
+airlines_full,det4_s1_wrddm_chddma,kappa_m,1,0.1858130465365036,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.14808695346349637,,,
+airlines_full,det4_s1_wrddm_chddma,kappa_t,1,0.1354429540582942,,,,,,,,,
+airlines_full,det4_s1_wrddm_chddma,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s1_wrddm_chddma,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+airlines_full,det4_s1_wrddm_crddm,acc_prequential,1,0.6252866701397708,,,0.7033,DriftMoE (MoEData),"DriftMoE 2025, Table 2",-0.07801332986022924,0.6855,SRP,-0.0602133298602292
+airlines_full,det4_s1_wrddm_crddm,kappa_m,1,0.1587801700636385,,,0.3339,DriftMoE (MoEData),DriftMoE 2025,-0.17511982993636147,,,
+airlines_full,det4_s1_wrddm_crddm,kappa_t,1,0.106737674850286,,,,,,,,,
+airlines_full,det4_s1_wrddm_crddm,baseline_no_change_acc,1,0.5805114362150828,,,,,,,,,
+airlines_full,det4_s1_wrddm_crddm,baseline_majority_acc,1,0.5545595615731308,,,,,,,,,
+covertype_full,det4_s0_wadwin_cadwin,acc_prequential,1,0.7841455942390174,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.17095440576098253,0.9527,SRP,-0.16855440576098257
+covertype_full,det4_s0_wadwin_cadwin,kappa_t,1,-3.3705872103153887,,,,,,,,,
+covertype_full,det4_s0_wadwin_cadwin,kappa_m,1,0.5787292075350011,,,,,,,,,
+covertype_full,det4_s0_wadwin_cadwin,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s0_wadwin_cadwin,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s0_wadwin_chddma,acc_prequential,1,0.7442479673397452,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.21085203266025476,0.9527,SRP,-0.2084520326602548
+covertype_full,det4_s0_wadwin_chddma,kappa_t,1,-4.178428297612826,,,,,,,,,
+covertype_full,det4_s0_wadwin_chddma,kappa_m,1,0.5008632735871873,,,,,,,,,
+covertype_full,det4_s0_wadwin_chddma,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s0_wadwin_chddma,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s0_wadwin_crddm,acc_prequential,1,0.7564800727007359,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.19861992729926403,0.9527,SRP,-0.19621992729926407
+covertype_full,det4_s0_wadwin_crddm,kappa_t,1,-3.9307544868444015,,,,,,,,,
+covertype_full,det4_s0_wadwin_crddm,kappa_m,1,0.5247359793620507,,,,,,,,,
+covertype_full,det4_s0_wadwin_crddm,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s0_wadwin_crddm,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s0_whddma_cadwin,acc_prequential,1,0.7428022140678678,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.2122977859321321,0.9527,SRP,-0.20989778593213215
+covertype_full,det4_s0_whddma_cadwin,kappa_t,1,-4.20770169018993,,,,,,,,,
+covertype_full,det4_s0_whddma_cadwin,kappa_m,1,0.4980416789831511,,,,,,,,,
+covertype_full,det4_s0_whddma_cadwin,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s0_whddma_cadwin,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s0_whddma_chddma,acc_prequential,1,0.8617567279161188,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.09334327208388116,0.9527,SRP,-0.0909432720838812
+covertype_full,det4_s0_whddma_chddma,kappa_t,1,-1.7991287680780634,,,,,,,,,
+covertype_full,det4_s0_whddma_chddma,kappa_m,1,0.7301984521538172,,,,,,,,,
+covertype_full,det4_s0_whddma_chddma,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s0_whddma_chddma,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s0_whddma_crddm,acc_prequential,1,0.7477229385967932,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.20737706140320677,0.9527,SRP,-0.20497706140320682
+covertype_full,det4_s0_whddma_crddm,kappa_t,1,-4.108067607597145,,,,,,,,,
+covertype_full,det4_s0_whddma_crddm,kappa_m,1,0.50764517776046,,,,,,,,,
+covertype_full,det4_s0_whddma_crddm,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s0_whddma_crddm,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s0_wrddm_cadwin,acc_prequential,1,0.7477676881028275,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.2073323118971725,0.9527,SRP,-0.20493231189717254
+covertype_full,det4_s0_wrddm_cadwin,kappa_t,1,-4.107161526398331,,,,,,,,,
+covertype_full,det4_s0_wrddm_cadwin,kappa_m,1,0.5077325128315373,,,,,,,,,
+covertype_full,det4_s0_wrddm_cadwin,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s0_wrddm_cadwin,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s0_wrddm_chddma,acc_prequential,1,0.7425147845483397,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.2125852154516602,0.9527,SRP,-0.21018521545166025
+covertype_full,det4_s0_wrddm_chddma,kappa_t,1,-4.213521519428475,,,,,,,,,
+covertype_full,det4_s0_wrddm_chddma,kappa_m,1,0.4974807191035389,,,,,,,,,
+covertype_full,det4_s0_wrddm_chddma,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s0_wrddm_chddma,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s0_wrddm_crddm,acc_prequential,1,0.8298692625969859,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.12523073740301405,0.9527,SRP,-0.12283073740301409
+covertype_full,det4_s0_wrddm_crddm,kappa_t,1,-2.4447813207875964,,,,,,,,,
+covertype_full,det4_s0_wrddm_crddm,kappa_m,1,0.6679654959288419,,,,,,,,,
+covertype_full,det4_s0_wrddm_crddm,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s0_wrddm_crddm,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s1_wadwin_cadwin,acc_prequential,1,0.8238521751702202,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.1312478248297797,0.9527,SRP,-0.12884782482977974
+covertype_full,det4_s1_wadwin_cadwin,kappa_t,1,-2.5666143927513523,,,,,,,,,
+covertype_full,det4_s1_wadwin_cadwin,kappa_m,1,0.6562222879101389,,,,,,,,,
+covertype_full,det4_s1_wadwin_cadwin,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s1_wadwin_cadwin,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s1_wadwin_chddma,acc_prequential,1,0.7831043076562962,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.1719956923437037,0.9527,SRP,-0.16959569234370375
+covertype_full,det4_s1_wadwin_chddma,kappa_t,1,-3.391671022826279,,,,,,,,,
+covertype_full,det4_s1_wadwin_chddma,kappa_m,1,0.576696987611856,,,,,,,,,
+covertype_full,det4_s1_wadwin_chddma,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s1_wadwin_chddma,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s1_wadwin_crddm,acc_prequential,1,0.7819270514206247,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.17317294857937526,0.9527,SRP,-0.1707729485793753
+covertype_full,det4_s1_wadwin_crddm,kappa_t,1,-3.4155079282104923,,,,,,,,,
+covertype_full,det4_s1_wadwin_crddm,kappa_m,1,0.5743994034342836,,,,,,,,,
+covertype_full,det4_s1_wadwin_crddm,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s1_wadwin_crddm,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s1_whddma_cadwin,acc_prequential,1,0.7805329321941715,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.17456706780582842,0.9527,SRP,-0.17216706780582847
+covertype_full,det4_s1_whddma_cadwin,kappa_t,1,-3.4437358424812716,,,,,,,,,
+covertype_full,det4_s1_whddma_cadwin,kappa_m,1,0.5716785800661058,,,,,,,,,
+covertype_full,det4_s1_whddma_cadwin,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s1_whddma_cadwin,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s1_whddma_chddma,acc_prequential,1,0.8408277281708467,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.11427227182915323,0.9527,SRP,-0.11187227182915327
+covertype_full,det4_s1_whddma_chddma,kappa_t,1,-2.222895974908522,,,,,,,,,
+covertype_full,det4_s1_whddma_chddma,kappa_m,1,0.6893525112191975,,,,,,,,,
+covertype_full,det4_s1_whddma_chddma,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s1_whddma_chddma,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s1_whddma_crddm,acc_prequential,1,0.7780080273729286,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.17709197262707133,0.9527,SRP,-0.17469197262707137
+covertype_full,det4_s1_whddma_crddm,kappa_t,1,-3.4948597316605703,,,,,,,,,
+covertype_full,det4_s1_whddma_crddm,kappa_m,1,0.5667508666326283,,,,,,,,,
+covertype_full,det4_s1_whddma_crddm,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s1_whddma_crddm,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s1_wrddm_cadwin,acc_prequential,1,0.7807102090834612,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.17438979091653872,0.9527,SRP,-0.17198979091653877
+covertype_full,det4_s1_wrddm_cadwin,kappa_t,1,-3.440146366962889,,,,,,,,,
+covertype_full,det4_s1_wrddm_cadwin,kappa_m,1,0.5720245613092197,,,,,,,,,
+covertype_full,det4_s1_wrddm_cadwin,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s1_wrddm_cadwin,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s1_wrddm_chddma,acc_prequential,1,0.7791491397768032,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.17595086022319673,0.9527,SRP,-0.17355086022319677
+covertype_full,det4_s1_wrddm_chddma,kappa_t,1,-3.471754661090785,,,,,,,,,
+covertype_full,det4_s1_wrddm_chddma,kappa_m,1,0.5689779109450998,,,,,,,,,
+covertype_full,det4_s1_wrddm_chddma,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s1_wrddm_chddma,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+covertype_full,det4_s1_wrddm_crddm,acc_prequential,1,0.817196546715042,,,0.9551,LTM (TabPFN),"Lourenco et al. 2025, arXiv:2502.16840, Table 1",-0.1379034532849579,0.9527,SRP,-0.13550345328495794
+covertype_full,det4_s1_wrddm_crddm,kappa_t,1,-2.7013765464366633,,,,,,,,,
+covertype_full,det4_s1_wrddm_crddm,kappa_m,1,0.6432328756079865,,,,,,,,,
+covertype_full,det4_s1_wrddm_crddm,baseline_no_change_acc,1,0.9506120355517614,,,0.9507,No-Change,Souza et al. 2020,-8.796444823855332e-05,,,
+covertype_full,det4_s1_wrddm_crddm,baseline_majority_acc,1,0.4876112713678891,,,,,,,,,
+electricity,det4_s0_wadwin_cadwin,acc_prequential,1,0.8113965395480226,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.13860346045197736,0.9008,"ARF (MOA, 100 trees)",-0.08940346045197745
+electricity,det4_s0_wadwin_cadwin,kappa_t,1,-0.285499398315283,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.609199398315283,0.3237,"ARF (MOA, 100 trees)",-0.609199398315283
+electricity,det4_s0_wadwin_cadwin,kappa_m,1,0.5556595434929549,,,,,,,,,
+electricity,det4_s0_wadwin_cadwin,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s0_wadwin_cadwin,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s0_wadwin_chddma,acc_prequential,1,0.8187235169491526,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.13127648305084738,0.9008,"ARF (MOA, 100 trees)",-0.08207648305084747
+electricity,det4_s0_wadwin_chddma,kappa_t,1,-0.2355595667870036,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5592595667870036,0.3237,"ARF (MOA, 100 trees)",-0.5592595667870036
+electricity,det4_s0_wadwin_chddma,kappa_m,1,0.5729215411012324,,,,,,,,,
+electricity,det4_s0_wadwin_chddma,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s0_wadwin_chddma,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s0_wadwin_crddm,acc_prequential,1,0.813426906779661,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.13657309322033895,0.9008,"ARF (MOA, 100 trees)",-0.08737309322033904
+electricity,det4_s0_wadwin_crddm,kappa_t,1,-0.2716606498194949,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5953606498194949,0.3237,"ARF (MOA, 100 trees)",-0.5953606498194949
+electricity,det4_s0_wadwin_crddm,kappa_m,1,0.5604429886133209,,,,,,,,,
+electricity,det4_s0_wadwin_crddm,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s0_wadwin_crddm,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s0_whddma_cadwin,acc_prequential,1,0.8052171610169492,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.14478283898305078,0.9008,"ARF (MOA, 100 trees)",-0.09558283898305087
+electricity,det4_s0_whddma_cadwin,kappa_t,1,-0.3276173285198557,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.6513173285198557,0.3237,"ARF (MOA, 100 trees)",-0.6513173285198557
+electricity,det4_s0_whddma_cadwin,kappa_m,1,0.5411012322570583,,,,,,,,,
+electricity,det4_s0_whddma_cadwin,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s0_whddma_cadwin,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s0_whddma_chddma,acc_prequential,1,0.847457627118644,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.10254237288135593,0.9008,"ARF (MOA, 100 trees)",-0.053342372881356015
+electricity,det4_s0_whddma_chddma,kappa_t,1,-0.0397111913357405,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.3634111913357405,0.3237,"ARF (MOA, 100 trees)",-0.3634111913357405
+electricity,det4_s0_whddma_chddma,kappa_m,1,0.6406176883481516,,,,,,,,,
+electricity,det4_s0_whddma_chddma,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s0_whddma_chddma,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s0_whddma_crddm,acc_prequential,1,0.8218573446327684,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12814265536723157,0.9008,"ARF (MOA, 100 trees)",-0.07894265536723166
+electricity,det4_s0_whddma_crddm,kappa_t,1,-0.2141997593261132,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5378997593261132,0.3237,"ARF (MOA, 100 trees)",-0.5378997593261132
+electricity,det4_s0_whddma_crddm,kappa_m,1,0.5803046846565799,,,,,,,,,
+electricity,det4_s0_whddma_crddm,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s0_whddma_crddm,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s0_wrddm_cadwin,acc_prequential,1,0.7945135946327684,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.15548640536723157,0.9008,"ARF (MOA, 100 trees)",-0.10628640536723166
+electricity,det4_s0_wrddm_cadwin,kappa_t,1,-0.4005716004813479,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.7242716004813479,0.3237,"ARF (MOA, 100 trees)",-0.7242716004813479
+electricity,det4_s0_wrddm_cadwin,kappa_m,1,0.5158841574377373,,,,,,,,,
+electricity,det4_s0_wrddm_cadwin,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s0_wrddm_cadwin,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s0_wrddm_chddma,acc_prequential,1,0.8339954096045198,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11600459039548017,0.9008,"ARF (MOA, 100 trees)",-0.06680459039548026
+electricity,det4_s0_wrddm_chddma,kappa_t,1,-0.1314681107099881,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4551681107099881,0.3237,"ARF (MOA, 100 trees)",-0.4551681107099881
+electricity,det4_s0_wrddm_chddma,kappa_m,1,0.6089013674413769,,,,,,,,,
+electricity,det4_s0_wrddm_chddma,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s0_wrddm_chddma,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s0_wrddm_crddm,acc_prequential,1,0.8447210451977402,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.1052789548022598,0.9008,"ARF (MOA, 100 trees)",-0.056078954802259884
+electricity,det4_s0_wrddm_crddm,kappa_t,1,-0.0583634175691936,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.3820634175691936,0.3237,"ARF (MOA, 100 trees)",-0.3820634175691936
+electricity,det4_s0_wrddm_crddm,kappa_m,1,0.6341704362293975,,,,,,,,,
+electricity,det4_s0_wrddm_crddm,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s0_wrddm_crddm,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s1_wadwin_cadwin,acc_prequential,1,0.8402630649717514,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.10973693502824855,0.9008,"ARF (MOA, 100 trees)",-0.06053693502824864
+electricity,det4_s1_wadwin_cadwin,kappa_t,1,-0.0887484957882072,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4124484957882072,0.3237,"ARF (MOA, 100 trees)",-0.4124484957882072
+electricity,det4_s1_wadwin_cadwin,kappa_m,1,0.623667654552072,,,,,,,,,
+electricity,det4_s1_wadwin_cadwin,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s1_wadwin_cadwin,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s1_wadwin_chddma,acc_prequential,1,0.8316340042372882,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11836599576271178,0.9008,"ARF (MOA, 100 trees)",-0.06916599576271187
+electricity,det4_s1_wadwin_chddma,kappa_t,1,-0.1475631768953068,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4712631768953068,0.3237,"ARF (MOA, 100 trees)",-0.4712631768953068
+electricity,det4_s1_wadwin_chddma,kappa_m,1,0.6033380127905165,,,,,,,,,
+electricity,det4_s1_wadwin_chddma,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s1_wadwin_chddma,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s1_wadwin_crddm,acc_prequential,1,0.8319209039548022,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11807909604519773,0.9008,"ARF (MOA, 100 trees)",-0.06887909604519782
+electricity,det4_s1_wadwin_crddm,kappa_t,1,-0.1456077015643807,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4693077015643807,0.3237,"ARF (MOA, 100 trees)",-0.4693077015643807
+electricity,det4_s1_wadwin_crddm,kappa_m,1,0.6040139343836115,,,,,,,,,
+electricity,det4_s1_wadwin_crddm,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s1_wadwin_crddm,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s1_whddma_cadwin,acc_prequential,1,0.8249249646892656,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12507503531073438,0.9008,"ARF (MOA, 100 trees)",-0.07587503531073447
+electricity,det4_s1_whddma_cadwin,kappa_t,1,-0.1932912154031287,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5169912154031286,0.3237,"ARF (MOA, 100 trees)",-0.5169912154031286
+electricity,det4_s1_whddma_cadwin,kappa_m,1,0.5875318463058287,,,,,,,,,
+electricity,det4_s1_whddma_cadwin,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s1_whddma_cadwin,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s1_whddma_chddma,acc_prequential,1,0.8463541666666666,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.10364583333333333,0.9008,"ARF (MOA, 100 trees)",-0.054445833333333415
+electricity,det4_s1_whddma_chddma,kappa_t,1,-0.0472322503008428,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.37093225030084276,0.3237,"ARF (MOA, 100 trees)",-0.37093225030084276
+electricity,det4_s1_whddma_chddma,kappa_m,1,0.63801798991317,,,,,,,,,
+electricity,det4_s1_whddma_chddma,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s1_whddma_chddma,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s1_whddma_crddm,acc_prequential,1,0.8266684322033898,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12333156779661014,0.9008,"ARF (MOA, 100 trees)",-0.07413156779661023
+electricity,det4_s1_whddma_crddm,kappa_t,1,-0.1814079422382675,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5051079422382675,0.3237,"ARF (MOA, 100 trees)",-0.5051079422382675
+electricity,det4_s1_whddma_crddm,kappa_m,1,0.5916393698330994,,,,,,,,,
+electricity,det4_s1_whddma_crddm,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s1_whddma_crddm,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s1_wrddm_cadwin,acc_prequential,1,0.8250794491525424,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12492055084745757,0.9008,"ARF (MOA, 100 trees)",-0.07572055084745766
+electricity,det4_s1_wrddm_cadwin,kappa_t,1,-0.1922382671480146,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5159382671480146,0.3237,"ARF (MOA, 100 trees)",-0.5159382671480146
+electricity,det4_s1_wrddm_cadwin,kappa_m,1,0.587895804086726,,,,,,,,,
+electricity,det4_s1_wrddm_cadwin,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s1_wrddm_cadwin,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s1_wrddm_chddma,acc_prequential,1,0.8274849929378532,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.1225150070621468,0.9008,"ARF (MOA, 100 trees)",-0.07331500706214689
+electricity,det4_s1_wrddm_chddma,kappa_t,1,-0.1758423586040913,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4995423586040913,0.3237,"ARF (MOA, 100 trees)",-0.4995423586040913
+electricity,det4_s1_wrddm_chddma,kappa_m,1,0.5935631466749859,,,,,,,,,
+electricity,det4_s1_wrddm_chddma,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s1_wrddm_chddma,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,det4_s1_wrddm_crddm,acc_prequential,1,0.846773481638418,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.10322651836158192,0.9008,"ARF (MOA, 100 trees)",-0.05402651836158201
+electricity,det4_s1_wrddm_crddm,kappa_t,1,-0.044374247894104,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.368074247894104,0.3237,"ARF (MOA, 100 trees)",-0.368074247894104
+electricity,det4_s1_wrddm_crddm,kappa_m,1,0.639005875318463,,,,,,,,,
+electricity,det4_s1_wrddm_crddm,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,det4_s1_wrddm_crddm,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wadwin_chddma,acc_window1000_mean,1,0.5295184224533441,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.21388157754665582,0.7434,ARF,-0.21388157754665582
+insects_abrupt_balanced,det4_s0_wadwin_chddma,acc_prequential,1,0.5280616106569785,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.13213838934302147,,,
+insects_abrupt_balanced,det4_s0_wadwin_chddma,kappa,1,0.4336739327883743,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wadwin_chddma,n_alarms,1,6.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wadwin_chddma,f1,1,0.3636363636363636,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wadwin_chddma,episode_recall,1,0.4,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wadwin_crddm,acc_window1000_mean,1,0.5472559905732352,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.1961440094267648,0.7434,ARF,-0.1961440094267648
+insects_abrupt_balanced,det4_s0_wadwin_crddm,acc_prequential,1,0.5481191341204965,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.1120808658795035,,,
+insects_abrupt_balanced,det4_s0_wadwin_crddm,kappa,1,0.4577429609445958,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wadwin_crddm,n_alarms,1,4.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wadwin_crddm,f1,1,0.4444444444444445,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wadwin_crddm,episode_recall,1,0.4,,,,,,,,,
+insects_abrupt_balanced,det4_s0_whddma_cadwin,acc_window1000_mean,1,0.5308993072550394,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.21250069274496053,0.7434,ARF,-0.21250069274496053
+insects_abrupt_balanced,det4_s0_whddma_cadwin,acc_prequential,1,0.5334355131698456,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.1267644868301544,,,
+insects_abrupt_balanced,det4_s0_whddma_cadwin,kappa,1,0.4401226158038147,,,,,,,,,
+insects_abrupt_balanced,det4_s0_whddma_cadwin,n_alarms,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_whddma_cadwin,f1,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_whddma_cadwin,episode_recall,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_whddma_crddm,acc_window1000_mean,1,0.5180151867585212,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.22538481324147874,0.7434,ARF,-0.22538481324147874
+insects_abrupt_balanced,det4_s0_whddma_crddm,acc_prequential,1,0.5182977596124735,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.14190224038752652,,,
+insects_abrupt_balanced,det4_s0_whddma_crddm,kappa,1,0.4219573115349682,,,,,,,,,
+insects_abrupt_balanced,det4_s0_whddma_crddm,n_alarms,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_whddma_crddm,f1,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_whddma_crddm,episode_recall,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wrddm_cadwin,acc_window1000_mean,1,0.5663127650231974,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.17708723497680257,0.7434,ARF,-0.17708723497680257
+insects_abrupt_balanced,det4_s0_wrddm_cadwin,acc_prequential,1,0.5624810778080532,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.09771892219194678,,,
+insects_abrupt_balanced,det4_s0_wrddm_cadwin,kappa,1,0.4749772933696639,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wrddm_cadwin,n_alarms,1,1.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wrddm_cadwin,f1,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wrddm_cadwin,episode_recall,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wrddm_chddma,acc_window1000_mean,1,0.5199914851261342,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.2234085148738657,0.7434,ARF,-0.2234085148738657
+insects_abrupt_balanced,det4_s0_wrddm_chddma,acc_prequential,1,0.5215334544353618,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.1386665455646382,,,
+insects_abrupt_balanced,det4_s0_wrddm_chddma,kappa,1,0.4258401453224342,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wrddm_chddma,n_alarms,1,1.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wrddm_chddma,f1,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s0_wrddm_chddma,episode_recall,1,0.0,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wadwin_chddma,acc_window1000_mean,1,0.6307537199102015,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.11264628008979849,0.7434,ARF,-0.11264628008979849
+insects_abrupt_balanced,det4_s1_wadwin_chddma,acc_prequential,1,0.634896306388132,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.025303693611868017,,,
+insects_abrupt_balanced,det4_s1_wadwin_chddma,kappa,1,0.5618755676657584,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wadwin_chddma,n_alarms,1,15.0,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wadwin_chddma,f1,1,0.5454545454545455,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wadwin_chddma,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wadwin_crddm,acc_window1000_mean,1,0.6290753214845279,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.11432467851547201,0.7434,ARF,-0.11432467851547201
+insects_abrupt_balanced,det4_s1_wadwin_crddm,acc_prequential,1,0.6252459884953073,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.034954011504692684,,,
+insects_abrupt_balanced,det4_s1_wadwin_crddm,kappa,1,0.5502951861943688,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wadwin_crddm,n_alarms,1,11.0,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wadwin_crddm,f1,1,0.5882352941176471,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wadwin_crddm,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,det4_s1_whddma_cadwin,acc_window1000_mean,1,0.5994951103128657,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.14390488968713422,0.7434,ARF,-0.14390488968713422
+insects_abrupt_balanced,det4_s1_whddma_cadwin,acc_prequential,1,0.6036936118679987,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.05650638813200126,,,
+insects_abrupt_balanced,det4_s1_whddma_cadwin,kappa,1,0.5244323342415985,,,,,,,,,
+insects_abrupt_balanced,det4_s1_whddma_cadwin,n_alarms,1,5.0,,,,,,,,,
+insects_abrupt_balanced,det4_s1_whddma_cadwin,f1,1,0.8000000000000002,,,,,,,,,
+insects_abrupt_balanced,det4_s1_whddma_cadwin,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,det4_s1_whddma_crddm,acc_window1000_mean,1,0.6139375679271557,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.12946243207284425,0.7434,ARF,-0.12946243207284425
+insects_abrupt_balanced,det4_s1_whddma_crddm,acc_prequential,1,0.6101082349379352,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.05009176506206481,,,
+insects_abrupt_balanced,det4_s1_whddma_crddm,kappa,1,0.5321298819255222,,,,,,,,,
+insects_abrupt_balanced,det4_s1_whddma_crddm,n_alarms,1,6.0,,,,,,,,,
+insects_abrupt_balanced,det4_s1_whddma_crddm,f1,1,0.5454545454545454,,,,,,,,,
+insects_abrupt_balanced,det4_s1_whddma_crddm,episode_recall,1,0.6,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_cadwin,acc_window1000_mean,1,0.5730712153688755,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.17032878463112444,0.7434,ARF,-0.17032878463112444
+insects_abrupt_balanced,det4_s1_wrddm_cadwin,acc_prequential,1,0.5763888888888888,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.08381111111111117,,,
+insects_abrupt_balanced,det4_s1_wrddm_cadwin,kappa,1,0.4916666666666666,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_cadwin,n_alarms,1,4.0,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_cadwin,f1,1,0.4444444444444445,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_cadwin,episode_recall,1,0.4,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_chddma,acc_window1000_mean,1,0.6107552904521331,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.1326447095478669,0.7434,ARF,-0.1326447095478669
+insects_abrupt_balanced,det4_s1_wrddm_chddma,acc_prequential,1,0.6150658492279746,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.04513415077202543,,,
+insects_abrupt_balanced,det4_s1_wrddm_chddma,kappa,1,0.5380790190735695,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_chddma,n_alarms,1,6.0,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_chddma,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_chddma,episode_recall,1,0.4,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_crddm,acc_window1000_mean,1,0.6274140334980309,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.11598596650196902,0.7434,ARF,-0.11598596650196902
+insects_abrupt_balanced,det4_s1_wrddm_crddm,acc_prequential,1,0.6316606115652437,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.02853938843475634,,,
+insects_abrupt_balanced,det4_s1_wrddm_crddm,kappa,1,0.5579927338782924,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_crddm,n_alarms,1,25.0,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_crddm,f1,1,0.375,,,,,,,,,
+insects_abrupt_balanced,det4_s1_wrddm_crddm,episode_recall,1,0.8,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_chddma,acc_window1000_mean,1,0.5540447807160399,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.19545521928396015,0.7495,ARF,-0.19545521928396015
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_chddma,acc_prequential,1,0.5555847273272823,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.13211527267271772,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_chddma,kappa,1,0.4667016727927387,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_chddma,n_alarms,1,8.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_chddma,f1,1,0.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_chddma,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_crddm,acc_window1000_mean,1,0.5944849577470203,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.1550150422529798,0.7495,ARF,-0.1550150422529798
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_crddm,acc_prequential,1,0.5958417723101542,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.09185822768984575,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_crddm,kappa,1,0.515010126772185,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_crddm,n_alarms,1,10.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_crddm,f1,1,0.1666666666666666,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wadwin_crddm,episode_recall,1,0.5,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_cadwin,acc_window1000_mean,1,0.5007411681326457,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.24875883186735437,0.7495,ARF,-0.24875883186735437
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_cadwin,acc_prequential,1,0.5011627034731078,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.18653729652689222,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_cadwin,kappa,1,0.4013952441677293,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_cadwin,n_alarms,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_cadwin,f1,1,0.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_cadwin,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_crddm,acc_window1000_mean,1,0.5549950595148296,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.19450494048517042,0.7495,ARF,-0.19450494048517042
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_crddm,acc_prequential,1,0.5565223914184982,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.13117760858150174,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_crddm,kappa,1,0.4678268697021979,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_crddm,n_alarms,1,3.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_crddm,f1,1,0.8571428571428571,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_whddma_crddm,episode_recall,1,0.5,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_cadwin,acc_window1000_mean,1,0.5028280396796843,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.2466719603203158,0.7495,ARF,-0.2466719603203158
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_cadwin,acc_prequential,1,0.5046258095166655,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.1830741904833345,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_cadwin,kappa,1,0.4055509714199986,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_cadwin,n_alarms,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_cadwin,f1,1,0.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_cadwin,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_chddma,acc_window1000_mean,1,0.5200505314249768,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.22944946857502324,0.7495,ARF,-0.22944946857502324
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_chddma,acc_prequential,1,0.5217288025404446,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.16597119745955535,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_chddma,kappa,1,0.4260745630485336,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_chddma,n_alarms,1,4.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_chddma,f1,1,0.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s0_wrddm_chddma,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_chddma,acc_window1000_mean,1,0.6324989955969946,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.11700100440300543,0.7495,ARF,-0.11700100440300543
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_chddma,acc_prequential,1,0.6344360263046033,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.053263973695396705,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_chddma,kappa,1,0.561323231565524,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_chddma,n_alarms,1,22.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_chddma,f1,1,0.4285714285714285,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_chddma,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_crddm,acc_window1000_mean,1,0.6320864233968597,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.11741357660314033,0.7495,ARF,-0.11741357660314033
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_crddm,acc_prequential,1,0.6340234541044683,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.053676545895531724,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_crddm,kappa,1,0.5608281449253619,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_crddm,n_alarms,1,24.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_crddm,f1,1,0.4,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wadwin_crddm,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_cadwin,acc_window1000_mean,1,0.6310139192404011,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.11848608075959899,0.7495,ARF,-0.11848608075959899
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_cadwin,acc_prequential,1,0.6321981346735679,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.05550186532643209,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_cadwin,kappa,1,0.5586377616082815,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_cadwin,n_alarms,1,16.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_cadwin,f1,1,0.5454545454545454,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_cadwin,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_crddm,acc_window1000_mean,1,0.5891349818945967,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.16036501810540338,0.7495,ARF,-0.16036501810540338
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_crddm,acc_prequential,1,0.590578351211462,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.09712164878853802,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_crddm,kappa,1,0.5086940214537544,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_crddm,n_alarms,1,14.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_crddm,f1,1,0.6,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_whddma_crddm,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_cadwin,acc_window1000_mean,1,0.6302047026274938,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.11929529737250621,0.7495,ARF,-0.11929529737250621
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_cadwin,acc_prequential,1,0.6316480384067211,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.056051961593278854,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_cadwin,kappa,1,0.5579776460880653,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_cadwin,n_alarms,1,18.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_cadwin,f1,1,0.4347826086956522,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_cadwin,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_chddma,acc_window1000_mean,1,0.6284043540347212,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.12109564596527889,0.7495,ARF,-0.12109564596527889
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_chddma,acc_prequential,1,0.6298477233515866,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.057852276648413414,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_chddma,kappa,1,0.5558172680219039,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_chddma,n_alarms,1,15.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_chddma,f1,1,0.5714285714285715,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_chddma,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_crddm,acc_window1000_mean,1,0.6522024437004126,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.09729755629958747,0.7495,ARF,-0.09729755629958747
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_crddm,acc_prequential,1,0.6541394744080214,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.03356052559197853,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_crddm,kappa,1,0.5849673692896258,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_crddm,n_alarms,1,47.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_crddm,f1,1,0.2264150943396226,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,det4_s1_wrddm_crddm,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_balanced,det4_s0_wadwin_chddma,acc_window1000_mean,1,0.5046126780404835,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.13828732195951654,0.6429,ARF,-0.13828732195951654
+insects_incremental_balanced,det4_s0_wadwin_chddma,acc_prequential,1,0.5065768704619594,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.0597231295380406,,,
+insects_incremental_balanced,det4_s0_wadwin_chddma,kappa,1,0.4078922445543513,,,,,,,,,
+insects_incremental_balanced,det4_s0_wadwin_chddma,n_alarms,1,2.0,,,,,,,,,
+insects_incremental_balanced,det4_s0_wadwin_crddm,acc_window1000_mean,1,0.5155718488286557,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.12732815117134433,0.6429,ARF,-0.12732815117134433
+insects_incremental_balanced,det4_s0_wadwin_crddm,acc_prequential,1,0.517170016486022,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.049129983513978015,,,
+insects_incremental_balanced,det4_s0_wadwin_crddm,kappa,1,0.4206040197832264,,,,,,,,,
+insects_incremental_balanced,det4_s0_wadwin_crddm,n_alarms,1,1.0,,,,,,,,,
+insects_incremental_balanced,det4_s0_whddma_cadwin,acc_window1000_mean,1,0.5162520726176346,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.1266479273823654,0.6429,ARF,-0.1266479273823654
+insects_incremental_balanced,det4_s0_whddma_cadwin,acc_prequential,1,0.5183275456873269,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.04797245431267316,,,
+insects_incremental_balanced,det4_s0_whddma_cadwin,kappa,1,0.4219930548247922,,,,,,,,,
+insects_incremental_balanced,det4_s0_whddma_cadwin,n_alarms,1,2.0,,,,,,,,,
+insects_incremental_balanced,det4_s0_whddma_crddm,acc_window1000_mean,1,0.5149037615579692,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.12799623844203079,0.6429,ARF,-0.12799623844203079
+insects_incremental_balanced,det4_s0_whddma_crddm,acc_prequential,1,0.5166614051702971,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.0496385948297029,,,
+insects_incremental_balanced,det4_s0_whddma_crddm,kappa,1,0.4199936862043565,,,,,,,,,
+insects_incremental_balanced,det4_s0_whddma_crddm,n_alarms,1,1.0,,,,,,,,,
+insects_incremental_balanced,det4_s0_wrddm_cadwin,acc_window1000_mean,1,0.5142425668475269,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.12865743315247313,0.6429,ARF,-0.12865743315247313
+insects_incremental_balanced,det4_s0_wrddm_cadwin,acc_prequential,1,0.5159774106422533,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.050322589357746694,,,
+insects_incremental_balanced,det4_s0_wrddm_cadwin,kappa,1,0.419172892770704,,,,,,,,,
+insects_incremental_balanced,det4_s0_wrddm_cadwin,n_alarms,1,0.0,,,,,,,,,
+insects_incremental_balanced,det4_s0_wrddm_chddma,acc_window1000_mean,1,0.555179043048025,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.08772095695197502,0.6429,ARF,-0.08772095695197502
+insects_incremental_balanced,det4_s0_wrddm_chddma,acc_prequential,1,0.5567364691851696,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.009563530814830412,,,
+insects_incremental_balanced,det4_s0_wrddm_chddma,kappa,1,0.4680837630222035,,,,,,,,,
+insects_incremental_balanced,det4_s0_wrddm_chddma,n_alarms,1,3.0,,,,,,,,,
+insects_incremental_balanced,det4_s1_wadwin_chddma,acc_window1000_mean,1,0.5367297463347065,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.10617025366529353,0.6429,ARF,-0.10617025366529353
+insects_incremental_balanced,det4_s1_wadwin_chddma,acc_prequential,1,0.538864919849872,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.027435080150128077,,,
+insects_incremental_balanced,det4_s1_wadwin_chddma,kappa,1,0.4466379038198463,,,,,,,,,
+insects_incremental_balanced,det4_s1_wadwin_chddma,n_alarms,1,2.0,,,,,,,,,
+insects_incremental_balanced,det4_s1_wadwin_crddm,acc_window1000_mean,1,0.5362346921412938,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.1066653078587062,0.6429,ARF,-0.1066653078587062
+insects_incremental_balanced,det4_s1_wadwin_crddm,acc_prequential,1,0.5383913851766109,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.027908614823389133,,,
+insects_incremental_balanced,det4_s1_wadwin_crddm,kappa,1,0.4460696622119331,,,,,,,,,
+insects_incremental_balanced,det4_s1_wadwin_crddm,n_alarms,1,2.0,,,,,,,,,
+insects_incremental_balanced,det4_s1_whddma_cadwin,acc_window1000_mean,1,0.5497718558439842,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.09312814415601578,0.6429,ARF,-0.09312814415601578
+insects_incremental_balanced,det4_s1_whddma_cadwin,acc_prequential,1,0.5518958925251675,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.014404107474832561,,,
+insects_incremental_balanced,det4_s1_whddma_cadwin,kappa,1,0.462275071030201,,,,,,,,,
+insects_incremental_balanced,det4_s1_whddma_cadwin,n_alarms,1,3.0,,,,,,,,,
+insects_incremental_balanced,det4_s1_whddma_crddm,acc_window1000_mean,1,0.5555686568541915,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.08733134314580848,0.6429,ARF,-0.08733134314580848
+insects_incremental_balanced,det4_s1_whddma_crddm,acc_prequential,1,0.5571749272159668,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.009125072784033184,,,
+insects_incremental_balanced,det4_s1_whddma_crddm,kappa,1,0.4686099126591602,,,,,,,,,
+insects_incremental_balanced,det4_s1_whddma_crddm,n_alarms,1,3.0,,,,,,,,,
+insects_incremental_balanced,det4_s1_wrddm_cadwin,acc_window1000_mean,1,0.5319775628137129,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.11092243718628714,0.6429,ARF,-0.11092243718628714
+insects_incremental_balanced,det4_s1_wrddm_cadwin,acc_prequential,1,0.5335332701953769,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",-0.03276672980462314,,,
+insects_incremental_balanced,det4_s1_wrddm_cadwin,kappa,1,0.4402399242344523,,,,,,,,,
+insects_incremental_balanced,det4_s1_wrddm_cadwin,n_alarms,1,1.0,,,,,,,,,
+insects_incremental_balanced,det4_s1_wrddm_chddma,acc_window1000_mean,1,0.565469232111128,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.07743076788887204,0.6429,ARF,-0.07743076788887204
+insects_incremental_balanced,det4_s1_wrddm_chddma,acc_prequential,1,0.5674874601003193,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",0.0011874601003192264,,,
+insects_incremental_balanced,det4_s1_wrddm_chddma,kappa,1,0.4809849521203831,,,,,,,,,
+insects_incremental_balanced,det4_s1_wrddm_chddma,n_alarms,1,6.0,,,,,,,,,
+insects_incremental_balanced,det4_s1_wrddm_crddm,acc_window1000_mean,1,0.5671908112615717,,,0.6429,ARF,"Souza et al. 2020, Table 5",-0.07570918873842836,0.6429,ARF,-0.07570918873842836
+insects_incremental_balanced,det4_s1_wrddm_crddm,acc_prequential,1,0.5693815987933635,,,0.5663,NB + CUSUM,"Souza et al. 2020, Table 6",0.0030815987933634492,,,
+insects_incremental_balanced,det4_s1_wrddm_crddm,kappa,1,0.4832579185520362,,,,,,,,,
+insects_incremental_balanced,det4_s1_wrddm_crddm,n_alarms,1,15.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_chddma,acc_window1000_mean,1,0.6042567585040542,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.17494324149594576,0.7792,ARF,-0.17494324149594576
+insects_incremental_gradual_balanced,det4_s0_wadwin_chddma,acc_prequential,1,0.6084057971014493,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.11419420289855076,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_chddma,kappa,1,0.5300869565217391,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_chddma,n_alarms,1,4.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_chddma,f1,1,0.0,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.25,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_chddma,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_crddm,acc_window1000_mean,1,0.5924367585040542,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.1867632414959458,0.7792,ARF,-0.1867632414959458
+insects_incremental_gradual_balanced,det4_s0_wadwin_crddm,acc_prequential,1,0.5950310559006211,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.1275689440993789,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_crddm,kappa,1,0.5140372670807454,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_crddm,n_alarms,1,3.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_crddm,f1,1,0.0,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.25,,,
+insects_incremental_gradual_balanced,det4_s0_wadwin_crddm,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_cadwin,acc_window1000_mean,1,0.5773245817645098,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.20187541823549016,0.7792,ARF,-0.20187541823549016
+insects_incremental_gradual_balanced,det4_s0_whddma_cadwin,acc_prequential,1,0.5840165631469979,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.13858343685300212,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_cadwin,kappa,1,0.5008198757763975,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_cadwin,n_alarms,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_cadwin,f1,1,0.0,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.25,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_cadwin,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_crddm,acc_window1000_mean,1,0.5796828617356551,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.19951713826434492,0.7792,ARF,-0.19951713826434492
+insects_incremental_gradual_balanced,det4_s0_whddma_crddm,acc_prequential,1,0.5863768115942029,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.13622318840579717,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_crddm,kappa,1,0.5036521739130434,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_crddm,n_alarms,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_crddm,f1,1,0.0,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.25,,,
+insects_incremental_gradual_balanced,det4_s0_whddma_crddm,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_cadwin,acc_window1000_mean,1,0.5798680374322008,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.19933196256779917,0.7792,ARF,-0.19933196256779917
+insects_incremental_gradual_balanced,det4_s0_wrddm_cadwin,acc_prequential,1,0.5865424430641822,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.13605755693581778,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_cadwin,kappa,1,0.5038509316770187,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_cadwin,n_alarms,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_cadwin,f1,1,0.0,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.25,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_cadwin,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_chddma,acc_window1000_mean,1,0.5729735032707101,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.20622649672928994,0.7792,ARF,-0.20622649672928994
+insects_incremental_gradual_balanced,det4_s0_wrddm_chddma,acc_prequential,1,0.58,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.14260000000000006,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_chddma,kappa,1,0.496,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_chddma,n_alarms,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_chddma,f1,1,0.0,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.25,,,
+insects_incremental_gradual_balanced,det4_s0_wrddm_chddma,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_chddma,acc_window1000_mean,1,0.6482621302852619,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.1309378697147381,0.7792,ARF,-0.1309378697147381
+insects_incremental_gradual_balanced,det4_s1_wadwin_chddma,acc_prequential,1,0.6545341614906832,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.0680658385093168,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_chddma,kappa,1,0.5854409937888199,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_chddma,n_alarms,1,10.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_chddma,f1,1,0.1818181818181818,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.0681818181818182,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_chddma,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_crddm,acc_window1000_mean,1,0.6638728135150755,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.11532718648492446,0.7792,ARF,-0.11532718648492446
+insects_incremental_gradual_balanced,det4_s1_wadwin_crddm,acc_prequential,1,0.6693167701863354,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.05328322981366462,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_crddm,kappa,1,0.6031801242236025,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_crddm,n_alarms,1,11.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_crddm,f1,1,0.1666666666666666,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.0833333333333334,,,
+insects_incremental_gradual_balanced,det4_s1_wadwin_crddm,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_cadwin,acc_window1000_mean,1,0.6333953258496577,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.14580467415034226,0.7792,ARF,-0.14580467415034226
+insects_incremental_gradual_balanced,det4_s1_whddma_cadwin,acc_prequential,1,0.6384265010351967,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.0841734989648033,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_cadwin,kappa,1,0.566111801242236,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_cadwin,n_alarms,1,3.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_cadwin,f1,1,0.5,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",0.25,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_cadwin,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_crddm,acc_window1000_mean,1,0.6262717647730531,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.15292823522694687,0.7792,ARF,-0.15292823522694687
+insects_incremental_gradual_balanced,det4_s1_whddma_crddm,acc_prequential,1,0.6327536231884058,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.08984637681159424,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_crddm,kappa,1,0.559304347826087,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_crddm,n_alarms,1,4.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_crddm,f1,1,0.0,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.25,,,
+insects_incremental_gradual_balanced,det4_s1_whddma_crddm,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_cadwin,acc_window1000_mean,1,0.6526107953390061,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.12658920466099388,0.7792,ARF,-0.12658920466099388
+insects_incremental_gradual_balanced,det4_s1_wrddm_cadwin,acc_prequential,1,0.6576397515527951,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.06496024844720494,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_cadwin,kappa,1,0.5891677018633541,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_cadwin,n_alarms,1,4.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_cadwin,f1,1,0.0,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.25,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_cadwin,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_chddma,acc_window1000_mean,1,0.6332294288793788,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.14597057112062117,0.7792,ARF,-0.14597057112062117
+insects_incremental_gradual_balanced,det4_s1_wrddm_chddma,acc_prequential,1,0.6382608695652174,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.08433913043478258,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_chddma,kappa,1,0.565913043478261,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_chddma,n_alarms,1,3.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_chddma,f1,1,0.5,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",0.25,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_chddma,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_crddm,acc_window1000_mean,1,0.6650942735998756,,,0.7792,ARF,"Souza et al. 2020, Table 5",-0.1141057264001244,0.7792,ARF,-0.1141057264001244
+insects_incremental_gradual_balanced,det4_s1_wrddm_crddm,acc_prequential,1,0.6722567287784679,,,0.7226,NB + ADWIN,"Souza et al. 2020, Table 6",-0.05034327122153215,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_crddm,kappa,1,0.6067080745341614,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_crddm,n_alarms,1,16.0,,,,,,,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_crddm,f1,1,0.1176470588235294,,,0.25,PHT + HT,"Minato et al. 2026, arXiv:2610.05853, Table II",-0.13235294117647062,,,
+insects_incremental_gradual_balanced,det4_s1_wrddm_crddm,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_chddma,acc_window1000_mean,1,0.5898570206465259,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.1814429793534741,0.7713,ARF,-0.1814429793534741
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_chddma,acc_prequential,1,0.5919160853149301,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.10628391468506992,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_chddma,kappa,1,0.5102993023779162,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_chddma,n_alarms,1,12.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_chddma,f1,1,0.1428571428571428,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_chddma,episode_recall,1,0.5,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_crddm,acc_window1000_mean,1,0.5916244071558067,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.17967559284419332,0.7713,ARF,-0.17967559284419332
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_crddm,acc_prequential,1,0.5934663566124072,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.10473364338759283,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_crddm,kappa,1,0.5121596279348887,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_crddm,n_alarms,1,12.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_crddm,f1,1,0.2857142857142857,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wadwin_crddm,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_cadwin,acc_window1000_mean,1,0.4738750629794941,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.2974249370205059,0.7713,ARF,-0.2974249370205059
+insects_incremental_reoccurring_balanced,det4_s0_whddma_cadwin,acc_prequential,1,0.474370514840097,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.22382948515990303,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_cadwin,kappa,1,0.3692446178081164,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_cadwin,n_alarms,1,0.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_cadwin,f1,1,0.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_cadwin,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_crddm,acc_window1000_mean,1,0.4929684668251671,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.2783315331748329,0.7713,ARF,-0.2783315331748329
+insects_incremental_reoccurring_balanced,det4_s0_whddma_crddm,acc_prequential,1,0.4944115220163528,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.20378847798364724,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_crddm,kappa,1,0.3932938264196234,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_crddm,n_alarms,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_crddm,f1,1,0.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_whddma_crddm,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_cadwin,acc_window1000_mean,1,0.4575022385523975,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.31379776144760246,0.7713,ARF,-0.31379776144760246
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_cadwin,acc_prequential,1,0.4578176180831645,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.24038238191683553,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_cadwin,kappa,1,0.3493811416997975,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_cadwin,n_alarms,1,0.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_cadwin,f1,1,0.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_cadwin,episode_recall,1,0.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_chddma,acc_window1000_mean,1,0.5772195515821776,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.19408044841782235,0.7713,ARF,-0.19408044841782235
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_chddma,acc_prequential,1,0.5786762683469607,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.11952373165303931,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_chddma,kappa,1,0.4944115220163529,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_chddma,n_alarms,1,2.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_chddma,f1,1,0.5,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s0_wrddm_chddma,episode_recall,1,0.5,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_chddma,acc_window1000_mean,1,0.6475017034058864,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.12379829659411357,0.7713,ARF,-0.12379829659411357
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_chddma,acc_prequential,1,0.6488010401820319,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.04939895981796816,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_chddma,kappa,1,0.5785612482184382,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_chddma,n_alarms,1,20.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_chddma,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_chddma,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_crddm,acc_window1000_mean,1,0.6453499518493641,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.12595004815063593,0.7713,ARF,-0.12595004815063593
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_crddm,acc_prequential,1,0.646613157302528,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.051586842697472046,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_crddm,kappa,1,0.5759357887630336,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_crddm,n_alarms,1,19.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_crddm,f1,1,0.2727272727272727,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wadwin_crddm,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_cadwin,acc_window1000_mean,1,0.5846737835199064,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.1866262164800936,0.7713,ARF,-0.1866262164800936
+insects_incremental_reoccurring_balanced,det4_s1_whddma_cadwin,acc_prequential,1,0.5858275198159678,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.11237248018403223,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_cadwin,kappa,1,0.5029930237791614,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_cadwin,n_alarms,1,9.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_cadwin,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_cadwin,episode_recall,1,0.5,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_crddm,acc_window1000_mean,1,0.6495851430078167,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.12171485699218332,0.7713,ARF,-0.12171485699218332
+insects_incremental_reoccurring_balanced,det4_s1_whddma_crddm,acc_prequential,1,0.6507388793038782,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.04746112069612185,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_crddm,kappa,1,0.5808866551646539,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_crddm,n_alarms,1,19.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_crddm,f1,1,0.3478260869565217,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_whddma_crddm,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_cadwin,acc_window1000_mean,1,0.5940377597157407,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.1772622402842593,0.7713,ARF,-0.1772622402842593
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_cadwin,acc_prequential,1,0.5953041782311904,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.10289582176880963,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_cadwin,kappa,1,0.5143650138774285,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_cadwin,n_alarms,1,14.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_cadwin,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_cadwin,episode_recall,1,0.5,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_chddma,acc_window1000_mean,1,0.6368358618836201,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.13446413811637992,0.7713,ARF,-0.13446413811637992
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_chddma,acc_prequential,1,0.6385742504938364,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.05962574950616362,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_chddma,kappa,1,0.5662891005926037,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_chddma,n_alarms,1,10.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_chddma,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_chddma,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_crddm,acc_window1000_mean,1,0.6731185689304969,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09818143106950306,0.7713,ARF,-0.09818143106950306
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_crddm,acc_prequential,1,0.6749681194208986,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.023231880579101416,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_crddm,kappa,1,0.6099617433050784,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_crddm,n_alarms,1,51.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_crddm,f1,1,0.1454545454545454,,,,,,,,,
+insects_incremental_reoccurring_balanced,det4_s1_wrddm_crddm,episode_recall,1,1.0,,,,,,,,,

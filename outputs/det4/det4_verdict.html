@@ -1,0 +1,239 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DET4 warning × confirm detector matrix</title><style>body{margin:0;background:#eef3f5;color:#172534;font:15px/1.68 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}main{max-width:1480px;margin:26px auto;padding:34px 40px;background:#fff;border:1px solid #d5e0e5;border-radius:10px;box-shadow:0 7px 26px #17304210}h1{color:#0b3047;line-height:1.24;font-size:2rem}h2{margin-top:2.25rem;padding-bottom:.38rem;border-bottom:2px solid #0b7b78;color:#0b3047;font-size:1.32rem}table{display:block;overflow:auto;border-collapse:collapse;font-size:.82rem;line-height:1.43;margin:1rem 0 1.35rem}td,th{border:1px solid #d6e0e5;padding:.46rem .58rem;vertical-align:top;min-width:68px}th{background:#e8f3f3;white-space:nowrap}tbody tr:nth-child(even){background:#f8fafb}img{display:block;max-width:100%;height:auto;margin:1rem auto 1.6rem;border:1px solid #d6e0e5;background:white}a{color:#076b76}strong{color:#083d55}code{background:#edf2f4;border-radius:3px;padding:.1em .28em;overflow-wrap:anywhere}@media(max-width:720px){main{margin:0;padding:18px 14px;border-radius:0}h1{font-size:1.45rem}}</style></head><body><main><h1>DET4：三項預註冊假設均未成立，ADWIN/HDDM-A 不取代 HDDM-A 對角</h1>
+<p><strong>主結論：</strong> H1、H2、H3 均未成立。S0 的 warning 軸 accuracy 變動確實大於 confirm 軸，且 ADWIN warning 在三欄的凍結步數都最多；但 confirm=ADWIN 時，ADWIN warning 的 accuracy 不是最低，因此 H1 的完整預測未通過。S1 的 warning 軸在 X 與 drift 後 accuracy 的變動都大於 confirm 軸，且 warning=ADWIN 時 confirm=ADWIN 並非兩項最低，因此 H2 未通過。H3 候選 <code>warning=ADWIN, confirm=HDDM-A</code> 在 T1 的偵測與全串流 accuracy 均持平，但在 T3 的 accuracy 顯著較低，故不得採用。</p>
+<p>H3 在 T3 的 Δaccuracy 為 <strong>-0.327 [-0.466, -0.193] 個百分點</strong>；偵測仍判持平，但 ΔX 為 -34.34 [-46.78, -22.30]。跨 22 個資料集，該候選相對 HDDM-A 對角的 accuracy 中位數為 -0.298 個百分點，最差是 <code>covertype_full</code> 的 -5.772 個百分點。</p>
+<p>判定依<a href="../../docs/ECPF_DET4_預註冊.md">DET4 預註冊</a>：T1 為 205 條配對串流，T3 為 240 條未用於 DET 的保留串流；三資料層配對 bootstrap 10,000 次、seed <code>20261012</code>。偵測只有 ΔFP 的 CI 全負且 ΔX 的 CI 全正才算優於，兩者同時顯著反向才算不如，其餘持平；accuracy CI 全正／全負才判優於／不如。</p>
+<h2>H1–H3 的事前預測未獲完整支持</h2>
+<table><thead><tr><th>假設</th><th>結論</th><th>量化結果</th><th>So what</th></tr></thead><tbody>
+<tr><td>H1（S0）</td><td>未成立</td><td>warning accuracy range 3.901 pp；confirm 2.793 pp</td><td>C=ADWIN：凍結最多=是、accuracy 最低=否; C=HDDM-A：凍結最多=是、accuracy 最低=是; C=RDDM：凍結最多=是、accuracy 最低=是</td></tr>
+<tr><td>H2（S1）</td><td>未成立</td><td>X range warning 170.23 vs confirm 123.37；post-acc 3.104 vs 2.887 pp</td><td>W=ADWIN：ADWIN X 最低=否、post-acc 最低=否; W=HDDM-A：ADWIN X 最低=是、post-acc 最低=是; W=RDDM：ADWIN X 最低=是、post-acc 最低=是</td></tr>
+<tr><td>H3（S1 ADWIN/HDDM-A）</td><td>未成立</td><td>T1 偵測持平、accuracy 持平；T3 偵測持平、accuracy 不如</td><td>必須 T1 與 T3 的兩軸都不輸；T3 accuracy 不如，故失敗</td></tr>
+</tbody></table>
+<h2>H3 在保留資料失敗，T1 的持平不能覆蓋 T3 的 accuracy 損失</h2>
+<table><thead><tr><th>子集</th><th>串流</th><th>ΔFP [CI]</th><th>ΔX [CI]</th><th>偵測</th><th>Δaccuracy pp [CI]</th><th>accuracy</th><th>Δdrift 後 acc. pp [CI]</th></tr></thead><tbody>
+<tr><td>T1</td><td>205</td><td>-83.0 [-119.0, -49.0]</td><td>-67.97 [-91.42, -44.66]</td><td>持平</td><td>-0.108 [-0.342, +0.131]</td><td>持平</td><td>-2.004 [-2.941, -1.087]</td></tr>
+<tr><td>T3</td><td>240</td><td>-90.0 [-113.0, -67.0]</td><td>-34.34 [-46.78, -22.30]</td><td>持平</td><td>-0.327 [-0.466, -0.193]</td><td>不如</td><td>-2.127 [-2.966, -1.380]</td></tr>
+</tbody></table>
+<p>差值皆為 S1 ADWIN/HDDM-A 減 S1 HDDM-A/HDDM-A。T1 的 ΔFP 有利但 ΔX 顯著不利，依雙條件規則只能判持平；T3 同樣如此，且全串流 accuracy 的 CI 全負。</p>
+<h2>S0 的 T1 3×3 矩陣顯示 detector 角色不可互換</h2>
+<img src="figures/t1_s0_acc.png" alt="S0 prequential accuracy">
+<img src="figures/t1_s0_post_acc.png" alt="S0 post-drift 1000-step accuracy">
+<img src="figures/t1_s0_fp.png" alt="S0 FP@1000">
+<img src="figures/t1_s0_X.png" alt="S0 E11 excess hits X">
+<table><thead><tr><th>warning</th><th>confirm</th><th>preq. accuracy</th><th>drift 後 accuracy</th><th>FP@1000</th><th>X</th><th>凍結步數</th></tr></thead><tbody>
+<tr><td>ADWIN</td><td>ADWIN</td><td>0.7099</td><td>0.5570</td><td>731</td><td>251.57</td><td>1,717,081</td></tr>
+<tr><td>ADWIN</td><td>HDDM-A</td><td>0.6644</td><td>0.5123</td><td>122</td><td>228.63</td><td>7,029,077</td></tr>
+<tr><td>ADWIN</td><td>RDDM</td><td>0.6657</td><td>0.5068</td><td>125</td><td>227.78</td><td>6,716,363</td></tr>
+<tr><td>HDDM-A</td><td>ADWIN</td><td>0.6986</td><td>0.5334</td><td>6</td><td>14.66</td><td>40,222</td></tr>
+<tr><td>HDDM-A</td><td>HDDM-A</td><td>0.7178</td><td>0.5961</td><td>235</td><td>336.97</td><td>32,212</td></tr>
+<tr><td>HDDM-A</td><td>RDDM</td><td>0.7008</td><td>0.5352</td><td>12</td><td>14.46</td><td>21,360</td></tr>
+<tr><td>RDDM</td><td>ADWIN</td><td>0.6989</td><td>0.5279</td><td>37</td><td>49.90</td><td>723,510</td></tr>
+<tr><td>RDDM</td><td>HDDM-A</td><td>0.7041</td><td>0.5399</td><td>54</td><td>104.35</td><td>467,367</td></tr>
+<tr><td>RDDM</td><td>RDDM</td><td>0.7180</td><td>0.5928</td><td>336</td><td>326.22</td><td>462,397</td></tr>
+</tbody></table>
+<h2>S1 的 T1 3×3 矩陣顯示 detector 角色不可互換</h2>
+<img src="figures/t1_s1_acc.png" alt="S1 prequential accuracy">
+<img src="figures/t1_s1_post_acc.png" alt="S1 post-drift 1000-step accuracy">
+<img src="figures/t1_s1_fp.png" alt="S1 FP@1000">
+<img src="figures/t1_s1_X.png" alt="S1 E11 excess hits X">
+<table><thead><tr><th>warning</th><th>confirm</th><th>preq. accuracy</th><th>drift 後 accuracy</th><th>FP@1000</th><th>X</th><th>凍結步數</th></tr></thead><tbody>
+<tr><td>ADWIN</td><td>ADWIN</td><td>0.7206</td><td>0.5797</td><td>250</td><td>308.94</td><td>0</td></tr>
+<tr><td>ADWIN</td><td>HDDM-A</td><td>0.7176</td><td>0.5727</td><td>142</td><td>265.30</td><td>0</td></tr>
+<tr><td>ADWIN</td><td>RDDM</td><td>0.7171</td><td>0.5716</td><td>149</td><td>266.19</td><td>0</td></tr>
+<tr><td>HDDM-A</td><td>ADWIN</td><td>0.7084</td><td>0.5498</td><td>53</td><td>110.26</td><td>0</td></tr>
+<tr><td>HDDM-A</td><td>HDDM-A</td><td>0.7187</td><td>0.5927</td><td>225</td><td>333.27</td><td>0</td></tr>
+<tr><td>HDDM-A</td><td>RDDM</td><td>0.7094</td><td>0.5537</td><td>79</td><td>114.09</td><td>0</td></tr>
+<tr><td>RDDM</td><td>ADWIN</td><td>0.7104</td><td>0.5474</td><td>98</td><td>154.19</td><td>0</td></tr>
+<tr><td>RDDM</td><td>HDDM-A</td><td>0.7132</td><td>0.5611</td><td>105</td><td>173.34</td><td>0</td></tr>
+<tr><td>RDDM</td><td>RDDM</td><td>0.7135</td><td>0.5829</td><td>1,325</td><td>257.65</td><td>0</td></tr>
+</tbody></table>
+<h2>每格對 HDDM-A 對角的雙軸判定沒有產生可取代 H3 的事前候選</h2>
+<table><thead><tr><th>格（相對同框架 HDDM-A/HDDM-A）</th><th>ΔFP [CI]</th><th>ΔX [CI]</th><th>偵測</th><th>Δaccuracy pp [CI]</th><th>accuracy</th><th>Δpost-acc pp [CI]</th></tr></thead><tbody>
+<tr><td>S0 ADWIN/ADWIN</td><td>+496.0 [+444.0, +546.0]</td><td>-85.39 [-105.70, -66.83]</td><td>不如</td><td>-0.789 [-1.059, -0.511]</td><td>不如</td><td>-3.910 [-4.762, -3.106]</td></tr>
+<tr><td>S0 ADWIN/HDDM-A</td><td>-113.0 [-150.0, -73.0]</td><td>-108.34 [-137.06, -81.94]</td><td>持平</td><td>-5.344 [-5.927, -4.771]</td><td>不如</td><td>-8.379 [-9.855, -6.991]</td></tr>
+<tr><td>S0 ADWIN/RDDM</td><td>-110.0 [-145.0, -74.0]</td><td>-109.18 [-138.31, -81.29]</td><td>持平</td><td>-5.211 [-5.877, -4.571]</td><td>不如</td><td>-8.923 [-10.613, -7.277]</td></tr>
+<tr><td>S0 HDDM-A/ADWIN</td><td>-229.0 [-271.0, -186.0]</td><td>-322.30 [-346.95, -297.68]</td><td>持平</td><td>-1.921 [-2.305, -1.531]</td><td>不如</td><td>-6.266 [-8.464, -4.197]</td></tr>
+<tr><td>S0 HDDM-A/HDDM-A</td><td>+0.0 [+0.0, +0.0]</td><td>+0.00 [+0.00, +0.00]</td><td>持平</td><td>+0.000 [+0.000, +0.000]</td><td>持平</td><td>+0.000 [+0.000, +0.000]</td></tr>
+<tr><td>S0 HDDM-A/RDDM</td><td>-223.0 [-263.0, -180.0]</td><td>-322.50 [-344.36, -300.61]</td><td>持平</td><td>-1.697 [-2.048, -1.336]</td><td>不如</td><td>-6.082 [-8.269, -4.003]</td></tr>
+<tr><td>S0 RDDM/ADWIN</td><td>-198.0 [-240.0, -153.0]</td><td>-287.06 [-311.74, -262.53]</td><td>持平</td><td>-1.885 [-2.247, -1.526]</td><td>不如</td><td>-6.811 [-8.948, -4.752]</td></tr>
+<tr><td>S0 RDDM/HDDM-A</td><td>-181.0 [-224.0, -137.0]</td><td>-232.61 [-258.17, -207.66]</td><td>持平</td><td>-1.369 [-1.693, -1.038]</td><td>不如</td><td>-5.613 [-7.637, -3.740]</td></tr>
+<tr><td>S0 RDDM/RDDM</td><td>+101.0 [+55.0, +150.0]</td><td>-10.75 [-22.53, +0.85]</td><td>持平</td><td>+0.017 [-0.219, +0.262]</td><td>持平</td><td>-0.325 [-0.843, +0.171]</td></tr>
+<tr><td>S1 ADWIN/ADWIN</td><td>+25.0 [-9.0, +59.0]</td><td>-24.33 [-40.10, -7.18]</td><td>持平</td><td>+0.187 [-0.044, +0.423]</td><td>持平</td><td>-1.296 [-2.004, -0.575]</td></tr>
+<tr><td>S1 ADWIN/HDDM-A</td><td>-83.0 [-119.0, -49.0]</td><td>-67.97 [-91.42, -44.66]</td><td>持平</td><td>-0.108 [-0.342, +0.131]</td><td>持平</td><td>-2.004 [-2.941, -1.087]</td></tr>
+<tr><td>S1 ADWIN/RDDM</td><td>-76.0 [-114.0, -40.0]</td><td>-67.08 [-88.15, -45.75]</td><td>持平</td><td>-0.155 [-0.365, +0.059]</td><td>持平</td><td>-2.114 [-3.001, -1.269]</td></tr>
+<tr><td>S1 HDDM-A/ADWIN</td><td>-172.0 [-209.0, -137.0]</td><td>-223.01 [-250.54, -195.26]</td><td>持平</td><td>-1.034 [-1.347, -0.718]</td><td>不如</td><td>-4.291 [-5.906, -2.731]</td></tr>
+<tr><td>S1 HDDM-A/HDDM-A</td><td>+0.0 [+0.0, +0.0]</td><td>+0.00 [+0.00, +0.00]</td><td>持平</td><td>+0.000 [+0.000, +0.000]</td><td>持平</td><td>+0.000 [+0.000, +0.000]</td></tr>
+<tr><td>S1 HDDM-A/RDDM</td><td>-146.0 [-180.0, -115.0]</td><td>-219.18 [-246.70, -191.85]</td><td>持平</td><td>-0.929 [-1.232, -0.619]</td><td>不如</td><td>-3.898 [-5.574, -2.232]</td></tr>
+<tr><td>S1 RDDM/ADWIN</td><td>-127.0 [-161.0, -95.0]</td><td>-179.08 [-205.74, -151.99]</td><td>持平</td><td>-0.831 [-1.112, -0.548]</td><td>不如</td><td>-4.530 [-6.207, -2.924]</td></tr>
+<tr><td>S1 RDDM/HDDM-A</td><td>-120.0 [-155.0, -87.0]</td><td>-159.93 [-187.21, -133.05]</td><td>持平</td><td>-0.550 [-0.842, -0.252]</td><td>不如</td><td>-3.156 [-4.684, -1.757]</td></tr>
+<tr><td>S1 RDDM/RDDM</td><td>+1,100.0 [+970.0, +1,234.0]</td><td>-75.63 [-94.52, -55.92]</td><td>不如</td><td>-0.523 [-0.753, -0.301]</td><td>不如</td><td>-0.976 [-1.482, -0.485]</td></tr>
+</tbody></table>
+<p>H3 以外的格即使 T1 較好，也依預註冊只屬事後觀察，不改列候選。</p>
+<h2>Warning 列效果與 confirm 欄效果呈現交互作用，不能用單一 detector 排名取代</h2>
+<table><thead><tr><th>框架</th><th>固定條件</th><th>配對差</th><th>ΔFP [CI]</th><th>ΔX [CI]</th><th>偵測</th><th>Δaccuracy pp [CI]</th><th>accuracy</th></tr></thead><tbody>
+<tr><td>S0</td><td>固定 confirm=ADWIN</td><td>ADWIN − HDDM-A</td><td>+725.0 [+675.0, +775.0]</td><td>+236.91 [+213.76, +259.32]</td><td>持平</td><td>+1.132 [+0.678, +1.577]</td><td>優於</td></tr>
+<tr><td>S0</td><td>固定 confirm=ADWIN</td><td>ADWIN − RDDM</td><td>+694.0 [+645.0, +743.0]</td><td>+201.67 [+177.05, +225.82]</td><td>持平</td><td>+1.096 [+0.676, +1.527]</td><td>優於</td></tr>
+<tr><td>S0</td><td>固定 confirm=ADWIN</td><td>HDDM-A − RDDM</td><td>-31.0 [-42.0, -21.0]</td><td>-35.24 [-49.21, -21.20]</td><td>持平</td><td>-0.036 [-0.292, +0.212]</td><td>持平</td></tr>
+<tr><td>S0</td><td>固定 confirm=HDDM-A</td><td>ADWIN − HDDM-A</td><td>-113.0 [-150.0, -73.0]</td><td>-108.34 [-137.06, -81.94]</td><td>持平</td><td>-5.344 [-5.927, -4.771]</td><td>不如</td></tr>
+<tr><td>S0</td><td>固定 confirm=HDDM-A</td><td>ADWIN − RDDM</td><td>+68.0 [+46.0, +91.0]</td><td>+124.28 [+91.56, +156.77]</td><td>持平</td><td>-3.975 [-4.534, -3.432]</td><td>不如</td></tr>
+<tr><td>S0</td><td>固定 confirm=HDDM-A</td><td>HDDM-A − RDDM</td><td>+181.0 [+137.0, +224.0]</td><td>+232.61 [+207.66, +258.17]</td><td>持平</td><td>+1.369 [+1.038, +1.693]</td><td>優於</td></tr>
+<tr><td>S0</td><td>固定 confirm=RDDM</td><td>ADWIN − HDDM-A</td><td>+113.0 [+91.0, +135.0]</td><td>+213.32 [+182.82, +242.88]</td><td>持平</td><td>-3.513 [-4.108, -2.934]</td><td>不如</td></tr>
+<tr><td>S0</td><td>固定 confirm=RDDM</td><td>ADWIN − RDDM</td><td>-211.0 [-260.0, -165.0]</td><td>-98.43 [-125.34, -72.61]</td><td>持平</td><td>-5.228 [-5.914, -4.568]</td><td>不如</td></tr>
+<tr><td>S0</td><td>固定 confirm=RDDM</td><td>HDDM-A − RDDM</td><td>-324.0 [-379.0, -270.0]</td><td>-311.75 [-332.50, -290.39]</td><td>持平</td><td>-1.715 [-2.093, -1.329]</td><td>不如</td></tr>
+<tr><td>S1</td><td>固定 confirm=ADWIN</td><td>ADWIN − HDDM-A</td><td>+197.0 [+168.0, +226.0]</td><td>+198.67 [+171.09, +225.94]</td><td>持平</td><td>+1.222 [+0.939, +1.517]</td><td>優於</td></tr>
+<tr><td>S1</td><td>固定 confirm=ADWIN</td><td>ADWIN − RDDM</td><td>+152.0 [+125.0, +179.0]</td><td>+154.75 [+128.31, +180.57]</td><td>持平</td><td>+1.018 [+0.732, +1.312]</td><td>優於</td></tr>
+<tr><td>S1</td><td>固定 confirm=ADWIN</td><td>HDDM-A − RDDM</td><td>-45.0 [-63.0, -28.0]</td><td>-43.93 [-73.25, -16.23]</td><td>持平</td><td>-0.203 [-0.427, +0.018]</td><td>持平</td></tr>
+<tr><td>S1</td><td>固定 confirm=HDDM-A</td><td>ADWIN − HDDM-A</td><td>-83.0 [-119.0, -49.0]</td><td>-67.97 [-91.42, -44.66]</td><td>持平</td><td>-0.108 [-0.342, +0.131]</td><td>持平</td></tr>
+<tr><td>S1</td><td>固定 confirm=HDDM-A</td><td>ADWIN − RDDM</td><td>+37.0 [+11.0, +64.0]</td><td>+91.96 [+62.28, +120.82]</td><td>持平</td><td>+0.442 [+0.158, +0.741]</td><td>優於</td></tr>
+<tr><td>S1</td><td>固定 confirm=HDDM-A</td><td>HDDM-A − RDDM</td><td>+120.0 [+87.0, +155.0]</td><td>+159.93 [+133.05, +187.21]</td><td>持平</td><td>+0.550 [+0.252, +0.842]</td><td>優於</td></tr>
+<tr><td>S1</td><td>固定 confirm=RDDM</td><td>ADWIN − HDDM-A</td><td>+70.0 [+43.0, +99.0]</td><td>+152.10 [+127.78, +177.10]</td><td>持平</td><td>+0.774 [+0.505, +1.058]</td><td>優於</td></tr>
+<tr><td>S1</td><td>固定 confirm=RDDM</td><td>ADWIN − RDDM</td><td>-1,176.0 [-1,314.0, -1,042.0]</td><td>+8.54 [-11.45, +27.68]</td><td>持平</td><td>+0.368 [+0.107, +0.633]</td><td>優於</td></tr>
+<tr><td>S1</td><td>固定 confirm=RDDM</td><td>HDDM-A − RDDM</td><td>-1,246.0 [-1,382.0, -1,114.0]</td><td>-143.56 [-171.17, -116.46]</td><td>持平</td><td>-0.406 [-0.762, -0.037]</td><td>不如</td></tr>
+</tbody></table>
+<table><thead><tr><th>框架</th><th>固定條件</th><th>配對差</th><th>ΔFP [CI]</th><th>ΔX [CI]</th><th>偵測</th><th>Δaccuracy pp [CI]</th><th>accuracy</th></tr></thead><tbody>
+<tr><td>S0</td><td>固定 warning=ADWIN</td><td>ADWIN − HDDM-A</td><td>+609.0 [+564.0, +653.0]</td><td>+22.94 [-6.39, +53.58]</td><td>持平</td><td>+4.555 [+3.962, +5.166]</td><td>優於</td></tr>
+<tr><td>S0</td><td>固定 warning=ADWIN</td><td>ADWIN − RDDM</td><td>+606.0 [+558.0, +652.0]</td><td>+23.79 [-7.28, +56.54]</td><td>持平</td><td>+4.422 [+3.717, +5.140]</td><td>優於</td></tr>
+<tr><td>S0</td><td>固定 warning=ADWIN</td><td>HDDM-A − RDDM</td><td>-3.0 [-24.0, +18.0]</td><td>+0.85 [-18.38, +20.55]</td><td>持平</td><td>-0.133 [-0.631, +0.367]</td><td>持平</td></tr>
+<tr><td>S0</td><td>固定 warning=HDDM-A</td><td>ADWIN − HDDM-A</td><td>-229.0 [-271.0, -186.0]</td><td>-322.30 [-346.95, -297.68]</td><td>持平</td><td>-1.921 [-2.305, -1.531]</td><td>不如</td></tr>
+<tr><td>S0</td><td>固定 warning=HDDM-A</td><td>ADWIN − RDDM</td><td>-6.0 [-14.0, +2.0]</td><td>+0.20 [-8.67, +9.49]</td><td>持平</td><td>-0.224 [-0.414, -0.042]</td><td>不如</td></tr>
+<tr><td>S0</td><td>固定 warning=HDDM-A</td><td>HDDM-A − RDDM</td><td>+223.0 [+180.0, +263.0]</td><td>+322.50 [+300.61, +344.36]</td><td>持平</td><td>+1.697 [+1.336, +2.048]</td><td>優於</td></tr>
+<tr><td>S0</td><td>固定 warning=RDDM</td><td>ADWIN − HDDM-A</td><td>-17.0 [-35.0, +1.0]</td><td>-54.45 [-85.29, -25.90]</td><td>持平</td><td>-0.516 [-0.853, -0.190]</td><td>不如</td></tr>
+<tr><td>S0</td><td>固定 warning=RDDM</td><td>ADWIN − RDDM</td><td>-299.0 [-355.0, -246.0]</td><td>-276.31 [-299.44, -252.99]</td><td>持平</td><td>-1.903 [-2.283, -1.512]</td><td>不如</td></tr>
+<tr><td>S0</td><td>固定 warning=RDDM</td><td>HDDM-A − RDDM</td><td>-282.0 [-336.0, -230.0]</td><td>-221.86 [-248.00, -195.20]</td><td>持平</td><td>-1.386 [-1.755, -1.014]</td><td>不如</td></tr>
+<tr><td>S1</td><td>固定 warning=ADWIN</td><td>ADWIN − HDDM-A</td><td>+108.0 [+76.0, +139.0]</td><td>+43.64 [+25.26, +64.19]</td><td>持平</td><td>+0.295 [+0.084, +0.512]</td><td>優於</td></tr>
+<tr><td>S1</td><td>固定 warning=ADWIN</td><td>ADWIN − RDDM</td><td>+101.0 [+73.0, +129.0]</td><td>+42.75 [+24.66, +62.35]</td><td>持平</td><td>+0.342 [+0.165, +0.524]</td><td>優於</td></tr>
+<tr><td>S1</td><td>固定 warning=ADWIN</td><td>HDDM-A − RDDM</td><td>-7.0 [-25.0, +12.0]</td><td>-0.89 [-17.54, +15.70]</td><td>持平</td><td>+0.047 [-0.119, +0.218]</td><td>持平</td></tr>
+<tr><td>S1</td><td>固定 warning=HDDM-A</td><td>ADWIN − HDDM-A</td><td>-172.0 [-209.0, -137.0]</td><td>-223.01 [-250.54, -195.26]</td><td>持平</td><td>-1.034 [-1.347, -0.718]</td><td>不如</td></tr>
+<tr><td>S1</td><td>固定 warning=HDDM-A</td><td>ADWIN − RDDM</td><td>-26.0 [-45.0, -8.0]</td><td>-3.83 [-21.28, +13.48]</td><td>持平</td><td>-0.105 [-0.318, +0.098]</td><td>持平</td></tr>
+<tr><td>S1</td><td>固定 warning=HDDM-A</td><td>HDDM-A − RDDM</td><td>+146.0 [+115.0, +180.0]</td><td>+219.18 [+191.85, +246.70]</td><td>持平</td><td>+0.929 [+0.619, +1.232]</td><td>優於</td></tr>
+<tr><td>S1</td><td>固定 warning=RDDM</td><td>ADWIN − HDDM-A</td><td>-7.0 [-30.0, +15.0]</td><td>-19.15 [-50.34, +13.12]</td><td>持平</td><td>-0.281 [-0.538, -0.027]</td><td>不如</td></tr>
+<tr><td>S1</td><td>固定 warning=RDDM</td><td>ADWIN − RDDM</td><td>-1,227.0 [-1,363.0, -1,095.0]</td><td>-103.46 [-132.17, -74.51]</td><td>持平</td><td>-0.308 [-0.636, +0.024]</td><td>持平</td></tr>
+<tr><td>S1</td><td>固定 warning=RDDM</td><td>HDDM-A − RDDM</td><td>-1,220.0 [-1,359.0, -1,084.0]</td><td>-84.30 [-114.56, -54.28]</td><td>持平</td><td>-0.027 [-0.365, +0.318]</td><td>持平</td></tr>
+</tbody></table>
+<h2>Q4 顯示跨資料集不穩健，最差情況否定全域替換</h2>
+<img src="figures/q4_s0_delta_acc.png" alt="S0 Q4 Δaccuracy">
+<img src="figures/q4_s0_delta_X.png" alt="S0 Q4 ΔX">
+<img src="figures/q4_s1_delta_acc.png" alt="S1 Q4 Δaccuracy">
+<img src="figures/q4_s1_delta_X.png" alt="S1 Q4 ΔX">
+<table><thead><tr><th>格</th><th>Δaccuracy 中位數 pp</th><th>最差資料集 (pp)</th><th>CI 全負資料集</th><th>ΔX 中位數</th><th>最差資料集 (ΔX)</th><th>X CI 全負資料集</th></tr></thead><tbody>
+<tr><td>S0 ADWIN/ADWIN</td><td>-0.227</td><td>covertype_full (-7.761)</td><td>8</td><td>-6.19</td><td>synthetic_multiclass (-62.06)</td><td>8</td></tr>
+<tr><td>S0 ADWIN/HDDM-A</td><td>-3.134</td><td>covertype_full (-11.751)</td><td>10</td><td>-10.04</td><td>injected_paper_gas_sensor_drift (-99.76)</td><td>10</td></tr>
+<tr><td>S0 ADWIN/RDDM</td><td>-3.267</td><td>gas_sensor_drift (-11.028)</td><td>10</td><td>-10.19</td><td>injected_paper_gas_sensor_drift (-100.14)</td><td>9</td></tr>
+<tr><td>S0 HDDM-A/ADWIN</td><td>-2.627</td><td>gas_sensor_drift (-23.911)</td><td>9</td><td>-24.39</td><td>synthetic_multiclass (-274.99)</td><td>10</td></tr>
+<tr><td>S0 HDDM-A/HDDM-A</td><td>+0.000</td><td>electricity (+0.000)</td><td>0</td><td>+0.00</td><td>insects_abrupt_balanced (+0.00)</td><td>0</td></tr>
+<tr><td>S0 HDDM-A/RDDM</td><td>-2.456</td><td>gas_sensor_drift (-20.719)</td><td>9</td><td>-23.92</td><td>synthetic_multiclass (-279.04)</td><td>10</td></tr>
+<tr><td>S0 RDDM/ADWIN</td><td>-2.699</td><td>gas_sensor_drift (-32.049)</td><td>9</td><td>-21.91</td><td>synthetic_multiclass (-242.14)</td><td>10</td></tr>
+<tr><td>S0 RDDM/HDDM-A</td><td>-1.309</td><td>covertype_full (-11.924)</td><td>9</td><td>-17.17</td><td>synthetic_multiclass (-196.38)</td><td>10</td></tr>
+<tr><td>S0 RDDM/RDDM</td><td>-0.009</td><td>covertype_full (-3.189)</td><td>2</td><td>-1.54</td><td>injected_paper_electricity (-19.61)</td><td>3</td></tr>
+<tr><td>S1 ADWIN/ADWIN</td><td>+0.038</td><td>covertype_full (-1.698)</td><td>2</td><td>-0.73</td><td>injected_paper_electricity (-37.94)</td><td>2</td></tr>
+<tr><td>S1 ADWIN/HDDM-A</td><td>-0.298</td><td>covertype_full (-5.772)</td><td>6</td><td>-6.80</td><td>injected_paper_gas_sensor_drift (-66.12)</td><td>6</td></tr>
+<tr><td>S1 ADWIN/RDDM</td><td>-0.266</td><td>covertype_full (-5.890)</td><td>6</td><td>-3.37</td><td>injected_paper_gas_sensor_drift (-64.00)</td><td>6</td></tr>
+<tr><td>S1 HDDM-A/ADWIN</td><td>-0.936</td><td>gas_sensor_drift (-11.021)</td><td>8</td><td>-19.14</td><td>synthetic_multiclass (-179.62)</td><td>10</td></tr>
+<tr><td>S1 HDDM-A/HDDM-A</td><td>+0.000</td><td>electricity (+0.000)</td><td>0</td><td>+0.00</td><td>insects_abrupt_balanced (+0.00)</td><td>0</td></tr>
+<tr><td>S1 HDDM-A/RDDM</td><td>-0.969</td><td>gas_sensor_drift (-14.623)</td><td>9</td><td>-20.22</td><td>synthetic_multiclass (-181.14)</td><td>10</td></tr>
+<tr><td>S1 RDDM/ADWIN</td><td>-0.707</td><td>gas_sensor_drift (-9.022)</td><td>8</td><td>-16.28</td><td>synthetic_multiclass (-140.73)</td><td>10</td></tr>
+<tr><td>S1 RDDM/HDDM-A</td><td>-0.563</td><td>gas_sensor_drift (-8.217)</td><td>8</td><td>-12.80</td><td>synthetic_multiclass (-133.63)</td><td>10</td></tr>
+<tr><td>S1 RDDM/RDDM</td><td>-0.023</td><td>covertype_full (-2.363)</td><td>5</td><td>-5.54</td><td>synthetic_multiclass (-57.66)</td><td>6</td></tr>
+</tbody></table>
+<p>Accuracy 涵蓋 22 個非迴歸 registry 資料集；X 只涵蓋 14 個有非空 GT 的資料集。單串流資料集只報點估計，不計入『CI 全負』。各資料集先在自身尺度配對，不用總樣本數加權掩蓋最差情況。</p>
+<h2>資料類別與 drift 型態分層顯示效果來源異質</h2>
+<table><thead><tr><th>格</th><th>真實 Δacc/X</th><th>INSECTS Δacc/X</th><th>注入 CSV Δacc/X</th><th>注入 paper Δacc/X</th><th>合成 Δacc/X</th></tr></thead><tbody>
+<tr><td>S0 ADWIN/ADWIN</td><td>-3.61 / —</td><td>+0.35 / -0.1</td><td>-0.23 / -9.2</td><td>-0.22 / -50.7</td><td>-1.12 / -23.6</td></tr>
+<tr><td>S0 ADWIN/HDDM-A</td><td>-2.87 / —</td><td>-6.22 / -1.1</td><td>-2.63 / -9.7</td><td>-1.12 / -42.4</td><td>-6.54 / -61.3</td></tr>
+<tr><td>S0 ADWIN/RDDM</td><td>-3.40 / —</td><td>-4.76 / -0.6</td><td>-1.91 / -10.7</td><td>-0.86 / -54.8</td><td>-6.23 / -46.6</td></tr>
+<tr><td>S0 HDDM-A/ADWIN</td><td>-4.22 / —</td><td>-9.92 / -1.4</td><td>-1.28 / -22.7</td><td>-0.78 / -100.1</td><td>-2.66 / -179.2</td></tr>
+<tr><td>S0 HDDM-A/HDDM-A</td><td>+0.00 / —</td><td>+0.00 / +0.0</td><td>+0.00 / +0.0</td><td>+0.00 / +0.0</td><td>+0.00 / +0.0</td></tr>
+<tr><td>S0 HDDM-A/RDDM</td><td>-2.56 / —</td><td>-8.42 / -0.9</td><td>-1.31 / -20.7</td><td>-0.71 / -98.6</td><td>-2.67 / -185.1</td></tr>
+<tr><td>S0 RDDM/ADWIN</td><td>-5.29 / —</td><td>-8.40 / -1.4</td><td>-1.18 / -18.7</td><td>-0.78 / -94.0</td><td>-2.81 / -163.9</td></tr>
+<tr><td>S0 RDDM/HDDM-A</td><td>-1.35 / —</td><td>-9.06 / -1.0</td><td>-0.91 / -15.9</td><td>-0.59 / -72.5</td><td>-2.12 / -138.6</td></tr>
+<tr><td>S0 RDDM/RDDM</td><td>+0.09 / —</td><td>+0.55 / -0.1</td><td>-0.01 / -3.0</td><td>-0.01 / -7.1</td><td>-0.25 / +19.5</td></tr>
+<tr><td>S1 ADWIN/ADWIN</td><td>-0.61 / —</td><td>+0.27 / -0.2</td><td>-0.01 / -3.4</td><td>-0.04 / -35.5</td><td>+0.42 / +13.9</td></tr>
+<tr><td>S1 ADWIN/HDDM-A</td><td>-1.47 / —</td><td>-1.37 / -0.1</td><td>-0.21 / -10.6</td><td>-0.22 / -62.6</td><td>+0.32 / -8.2</td></tr>
+<tr><td>S1 ADWIN/RDDM</td><td>-1.44 / —</td><td>-2.04 / -0.0</td><td>-0.23 / -9.5</td><td>-0.20 / -59.7</td><td>+0.15 / -17.2</td></tr>
+<tr><td>S1 HDDM-A/ADWIN</td><td>-2.14 / —</td><td>-2.31 / +0.1</td><td>-0.62 / -19.0</td><td>-0.58 / -97.8</td><td>-1.40 / -126.3</td></tr>
+<tr><td>S1 HDDM-A/HDDM-A</td><td>+0.00 / —</td><td>+0.00 / +0.0</td><td>+0.00 / +0.0</td><td>+0.00 / +0.0</td><td>+0.00 / +0.0</td></tr>
+<tr><td>S1 HDDM-A/RDDM</td><td>-1.97 / —</td><td>-2.88 / -0.3</td><td>-0.72 / -19.3</td><td>-0.58 / -86.5</td><td>-1.68 / -131.5</td></tr>
+<tr><td>S1 RDDM/ADWIN</td><td>-2.13 / —</td><td>-3.09 / -0.8</td><td>-0.46 / -14.2</td><td>-0.48 / -82.6</td><td>-0.95 / -93.4</td></tr>
+<tr><td>S1 RDDM/HDDM-A</td><td>-1.89 / —</td><td>-2.33 / +0.1</td><td>-0.52 / -12.2</td><td>-0.33 / -58.1</td><td>-0.98 / -91.6</td></tr>
+<tr><td>S1 RDDM/RDDM</td><td>-0.01 / —</td><td>+0.50 / -0.4</td><td>-0.04 / -5.8</td><td>+0.04 / -30.0</td><td>-0.86 / -43.6</td></tr>
+</tbody></table>
+<table><thead><tr><th>格</th><th>突變 Δacc/X</th><th>漸變 Δacc/X</th><th>incremental Δacc/X</th><th>recurring Δacc/X</th></tr></thead><tbody>
+<tr><td>S0 ADWIN/ADWIN</td><td>-0.42 [-0.91, +0.03] / -22.3 [-32.0, -13.1]</td><td>-0.91 [-1.31, -0.51] / -32.7 [-46.3, -20.3]</td><td>-1.46 [-2.45, -0.39] / -30.4 [-44.9, -17.0]</td><td>-0.25 [-1.89, +1.23] / -10.9 [-20.9, -4.0]</td></tr>
+<tr><td>S0 ADWIN/HDDM-A</td><td>-5.57 [-6.95, -4.18] / -45.6 [-70.1, -24.8]</td><td>-3.97 [-5.05, -2.87] / -32.7 [-52.8, -16.0]</td><td>-9.42 [-11.27, -7.61] / -32.3 [-49.9, -18.0]</td><td>-8.66 [-10.47, -6.77] / -47.2 [-64.4, -30.8]</td></tr>
+<tr><td>S0 ADWIN/RDDM</td><td>-5.44 [-6.78, -4.05] / -43.4 [-66.3, -24.2]</td><td>-4.09 [-5.27, -2.93] / -38.5 [-61.4, -18.8]</td><td>-8.25 [-10.55, -5.98] / -28.5 [-45.3, -13.6]</td><td>-7.13 [-8.70, -5.51] / -47.8 [-64.2, -30.2]</td></tr>
+<tr><td>S0 HDDM-A/ADWIN</td><td>-2.11 [-2.79, -1.48] / -132.4 [-181.9, -88.0]</td><td>-1.49 [-1.95, -1.04] / -105.0 [-153.4, -61.0]</td><td>-3.48 [-6.22, -1.10] / -86.8 [-108.9, -63.3]</td><td>-2.38 [-5.75, +0.16] / -67.6 [-83.3, -50.7]</td></tr>
+<tr><td>S0 HDDM-A/HDDM-A</td><td>+0.00 [+0.00, +0.00] / +0.0 [+0.0, +0.0]</td><td>+0.00 [+0.00, +0.00] / +0.0 [+0.0, +0.0]</td><td>+0.00 [+0.00, +0.00] / +0.0 [+0.0, +0.0]</td><td>+0.00 [+0.00, +0.00] / +0.0 [+0.0, +0.0]</td></tr>
+<tr><td>S0 HDDM-A/RDDM</td><td>-2.00 [-2.56, -1.43] / -130.4 [-180.5, -85.5]</td><td>-1.07 [-1.52, -0.61] / -104.1 [-152.2, -60.5]</td><td>-3.30 [-5.49, -1.44] / -88.9 [-110.4, -65.0]</td><td>-1.84 [-4.58, +0.30] / -68.8 [-85.1, -50.2]</td></tr>
+<tr><td>S0 RDDM/ADWIN</td><td>-2.17 [-2.80, -1.56] / -121.7 [-166.7, -81.5]</td><td>-1.22 [-1.63, -0.81] / -88.1 [-130.5, -50.5]</td><td>-3.93 [-6.55, -1.82] / -79.2 [-99.0, -58.6]</td><td>-3.41 [-6.74, -0.87] / -61.8 [-77.0, -45.4]</td></tr>
+<tr><td>S0 RDDM/HDDM-A</td><td>-1.65 [-2.32, -1.01] / -116.8 [-163.8, -75.2]</td><td>-1.27 [-1.68, -0.85] / -71.3 [-105.1, -41.0]</td><td>-1.44 [-3.19, +0.01] / -46.4 [-57.0, -34.8]</td><td>-2.33 [-4.50, -0.39] / -56.2 [-70.9, -40.9]</td></tr>
+<tr><td>S0 RDDM/RDDM</td><td>-0.05 [-0.52, +0.45] / -3.9 [-9.9, +2.0]</td><td>-0.02 [-0.23, +0.23] / -3.1 [-11.3, +5.1]</td><td>+0.46 [+0.02, +0.88] / -4.6 [-10.8, +1.1]</td><td>+0.67 [-0.97, +2.39] / -2.4 [-5.3, +0.3]</td></tr>
+<tr><td>S1 ADWIN/ADWIN</td><td>-0.08 [-0.37, +0.20] / -4.7 [-11.2, +1.5]</td><td>+0.15 [-0.13, +0.45] / -11.7 [-24.9, +2.4]</td><td>+1.24 [+0.23, +2.32] / -9.3 [-14.8, -4.2]</td><td>+1.34 [-0.08, +2.67] / +2.9 [-4.6, +13.1]</td></tr>
+<tr><td>S1 ADWIN/HDDM-A</td><td>-0.39 [-0.70, -0.09] / -31.2 [-45.5, -19.4]</td><td>-0.06 [-0.39, +0.31] / -13.9 [-27.8, +0.2]</td><td>+0.57 [-0.38, +1.48] / -23.0 [-36.1, -11.0]</td><td>+0.83 [-0.61, +2.23] / -8.8 [-27.1, +8.1]</td></tr>
+<tr><td>S1 ADWIN/RDDM</td><td>-0.46 [-0.73, -0.19] / -30.5 [-43.2, -19.5]</td><td>-0.13 [-0.39, +0.14] / -18.2 [-34.4, -2.3]</td><td>+0.72 [-0.27, +1.76] / -18.6 [-27.1, -9.9]</td><td>+0.74 [-0.69, +2.19] / -9.7 [-23.0, +5.0]</td></tr>
+<tr><td>S1 HDDM-A/ADWIN</td><td>-1.43 [-1.85, -1.03] / -92.8 [-125.5, -63.7]</td><td>-0.72 [-1.10, -0.34] / -70.1 [-105.8, -38.5]</td><td>-0.86 [-2.43, +0.63] / -59.9 [-77.8, -40.6]</td><td>-0.92 [-2.78, +0.73] / -39.8 [-58.0, -22.4]</td></tr>
+<tr><td>S1 HDDM-A/HDDM-A</td><td>+0.00 [+0.00, +0.00] / +0.0 [+0.0, +0.0]</td><td>+0.00 [+0.00, +0.00] / +0.0 [+0.0, +0.0]</td><td>+0.00 [+0.00, +0.00] / +0.0 [+0.0, +0.0]</td><td>+0.00 [+0.00, +0.00] / +0.0 [+0.0, +0.0]</td></tr>
+<tr><td>S1 HDDM-A/RDDM</td><td>-1.51 [-1.97, -1.07] / -87.9 [-119.3, -60.5]</td><td>-0.57 [-0.95, -0.21] / -72.7 [-110.0, -39.8]</td><td>-0.49 [-1.90, +0.89] / -59.3 [-78.5, -39.5]</td><td>-1.11 [-2.89, +0.67] / -40.2 [-59.5, -21.7]</td></tr>
+<tr><td>S1 RDDM/ADWIN</td><td>-1.33 [-1.77, -0.91] / -78.3 [-108.4, -51.1]</td><td>-0.52 [-0.84, -0.20] / -54.9 [-83.2, -30.7]</td><td>-0.27 [-1.70, +0.96] / -46.7 [-61.2, -31.0]</td><td>-1.03 [-2.67, +0.43] / -27.1 [-42.9, -12.4]</td></tr>
+<tr><td>S1 RDDM/HDDM-A</td><td>-1.11 [-1.51, -0.72] / -75.2 [-106.4, -47.6]</td><td>-0.20 [-0.51, +0.10] / -46.9 [-73.5, -23.9]</td><td>+0.03 [-1.25, +1.37] / -37.5 [-54.1, -21.4]</td><td>-0.35 [-2.02, +1.34] / -34.6 [-53.9, -16.1]</td></tr>
+<tr><td>S1 RDDM/RDDM</td><td>-0.52 [-0.91, -0.16] / -31.1 [-43.2, -19.5]</td><td>-0.50 [-0.88, -0.16] / -21.5 [-38.9, -4.8]</td><td>-0.52 [-1.18, +0.16] / -23.8 [-32.3, -15.5]</td><td>-1.67 [-3.18, -0.31] / -7.8 [-16.3, +3.5]</td></tr>
+</tbody></table>
+<p>類別表採各資料集相對差的中位數；型態表用 T1 同型態串流的配對 bootstrap。複合型態可出現在多欄，分層只描述異質性，不改主要判定。</p>
+<h2>Warning 生命週期與成本證據可重現且需分開解讀</h2>
+<table><thead><tr><th>格</th><th>warning 開啟</th><th>確認</th><th>自行關閉</th><th>自行關閉 %</th><th>timeout</th><th>reference switch</th><th>截尾</th><th>平均確認延遲</th><th>凍結步數</th></tr></thead><tbody>
+<tr><td>S0 ADWIN/ADWIN</td><td>8,708</td><td>8,335</td><td>0</td><td>0.0</td><td>0</td><td>0</td><td>373</td><td>1,368.1</td><td>22,068,902</td></tr>
+<tr><td>S0 ADWIN/HDDM-A</td><td>4,007</td><td>2,849</td><td>0</td><td>0.0</td><td>0</td><td>0</td><td>1,158</td><td>9,885.7</td><td>58,835,862</td></tr>
+<tr><td>S0 ADWIN/RDDM</td><td>4,247</td><td>3,200</td><td>0</td><td>0.0</td><td>0</td><td>0</td><td>1,047</td><td>11,261.1</td><td>53,896,696</td></tr>
+<tr><td>S0 HDDM-A/ADWIN</td><td>39,428</td><td>341</td><td>39,074</td><td>99.1</td><td>0</td><td>0</td><td>13</td><td>336.4</td><td>973,176</td></tr>
+<tr><td>S0 HDDM-A/HDDM-A</td><td>37,402</td><td>9,504</td><td>27,879</td><td>74.5</td><td>0</td><td>0</td><td>19</td><td>37.8</td><td>785,993</td></tr>
+<tr><td>S0 HDDM-A/RDDM</td><td>29,340</td><td>1,029</td><td>28,309</td><td>96.5</td><td>0</td><td>0</td><td>2</td><td>17.2</td><td>240,722</td></tr>
+<tr><td>S0 RDDM/ADWIN</td><td>236,337</td><td>586</td><td>235,625</td><td>99.7</td><td>0</td><td>0</td><td>126</td><td>133.0</td><td>7,166,922</td></tr>
+<tr><td>S0 RDDM/HDDM-A</td><td>148,364</td><td>2,134</td><td>146,154</td><td>98.5</td><td>0</td><td>0</td><td>76</td><td>56.8</td><td>4,774,686</td></tr>
+<tr><td>S0 RDDM/RDDM</td><td>126,359</td><td>11,139</td><td>115,147</td><td>91.1</td><td>0</td><td>0</td><td>73</td><td>218.9</td><td>4,782,304</td></tr>
+<tr><td>S1 ADWIN/ADWIN</td><td>9,113</td><td>7,603</td><td>0</td><td>0.0</td><td>1,443</td><td>32</td><td>35</td><td>65.4</td><td>0</td></tr>
+<tr><td>S1 ADWIN/HDDM-A</td><td>7,266</td><td>4,969</td><td>0</td><td>0.0</td><td>2,147</td><td>85</td><td>65</td><td>106.5</td><td>0</td></tr>
+<tr><td>S1 ADWIN/RDDM</td><td>7,261</td><td>5,219</td><td>0</td><td>0.0</td><td>1,899</td><td>78</td><td>65</td><td>115.8</td><td>0</td></tr>
+<tr><td>S1 HDDM-A/ADWIN</td><td>32,895</td><td>2,597</td><td>30,168</td><td>91.7</td><td>108</td><td>11</td><td>11</td><td>9.4</td><td>0</td></tr>
+<tr><td>S1 HDDM-A/HDDM-A</td><td>33,629</td><td>11,146</td><td>22,336</td><td>66.4</td><td>114</td><td>20</td><td>13</td><td>17.5</td><td>0</td></tr>
+<tr><td>S1 HDDM-A/RDDM</td><td>30,052</td><td>2,972</td><td>27,060</td><td>90.0</td><td>11</td><td>9</td><td>0</td><td>5.3</td><td>0</td></tr>
+<tr><td>S1 RDDM/ADWIN</td><td>221,316</td><td>2,894</td><td>216,469</td><td>97.8</td><td>1,659</td><td>147</td><td>147</td><td>32.8</td><td>0</td></tr>
+<tr><td>S1 RDDM/HDDM-A</td><td>220,130</td><td>3,459</td><td>214,688</td><td>97.5</td><td>1,656</td><td>229</td><td>98</td><td>32.8</td><td>0</td></tr>
+<tr><td>S1 RDDM/RDDM</td><td>271,517</td><td>19,029</td><td>249,225</td><td>91.8</td><td>1,709</td><td>1,433</td><td>121</td><td>99.4</td><td>0</td></tr>
+</tbody></table>
+<p>逐 run 驗證 <code>開啟 = close + censored</code>。平均確認延遲用 confirmed warning buffer 長度；S1 凍結步數固定為 0。</p>
+<table><thead><tr><th>格（electricity, workers=1）</th><th>runtime s</th><th>CPU s</th><th>instances/s</th><th>RSS 增量 MB</th><th>final model MB</th><th>RAM-hours GB</th></tr></thead><tbody>
+<tr><td>S0 ADWIN/ADWIN</td><td>14.89</td><td>14.08</td><td>3,043.1</td><td>2.7</td><td>13.75</td><td>0.000000</td></tr>
+<tr><td>S0 ADWIN/HDDM-A</td><td>17.88</td><td>16.54</td><td>2,534.3</td><td>3.4</td><td>11.61</td><td>0.000001</td></tr>
+<tr><td>S0 ADWIN/RDDM</td><td>14.08</td><td>13.66</td><td>3,218.3</td><td>7.2</td><td>9.42</td><td>0.000002</td></tr>
+<tr><td>S0 HDDM-A/ADWIN</td><td>11.20</td><td>11.02</td><td>4,044.3</td><td>0.0</td><td>10.64</td><td>0.000000</td></tr>
+<tr><td>S0 HDDM-A/HDDM-A</td><td>18.19</td><td>17.43</td><td>2,491.3</td><td>5.3</td><td>6.85</td><td>0.000001</td></tr>
+<tr><td>S0 HDDM-A/RDDM</td><td>13.40</td><td>12.90</td><td>3,381.7</td><td>8.4</td><td>7.96</td><td>0.000006</td></tr>
+<tr><td>S0 RDDM/ADWIN</td><td>10.46</td><td>10.08</td><td>4,333.0</td><td>3.8</td><td>8.89</td><td>0.000001</td></tr>
+<tr><td>S0 RDDM/HDDM-A</td><td>13.15</td><td>12.74</td><td>3,446.1</td><td>6.8</td><td>9.05</td><td>0.000006</td></tr>
+<tr><td>S0 RDDM/RDDM</td><td>17.84</td><td>16.40</td><td>2,540.3</td><td>0.0</td><td>9.28</td><td>0.000000</td></tr>
+<tr><td>S1 ADWIN/ADWIN</td><td>20.06</td><td>19.47</td><td>2,258.5</td><td>6.3</td><td>10.69</td><td>0.000002</td></tr>
+<tr><td>S1 ADWIN/HDDM-A</td><td>22.49</td><td>20.97</td><td>2,014.7</td><td>0.0</td><td>12.55</td><td>0.000000</td></tr>
+<tr><td>S1 ADWIN/RDDM</td><td>23.41</td><td>21.45</td><td>1,935.6</td><td>6.6</td><td>12.46</td><td>0.000001</td></tr>
+<tr><td>S1 HDDM-A/ADWIN</td><td>17.17</td><td>16.13</td><td>2,638.3</td><td>3.5</td><td>8.28</td><td>0.000001</td></tr>
+<tr><td>S1 HDDM-A/HDDM-A</td><td>31.79</td><td>30.42</td><td>1,425.5</td><td>4.2</td><td>15.17</td><td>0.000001</td></tr>
+<tr><td>S1 HDDM-A/RDDM</td><td>18.01</td><td>17.27</td><td>2,516.1</td><td>2.3</td><td>7.98</td><td>0.000000</td></tr>
+<tr><td>S1 RDDM/ADWIN</td><td>14.73</td><td>14.17</td><td>3,076.4</td><td>0.0</td><td>8.35</td><td>0.000000</td></tr>
+<tr><td>S1 RDDM/HDDM-A</td><td>18.02</td><td>16.68</td><td>2,515.3</td><td>0.0</td><td>8.71</td><td>0.000000</td></tr>
+<tr><td>S1 RDDM/RDDM</td><td>20.14</td><td>19.37</td><td>2,250.0</td><td>4.5</td><td>10.39</td><td>0.000001</td></tr>
+</tbody></table>
+<p>Strict timing 的 18/18 runs 均為 Apple M4、<code>concurrent_runs=1</code>，可直接比較時間；完整批次多數 <code>concurrent_runs=6</code>，時間只作參考，記憶體仍是逐程序量測。五個沿用對角共 1,025 個舊 run 沒有新版 cost block，未補算；其餘成本見<a href="compare_sota_all/cost.csv">全範圍 cost.csv</a>。</p>
+<p><a href="compare_sota/report.md">正式可比標準報表</a>只保留 registry 可比列；<a href="compare_sota_all/report.md">全 22 資料集 exploratory 報表</a>明示不可據此宣稱 SOTA，並提供每資料集 × preset 的標準分類、偵測與成本欄位。DET4 全為 ECPF pipeline preset，<code>injected_paper_*</code> 只有 detector-only preset 可與 Cerqueira et al. 比較，因此本報告不作文獻 SOTA 聲明。</p>
+<h2>30,456 個邏輯 runs 全數通過完整性稽核</h2>
+<p>正式矩陣共 30,456 個邏輯 runs：新跑 29,431、沿用對角 1,025；22 個資料集 × 18 組配置的規劃數全部到齊。T1、T3、short、paper、full 五批皆 failed=0、errors=[]、skipped=[]；正式批次牆上時間合計 100.77 小時，另有 strict timing 5.98 分鐘。</p>
+<p>稽核逐 run 驗證 preset、registry、來源 SHA-256、乾淨 commit、River 0.21.2、完整串流、GT、evaluator TP/FP/FN、warning 事件守恆與 S1 零凍結；T1/T3 另從 preds 重算 drift 後 1000 步 accuracy。資料與 CI 見<a href="det4_verdict_data.json">機器可讀 verdict data</a>，replay 與 smoke 見<a href="stage2_gate.md">stage2 gate</a>及<a href="stage3_smoke.md">stage3 smoke</a>。大型逐 run artifacts 保持 git-ignored。</p>
+<h2>事後觀察不改寫預註冊結論</h2>
+<ul>
+<li>S0 T1 accuracy 點估計最高為 S0 RDDM/RDDM（0.7180）；X 最高為 S0 HDDM-A/HDDM-A（336.97）。兩者只作事後描述，沒有 T3 事前候選資格。</li>
+<li>S1 T1 accuracy 點估計最高為 S1 ADWIN/ADWIN（0.7206）；X 最高為 S1 HDDM-A/HDDM-A（333.27）。兩者只作事後描述，沒有 T3 事前候選資格。</li>
+</ul>
+<h2>偏離、失敗與缺漏不改變主要判定</h2>
+<ul>
+<li>Registry 在 smoke 前確認實際為 25 個資料集、排除 3 個迴歸後為 22 個；不是原附件文字的 23 個。此修訂已在正式執行前追加至預註冊，未補造資料，30,456 總量不變。</li>
+<li>Full 批次第一次執行在 Airlines 完成後，位於 <code>/private/tmp</code> 的暫存 Python runtime 被系統清理，Covertype 因缺少標準庫／pandas 中止。已保留 18/18 Airlines checkpoint，改用專案內 <code>.venv311</code> 從 Covertype 恢復；最終 full summary 為 36/36、回傳碼 0、零失敗。這是執行環境偏離，不改資料、preset、metric 或判準。</li>
+<li>沿用的 1,025 個 DET1/DET3 對角 runs 沒有新版 cost block；判定指標完整，成本缺值不補算。另行 strict timing 18/18 完整，提供統一環境的時間與記憶體比較。</li>
+</ul>
+<h2>限制把結論鎖定在本研究的 ECPF pipeline</h2>
+<p>本輪只測單棵 Hoeffding Tree；ADWIN 與 HDDM-A 來自 River 0.21.2，RDDM 採已驗證的 MOA replay 實作。Synthetic、部分 INSECTS 與 injected 資料曾用於前輪開發；T3 只對 H3 指定格提供未用於 DET 的保留驗證。迴歸未測；混搭 warning/confirm 的 reset、zone exit 與 timeout 語意是本研究定義。沒有 GT 的真實資料只支持預測與成本描述；pipeline 偵測指標不可與 detector-only 文獻 SOTA 並列。CI 描述本批配對串流的條件不確定性，不是跨任務母體保證。</p></main></body></html>
