@@ -1,0 +1,47 @@
+{
+  "batch": "paper",
+  "commit": "7cf48501959adcfc71d4df64cfdf3f9d24b2881f",
+  "expected_runs": 14400,
+  "completed_runs": 14400,
+  "failed_runs": 0,
+  "elapsed_s": 258350.12,
+  "free_gib_after": 55.01,
+  "results": [
+    {
+      "dataset": "injected_paper_covertype",
+      "out_dir": "outputs/benchmark/det4",
+      "workers": 6,
+      "trials": null,
+      "trial_start": 0,
+      "presets": 18,
+      "streams": 400,
+      "expected": 7200,
+      "complete": 7200,
+      "failed": 0,
+      "errors": [],
+      "attempts": 1,
+      "elapsed_s": 179286.33,
+      "log": "outputs/det4/logs/formal_paper_01_injected_paper_covertype.log",
+      "free_gib_after": 45.72
+    },
+    {
+      "dataset": "injected_paper_gas_sensor_drift",
+      "out_dir": "outputs/benchmark/det4",
+      "workers": 6,
+      "trials": null,
+      "trial_start": 0,
+      "presets": 18,
+      "streams": 400,
+      "expected": 7200,
+      "complete": 7200,
+      "failed": 0,
+      "errors": [],
+      "attempts": 1,
+      "elapsed_s": 79063.77,
+      "log": "outputs/det4/logs/formal_paper_02_injected_paper_gas_sensor_drift.log",
+      "free_gib_after": 55.01
+    }
+  ],
+  "skipped": [],
+  "errors": []
+}

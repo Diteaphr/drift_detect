@@ -1,0 +1,41 @@
+{
+  "name": "det1_oracle60_lw1",
+  "kind": "pipeline",
+  "role": "ablation",
+  "description": "DET1 A0: input-coordinate oracle at true start +60; learn during warning=True.",
+  "source": "docs/ECPF_DET1_預註冊.md, 2026-10-13 revision",
+  "requires": {
+    "river": "0.21.2"
+  },
+  "warm_start": 200,
+  "seed_param": null,
+  "config": {
+    "model_type": "ht",
+    "use_ecpf": true,
+    "ecpf_signal_mode": "oracle_input_60",
+    "detector_delta": 0.05,
+    "ecpf_swap_policy": "strict",
+    "ecpf_fade_policy": "ecpf",
+    "ecpf_fade_enabled": true,
+    "ecpf_max_pool_size": 10,
+    "detector_delta_w": 0.1,
+    "ecpf_warning_signal": "error",
+    "ecpf_drift_signal": "error",
+    "ecpf_learn_during_warning": true,
+    "ecpf_warning_length": 60
+  },
+  "task_overrides": {
+    "regression": {
+      "model_type": "htr"
+    }
+  },
+  "tasks": [
+    "binary",
+    "multiclass"
+  ],
+  "datasets": [
+    "injected_paper_electricity",
+    "insects_abrupt_balanced",
+    "synthetic_multiclass"
+  ]
+}

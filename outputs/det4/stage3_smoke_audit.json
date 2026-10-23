@@ -1,0 +1,172 @@
+{
+  "expected_runs": 432,
+  "completed_runs": 432,
+  "failed_runs": 0,
+  "presets": 18,
+  "datasets": 22,
+  "warning_close_reasons": {
+    "confirmed": 811,
+    "zone_exit": 4627,
+    "stream_end": 31,
+    "reference_switch": 34,
+    "timeout": 7
+  },
+  "elapsed_s": 2138.31,
+  "errors": [],
+  "commands": [
+    {
+      "dataset": "injected_paper_electricity",
+      "limit_files": 2,
+      "runs": 36,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_injected_paper_electricity.log"
+    },
+    {
+      "dataset": "synthetic_multiclass",
+      "limit_files": 2,
+      "runs": 36,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_synthetic_multiclass.log"
+    },
+    {
+      "dataset": "insects_abrupt_balanced",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_insects_abrupt_balanced.log"
+    },
+    {
+      "dataset": "electricity",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_electricity.log"
+    },
+    {
+      "dataset": "airlines",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_airlines.log"
+    },
+    {
+      "dataset": "covertype",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_covertype.log"
+    },
+    {
+      "dataset": "airlines_full",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_airlines_full.log"
+    },
+    {
+      "dataset": "covertype_full",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_covertype_full.log"
+    },
+    {
+      "dataset": "gas_sensor_drift",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_gas_sensor_drift.log"
+    },
+    {
+      "dataset": "ai4i2020",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_ai4i2020.log"
+    },
+    {
+      "dataset": "insects_incremental_balanced",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_insects_incremental_balanced.log"
+    },
+    {
+      "dataset": "insects_incremental_gradual_balanced",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_insects_incremental_gradual_balanced.log"
+    },
+    {
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_insects_incremental_abrupt_reoccurring_balanced.log"
+    },
+    {
+      "dataset": "insects_incremental_reoccurring_balanced",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_insects_incremental_reoccurring_balanced.log"
+    },
+    {
+      "dataset": "injected_electricity",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_injected_electricity.log"
+    },
+    {
+      "dataset": "injected_covertype",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_injected_covertype.log"
+    },
+    {
+      "dataset": "injected_gas_sensor_drift",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_injected_gas_sensor_drift.log"
+    },
+    {
+      "dataset": "injected_airlines",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_injected_airlines.log"
+    },
+    {
+      "dataset": "injected_ai4i2020",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_injected_ai4i2020.log"
+    },
+    {
+      "dataset": "injected_paper_covertype",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_injected_paper_covertype.log"
+    },
+    {
+      "dataset": "injected_paper_gas_sensor_drift",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_injected_paper_gas_sensor_drift.log"
+    },
+    {
+      "dataset": "synthetic_binary",
+      "limit_files": 1,
+      "runs": 18,
+      "returncode": 0,
+      "log": "outputs/det4/logs/smoke_synthetic_binary.log"
+    }
+  ]
+}

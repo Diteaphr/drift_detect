@@ -3,20 +3,61 @@
   "main_preset": "e10bft",
   "suites": {
     "standard": {
-      "presets": ["e10bft", "arf100", "srp10", "ht", "nb", "htr"],
+      "presets": [
+        "e10bft",
+        "arf100",
+        "srp10",
+        "ht",
+        "nb",
+        "htr"
+      ],
       "description": "Main method + strong baselines (ARF 100 trees, SRP) + no-drift-handling baselines (HT, NB; HT regressor on regression streams). The default set for a SOTA comparison."
     },
     "quick": {
-      "presets": ["e10bft", "arf10", "ht", "nb", "htr"],
+      "presets": [
+        "e10bft",
+        "arf10",
+        "ht",
+        "nb",
+        "htr"
+      ],
       "description": "Cheaper version of standard (ARF with 10 trees, no SRP) for a first look; ARF10 is not the configuration the literature reports."
     },
     "ablation": {
-      "presets": ["e10bft", "ecpf_paper", "ecpf_reuse_value"],
+      "presets": [
+        "e10bft",
+        "ecpf_paper",
+        "ecpf_reuse_value"
+      ],
       "description": "Main method vs plain ECPF (paper settings) and ECPF with reuse-value fading, all on a single Hoeffding Tree."
     },
     "main_only": {
-      "presets": ["e10bft"],
+      "presets": [
+        "e10bft"
+      ],
       "description": "Only the main method."
+    },
+    "det1": {
+      "presets": [
+        "e10bft",
+        "det1_oracle60_lw0",
+        "det1_oracle60_lw1",
+        "det1_dual_adwin_lw0",
+        "det1_dual_adwin_lw1",
+        "det1_dual_adwin_t1000_lw0",
+        "det1_dual_adwin_t1000_lw1",
+        "det1_zone_ddm_lw0",
+        "det1_zone_ddm_lw1",
+        "det1_zone_hddm_a_lw0",
+        "det1_zone_hddm_a_lw1",
+        "det1_zone_rddm_lw0",
+        "det1_zone_rddm_lw1",
+        "det1_zone_magseed_lw0",
+        "det1_zone_magseed_lw1",
+        "det1_zone_magseed_upward_lw0",
+        "det1_zone_magseed_upward_lw1"
+      ],
+      "description": "DET1 A0-A5 and A5u secondary ECPF arms plus A6 E10bFT; dataset scope skips A0 on incremental. Detector-only presets are run separately on injected data."
     },
     "pool_fade": {
       "presets": ["e10bft", "ecpf_paper", "ecpf_reuse_value", "e10bft_reuse_value", "e10bft_density_b2", "e10bft_density_b4", "e10bft_density_b8", "e10bft_rent_l1", "e10bft_rent_l2", "e10bft_rent_l5", "e10bft_rent_l10", "e10bft_entry_f5", "e10bft_entry_f15", "e10bft_entry_f30", "e10bft_freq_b2", "e10bft_freq_b4", "e10bft_freq_b8", "e10bft_decay_g050", "e10bft_decay_g080", "e10bft_decay_g095", "e10bft_subst", "ecpf_density_b2", "ecpf_density_b4", "ecpf_density_b8", "ecpf_rent_l1", "ecpf_rent_l2", "ecpf_rent_l5", "ecpf_rent_l10", "ecpf_entry_f5", "ecpf_entry_f15", "ecpf_entry_f30", "ecpf_freq_b2", "ecpf_freq_b4", "ecpf_freq_b8", "ecpf_decay_g050", "ecpf_decay_g080", "ecpf_decay_g095", "ecpf_subst"],

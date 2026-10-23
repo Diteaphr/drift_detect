@@ -1,0 +1,651 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DET3：完整系統對 ECPF 論文</title><style>body{margin:0;background:#f2f5f7;color:#19283a;font:16px/1.72 -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}main{max-width:1300px;margin:28px auto;padding:36px 42px;background:white;border:1px solid #d8e2ea;border-radius:10px;box-shadow:0 6px 24px #122d440b}h1{color:#0b2d48;line-height:1.25;font-size:2rem}h2{margin-top:2.4rem;padding-bottom:.4rem;border-bottom:2px solid #087c79;color:#0b2d48;font-size:1.35rem}table{display:block;overflow:auto;border-collapse:collapse;font-size:.87rem;line-height:1.48;margin:1rem 0 1.4rem}td,th{border:1px solid #d8e2ea;padding:.5rem .62rem;vertical-align:top;min-width:70px}th{background:#eaf4f5;white-space:nowrap}tbody tr:nth-child(even){background:#f9fbfc}a{color:#076979}strong{color:#073b56}code{background:#edf3f6;border-radius:3px;padding:.1em .28em;overflow-wrap:anywhere}@media(max-width:720px){main{margin:0;padding:20px 16px;border-radius:0}h1{font-size:1.5rem}}</style></head><body><main><h1>DET3：完整系統對論文 HDDM-A，偵測持平、準確率優於</h1>
+<p><strong>主結論：</strong> Q1 F-D1 對 P-H 的偵測為<strong>持平</strong>（ΔFP +15.00 [-20.00, +50.00]；ΔX -28.03 [-42.66, -13.34]），全串流準確率為<strong>優於</strong>（Δaccuracy 百分點 +0.277 [+0.060, +0.516]）。但 X 的 CI 全負，drift 後 accuracy 差為 -1.632 [-2.402, -0.887] 個百分點且 CI 全負；偵測的「持平」只代表 P1/P2 未同時證實勝負，不能解讀為兩項指標等效。Q2 F-D1 對 F-H1 的偵測為<strong>持平</strong>、全串流準確率為<strong>持平</strong>，其 X 與 drift 後 accuracy 也較低。兩軸判定均限於鎖定的單棵 HT 與 205 條配對串流。<strong>準確率優勢依賴曾用於開發的資料。</strong></p>
+<p>依<a href="../../docs/ECPF_DET3_預註冊.md">DET3 預註冊</a>固定 1000 步窗、E11 X、三資料組分層配對 bootstrap 10,000 次（seed <code>20261012</code>），95% percentile CI 含 0 判持平。P1 為 FP 差 CI 全負，P2 為 X 差 CI 全正；兩者均朝不利方向才判偵測不如。全串流 accuracy 含無 GT INSECTS，FP/X 與 drift 後 accuracy 僅含 204 條有 GT 串流。CI 描述本批串流的條件不確定性。</p>
+<h2>Q1／Q2：完整系統的偵測與準確率須分開判</h2>
+<table>
+<thead>
+<tr>
+<th>配對比較</th>
+<th>ΔFP [CI]</th>
+<th>P1</th>
+<th>ΔX [CI]</th>
+<th>P2</th>
+<th>偵測</th>
+<th>Δaccuracy 百分點 [CI]</th>
+<th>準確率</th>
+<th>Δdrift 後 acc. 百分點 [CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1 主：F-D1 − P-H</td>
+<td>+15.00 [-20.00, +50.00]</td>
+<td>持平</td>
+<td>-28.03 [-42.66, -13.34]</td>
+<td>不成立</td>
+<td>持平</td>
+<td>+0.277 [+0.060, +0.516]</td>
+<td>優於</td>
+<td>-1.632 [-2.402, -0.887]</td>
+</tr>
+<tr>
+<td>Q1 次：F-H1 − P-H</td>
+<td>-10.00 [-49.00, +29.00]</td>
+<td>持平</td>
+<td>-3.69 [-17.51, +9.02]</td>
+<td>持平</td>
+<td>持平</td>
+<td>+0.090 [-0.118, +0.305]</td>
+<td>持平</td>
+<td>-0.335 [-0.781, +0.113]</td>
+</tr>
+<tr>
+<td>Q2：F-D1 − F-H1</td>
+<td>+25.00 [-9.00, +59.00]</td>
+<td>持平</td>
+<td>-24.33 [-40.10, -7.18]</td>
+<td>不成立</td>
+<td>持平</td>
+<td>+0.187 [-0.044, +0.423]</td>
+<td>持平</td>
+<td>-1.296 [-2.004, -0.575]</td>
+</tr>
+</tbody>
+</table>
+<p>比較差值均為表中左臂減右臂；FP 越少越好，X 與 accuracy 越大越好。Q1 次列 F-H1 對 P-H 是預先指定的次要比較。Q1/Q2 的 X 差 CI 均全負而 FP 差 CI 含 0，故依事前<strong>雙條件</strong>規則為偵測持平；這不構成 X 等效。兩項 drift 後 accuracy 差 CI 均全負，亦屬已觀察到的代價，未用於改寫預註冊兩軸勝負。</p>
+<h2>三組資料揭示效果來源，injected 是未參與 E10bFT 開發的本輪資料</h2>
+<table>
+<thead>
+<tr>
+<th>資料組</th>
+<th>比較</th>
+<th>accuracy／GT 串流</th>
+<th>ΔFP [CI]</th>
+<th>ΔX [CI]</th>
+<th>Δaccuracy 百分點 [CI]</th>
+<th>偵測方向</th>
+<th>準確率方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>injected_paper_electricity（未開發）</td>
+<td>Q1 主：F-D1 − P-H</td>
+<td>160／160</td>
+<td>+33.00 [+10.00, +55.00]</td>
+<td>-6.99 [-14.46, +0.42]</td>
+<td>-0.007 [-0.065, +0.056]</td>
+<td>持平</td>
+<td>持平</td>
+</tr>
+<tr>
+<td>injected_paper_electricity（未開發）</td>
+<td>Q1 次：F-H1 − P-H</td>
+<td>160／160</td>
+<td>+20.00 [-5.00, +45.00]</td>
+<td>+5.40 [-2.89, +13.75]</td>
+<td>+0.054 [-0.044, +0.151]</td>
+<td>持平</td>
+<td>持平</td>
+</tr>
+<tr>
+<td>injected_paper_electricity（未開發）</td>
+<td>Q2：F-D1 − F-H1</td>
+<td>160／160</td>
+<td>+13.00 [-9.00, +35.00]</td>
+<td>-12.39 [-21.57, -3.47]</td>
+<td>-0.061 [-0.141, +0.024]</td>
+<td>持平</td>
+<td>持平</td>
+</tr>
+<tr>
+<td>synthetic</td>
+<td>Q1 主：F-D1 − P-H</td>
+<td>40／40</td>
+<td>-11.00 [-36.00, +14.00]</td>
+<td>-20.04 [-32.64, -7.97]</td>
+<td>+0.638 [+0.075, +1.281]</td>
+<td>持平</td>
+<td>優於</td>
+</tr>
+<tr>
+<td>synthetic</td>
+<td>Q1 次：F-H1 − P-H</td>
+<td>40／40</td>
+<td>+1.00 [-24.00, +25.00]</td>
+<td>-9.84 [-21.25, -0.38]</td>
+<td>+0.041 [-0.492, +0.588]</td>
+<td>持平</td>
+<td>持平</td>
+</tr>
+<tr>
+<td>synthetic</td>
+<td>Q2：F-D1 − F-H1</td>
+<td>40／40</td>
+<td>-12.00 [-35.00, +11.00]</td>
+<td>-10.20 [-23.20, +4.16]</td>
+<td>+0.598 [-0.027, +1.225]</td>
+<td>持平</td>
+<td>持平</td>
+</tr>
+<tr>
+<td>INSECTS</td>
+<td>Q1 主：F-D1 − P-H</td>
+<td>5／4</td>
+<td>-7.00 [-16.00, +3.00]</td>
+<td>-1.00 [-2.66, +0.15]</td>
+<td>+1.937 [+0.520, +3.148]</td>
+<td>持平</td>
+<td>優於</td>
+</tr>
+<tr>
+<td>INSECTS</td>
+<td>Q1 次：F-H1 − P-H</td>
+<td>5／4</td>
+<td>-31.00 [-48.00, -14.00]</td>
+<td>+0.74 [+0.40, +1.08]</td>
+<td>+1.589 [+0.108, +2.861]</td>
+<td>優於</td>
+<td>優於</td>
+</tr>
+<tr>
+<td>INSECTS</td>
+<td>Q2：F-D1 − F-H1</td>
+<td>5／4</td>
+<td>+24.00 [+12.00, +36.00]</td>
+<td>-1.74 [-3.80, -0.44]</td>
+<td>+0.349 [+0.202, +0.577]</td>
+<td>不如</td>
+<td>優於</td>
+</tr>
+</tbody>
+</table>
+<p>各資料組 CI 只供方向與穩健性描述，不作另一輪勝負門檻。INSECTS accuracy 層含無 GT 的 incremental 一條；偵測層不含。 Q1 總體優於但 injected 反向：準確率優勢依賴曾用於開發的資料。</p>
+<h2>四種漂移型態顯示異質性，不更改總判準</h2>
+<table>
+<thead>
+<tr>
+<th>型態</th>
+<th>比較</th>
+<th>accuracy／GT 串流</th>
+<th>ΔFP [CI]</th>
+<th>ΔX [CI]</th>
+<th>Δaccuracy 百分點 [CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>突變</td>
+<td>Q1 主：F-D1 − P-H</td>
+<td>95／95</td>
+<td>+2.00 [-19.00, +23.00]</td>
+<td>+4.11 [-1.46, +10.12]</td>
+<td>+0.154 [-0.176, +0.600]</td>
+</tr>
+<tr>
+<td>突變</td>
+<td>Q1 次：F-H1 − P-H</td>
+<td>95／95</td>
+<td>-19.00 [-44.00, +6.00]</td>
+<td>+8.83 [+3.02, +15.19]</td>
+<td>+0.238 [-0.067, +0.566]</td>
+</tr>
+<tr>
+<td>突變</td>
+<td>Q2：F-D1 − F-H1</td>
+<td>95／95</td>
+<td>+21.00 [+0.00, +41.00]</td>
+<td>-4.72 [-11.03, +1.41]</td>
+<td>-0.084 [-0.371, +0.193]</td>
+</tr>
+<tr>
+<td>漸變</td>
+<td>Q1 主：F-D1 − P-H</td>
+<td>96／96</td>
+<td>+22.00 [-2.00, +44.00]</td>
+<td>-20.84 [-30.82, -10.64]</td>
+<td>+0.131 [-0.040, +0.307]</td>
+</tr>
+<tr>
+<td>漸變</td>
+<td>Q1 次：F-H1 − P-H</td>
+<td>96／96</td>
+<td>+17.00 [-6.00, +39.00]</td>
+<td>-9.14 [-19.70, +0.16]</td>
+<td>-0.021 [-0.276, +0.220]</td>
+</tr>
+<tr>
+<td>漸變</td>
+<td>Q2：F-D1 − F-H1</td>
+<td>96／96</td>
+<td>+5.00 [-15.00, +26.00]</td>
+<td>-11.70 [-25.09, +2.83]</td>
+<td>+0.152 [-0.116, +0.425]</td>
+</tr>
+<tr>
+<td>incremental</td>
+<td>Q1 主：F-D1 − P-H</td>
+<td>16／15</td>
+<td>-15.00 [-29.00, -1.00]</td>
+<td>-12.17 [-18.57, -5.38]</td>
+<td>+1.288 [+0.366, +2.246]</td>
+</tr>
+<tr>
+<td>incremental</td>
+<td>Q1 次：F-H1 − P-H</td>
+<td>16／15</td>
+<td>-32.00 [-51.00, -12.00]</td>
+<td>-2.85 [-7.99, +1.71]</td>
+<td>+0.045 [-0.711, +0.749]</td>
+</tr>
+<tr>
+<td>incremental</td>
+<td>Q2：F-D1 − F-H1</td>
+<td>16／15</td>
+<td>+17.00 [-4.00, +37.00]</td>
+<td>-9.32 [-14.74, -4.33]</td>
+<td>+1.243 [+0.224, +2.342]</td>
+</tr>
+<tr>
+<td>recurring</td>
+<td>Q1 主：F-D1 − P-H</td>
+<td>12／12</td>
+<td>-19.00 [-30.00, -9.00]</td>
+<td>-3.65 [-9.95, +2.57]</td>
+<td>+2.189 [+0.737, +3.804]</td>
+</tr>
+<tr>
+<td>recurring</td>
+<td>Q1 次：F-H1 − P-H</td>
+<td>12／12</td>
+<td>-30.00 [-44.00, -16.00]</td>
+<td>-6.57 [-15.14, -0.25]</td>
+<td>+0.847 [-0.448, +2.182]</td>
+</tr>
+<tr>
+<td>recurring</td>
+<td>Q2：F-D1 − F-H1</td>
+<td>12／12</td>
+<td>+11.00 [-1.00, +22.00]</td>
+<td>+2.92 [-4.51, +13.04]</td>
+<td>+1.342 [-0.065, +2.624]</td>
+</tr>
+</tbody>
+</table>
+<p>型態按 DET1 命名規則：<code>abrupt/sudden</code>、<code>gradual</code>、<code>incremental</code>、<code>recurring/reoccurring</code>；複合標籤可在多個描述層出現，但總判定每串流只計一次。</p>
+<h2>Q3：換訊號與 warning 持續學習的組合效果</h2>
+<table>
+<thead>
+<tr>
+<th>描述性對比</th>
+<th>ΔFP [CI]</th>
+<th>ΔX [CI]</th>
+<th>Δaccuracy 百分點 [CI]</th>
+<th>Δdrift 後 acc. 百分點 [CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q3 訊號／守衛／逾時：F-D0 − P-D</td>
+<td>-485.00 [-527.00, -442.00]</td>
+<td>+66.53 [+48.99, +84.36]</td>
+<td>+0.876 [+0.640, +1.102]</td>
+<td>+1.799 [+1.345, +2.255]</td>
+</tr>
+<tr>
+<td>Q3 完整系統 lw1：F-D1 − F-D0</td>
+<td>+4.00 [-18.00, +25.00]</td>
+<td>-9.16 [-18.85, +0.15]</td>
+<td>+0.191 [+0.032, +0.349]</td>
+<td>+0.479 [+0.156, +0.799]</td>
+</tr>
+<tr>
+<td>Q3 論文底座 lw1：P-D1 − P-D</td>
+<td>+34.00 [-4.00, +72.00]</td>
+<td>-7.03 [-17.48, +3.03]</td>
+<td>+0.456 [+0.240, +0.670]</td>
+<td>+0.485 [-0.145, +1.062]</td>
+</tr>
+<tr>
+<td>Q3 HDDM-A 完整元件：F-H1 − P-H1</td>
+<td>-5.00 [-50.00, +41.00]</td>
+<td>-1.99 [-17.51, +11.84]</td>
+<td>+0.040 [-0.203, +0.265]</td>
+<td>-0.602 [-1.107, -0.114]</td>
+</tr>
+<tr>
+<td>Q3 HDDM-A 含 lw1：F-H1 − P-H</td>
+<td>-10.00 [-49.00, +29.00]</td>
+<td>-3.69 [-17.51, +9.02]</td>
+<td>+0.090 [-0.118, +0.305]</td>
+<td>-0.335 [-0.781, +0.113]</td>
+</tr>
+</tbody>
+</table>
+<p>Q3 的點估計顯示：F-D0 相對 P-D 減少 FP 485、增加 X 66.53，全串流 accuracy 提高 0.876 個百分點，三項 CI 均朝有利方向。完整底座開啟 lw1 再提高 accuracy 0.191 個百分點；論文底座的 lw1 對比為 0.456 個百分點。這是點估計大小的描述，不是兩個 lw1 效果差異的顯著性檢定。
+F-D0−P-D 同時加入 frozen reference、守衛與逾時，不能稱為 reference 的純因果效果。F-D1−F-D0 與 P-D1−P-D 分別描述不同底座上的 lw1 對比；不做跨對比的顯著性判定。</p>
+<h2>DET1＋DET2＋DET3 總表支援同母體對照</h2>
+<table>
+<thead>
+<tr>
+<th>組別</th>
+<th>preq. accuracy</th>
+<th>drift 後 accuracy</th>
+<th>FP@1000</th>
+<th>episode hits</th>
+<th>C</th>
+<th>X</th>
+<th>MDT 步</th>
+<th>kappa</th>
+<th>凍結步數</th>
+<th>CPU 分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P-D（Dual ADWIN，lw0）</td>
+<td>0.7099</td>
+<td>0.5570</td>
+<td>731</td>
+<td>295</td>
+<td>43.43</td>
+<td>251.57</td>
+<td>527.6</td>
+<td>0.4976</td>
+<td>1,717,081</td>
+<td>70.3</td>
+</tr>
+<tr>
+<td>P-D1（Dual ADWIN，lw1）</td>
+<td>0.7145</td>
+<td>0.5618</td>
+<td>765</td>
+<td>290</td>
+<td>45.46</td>
+<td>244.54</td>
+<td>490.8</td>
+<td>0.5051</td>
+<td>0</td>
+<td>57.1</td>
+</tr>
+<tr>
+<td>P-H（HDDM-A，lw0）</td>
+<td>0.7178</td>
+<td>0.5961</td>
+<td>235</td>
+<td>348</td>
+<td>11.03</td>
+<td>336.97</td>
+<td>351.4</td>
+<td>0.5099</td>
+<td>32,212</td>
+<td>68.8</td>
+</tr>
+<tr>
+<td>P-H1（HDDM-A，lw1）</td>
+<td>0.7183</td>
+<td>0.5987</td>
+<td>230</td>
+<td>346</td>
+<td>10.74</td>
+<td>335.26</td>
+<td>347.6</td>
+<td>0.5106</td>
+<td>0</td>
+<td>55.2</td>
+</tr>
+<tr>
+<td>F-D0（完整元件，Dual ADWIN，lw0）</td>
+<td>0.7187</td>
+<td>0.5749</td>
+<td>246</td>
+<td>329</td>
+<td>10.90</td>
+<td>318.10</td>
+<td>525.2</td>
+<td>0.5107</td>
+<td>197,138</td>
+<td>73.0</td>
+</tr>
+<tr>
+<td>F-D1（完整系統，Dual ADWIN，lw1）</td>
+<td>0.7206</td>
+<td>0.5797</td>
+<td>250</td>
+<td>320</td>
+<td>11.06</td>
+<td>308.94</td>
+<td>531.6</td>
+<td>0.5136</td>
+<td>0</td>
+<td>80.7</td>
+</tr>
+<tr>
+<td>F-H1（完整元件，HDDM-A，lw1）</td>
+<td>0.7187</td>
+<td>0.5927</td>
+<td>225</td>
+<td>344</td>
+<td>10.73</td>
+<td>333.27</td>
+<td>381.2</td>
+<td>0.5115</td>
+<td>0</td>
+<td>84.6</td>
+</tr>
+<tr>
+<td>DET1-A4（RDDM，lw0）</td>
+<td>0.7180</td>
+<td>0.5928</td>
+<td>336</td>
+<td>341</td>
+<td>14.78</td>
+<td>326.22</td>
+<td>430.3</td>
+<td>0.5100</td>
+<td>462,397</td>
+<td>68.2</td>
+</tr>
+<tr>
+<td>DET2-A4（RDDM，lw1）</td>
+<td>0.7208</td>
+<td>0.5942</td>
+<td>288</td>
+<td>332</td>
+<td>12.15</td>
+<td>319.85</td>
+<td>439.7</td>
+<td>0.5140</td>
+<td>0</td>
+<td>61.9</td>
+</tr>
+</tbody>
+</table>
+<p>總表 accuracy 按全 205 條可計分預測數加權；偵測指標與 drift 後 accuracy 只用 204 條有 GT 串流。CPU 分為 205 次 run 的 runtime 合計，非 6 workers 牆上時間。RDDM 僅供前輪脈絡，不進本輪 Q1/Q2。</p>
+<h2>Warning 生命週期與無 GT 串流提供機制核對</h2>
+<table>
+<thead>
+<tr>
+<th>組別</th>
+<th>開啟</th>
+<th>確認</th>
+<th>zone 離區</th>
+<th>逾時</th>
+<th>reference switch 關閉</th>
+<th>截尾</th>
+<th>凍結步數</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P-D（Dual ADWIN，lw0）</td>
+<td>1,166</td>
+<td>1,135</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>31</td>
+<td>1,717,081</td>
+</tr>
+<tr>
+<td>P-D1（Dual ADWIN，lw1）</td>
+<td>1,198</td>
+<td>1,171</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>27</td>
+<td>0</td>
+</tr>
+<tr>
+<td>P-H（HDDM-A，lw0）</td>
+<td>3,144</td>
+<td>684</td>
+<td>2,460</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>32,212</td>
+</tr>
+<tr>
+<td>P-H1（HDDM-A，lw1）</td>
+<td>3,121</td>
+<td>670</td>
+<td>2,451</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>F-D0（完整元件，Dual ADWIN，lw0）</td>
+<td>776</td>
+<td>624</td>
+<td>0</td>
+<td>143</td>
+<td>8</td>
+<td>1</td>
+<td>197,138</td>
+</tr>
+<tr>
+<td>F-D1（完整系統，Dual ADWIN，lw1）</td>
+<td>765</td>
+<td>619</td>
+<td>0</td>
+<td>143</td>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>F-H1（完整元件，HDDM-A，lw1）</td>
+<td>4,230</td>
+<td>651</td>
+<td>3,542</td>
+<td>25</td>
+<td>10</td>
+<td>2</td>
+<td>0</td>
+</tr>
+<tr>
+<td>DET1-A4（RDDM，lw0）</td>
+<td>12,744</td>
+<td>1,035</td>
+<td>11,706</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>462,397</td>
+</tr>
+<tr>
+<td>DET2-A4（RDDM，lw1）</td>
+<td>12,713</td>
+<td>900</td>
+<td>11,811</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>每 run 驗證開啟 = 各種關閉 + 截尾。Reference switch 若沒有開啟中的 warning，不產生 warning 關閉事件；<a href="stage3_trace_diagnostics.json">階段三 trace 診斷</a>另核實 reference switch 與守衛欄位。</p>
+<table>
+<thead>
+<tr>
+<th>insects_incremental_balanced（無 GT）</th>
+<th>preq. accuracy</th>
+<th>警報數</th>
+<th>CPU 秒</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P-D（Dual ADWIN，lw0）</td>
+<td>0.5553</td>
+<td>7</td>
+<td>43.55</td>
+</tr>
+<tr>
+<td>P-D1（Dual ADWIN，lw1）</td>
+<td>0.5447</td>
+<td>7</td>
+<td>44.86</td>
+</tr>
+<tr>
+<td>P-H（HDDM-A，lw0）</td>
+<td>0.5646</td>
+<td>4</td>
+<td>35.10</td>
+</tr>
+<tr>
+<td>P-H1（HDDM-A，lw1）</td>
+<td>0.5650</td>
+<td>5</td>
+<td>31.32</td>
+</tr>
+<tr>
+<td>F-D0（完整元件，Dual ADWIN，lw0）</td>
+<td>0.5659</td>
+<td>5</td>
+<td>45.47</td>
+</tr>
+<tr>
+<td>F-D1（完整系統，Dual ADWIN，lw1）</td>
+<td>0.5671</td>
+<td>5</td>
+<td>52.12</td>
+</tr>
+<tr>
+<td>F-H1（完整元件，HDDM-A，lw1）</td>
+<td>0.5644</td>
+<td>8</td>
+<td>55.66</td>
+</tr>
+<tr>
+<td>DET1-A4（RDDM，lw0）</td>
+<td>0.5703</td>
+<td>7</td>
+<td>38.00</td>
+</tr>
+<tr>
+<td>DET2-A4（RDDM，lw1）</td>
+<td>0.5699</td>
+<td>7</td>
+<td>37.38</td>
+</tr>
+</tbody>
+</table>
+<p>無 GT 串流只描述 accuracy、警報數、runtime，不計 TP／FP／C／X。</p>
+<h2>正式矩陣已完成來源與計分稽核</h2>
+<p>新跑固定 commit <code>b86f5d679cba136705214f9fe9a5d5460d6bcaa4</code>；DET1／DET2 沿用 commit <code>0b98e29a708ee55f3bcc7f47165696981aa2e282</code>／<code>55bfc81999c98954ad5a4b4aa05df691faac0cff</code>。新跑 615／615、失敗 0；每臂 160 injected、40 synthetic、5 INSECTS。逐 run 驗證 preset、registry、來源 SHA-256、乾淨 commit、River 0.21.2、GT、同串流 <code>y_true</code>、warning 守恆與 evaluator TP／FP／FN。詳見<a href="det3_run_scores.csv">逐 run 分數</a>、<a href="det3_verdict_data.json">資料與 CI</a>、<a href="formal_integrity_20261013.md">正式完整性紀錄</a>及<a href="stage3_gate_smoke.md">重現／smoke</a>。原始 run 在本機 git-ignored <code>outputs/benchmark/det3/</code>，與前輪及 smoke 隔離。</p>
+<h2>事後觀察只協助解釋，不新增判準</h2>
+<ul>
+<li>F-D0 的凍結步數 197,138，相較 P-D 的 1,717,081 大幅下降；F-D1 為 0。reference、守衛、逾時及後續 detector 狀態一同改變，不能將差額單獨歸因於某個元件。</li>
+<li>F-D1 的 CPU 成本 80.7 分，高於 P-H 的 68.8 分；這是 205 條 run 的加總，不是實際牆上耗時。</li>
+<li>injected 的 Q1 accuracy 點差略為負、FP CI 全正；synthetic 與 INSECTS 的 accuracy 點差為正。此異質性支持資料重疊註記，但不據此挑選子組重定義主要勝負。</li>
+</ul>
+<h2>限制界定可外推範圍</h2>
+<p>只有單一 Hoeffding Tree，不外推到森林；synthetic 不是新 holdout；injected 每格只用 registry 前 20 trials；Dual ADWIN 採 River 0.21.2，不直接等同 MOA。E10bFT 元件曾在 synthetic、部分 INSECTS 與其他注入型 electricity 資料上開發；本輪 <code>injected_paper_electricity</code> 未參與開發，但也不是對所有元件獨立、全新分布的外部驗證。</p>
+<h2>偏離與失敗與缺漏</h2>
+<p>正式執行沒有失敗或缺漏；四個沿用組別通過 60／60 逐位元閘門。階段三 CLI 子字串篩選多跑 16 個 synthetic 隔離檢查、INSECTS 首次 0-run 空 CSV 後於新隔離目錄重跑，均未進正式分析，詳見<a href="stage3_gate_smoke.md">階段三紀錄</a>。</p></main></body></html>

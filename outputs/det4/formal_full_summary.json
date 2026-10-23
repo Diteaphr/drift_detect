@@ -1,0 +1,47 @@
+{
+  "batch": "full",
+  "commit": "9689dc4714b6a75e90c2fd42b6fb549ad9cfd4e4",
+  "expected_runs": 36,
+  "completed_runs": 36,
+  "failed_runs": 0,
+  "elapsed_s": 18376.61,
+  "free_gib_after": 53.27,
+  "results": [
+    {
+      "dataset": "airlines_full",
+      "out_dir": "outputs/benchmark/det4",
+      "workers": 6,
+      "trials": null,
+      "trial_start": 0,
+      "presets": 18,
+      "streams": 1,
+      "expected": 18,
+      "complete": 18,
+      "failed": 0,
+      "errors": [],
+      "attempts": 1,
+      "elapsed_s": 1.93,
+      "log": "outputs/det4/logs/formal_full_01_airlines_full.log",
+      "free_gib_after": 54.93
+    },
+    {
+      "dataset": "covertype_full",
+      "out_dir": "outputs/benchmark/det4",
+      "workers": 6,
+      "trials": null,
+      "trial_start": 0,
+      "presets": 18,
+      "streams": 1,
+      "expected": 18,
+      "complete": 18,
+      "failed": 0,
+      "errors": [],
+      "attempts": 1,
+      "elapsed_s": 18374.64,
+      "log": "outputs/det4/logs/formal_full_02_covertype_full.log",
+      "free_gib_after": 53.27
+    }
+  ],
+  "skipped": [],
+  "errors": []
+}

@@ -130,6 +130,7 @@ class PipelineConfig:
 
     # Signal mode:
     # - "oracle_60": warning at true drift T, confirm drift after 60 samples.
+    # - "oracle_input_60": DET1-only; confirm at raw input T+60 or next retained row.
     # - "meta_retro_60": when detector fires at T, use previous 60 as warning buffer.
     # - "detector": warning/drift from standalone ECPF detector (src/ecpf_detector.py).
     # - "uq_warning": UQ-only warning + error-based ADWIN confirmation.
@@ -146,6 +147,11 @@ class PipelineConfig:
     # - "meta_ecpf_gddm": GDDM-style group rank detector over tree error/UQ streams.
     ecpf_signal_mode: str = "oracle_60"
     ecpf_oracle_true_drift_times: Optional[List[int]] = None
+    # DET1-only: (output warning index, output confirm index, raw input coords).
+    # Built from GT + retained-row positions by scripts/run_benchmark.py.
+    ecpf_oracle_input_schedule: Optional[List[Dict[str, Any]]] = None
+    # DET1 passive instrumentation; default false preserves earlier runs.
+    ecpf_record_warning_events: bool = False
     ecpf_warning_length: int = 60
     ecpf_similarity_margin: float = 0.95  # m
     # Regression uses a different similarity statistic, so the paper's m does not
@@ -231,9 +237,11 @@ class PipelineConfig:
     # increase-only since 2017. Default OFF; binary runs unchanged.
     ecpf_adwin_one_sided: bool = False
 
-    # E9 (docs/實驗脈絡總覽.md): official-ECPF single detector ("ddm" | "hddm_a",
-    # river defaults = MOA defaults) in place of the dual ADWIN, with the official
-    # warning-zone semantics. Classification only. "" = off; binary runs unchanged.
+    # E9 (docs/實驗脈絡總覽.md): a single zone detector in place of dual ADWIN.
+    # "ddm"/"hddm_a" use River defaults; "rddm" follows MOA. The separate
+    # "magseed" is Chen 2016 thesis interpretation X (DET1 A5);
+    # "magseed_upward" is the explicitly non-original one-sided A5u.
+    # Classification only. "" = off; binary runs unchanged.
     ecpf_zone_detector: str = ""
 
     # Close a warning that has stayed open longer than this many steps without
@@ -265,7 +273,9 @@ class PipelineConfig:
     detector_alpha: float = 0.8
     detector_delta_w: float = 0.1
 
-    # ADWIN/SEED/SeqDrift2 family routing
+    # Independent warning/confirm routing. DET4 additionally permits the
+    # official-ECPF zone detectors "hddm_a" and "rddm" in either arm. None on
+    # both fields preserves the historical combo/zone paths byte-for-byte.
     ecpf_adwin_family_combo: str = "seed_warning_adwin_drift"
     ecpf_warning_detector: Optional[str] = None
     ecpf_drift_detector: Optional[str] = None

@@ -1,0 +1,19 @@
+{
+  "preset": "det3_full_hddm_a_lw1",
+  "stream": "electricity_class_prior_gradual_g00",
+  "signal_steps": 41524,
+  "reference_error_values": [
+    0.0,
+    1.0
+  ],
+  "guard_drift_events": 0,
+  "reference_switch_events": 1,
+  "warning_events": 32,
+  "injected_guard_drift_wiring_test": {
+    "forced_guard_confirmation": 1,
+    "tracer_guard_drift": 1,
+    "combined_drift": 1,
+    "warning_confirmed": true,
+    "not_formal_data": true
+  }
+}

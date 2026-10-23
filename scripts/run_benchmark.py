@@ -91,10 +91,16 @@ def load_preset(name: str) -> Dict[str, Any]:
     return json.loads(path.read_text())
 
 
-def dataset_sources(entry: Dict[str, Any], n_trials: Optional[int]) -> List[Dict[str, Any]]:
+def dataset_sources(
+    entry: Dict[str, Any],
+    n_trials: Optional[int],
+    trial_start: int = 0,
+) -> List[Dict[str, Any]]:
     """One source spec per stream: a CSV file or a generator trial."""
     gen = entry.get("generator")
     if gen is None:
+        if trial_start:
+            raise ValueError("trial_start applies only to generated datasets")
         files = sorted(Path(p) for p in glob.glob(str(REPO / entry["files"])))
         if not files:
             raise SystemExit(f"no files match {entry['files']}. {entry.get('files_hint', '')}")
@@ -102,11 +108,22 @@ def dataset_sources(entry: Dict[str, Any], n_trials: Optional[int]) -> List[Dict
     src = REPO / gen["source"]
     if not src.exists():
         raise SystemExit(f"generator source {gen['source']} is missing; {gen.get('source_hint', '')}")
+    if trial_start < 0:
+        raise ValueError("trial_start must be non-negative")
     trials = gen["n_trials"] if n_trials is None else n_trials
+    if trials < 1:
+        raise ValueError("n_trials must be positive")
+    trial_stop = trial_start + trials
+    if trial_stop > gen["n_trials"]:
+        raise ValueError(
+            f"trial range [{trial_start}, {trial_stop}) exceeds registered "
+            f"n_trials={gen['n_trials']}"
+        )
     name = gen["name"]
     return [{"kind": "generated", "method": m, "abruptness": a, "g_id": g,
              "stem": f"{name}_{m}_{a}_g{g:02d}"}
-            for a in gen["abruptness"] for m in gen["methods"] for g in range(trials)]
+            for a in gen["abruptness"] for m in gen["methods"]
+            for g in range(trial_start, trial_stop)]
 
 
 def _count_rows(path: Path) -> int:
@@ -168,6 +185,13 @@ def sha256_of(path: Path) -> str:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def source_hash_path(source: Dict[str, Any], entry: Dict[str, Any]) -> Path:
+    """Underlying bytes determining a file or reproducible injected trial."""
+    if source["kind"] == "file":
+        return Path(source["csv"])
+    return REPO / entry["generator"]["source"]
 
 
 def load_stream(source: Dict[str, Any], entry: Dict[str, Any]) -> Dict[str, Any]:
@@ -266,6 +290,34 @@ def effective_pipeline_config(preset: Dict[str, Any], task: str, seed: Optional[
     return cfg
 
 
+def oracle_input_schedule(
+    gt: Optional[List[Tuple[int, int]]], position: np.ndarray, *, allow_empty: bool = False
+) -> List[Dict[str, Any]]:
+    """Map raw drift start/+60 to first retained rows at or after each point."""
+    if not gt and not allow_empty:
+        raise ValueError("oracle_input_60 requires nonempty ground truth")
+    if not gt:
+        return []
+    if len(position) and np.any(np.diff(position) <= 0):
+        raise ValueError("input positions must be strictly increasing")
+    schedule: List[Dict[str, Any]] = []
+    for start, _ in gt:
+        warning_idx = int(np.searchsorted(position, start, side="left"))
+        if warning_idx >= len(position):
+            continue
+        confirm_idx = int(np.searchsorted(position, start + 60, side="left"))
+        schedule.append({
+            "warning_index": warning_idx,
+            "confirm_index": confirm_idx if confirm_idx < len(position) else None,
+            "raw_start": int(start),
+            "raw_confirm": int(start + 60),
+        })
+    for left, right in zip(schedule, schedule[1:]):
+        if left["confirm_index"] is None or left["confirm_index"] >= right["warning_index"]:
+            raise ValueError("overlapping or censored oracle schedule cannot be replayed")
+    return schedule
+
+
 def _stub_type_ldd_if_missing() -> bool:
     """Type-LDD only annotates drift types on the ECPF path; stub it when torch is absent."""
     try:
@@ -315,9 +367,14 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, cfg_dict: Dict[str, Any], warm_st
         if raw:
             alarm_idx.append(i)
             alarm_ts.append(int(raw[0].timestamp))
+    if cfg.ecpf_record_warning_events and pipe._ecpf_warning_active:
+        pipe._record_ecpf_warning(len(y) - 1, "censored", "stream_end")
     effective = {k: v for k, v in dataclasses.asdict(cfg).items() if k in fields}
     return {"y_pred": y_pred, "alarm_idx": alarm_idx, "alarm_ts": alarm_ts, "emits_alarms": True,
-            "type_ldd_stubbed": stubbed, "effective_config": effective, "system": pipe}
+            "type_ldd_stubbed": stubbed, "effective_config": effective,
+            "warning_events": pipe._ecpf_warning_events,
+            "frozen_steps": pipe._ecpf_frozen_steps,
+            "system": pipe}
 
 
 def make_learner(learner: str, params: Dict[str, Any]):
@@ -362,6 +419,11 @@ class MOAADWINChangeDetector:
 
 def make_detector(name: str, params: Dict[str, Any]):
     from river import drift
+    from detectors.core.rddm_moa import MOARDDM
+    from detectors.core.magseed_candidate import MagSeedCandidate
+    from detectors.core.magseed_thesis_candidate import (
+        MagSeed, MagSeedLiteral, MagSeedThesisCandidate, MagSeedUpward,
+    )
 
     factories = {
         "adwin_moa": MOAADWINChangeDetector,
@@ -372,6 +434,12 @@ def make_detector(name: str, params: Dict[str, Any]):
         "eddm": drift.binary.EDDM,
         "hddm_a": drift.binary.HDDM_A,
         "hddm_w": drift.binary.HDDM_W,
+        "rddm": MOARDDM,
+        "magseed_candidate": MagSeedCandidate,
+        "magseed_thesis_candidate": MagSeedThesisCandidate,
+        "magseed": MagSeed,
+        "magseed_upward": MagSeedUpward,
+        "magseed_literal_dev": MagSeedLiteral,
     }
     if name not in factories:
         raise ValueError(f"unknown detector {name!r}")
@@ -488,10 +556,16 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
     meter.start()
     kind = preset["kind"]
     if kind == "pipeline":
-        cfg_dict = effective_pipeline_config(preset, task, seed)
-        if job.get("pool_trace") and cfg_dict.get("use_ecpf"):
-            cfg_dict["ecpf_pool_trace"] = True
-        out = run_pipeline(X, y, cfg_dict, warm_start)
+        config = effective_pipeline_config(preset, task, seed)
+        if job.get("record_warning_events"):
+            config["ecpf_record_warning_events"] = True
+        if job.get("pool_trace") and config.get("use_ecpf"):
+            config["ecpf_pool_trace"] = True
+        if config.get("ecpf_signal_mode") == "oracle_input_60":
+            config["ecpf_oracle_input_schedule"] = oracle_input_schedule(
+                gt, position, allow_empty=bool(job["max_steps"])
+            )
+        out = run_pipeline(X, y, config, warm_start)
     elif kind == "baseline":
         if task not in preset.get("tasks", [task]):
             raise ValueError(f"preset {preset['name']} does not support task {task}")
@@ -524,6 +598,11 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
         rec["alarm_idx_input"] = position[alarm_idx] if len(alarm_idx) else alarm_idx
     np.savez_compressed(run_dir / "preds.npz", **rec)
 
+    events = [dict(event, input_index=int(position[event["index"]]))
+              for event in out.get("warning_events", [])]
+    if job.get("record_warning_events"):
+        (run_dir / "warning_events.json").write_text(json.dumps(events, indent=2))
+
     manifest = {
         "dataset": job["dataset"],
         "stream": job["source"]["stem"],
@@ -542,6 +621,7 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
         "warm_start": warm_start,
         "prequential_warm_start": True,
         "max_steps": job["max_steps"] or None,
+        "record_warning_events": bool(job.get("record_warning_events")),
         "emits_alarms": out["emits_alarms"],
         "type_ldd_stubbed": out.get("type_ldd_stubbed", False),
         "version_problems": job["version_problems"],
@@ -555,6 +635,14 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
     }
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False, default=_json_default))
     metrics = evaluate_record(rec, entry, manifest)
+    if job.get("record_warning_events"):
+        metrics.update({
+            "warning_open_count": sum(e["event"] == "open" for e in events),
+            "warning_close_count": sum(e["event"] == "close" for e in events),
+            "warning_censored_count": sum(e["event"] == "censored" for e in events),
+            "warning_timeout_count": sum(e["reason"] == "timeout" for e in events),
+            "warning_frozen_steps": int(out.get("frozen_steps", 0)),
+        })
     (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2))
     ecpf = getattr(out.get("system"), "_ecpf", None)
     if job.get("pool_trace") and ecpf is not None and ecpf.pool_trace:
@@ -714,8 +802,8 @@ def print_summary(df: pd.DataFrame, entry: Dict[str, Any]) -> None:
         print("\ncost (mean per run; memory is per process; wall time is only strict where concurrent_runs = 1):")
         with pd.option_context("display.width", 200, "display.max_columns", 50):
             print(cost.groupby("preset")[cost_keys].mean().round(4).to_string())
-    if "comparable" in df and not df["comparable"].all():
-        reasons = sorted(set(df.loc[~df["comparable"], "not_comparable_reason"]))
+    if "comparable" in df and not df["comparable"].astype(bool).all():
+        reasons = sorted(set(df.loc[~df["comparable"].astype(bool), "not_comparable_reason"]))
         print(f"\n[not comparable] {'; '.join(reasons)}. {entry.get('comparability_note', '')}")
     for ref in entry.get("sota", []):
         if ref["metric"] in df.columns:
@@ -758,9 +846,55 @@ def supports_task(preset: Dict[str, Any], task: str) -> bool:
     return tasks is None or task in tasks
 
 
+def resumable_row(job: Dict[str, Any], source_hash: str) -> Optional[Dict[str, Any]]:
+    """Return a completed row; reject any conflicting provenance before work starts."""
+    run_dir = Path(job["run_dir"])
+    manifest_path = run_dir / "manifest.json"
+    if not manifest_path.exists():
+        return None  # an interrupted run is safe to regenerate
+    try:
+        manifest = json.loads(manifest_path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot resume corrupt manifest {manifest_path}: {exc}") from exc
+    expected = {
+        "dataset": job["dataset"],
+        "stream": job["source"]["stem"],
+        "preset": job["preset"],
+        "registry_entry": job["entry"],
+        "seed": job["seed"],
+        "max_steps": job["max_steps"] or None,
+        "record_warning_events": bool(job.get("record_warning_events")),
+        "git": job["git"],
+        "version_problems": job["version_problems"],
+    }
+    for key, value in expected.items():
+        if manifest.get(key) != value:
+            raise ValueError(f"resume mismatch at {manifest_path}: {key}")
+    data = manifest.get("data") or {}
+    actual_hash = data.get("sha256") if job["source"]["kind"] == "file" else data.get("source_sha256")
+    if actual_hash != source_hash:
+        raise ValueError(f"resume mismatch at {manifest_path}: data SHA-256")
+    if job["source"]["kind"] == "file":
+        expected_file = str(source_hash_path(job["source"], job["entry"]).relative_to(REPO))
+        if data.get("file") != expected_file:
+            raise ValueError(f"resume mismatch at {manifest_path}: data path")
+    if not (run_dir / "preds.npz").exists() or not (run_dir / "metrics.json").exists():
+        return None
+    if job.get("record_warning_events") and not (run_dir / "warning_events.json").exists():
+        return None
+    try:
+        with np.load(run_dir / "preds.npz") as rec:
+            for required in ("y_true", "y_pred", "alarm_idx", "alarm_ts"):
+                _ = rec[required].shape
+        metrics = json.loads((run_dir / "metrics.json").read_text())
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot resume corrupt completed run {run_dir}: {exc}") from exc
+    return summary_row(manifest, metrics, run_dir)
+
+
 def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str, Any], git: Dict[str, Any]) -> None:
     version_problems = check_requirements(preset, args.allow_version_mismatch)
-    sources = dataset_sources(entry, args.trials)
+    sources = dataset_sources(entry, args.trials, args.trial_start)
     if args.cells:
         sources = [s for s in sources if f"{s.get('abruptness')}/{s.get('method')}" in args.cells
                    or any(c in s["stem"] for c in args.cells)]
@@ -774,6 +908,7 @@ def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str
     jobs = [{
         "source": s, "dataset": args.dataset, "entry": entry, "preset": preset, "seed": seed,
         "max_steps": args.max_steps, "version_problems": version_problems, "git": git,
+        "record_warning_events": bool(args.record_warning_events or preset["name"].startswith("det1_")),
         "machine": args.machine, "workers": max(1, args.workers), "model_size": args.model_size,
         "pool_trace": args.pool_trace,
         "run_dir": str(root / (s["stem"] + ("" if seed is None else f"__s{seed}"))),
@@ -783,6 +918,24 @@ def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str
           f"({len(sources)} streams x {len(seeds)} seeds) -> {root}")
 
     rows: List[Dict[str, Any]] = []
+    if args.resume:
+        if git["dirty"]:
+            raise SystemExit("--resume requires a clean worktree so the commit identifies the code")
+        hashes: Dict[Path, str] = {}
+        pending = []
+        for job in jobs:
+            path = source_hash_path(job["source"], entry)
+            if path not in hashes:
+                hashes[path] = sha256_of(path)
+            previous = resumable_row(job, hashes[path])
+            if previous is None:
+                pending.append(job)
+            else:
+                rows.append(previous)
+        print(f"resume: {len(rows)} verified complete, {len(pending)} pending", flush=True)
+        jobs_to_run = pending
+    else:
+        jobs_to_run = jobs
     tracker = ConcurrencyTracker()
     peaks: Dict[str, int] = {}
 
@@ -794,7 +947,7 @@ def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str
             peaks[job["run_dir"]] = tracker.leave(job["run_dir"])
 
     with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
-        futs = {pool.submit(run_tracked, j): j for j in jobs}
+        futs = {pool.submit(run_tracked, j): j for j in jobs_to_run}
         for n, fut in enumerate(as_completed(futs), 1):
             j = futs[fut]
             try:
@@ -838,11 +991,15 @@ def main() -> None:
     ap.add_argument("--seeds", type=int, default=1, help="seeds 0..N-1; ignored for deterministic presets")
     ap.add_argument("--limit-files", type=int, default=0)
     ap.add_argument("--trials", type=int, default=None, help="generated datasets: trials per cell (default: registry)")
+    ap.add_argument("--trial-start", type=int, default=0,
+                    help="generated datasets: zero-based first trial; use with --trials")
     ap.add_argument("--cells", nargs="+", default=None, help="only these cells, e.g. abrupt/class_prior")
     ap.add_argument("--max-steps", type=int, default=0, help="truncate streams (smoke test; marks runs non-comparable)")
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--out-dir", default=DEFAULT_OUT)
     ap.add_argument("--allow-version-mismatch", action="store_true")
+    ap.add_argument("--resume", action="store_true", help="skip only complete runs whose commit, preset, protocol and source hash match")
+    ap.add_argument("--record-warning-events", action="store_true", help="passively record ECPF warning lifecycle events")
     ap.add_argument("--model-size", action=argparse.BooleanOptionalAction, default=True,
                     help="measure the final system's object size after each run (can take a minute for 100-tree "
                          "forests on long streams; --no-model-size skips it)")
@@ -901,13 +1058,19 @@ def main() -> None:
     if args.dataset not in registry:
         raise SystemExit(f"unknown dataset {args.dataset!r}; see --list")
     entry = registry[args.dataset]
+    if args.trial_start and args.trials is None:
+        ap.error("--trial-start requires --trials")
     task = TASK_ALIASES.get(entry["task"], entry["task"])
     names = resolve_presets(args.preset, args.suite, defaults)
     presets = [load_preset(n) for n in names]
     skipped = [p["name"] for p in presets if not supports_task(p, task)]
     presets = [p for p in presets if supports_task(p, task)]
+    excluded = [p["name"] for p in presets if p.get("datasets") and args.dataset not in p["datasets"]]
+    presets = [p for p in presets if not p.get("datasets") or args.dataset in p["datasets"]]
     if skipped:
         print(f"skipping presets that do not support task {task}: {', '.join(skipped)}")
+    if excluded:
+        print(f"skipping presets outside dataset scope: {', '.join(excluded)}")
     if not presets:
         raise SystemExit("no preset left to run")
     if not args.preset and not args.suite:

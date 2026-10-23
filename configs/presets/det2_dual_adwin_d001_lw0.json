@@ -1,0 +1,37 @@
+{
+  "name": "det2_dual_adwin_d001_lw0",
+  "kind": "pipeline",
+  "role": "ablation",
+  "description": "DET2 A1d: dual ADWIN drift delta=0.01; warning delta=0.1, bidirectional, timeout 0, learn during warning=False.",
+  "source": "docs/ECPF_DET2_預註冊.md, 2026-10-13",
+  "requires": {
+    "river": "0.21.2"
+  },
+  "warm_start": 200,
+  "seed_param": null,
+  "config": {
+    "model_type": "ht",
+    "use_ecpf": true,
+    "ecpf_signal_mode": "dual_adwin",
+    "detector_delta": 0.01,
+    "ecpf_swap_policy": "strict",
+    "ecpf_fade_policy": "ecpf",
+    "ecpf_fade_enabled": true,
+    "ecpf_max_pool_size": 10,
+    "detector_delta_w": 0.1,
+    "ecpf_warning_signal": "error",
+    "ecpf_drift_signal": "error",
+    "ecpf_learn_during_warning": false,
+    "ecpf_adwin_one_sided": false,
+    "ecpf_detector_warning_timeout": 0
+  },
+  "task_overrides": {
+    "regression": {
+      "model_type": "htr"
+    }
+  },
+  "tasks": [
+    "binary",
+    "multiclass"
+  ]
+}

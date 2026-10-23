@@ -1,0 +1,2271 @@
+{
+  "selection_seed": 20261012,
+  "commit": "739a0984f65b865ec776d73ef84569fccf2fa0c0",
+  "expected": 150,
+  "completed": 150,
+  "matched": 150,
+  "failed": 0,
+  "by_mode": {
+    "legacy": {
+      "expected": 75,
+      "matched": 75
+    },
+    "mixed": {
+      "expected": 75,
+      "matched": 75
+    }
+  },
+  "elapsed_s": 1037.06,
+  "rows": [
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_dual_adwin_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_dual_adwin_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/insects_incremental_abrupt_reoccurring_balanced/det1_dual_adwin_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/insects_incremental_abrupt_reoccurring_balanced/det1_dual_adwin_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_dual_adwin_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/insects_incremental_abrupt_reoccurring_balanced/det1_zone_hddm_a_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/insects_incremental_abrupt_reoccurring_balanced/det1_zone_hddm_a_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_hddm_a_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_rddm_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det1_zone_rddm_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/insects_incremental_abrupt_reoccurring_balanced/det1_zone_rddm_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/insects_incremental_abrupt_reoccurring_balanced/det1_zone_rddm_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det1_zone_rddm_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/insects_incremental_abrupt_reoccurring_balanced/det3_full_dual_adwin_lw1/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/insects_incremental_abrupt_reoccurring_balanced/det3_full_dual_adwin_lw1/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_dual_adwin_lw1/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/insects_incremental_abrupt_reoccurring_balanced/det3_full_hddm_a_lw1/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/insects_incremental_abrupt_reoccurring_balanced/det3_full_hddm_a_lw1/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "legacy",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/legacy/synthetic_multiclass/det3_full_hddm_a_lw1/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_dual_adwin_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_dual_adwin_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_dual_adwin_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_dual_adwin_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/insects_incremental_abrupt_reoccurring_balanced/det1_dual_adwin_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/insects_incremental_abrupt_reoccurring_balanced/det1_dual_adwin_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_dual_adwin_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det1_dual_adwin_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_dual_adwin_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_dual_adwin_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_hddm_a_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/insects_incremental_abrupt_reoccurring_balanced/det1_zone_hddm_a_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/insects_incremental_abrupt_reoccurring_balanced/det1_zone_hddm_a_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_hddm_a_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det1_zone_hddm_a_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_hddm_a_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_hddm_a_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_rddm_lw0/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_rddm_lw0/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/injected_paper_electricity/det1_zone_rddm_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det1_zone_rddm_lw0/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/insects_incremental_abrupt_reoccurring_balanced/det1_zone_rddm_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/insects_incremental_abrupt_reoccurring_balanced/det1_zone_rddm_lw0/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_rddm_lw0/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det1_zone_rddm_lw0",
+      "expected": "outputs/benchmark/det1/synthetic_multiclass/det1_zone_rddm_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det1_zone_rddm_lw0/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_dual_adwin_lw1/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/insects_incremental_abrupt_reoccurring_balanced/det3_full_dual_adwin_lw1/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/insects_incremental_abrupt_reoccurring_balanced/det3_full_dual_adwin_lw1/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_dual_adwin_lw1/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det3_full_dual_adwin_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_dual_adwin_lw1/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_dual_adwin_lw1/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_class_prior_gradual_g13",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_class_prior_gradual_g13/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_class_prior_gradual_g13/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g01",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g01/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g03",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_abrupt_g12",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_abrupt_g12/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g00",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g00/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g00/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g02",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_filtering_gradual_g18",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g18/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_filtering_gradual_g18/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_feature_permutation_gradual_g10",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_permutation_gradual_g10/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_feature_permutation_gradual_g10/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "injected_paper_electricity",
+      "stream": "electricity_label_swap_gradual_g03",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_label_swap_gradual_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/injected_paper_electricity/det3_full_hddm_a_lw1/electricity_label_swap_gradual_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_idx_input": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "insects_incremental_abrupt_reoccurring_balanced",
+      "stream": "incremental_abrupt_reoccurring_balanced",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/insects_incremental_abrupt_reoccurring_balanced/det3_full_hddm_a_lw1/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/insects_incremental_abrupt_reoccurring_balanced/det3_full_hddm_a_lw1/incremental_abrupt_reoccurring_balanced/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g02",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g02/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g02/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g03",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g03/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g03/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g04",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g04/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g04/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "gradual_rbf4_100k_g05",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g05/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_hddm_a_lw1/gradual_rbf4_100k_g05/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    },
+    {
+      "mode": "mixed",
+      "dataset": "synthetic_multiclass",
+      "stream": "sudden_rbf4_100k_g07",
+      "preset": "det3_full_hddm_a_lw1",
+      "expected": "outputs/benchmark/det3/synthetic_multiclass/det3_full_hddm_a_lw1/sudden_rbf4_100k_g07/preds.npz",
+      "actual": "outputs/det4/gates_raw/mixed/synthetic_multiclass/det3_full_hddm_a_lw1/sudden_rbf4_100k_g07/preds.npz",
+      "matched": true,
+      "fields": {
+        "y_true": true,
+        "y_pred": true,
+        "alarm_idx": true,
+        "alarm_ts": true
+      }
+    }
+  ]
+}

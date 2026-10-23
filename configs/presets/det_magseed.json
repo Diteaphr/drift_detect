@@ -1,0 +1,24 @@
+{
+  "name": "det_magseed",
+  "kind": "detector",
+  "role": "detector_reference",
+  "description": "DET1 A5 detector-only: Hoeffding Tree continuously trained, 0/1 error fed after first 25% of raw input; Chen 2016 thesis bidirectional interpretation X; no learner reset.",
+  "source": "docs/ECPF_DET1_預註冊.md, 2026-10-13 revision",
+  "requires": {
+    "river": "0.21.2"
+  },
+  "learner": "ht",
+  "params": {},
+  "seed_param": null,
+  "detector": "magseed",
+  "detector_params": {},
+  "signal": "error",
+  "min_train_fraction": 0.25,
+  "tasks": [
+    "binary",
+    "multiclass"
+  ],
+  "datasets": [
+    "injected_paper_electricity"
+  ]
+}

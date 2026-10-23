@@ -1,0 +1,14 @@
+{
+  "run_counts": {
+    "det3_full_dual_adwin_lw0": 5,
+    "det3_full_dual_adwin_lw1": 5,
+    "det3_full_hddm_a_lw1": 5
+  },
+  "total": 15,
+  "warning_conservation": true,
+  "scoring_recomputed": true,
+  "lw1_frozen_zero": true,
+  "confirmed_events": 6,
+  "timeout_events": 11,
+  "zone_exit_events": 23
+}
