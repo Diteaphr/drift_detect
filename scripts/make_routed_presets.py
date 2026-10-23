@@ -31,17 +31,19 @@ DESCRIPTIONS = {
 }
 
 
-def write(name: str, policy: str, cooldown: int, base: dict) -> None:
+def write(name: str, policy: str, cooldown: int, base: dict, delay: int = 100) -> None:
     preset = json.loads(json.dumps(base))
     preset.update({
         "name": name,
         "role": "ablation",
-        "description": f"{TEMPLATE} with routed confirmation: {DESCRIPTIONS[policy]}; cooldown {cooldown}.",
+        "description": (f"{TEMPLATE} with routed confirmation: "
+                        f"{DESCRIPTIONS[policy].replace('after 100 warning steps', f'after {delay} warning steps')}"
+                        f"; cooldown {cooldown}."),
         "source": "scripts/make_routed_presets.py",
     })
     preset["config"].update({
         "ecpf_route_policy": policy,
-        "ecpf_route_decision_delay": 100,
+        "ecpf_route_decision_delay": delay,
         "ecpf_confirm_cooldown": cooldown,
     })
     (PRESETS / f"{name}.json").write_text(json.dumps(preset, indent=2) + "\n")
@@ -59,6 +61,10 @@ def main() -> None:
             name = f"s1route_{short}_c{cooldown}"
             write(name, policy, cooldown, base)
             names.append(name)
+    # Follow-up (preregistration amendment 2): type classifier decided 300 warning steps in,
+    # about 400 steps after the drift starts, where the offline Type-LDD test peaked.
+    write("s1route_tr_d300_c300", "type_classifier", 300, base, delay=300)
+    names.append("s1route_tr_d300_c300")
     print(f"{len(names)} presets: {', '.join(names)}")
 
 

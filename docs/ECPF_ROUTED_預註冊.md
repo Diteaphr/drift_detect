@@ -71,3 +71,13 @@ ADWIN 組與 HDDM-A 組的 detector 與 DET4 對角完全相同（ADWIN warning 
 dev 依原規則選出設計 2 與聯集 C = 300、設計 1 C = 0（`outputs/routed/dev_selection.md`）。差距極小：C = 100 在三個設計都沒有擋到任何警報，與 C = 0 完全相同；C = 300 只擋到 15 到 27 次，設計 2 與聯集比 C = 0 多答對 5 筆、設計 1 少答對 19 筆（皆為 4,000,000 筆中）。使用者決定三個設計統一使用 C = 300，讓三者只差在分流方式，比較更乾淨。
 
 這個決定在任何正式資料流跑完之前做出：當時只有冒煙測試（截斷、不可比）與 21 個設計 2 的正式 run 完成，這些 run 的結果沒有被查看，並已刪除重跑。設計 1 因此偏離原規則的選擇（C = 0）；原規則的結果保留在 `dev_selection.json` 的 `choice`，修訂後的設定記在 `final`。正式組別改為 `s1route_fw_c300`、`s1route_tr_c300`、`s1route_union_c300`。
+
+**修訂 2（2026-10-24，正式結果之後的追加實驗）：判斷時間改為第 300 步，並加入兩個 injected 資料集。**
+
+H1–H3 的判定維持原本 45 條、第 100 步的正式結果，不受本修訂影響。本修訂的追加實驗全部屬於**探索性分析**，不作為假設成立與否的依據，理由是判斷時間是看過正式結果與離線測試之後才選的：離線測試（拿正式 run 的誤差序列，在真正 drift 之後固定步數分類）顯示目前的權重在 drift 後 +400 步左右分得最準，而 warning 中位數在 drift 後約 90 步開啟，因此使用者選擇 warning 後第 300 步判斷。
+
+1. 新組別 `s1route_tr_d300_c300`：設計 1 改為 warning 開啟後第 300 步判斷，其餘設定與 `s1route_tr_c300` 相同。
+2. 原本 45 條資料流：只補跑 `s1route_tr_d300_c300`，與第 100 步版本及各基線比較。
+3. 新資料：`injected_paper_electricity` 與 `injected_paper_gas_sensor_drift`（各 400 條、abrupt／gradual 各半），執行 `s1route_tr_d300_c300`、`s1route_fw_c300`、`s1route_union_c300`。基線沿用 DET4 S1 的 2×2 四格（兩個資料集各 400 條都有）與 DET3 e10bft lw0（只有 `injected_paper_electricity` 前 20 個 trial 的 160 條）。
+4. 先以固定分流在兩個 injected 資料集各 8 條（每格 trial 1）跑可重現性閘門，必須與 DET4 完全相同才繼續。
+5. 統計方法與判定規則同上；分層加入 injected 一層。injected 資料集的 abrupt 視為 sudden、gradual 視為非 sudden，用於分類器診斷。

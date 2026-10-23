@@ -12,6 +12,7 @@ never re-run: ``det4_s1_wadwin_cadwin`` (ADWIN only), ``det4_s1_whddma_chddma``
   python3 scripts/analyze_routed.py gate    # fixed routes vs DET4 rows, must match exactly
   python3 scripts/analyze_routed.py dev     # cooldown selection on synthetic_binary
   python3 scripts/analyze_routed.py formal  # pre-registered comparisons -> outputs/routed/
+  python3 scripts/analyze_routed.py followup  # exploratory: decision at 300 steps, injected datasets
 """
 
 from __future__ import annotations
@@ -30,10 +31,22 @@ import pandas as pd
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 from scripts.analyze_det1_formal import union_length, windows  # noqa: E402
+import scripts.analyze_det4_formal as det4  # noqa: E402
 from scripts.analyze_det4_formal import (  # noqa: E402
-    INSECTS, accuracy_verdict, add_post_accuracy, aggregate, detection_verdict, paired_delta,
+    INSECTS, accuracy_verdict, add_post_accuracy, aggregate, detection_verdict, expected_sources, paired_delta,
 )
+from scripts.run_benchmark import load_stream  # noqa: E402
 from src.metrics.evaluate_run import detection_metrics  # noqa: E402
+
+_det4_t1_group = det4.t1_group
+
+
+def _strata(dataset: str) -> str:
+    """DET4's bootstrap strata, extended so every injected_paper_* dataset is 'injected'."""
+    return "injected" if dataset.startswith("injected_paper_") else _det4_t1_group(dataset)
+
+
+det4.t1_group = _strata  # paired_delta looks the strata up through this module attribute
 
 ROOT = REPO / "outputs" / "benchmark_routed"
 OUT = REPO / "outputs" / "routed"
@@ -48,8 +61,16 @@ ARM_LABEL = {
     "adwin": "只用 ADWIN（DET4 S1）",
     "hddma": "只用 HDDM-A（DET4 S1）",
     "e10bft_lw0": "e10bft lw0（DET3 F-D0-lw0）",
+    "hddma_adwin": "HDDM-A warning + ADWIN 確認（DET4 S1）",
+    "adwin_hddma": "ADWIN warning + HDDM-A 確認（DET4 S1）",
+    "tr300": "設計 1（第 300 步判斷）",
 }
+INJECTED_DATASETS = ("injected_paper_electricity", "injected_paper_gas_sensor_drift")
+FOLLOWUP_PRESETS = {"tr300": "s1route_tr_d300_c300", "tr": "s1route_tr_c300",
+                    "fw": "s1route_fw_c300", "union": "s1route_union_c300"}
+# DET4 S1 2x2 of warning x confirm detectors (the two diagonals and the two mixed cells).
 BASELINES = {"adwin": ("det4", "det4_s1_wadwin_cadwin"), "hddma": ("det4", "det4_s1_whddma_chddma"),
+             "hddma_adwin": ("det4", "det4_s1_whddma_cadwin"), "adwin_hddma": ("det4", "det4_s1_wadwin_chddma"),
              "e10bft_lw0": ("det3", "F-D0-lw0")}
 GATE_PAIRS = {"s1route_fixed_adwin": "det4_s1_wadwin_cadwin", "s1route_fixed_hddma": "det4_s1_whddma_chddma"}
 EXACT = ["n_scored", "correct", "alarms", "tp", "fp", "fn", "hits", "post_correct", "post_count",
@@ -57,12 +78,26 @@ EXACT = ["n_scored", "correct", "alarms", "tp", "fp", "fn", "hits", "post_correc
 SUDDEN_TYPES = {"sudden", "recurring_sudden"}
 
 
-def group_of(dataset: str, stream: str) -> str:
-    """The 11 reporting groups: each INSECTS dataset, and synthetic_multiclass by type."""
+def group_of(dataset: str, stream: str, cell: Optional[str] = None) -> str:
+    """Reporting groups: each INSECTS dataset, synthetic_multiclass by type, injected by cell."""
     if dataset in INSECTS:
         return dataset
+    if dataset.startswith("injected_"):
+        return f"{dataset}:{cell}"
     parts = stream.split("_")
     return f"{dataset}:{'_'.join(parts[:2]) if parts[0] == 'recurring' else parts[0]}"
+
+
+def true_type(group: str) -> Optional[str]:
+    """Known drift type of a group: synthetic by generator, injected abrupt -> sudden."""
+    if ":" not in group:
+        return None
+    kind = group.split(":", 1)[1]
+    if kind.startswith("abrupt"):
+        return "sudden"
+    if kind.startswith("gradual"):
+        return "gradual"
+    return kind
 
 
 def _none(value: Any) -> Any:
@@ -104,7 +139,8 @@ def score_run(path: Path, allow_smoke: bool = False) -> Dict[str, Any]:
     dataset, stream = manifest["dataset"], manifest["stream"]
     row: Dict[str, Any] = {
         "dataset": dataset, "stream": stream, "arm": manifest["preset"]["name"],
-        "group": group_of(dataset, stream), "n_input": n,
+        "group": group_of(dataset, stream, manifest.get("cell")), "n_input": n,
+        "coordinates": manifest["coordinates"],
         "n_scored": metrics["n_scored"],
         "correct": int(round(metrics["acc_prequential"] * metrics["n_scored"])),
         "acc": metrics["acc_prequential"], "post_correct": None, "post_count": None,
@@ -154,7 +190,8 @@ def load_baselines(datasets: List[str]) -> List[Dict]:
                    ("dataset", "stream", "n_scored", "correct", "gt", "alarms", "tp", "fp", "fn",
                     "hits", "C", "X", "post_correct", "post_count", "mdt", "warning_opened",
                     "warning_self_closed", "warning_timeout", "confirmations")}
-            row.update(arm=arm, group=group_of(row["dataset"], row["stream"]), source=f"{source}:{name}",
+            row.update(arm=arm, group=group_of(row["dataset"], row["stream"], _none(r.get("cell"))),
+                       source=f"{source}:{name}",
                        frozen=_none(r.get("frozen_steps", r.get("frozen"))) or 0)
             rows.append(row)
     return rows
@@ -175,10 +212,32 @@ def compare(lookup: Dict, arm: str, base: str, stratify: bool = True) -> Dict:
 
 def summary(rows: List[Dict]) -> Dict:
     s = aggregate(rows)
+    if not any(r.get("mdt") is not None for r in rows if r["gt"]):
+        s["mdt"] = None  # DET3's score table has no delay column
     return {k: s[k] for k in ("streams", "gt", "acc", "post_acc", "alarms", "fp", "X", "mdt")}
 
 
 # -- routing diagnostics -----------------------------------------------------------
+_POSITIONS: Dict[tuple, np.ndarray] = {}
+
+
+def gt_in_output(row: Dict) -> List[tuple]:
+    """GT intervals in pipeline (output) positions, where routing episodes are timed.
+
+    Injected streams are scored in input coordinates; the generator drops rows, so
+    map each interval through the stream's kept-row positions (as add_post_accuracy does).
+    """
+    gt = row["gt_intervals"]
+    if row.get("coordinates") != "input" or not gt:
+        return gt
+    key = (row["dataset"], row["stream"])
+    if key not in _POSITIONS:
+        source = next(s for s in expected_sources(row["dataset"]) if s["stem"] == row["stream"])
+        _POSITIONS[key] = np.asarray(load_stream(source, REGISTRY[row["dataset"]])["kept"])
+    pos = _POSITIONS[key]
+    return [(int(np.searchsorted(pos, s)), int(np.searchsorted(pos, e, side="right")) - 1) for s, e in gt]
+
+
 def routing_diagnostics(rows: List[Dict]) -> Dict:
     out: Dict[str, Any] = {}
     for arm in sorted({r["arm"] for r in rows if r.get("routing")}):
@@ -187,10 +246,12 @@ def routing_diagnostics(rows: List[Dict]) -> Dict:
             if r["arm"] != arm or not r.get("routing"):
                 continue
             blocked += r["routing"]["cooldown_blocked"]
+            gt = gt_in_output(r)
             for ep in r["routing"]["episodes"]:
-                drift = next((s for s, e in r["gt_intervals"] if s <= ep["open_t"] <= e + 1000), None)
-                true = (r["group"].split(":")[1] if ":" in r["group"] else None) if drift is not None else None
-                eps.append(dict(ep, group=r["group"], at_drift=drift is not None, true_type=true))
+                drift = next((s for s, e in gt if s <= ep["open_t"] <= e + 1000), None)
+                true = true_type(r["group"]) if drift is not None else None
+                eps.append(dict(ep, group=r["group"], at_drift=drift is not None, true_type=true,
+                                offset=None if drift is None else ep["open_t"] - drift))
         ends = collections.Counter(ep["end_reason"] for ep in eps)
         openers = collections.Counter(ep["opener"] for ep in eps)
         confirmed = [ep for ep in eps if ep["end_reason"] == "confirmed"]
@@ -224,7 +285,8 @@ def _rate(values: List[bool]) -> Optional[float]:
 
 # -- modes -------------------------------------------------------------------------
 def run_gate(args) -> None:
-    rows = load_runs(list(GATE_PAIRS), list(FORMAL_DATASETS), args.root, allow_smoke=False)
+    datasets = args.datasets or list(FORMAL_DATASETS)
+    rows = load_runs(list(GATE_PAIRS), datasets, args.root, allow_smoke=False)
     det4 = pd.read_csv(REPO / "outputs/det4/det4_run_scores.csv", low_memory=False)
     lines, bad = ["| preset | dataset | stream | result | differing fields |", "|---|---|---|---|---|"], 0
     for r in rows:
@@ -240,7 +302,7 @@ def run_gate(args) -> None:
     verdict = "通過" if bad == 0 and rows else "未通過"
     text = "\n".join([f"# 分流確認：可重現性閘門 {verdict}", "",
                       f"**結論：** {len(rows) - bad}/{len(rows)} 個 run 的 {', '.join(EXACT)} 與 X 和 DET4 完全相同。", ""] + lines)
-    (OUT / "gate.md").write_text(text + "\n")
+    (OUT / (args.gate_name or "gate.md")).write_text(text + "\n")
     print(text.splitlines()[2])
     sys.exit(0 if verdict == "通過" else 1)
 
@@ -279,11 +341,14 @@ def run_formal(args) -> None:
         r["arm"] = next(k for k, v in presets.items() if v == r["arm"])
     rows += load_baselines(list(FORMAL_DATASETS))
     lookup = lookup_of(rows)
-    arms = ["tr", "fw", "union", "hddma", "adwin", "e10bft_lw0"]
+    arms = ["tr", "fw", "union", "hddma", "adwin", "hddma_adwin", "adwin_hddma", "e10bft_lw0"]
+    # The first three pairs are preregistered (H1-H3); the rest are descriptive.
     comps = {f"{a}_vs_{b}": compare(lookup, a, b)
              for a, b in [("fw", "hddma"), ("tr", "fw"), ("fw", "union"), ("tr", "hddma"),
                           ("union", "hddma"), ("fw", "adwin"), ("tr", "adwin"), ("union", "adwin"),
-                          ("fw", "e10bft_lw0"), ("tr", "e10bft_lw0"), ("union", "e10bft_lw0")]}
+                          ("fw", "e10bft_lw0"), ("tr", "e10bft_lw0"), ("union", "e10bft_lw0"),
+                          ("tr", "hddma_adwin"), ("fw", "hddma_adwin"), ("union", "hddma_adwin"),
+                          ("tr", "adwin_hddma"), ("hddma_adwin", "hddma"), ("adwin_hddma", "adwin")]}
     pooled = {a: summary([r for r in rows if r["arm"] == a]) for a in arms}
     groups = sorted({r["group"] for r in rows})
     by_group = {g: {a: summary([r for r in rows if r["arm"] == a and r["group"] == g]) for a in arms} for g in groups}
@@ -304,6 +369,47 @@ def run_formal(args) -> None:
         OUT / "routed_run_scores.csv", index=False)
     write_report(data, groups, arms)
     print({k: v["holds"] for k, v in hyp.items()})
+
+
+FOLLOWUP_PAIRS = {
+    "original": [("tr300", "tr"), ("tr300", "fw"), ("tr300", "union"), ("tr300", "hddma"), ("tr300", "adwin"),
+                 ("tr300", "hddma_adwin"), ("tr300", "adwin_hddma"), ("tr300", "e10bft_lw0")],
+    "injected": [("fw", "hddma"), ("tr300", "fw"), ("fw", "union"), ("tr300", "hddma"), ("union", "hddma"),
+                 ("tr300", "adwin"), ("fw", "adwin"), ("union", "adwin"), ("tr300", "hddma_adwin"),
+                 ("fw", "hddma_adwin"), ("tr300", "adwin_hddma"), ("hddma_adwin", "hddma"), ("adwin_hddma", "adwin"),
+                 ("tr300", "e10bft_lw0")],
+}
+FOLLOWUP_ARMS = {"original": ["tr300", "tr", "fw", "union", "hddma", "adwin", "hddma_adwin", "adwin_hddma", "e10bft_lw0"],
+                 "injected": ["tr300", "fw", "union", "hddma", "adwin", "hddma_adwin", "adwin_hddma", "e10bft_lw0"]}
+
+
+def run_followup(args) -> None:
+    """Exploratory follow-up (preregistration amendment 2): decision at 300 warning steps,
+    and all designs on injected_paper_electricity / injected_paper_gas_sensor_drift."""
+    scopes = {"original": list(FORMAL_DATASETS), "injected": list(INJECTED_DATASETS)}
+    data: Dict[str, Any] = {"presets": FOLLOWUP_PRESETS, "smoke": args.allow_smoke}
+    for scope, datasets in scopes.items():
+        presets = {a: p for a, p in FOLLOWUP_PRESETS.items() if a in FOLLOWUP_ARMS[scope]}
+        rows = load_runs(list(presets.values()), datasets, args.root, args.allow_smoke)
+        for r in rows:
+            r["arm"] = next(k for k, v in presets.items() if v == r["arm"])
+        rows += load_baselines(datasets)
+        lookup = lookup_of(rows)
+        arms = [a for a in FOLLOWUP_ARMS[scope] if any(r["arm"] == a for r in rows)]
+        groups = sorted({r["group"] for r in rows})
+        data[scope] = {
+            "arms": arms,
+            "comparisons": {f"{a}_vs_{b}": compare(lookup, a, b) for a, b in FOLLOWUP_PAIRS[scope]},
+            "pooled": {a: summary([r for r in rows if r["arm"] == a]) for a in arms},
+            "by_group": {g: {a: summary([r for r in rows if r["arm"] == a and r["group"] == g]) for a in arms}
+                         for g in groups},
+            "routing": routing_diagnostics(rows),
+        }
+        pd.DataFrame([{k: v for k, v in r.items() if k not in ("routing", "gt_intervals")} for r in rows]).to_csv(
+            OUT / f"followup_{scope}_run_scores.csv", index=False)
+        print(scope, {a: round(s["acc"], 4) for a, s in data[scope]["pooled"].items() if s["acc"] is not None})
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "followup_verdict_data.json").write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str))
 
 
 def _f(v: Any, nd: int = 4) -> str:
@@ -359,11 +465,13 @@ def write_report(data: Dict, groups: List[str], arms: List[str]) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("mode", choices=["gate", "dev", "formal"])
+    ap.add_argument("mode", choices=["gate", "dev", "formal", "followup"])
     ap.add_argument("--root", type=Path, default=ROOT)
     ap.add_argument("--allow-smoke", action="store_true", help="formal: accept truncated runs (smoke check)")
+    ap.add_argument("--datasets", nargs="+", default=None, help="gate: datasets to check (default: formal set)")
+    ap.add_argument("--gate-name", default=None, help="gate: report file name under outputs/routed/")
     args = ap.parse_args()
-    {"gate": run_gate, "dev": run_dev, "formal": run_formal}[args.mode](args)
+    {"gate": run_gate, "dev": run_dev, "formal": run_formal, "followup": run_followup}[args.mode](args)
 
 
 if __name__ == "__main__":
