@@ -369,11 +369,18 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, cfg_dict: Dict[str, Any], warm_st
             alarm_ts.append(int(raw[0].timestamp))
     if cfg.ecpf_record_warning_events and pipe._ecpf_warning_active:
         pipe._record_ecpf_warning(len(y) - 1, "censored", "stream_end")
+    routing = None
+    detector = getattr(pipe, "_ecpf_detector", None)
+    if detector is not None and hasattr(detector, "episode_log"):
+        detector.finish()
+        routing = {"policy": detector.policy, "cooldown": cfg.ecpf_confirm_cooldown,
+                   "cooldown_blocked": pipe._ecpf_cooldown_blocked, "episodes": detector.episode_log}
     effective = {k: v for k, v in dataclasses.asdict(cfg).items() if k in fields}
     return {"y_pred": y_pred, "alarm_idx": alarm_idx, "alarm_ts": alarm_ts, "emits_alarms": True,
             "type_ldd_stubbed": stubbed, "effective_config": effective,
             "warning_events": pipe._ecpf_warning_events,
             "frozen_steps": pipe._ecpf_frozen_steps,
+            "routing_events": routing,
             "system": pipe}
 
 
@@ -602,6 +609,8 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
               for event in out.get("warning_events", [])]
     if job.get("record_warning_events"):
         (run_dir / "warning_events.json").write_text(json.dumps(events, indent=2))
+    if out.get("routing_events") is not None:
+        (run_dir / "routing_events.json").write_text(json.dumps(out["routing_events"], indent=2))
 
     manifest = {
         "dataset": job["dataset"],

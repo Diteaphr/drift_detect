@@ -208,7 +208,29 @@ class ConceptDriftPipeline:
         self._ref_shadow = None             # previous reference, shadow-run after a switch
         self._ref_shadow_until = None
         self._ecpf_detector: Optional[ECPFAdwinFamilyDetector] = None
+        # Post-confirmation cooldown (ecpf_confirm_cooldown; 0 = off).
+        self._ecpf_cooldown_until: Optional[int] = None
+        self._ecpf_cooldown_blocked = 0
         if (self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES
+                and self.config.ecpf_route_policy):
+            # Routed confirmation: ADWIN and HDDM-A pairs warn in parallel and a
+            # rule picks whose drift confirms (detectors/meta_ecpf/routed.py).
+            from detectors.meta_ecpf.routed import RoutedConfirmDetector
+
+            self._ecpf_detector = RoutedConfirmDetector(
+                policy=self.config.ecpf_route_policy,
+                decision_delay=self.config.ecpf_route_decision_delay,
+                min_num_instances=self.config.ecpf_detector_min_instances,
+                delta=self.config.detector_delta,
+                delta_w=self.config.detector_delta_w,
+                one_sided=self.config.ecpf_adwin_one_sided,
+                random_seed=self.config.recurring_random_seed,
+                warning_value_range=self.config.ecpf_warning_value_range,
+                drift_value_range=self.config.ecpf_drift_value_range,
+                classify_fn=(None if self.config.ecpf_route_policy.startswith("fixed_")
+                             else self._classify_type_now),
+            )
+        elif (self.config.use_ecpf and self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES
                 and self.config.ecpf_zone_detector):
             # E9: the official-ECPF single detector replaces the dual ADWIN.
             self._ecpf_detector = ECPFZoneDetector(self.config.ecpf_zone_detector)
@@ -797,6 +819,8 @@ class ConceptDriftPipeline:
                     pred_matrix=pred_matrix,
                     uq_normalizer=drift_norm,
                 )
+                if hasattr(self._ecpf_detector, "clock"):
+                    self._ecpf_detector.clock = int(index)
                 is_warning, is_drift = self._ecpf_detector.update_values(
                     warning_value,
                     drift_value,
@@ -830,6 +854,20 @@ class ConceptDriftPipeline:
                     warning_value, drift_value, is_warning, is_drift,
                     extra=ref_extra,
                 )
+
+                # Cooldown: for ecpf_confirm_cooldown steps after a confirmation the
+                # detectors keep updating but neither open a warning nor confirm, so
+                # one drift is not confirmed again while the new leader settles.
+                if self._ecpf_cooldown_until is not None:
+                    if index < self._ecpf_cooldown_until:
+                        if is_warning or is_drift:
+                            self._ecpf_cooldown_blocked += 1
+                        is_warning = is_drift = False
+                        discard = getattr(self._ecpf_detector, "discard_episode", None)
+                        if discard is not None:
+                            discard()
+                    else:
+                        self._ecpf_cooldown_until = None
 
                 # Warning timeout: an unconfirmed warning that stays open for
                 # thousands of steps poisons everything downstream -- a later
@@ -885,6 +923,8 @@ class ConceptDriftPipeline:
 
                 if is_drift and self._ecpf_warning_active and self._ecpf_buffer:
                     self._record_ecpf_warning(index, "close", "confirmed")
+                    if self.config.ecpf_confirm_cooldown > 0:
+                        self._ecpf_cooldown_until = int(index) + 1 + self.config.ecpf_confirm_cooldown
                     self._handle_ecpf_drift(
                         self._ecpf_buffer[:],
                         int(self._ecpf_warning_start_idx if self._ecpf_warning_start_idx is not None else index),
@@ -1299,6 +1339,13 @@ class ConceptDriftPipeline:
         self._ecpf_warning_start_idx = None
         self._ecpf_buffer = []
         return {"ref_switch": 1, "switch_warning_age": age}
+
+    def _classify_type_now(self) -> str:
+        """Type-LDD label of the leader's error history up to now (routed confirmation)."""
+        errors_flat = self.buffer.get_errors()
+        if len(errors_flat) == 0:
+            return DriftType.SUDDEN.value
+        return classify_drift_type(errors_flat, len(errors_flat) - 1).value
 
     def _handle_ecpf_drift(
         self,

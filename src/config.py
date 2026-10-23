@@ -252,6 +252,17 @@ class PipelineConfig:
     # model reuse selection. The uq_warning mode has an equivalent timeout;
     # the ADWIN-family modes lacked one.
     ecpf_detector_warning_timeout: int = 0
+    # Routed confirmation (detectors/meta_ecpf/routed.py): ADWIN and HDDM-A pairs
+    # warn in parallel and this policy picks whose drift confirms --
+    # "first_warner", "type_classifier" (Type-LDD after ecpf_route_decision_delay
+    # steps: sudden -> HDDM-A, otherwise ADWIN), "union", or "fixed_adwin" /
+    # "fixed_hddma" (one pair passed through; reproduces the DET4 diagonals).
+    # "" keeps the single detector configured above.
+    ecpf_route_policy: str = ""
+    ecpf_route_decision_delay: int = 100
+    # Steps after a confirmation during which warnings and confirmations are
+    # ignored (detectors still update). 0 = off.
+    ecpf_confirm_cooldown: int = 0
 
     # Standalone detector used when ecpf_signal_mode == "detector".
     ecpf_detector_type: str = "ddm"
