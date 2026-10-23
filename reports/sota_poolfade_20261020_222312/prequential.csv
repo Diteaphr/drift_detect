@@ -1,0 +1,875 @@
+dataset,preset,metric,n,mean,std,ci95,sota_value,sota_method,sota_source,diff_vs_sota,classic_value,classic_method,diff_vs_classic
+electricity,e10bft,acc_prequential,1,0.8266684322033898,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12333156779661014,0.9008,"ARF (MOA, 100 trees)",-0.07413156779661023
+electricity,e10bft,kappa_t,1,-0.1814079422382675,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5051079422382675,0.3237,"ARF (MOA, 100 trees)",-0.5051079422382675
+electricity,e10bft,kappa_m,1,0.5916393698330994,,,,,,,,,
+electricity,e10bft,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_decay_g050,acc_prequential,1,0.8314795197740112,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11852048022598871,0.9008,"ARF (MOA, 100 trees)",-0.0693204802259888
+electricity,e10bft_decay_g050,kappa_t,1,-0.1486161251504218,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.47231612515042176,0.3237,"ARF (MOA, 100 trees)",-0.47231612515042176
+electricity,e10bft_decay_g050,kappa_m,1,0.6029740550096188,,,,,,,,,
+electricity,e10bft_decay_g050,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_decay_g050,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_decay_g080,acc_prequential,1,0.826955331920904,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12304466807909598,0.9008,"ARF (MOA, 100 trees)",-0.07384466807909607
+electricity,e10bft_decay_g080,kappa_t,1,-0.1794524669073406,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5031524669073406,0.3237,"ARF (MOA, 100 trees)",-0.5031524669073406
+electricity,e10bft_decay_g080,kappa_m,1,0.5923152914261947,,,,,,,,,
+electricity,e10bft_decay_g080,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_decay_g080,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_decay_g095,acc_prequential,1,0.8282132768361582,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12178672316384176,0.9008,"ARF (MOA, 100 trees)",-0.07258672316384185
+electricity,e10bft_decay_g095,kappa_t,1,-0.1708784596871241,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4945784596871241,0.3237,"ARF (MOA, 100 trees)",-0.4945784596871241
+electricity,e10bft_decay_g095,kappa_m,1,0.5952789476420736,,,,,,,,,
+electricity,e10bft_decay_g095,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_decay_g095,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_density_b2,acc_prequential,1,0.8343926553672316,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11560734463276834,0.9008,"ARF (MOA, 100 trees)",-0.06640734463276843
+electricity,e10bft_density_b2,kappa_t,1,-0.1287605294825515,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4524605294825515,0.3237,"ARF (MOA, 100 trees)",-0.4524605294825515
+electricity,e10bft_density_b2,kappa_m,1,0.6098372588779701,,,,,,,,,
+electricity,e10bft_density_b2,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_density_b2,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_density_b4,acc_prequential,1,0.8321857344632768,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11781426553672314,0.9008,"ARF (MOA, 100 trees)",-0.06861426553672323
+electricity,e10bft_density_b4,kappa_t,1,-0.143802647412756,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.467502647412756,0.3237,"ARF (MOA, 100 trees)",-0.467502647412756
+electricity,e10bft_density_b4,kappa_m,1,0.6046378620080071,,,,,,,,,
+electricity,e10bft_density_b4,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_density_b4,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_density_b8,acc_prequential,1,0.8256532485875706,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12434675141242935,0.9008,"ARF (MOA, 100 trees)",-0.07514675141242944
+electricity,e10bft_density_b8,kappa_t,1,-0.1883273164861615,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5120273164861615,0.3237,"ARF (MOA, 100 trees)",-0.5120273164861615
+electricity,e10bft_density_b8,kappa_m,1,0.5892476472729163,,,,,,,,,
+electricity,e10bft_density_b8,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_density_b8,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_entry_f15,acc_prequential,1,0.8273746468926554,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12262535310734457,0.9008,"ARF (MOA, 100 trees)",-0.07342535310734466
+electricity,e10bft_entry_f15,kappa_t,1,-0.1765944645006018,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5002944645006018,0.3237,"ARF (MOA, 100 trees)",-0.5002944645006018
+electricity,e10bft_entry_f15,kappa_m,1,0.5933031768314876,,,,,,,,,
+electricity,e10bft_entry_f15,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_entry_f15,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_entry_f30,acc_prequential,1,0.8273746468926554,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12262535310734457,0.9008,"ARF (MOA, 100 trees)",-0.07342535310734466
+electricity,e10bft_entry_f30,kappa_t,1,-0.1765944645006018,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5002944645006018,0.3237,"ARF (MOA, 100 trees)",-0.5002944645006018
+electricity,e10bft_entry_f30,kappa_m,1,0.5933031768314876,,,,,,,,,
+electricity,e10bft_entry_f30,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_entry_f30,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_entry_f5,acc_prequential,1,0.8298684675141242,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12013153248587571,0.9008,"ARF (MOA, 100 trees)",-0.0709315324858758
+electricity,e10bft_entry_f5,kappa_t,1,-0.1595968712394711,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.48329687123947107,0.3237,"ARF (MOA, 100 trees)",-0.48329687123947107
+electricity,e10bft_entry_f5,kappa_m,1,0.5991784952945457,,,,,,,,,
+electricity,e10bft_entry_f5,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_entry_f5,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_freq_b2,acc_prequential,1,0.8306850282485876,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11931497175141237,0.9008,"ARF (MOA, 100 trees)",-0.07011497175141246
+electricity,e10bft_freq_b2,kappa_t,1,-0.1540312876052949,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4777312876052949,0.3237,"ARF (MOA, 100 trees)",-0.4777312876052949
+electricity,e10bft_freq_b2,kappa_m,1,0.6011022721364323,,,,,,,,,
+electricity,e10bft_freq_b2,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_freq_b2,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_freq_b4,acc_prequential,1,0.8321857344632768,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11781426553672314,0.9008,"ARF (MOA, 100 trees)",-0.06861426553672323
+electricity,e10bft_freq_b4,kappa_t,1,-0.143802647412756,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.467502647412756,0.3237,"ARF (MOA, 100 trees)",-0.467502647412756
+electricity,e10bft_freq_b4,kappa_m,1,0.6046378620080071,,,,,,,,,
+electricity,e10bft_freq_b4,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_freq_b4,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_freq_b8,acc_prequential,1,0.8293608757062146,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12063912429378532,0.9008,"ARF (MOA, 100 trees)",-0.0714391242937854
+electricity,e10bft_freq_b8,kappa_t,1,-0.1630565583634181,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4867565583634181,0.3237,"ARF (MOA, 100 trees)",-0.4867565583634181
+electricity,e10bft_freq_b8,kappa_m,1,0.5979826340144543,,,,,,,,,
+electricity,e10bft_freq_b8,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_freq_b8,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_rent_l1,acc_prequential,1,0.8301112288135594,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11988877118644059,0.9008,"ARF (MOA, 100 trees)",-0.07068877118644068
+electricity,e10bft_rent_l1,kappa_t,1,-0.1579422382671479,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4816422382671479,0.3237,"ARF (MOA, 100 trees)",-0.4816422382671479
+electricity,e10bft_rent_l1,kappa_m,1,0.5997504289502419,,,,,,,,,
+electricity,e10bft_rent_l1,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_rent_l1,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_rent_l10,acc_prequential,1,0.8307291666666666,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11927083333333333,0.9008,"ARF (MOA, 100 trees)",-0.07007083333333342
+electricity,e10bft_rent_l10,kappa_t,1,-0.1537304452466912,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4774304452466912,0.3237,"ARF (MOA, 100 trees)",-0.4774304452466912
+electricity,e10bft_rent_l10,kappa_m,1,0.6012062600738314,,,,,,,,,
+electricity,e10bft_rent_l10,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_rent_l10,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_rent_l2,acc_prequential,1,0.833598163841808,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.116401836158192,0.9008,"ARF (MOA, 100 trees)",-0.06720183615819209
+electricity,e10bft_rent_l2,kappa_t,1,-0.1341756919374246,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4578756919374246,0.3237,"ARF (MOA, 100 trees)",-0.4578756919374246
+electricity,e10bft_rent_l2,kappa_m,1,0.6079654760047836,,,,,,,,,
+electricity,e10bft_rent_l2,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_rent_l2,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_rent_l5,acc_prequential,1,0.8282574152542372,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12174258474576272,0.9008,"ARF (MOA, 100 trees)",-0.0725425847457628
+electricity,e10bft_rent_l5,kappa_t,1,-0.1705776173285204,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4942776173285204,0.3237,"ARF (MOA, 100 trees)",-0.4942776173285204
+electricity,e10bft_rent_l5,kappa_m,1,0.5953829355794727,,,,,,,,,
+electricity,e10bft_rent_l5,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_rent_l5,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_reuse_value,acc_prequential,1,0.8288312146892656,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12116878531073438,0.9008,"ARF (MOA, 100 trees)",-0.07196878531073447
+electricity,e10bft_reuse_value,kappa_t,1,-0.1666666666666666,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4903666666666666,0.3237,"ARF (MOA, 100 trees)",-0.4903666666666666
+electricity,e10bft_reuse_value,kappa_m,1,0.5967347787656633,,,,,,,,,
+electricity,e10bft_reuse_value,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_reuse_value,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,e10bft_subst,acc_prequential,1,0.829691913841808,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.120308086158192,0.9008,"ARF (MOA, 100 trees)",-0.07110808615819209
+electricity,e10bft_subst,kappa_t,1,-0.1608002406738868,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.48450024067388675,0.3237,"ARF (MOA, 100 trees)",-0.48450024067388675
+electricity,e10bft_subst,kappa_m,1,0.598762543544949,,,,,,,,,
+electricity,e10bft_subst,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,e10bft_subst,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_decay_g050,acc_prequential,1,0.8369968220338984,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.1130031779661016,0.9008,"ARF (MOA, 100 trees)",-0.06380317796610169
+electricity,ecpf_decay_g050,kappa_t,1,-0.1110108303249096,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4347108303249096,0.3237,"ARF (MOA, 100 trees)",-0.4347108303249096
+electricity,ecpf_decay_g050,kappa_m,1,0.6159725471845268,,,,,,,,,
+electricity,ecpf_decay_g050,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_decay_g050,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_decay_g080,acc_prequential,1,0.8278160310734464,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12218396892655359,0.9008,"ARF (MOA, 100 trees)",-0.07298396892655368
+electricity,ecpf_decay_g080,kappa_t,1,-0.1735860409145607,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4972860409145607,0.3237,"ARF (MOA, 100 trees)",-0.4972860409145607
+electricity,ecpf_decay_g080,kappa_m,1,0.5943430562054803,,,,,,,,,
+electricity,ecpf_decay_g080,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_decay_g080,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_decay_g095,acc_prequential,1,0.8268449858757062,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12315501412429375,0.9008,"ARF (MOA, 100 trees)",-0.07395501412429384
+electricity,ecpf_decay_g095,kappa_t,1,-0.180204572803851,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5039045728038509,0.3237,"ARF (MOA, 100 trees)",-0.5039045728038509
+electricity,ecpf_decay_g095,kappa_m,1,0.5920553215826965,,,,,,,,,
+electricity,ecpf_decay_g095,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_decay_g095,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_density_b2,acc_prequential,1,0.8332671257062146,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11673287429378532,0.9008,"ARF (MOA, 100 trees)",-0.0675328742937854
+electricity,ecpf_density_b2,kappa_t,1,-0.136432009626956,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.460132009626956,0.3237,"ARF (MOA, 100 trees)",-0.460132009626956
+electricity,ecpf_density_b2,kappa_m,1,0.6071855664742889,,,,,,,,,
+electricity,ecpf_density_b2,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_density_b2,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_density_b4,acc_prequential,1,0.828080861581921,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.121919138418079,0.9008,"ARF (MOA, 100 trees)",-0.07271913841807909
+electricity,ecpf_density_b4,kappa_t,1,-0.1717809867629361,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.49548098676293606,0.3237,"ARF (MOA, 100 trees)",-0.49548098676293606
+electricity,ecpf_density_b4,kappa_m,1,0.5949669838298759,,,,,,,,,
+electricity,ecpf_density_b4,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_density_b4,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_density_b8,acc_prequential,1,0.828809145480226,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12119085451977396,0.9008,"ARF (MOA, 100 trees)",-0.07199085451977405
+electricity,ecpf_density_b8,kappa_t,1,-0.1668170878459689,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4905170878459689,0.3237,"ARF (MOA, 100 trees)",-0.4905170878459689
+electricity,ecpf_density_b8,kappa_m,1,0.5966827847969636,,,,,,,,,
+electricity,ecpf_density_b8,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_density_b8,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_entry_f15,acc_prequential,1,0.8355181850282486,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11448181497175136,0.9008,"ARF (MOA, 100 trees)",-0.06528181497175145
+electricity,ecpf_entry_f15,kappa_t,1,-0.121089049338147,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.444789049338147,0.3237,"ARF (MOA, 100 trees)",-0.444789049338147
+electricity,ecpf_entry_f15,kappa_m,1,0.6124889512816514,,,,,,,,,
+electricity,ecpf_entry_f15,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_entry_f15,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_entry_f30,acc_prequential,1,0.8355181850282486,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11448181497175136,0.9008,"ARF (MOA, 100 trees)",-0.06528181497175145
+electricity,ecpf_entry_f30,kappa_t,1,-0.121089049338147,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.444789049338147,0.3237,"ARF (MOA, 100 trees)",-0.444789049338147
+electricity,ecpf_entry_f30,kappa_m,1,0.6124889512816514,,,,,,,,,
+electricity,ecpf_entry_f30,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_entry_f30,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_entry_f5,acc_prequential,1,0.8254987641242938,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12450123587570616,0.9008,"ARF (MOA, 100 trees)",-0.07530123587570625
+electricity,ecpf_entry_f5,kappa_t,1,-0.1893802647412757,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.5130802647412757,0.3237,"ARF (MOA, 100 trees)",-0.5130802647412757
+electricity,ecpf_entry_f5,kappa_m,1,0.588883689492019,,,,,,,,,
+electricity,ecpf_entry_f5,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_entry_f5,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_freq_b2,acc_prequential,1,0.8328698799435028,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11713012005649714,0.9008,"ARF (MOA, 100 trees)",-0.06793012005649723
+electricity,ecpf_freq_b2,kappa_t,1,-0.1391395908543926,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4628395908543926,0.3237,"ARF (MOA, 100 trees)",-0.4628395908543926
+electricity,ecpf_freq_b2,kappa_m,1,0.6062496750376957,,,,,,,,,
+electricity,ecpf_freq_b2,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_freq_b2,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_freq_b4,acc_prequential,1,0.8298243290960452,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12017567090395476,0.9008,"ARF (MOA, 100 trees)",-0.07097567090395485
+electricity,ecpf_freq_b4,kappa_t,1,-0.1598977135980748,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4835977135980748,0.3237,"ARF (MOA, 100 trees)",-0.4835977135980748
+electricity,ecpf_freq_b4,kappa_m,1,0.5990745073571466,,,,,,,,,
+electricity,ecpf_freq_b4,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_freq_b4,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_freq_b8,acc_prequential,1,0.828809145480226,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12119085451977396,0.9008,"ARF (MOA, 100 trees)",-0.07199085451977405
+electricity,ecpf_freq_b8,kappa_t,1,-0.1668170878459689,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4905170878459689,0.3237,"ARF (MOA, 100 trees)",-0.4905170878459689
+electricity,ecpf_freq_b8,kappa_m,1,0.5966827847969636,,,,,,,,,
+electricity,ecpf_freq_b8,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_freq_b8,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_paper,acc_prequential,1,0.8275953389830508,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12240466101694913,0.9008,"ARF (MOA, 100 trees)",-0.07320466101694922
+electricity,ecpf_paper,kappa_t,1,-0.1750902527075816,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4987902527075816,0.3237,"ARF (MOA, 100 trees)",-0.4987902527075816
+electricity,ecpf_paper,kappa_m,1,0.5938231165184839,,,,,,,,,
+electricity,ecpf_paper,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_paper,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_rent_l1,acc_prequential,1,0.8275953389830508,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12240466101694913,0.9008,"ARF (MOA, 100 trees)",-0.07320466101694922
+electricity,ecpf_rent_l1,kappa_t,1,-0.1750902527075816,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4987902527075816,0.3237,"ARF (MOA, 100 trees)",-0.4987902527075816
+electricity,ecpf_rent_l1,kappa_m,1,0.5938231165184839,,,,,,,,,
+electricity,ecpf_rent_l1,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_rent_l1,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_rent_l10,acc_prequential,1,0.8405499646892656,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.10945003531073438,0.9008,"ARF (MOA, 100 trees)",-0.06025003531073447
+electricity,ecpf_rent_l10,kappa_t,1,-0.0867930204572803,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.4104930204572803,0.3237,"ARF (MOA, 100 trees)",-0.4104930204572803
+electricity,ecpf_rent_l10,kappa_m,1,0.6243435761451673,,,,,,,,,
+electricity,ecpf_rent_l10,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_rent_l10,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_rent_l2,acc_prequential,1,0.8299126059322034,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12008739406779656,0.9008,"ARF (MOA, 100 trees)",-0.07088739406779665
+electricity,ecpf_rent_l2,kappa_t,1,-0.1592960288808666,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.48299602888086657,0.3237,"ARF (MOA, 100 trees)",-0.48299602888086657
+electricity,ecpf_rent_l2,kappa_m,1,0.5992824832319451,,,,,,,,,
+electricity,ecpf_rent_l2,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_rent_l2,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_rent_l5,acc_prequential,1,0.8321415960451978,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.11785840395480218,0.9008,"ARF (MOA, 100 trees)",-0.06865840395480227
+electricity,ecpf_rent_l5,kappa_t,1,-0.1441034897713598,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.46780348977135977,0.3237,"ARF (MOA, 100 trees)",-0.46780348977135977
+electricity,ecpf_rent_l5,kappa_m,1,0.6045338740706079,,,,,,,,,
+electricity,ecpf_rent_l5,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_rent_l5,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_reuse_value,acc_prequential,1,0.8298905367231638,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12010946327683614,0.9008,"ARF (MOA, 100 trees)",-0.07090946327683623
+electricity,ecpf_reuse_value,kappa_t,1,-0.1594464500601688,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.48314645006016876,0.3237,"ARF (MOA, 100 trees)",-0.48314645006016876
+electricity,ecpf_reuse_value,kappa_m,1,0.5992304892632454,,,,,,,,,
+electricity,ecpf_reuse_value,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_reuse_value,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+electricity,ecpf_subst,acc_prequential,1,0.8298905367231638,,,0.95,TabFM+FIFO,"Verma et al. 2026, arXiv:2610.05352, Table 9",-0.12010946327683614,0.9008,"ARF (MOA, 100 trees)",-0.07090946327683623
+electricity,ecpf_subst,kappa_t,1,-0.1594464500601688,,,0.3237,"ARF (MOA, 100 trees)","DriftMoE 2025, Table 4 (column mislabelled Kappa M)",-0.48314645006016876,0.3237,"ARF (MOA, 100 trees)",-0.48314645006016876
+electricity,ecpf_subst,kappa_m,1,0.5992304892632454,,,,,,,,,
+electricity,ecpf_subst,baseline_no_change_acc,1,0.8532838983050848,,,0.8533,No-Change,"Souza et al. 2020, arXiv:2005.00113",-1.610169491517155e-05,,,
+electricity,ecpf_subst,baseline_majority_acc,1,0.5755429025423728,,,,,,,,,
+insects_abrupt_balanced,e10bft,acc_window1000_mean,1,0.642487541436087,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10091245856391295,0.7434,ARF,-0.10091245856391295
+insects_abrupt_balanced,e10bft,acc_prequential,1,0.646855131698456,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.013344868301544022,,,
+insects_abrupt_balanced,e10bft,kappa,1,0.5762261580381473,,,,,,,,,
+insects_abrupt_balanced,e10bft,n_alarms,1,14.0,,,,,,,,,
+insects_abrupt_balanced,e10bft,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g050,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_decay_g050,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_decay_g050,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g050,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g050,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g050,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g080,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_decay_g080,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_decay_g080,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g080,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g080,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g080,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g095,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_decay_g095,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_decay_g095,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g095,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g095,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_decay_g095,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b2,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_density_b2,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_density_b2,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b2,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b2,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b2,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b4,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_density_b4,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_density_b4,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b4,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b4,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b4,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b8,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_density_b8,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_density_b8,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b8,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b8,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_density_b8,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f15,acc_window1000_mean,1,0.6363984936007858,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10700150639921413,0.7434,ARF,-0.10700150639921413
+insects_abrupt_balanced,e10bft_entry_f15,acc_prequential,1,0.6408000302755071,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.01939996972449287,,,
+insects_abrupt_balanced,e10bft_entry_f15,kappa,1,0.5689600363306085,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f15,n_alarms,1,18.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f15,f1,1,0.4166666666666667,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f15,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f30,acc_window1000_mean,1,0.6363984936007858,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10700150639921413,0.7434,ARF,-0.10700150639921413
+insects_abrupt_balanced,e10bft_entry_f30,acc_prequential,1,0.6408000302755071,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.01939996972449287,,,
+insects_abrupt_balanced,e10bft_entry_f30,kappa,1,0.5689600363306085,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f30,n_alarms,1,18.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f30,f1,1,0.4166666666666667,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f30,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f5,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_entry_f5,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_entry_f5,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f5,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f5,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_entry_f5,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b2,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_freq_b2,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_freq_b2,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b2,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b2,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b2,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b4,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_freq_b4,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_freq_b4,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b4,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b4,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b4,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b8,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_freq_b8,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_freq_b8,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b8,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b8,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_freq_b8,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l1,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_rent_l1,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_rent_l1,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l1,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l1,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l1,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l10,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_rent_l10,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_rent_l10,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l10,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l10,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l10,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l2,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_rent_l2,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_rent_l2,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l2,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l2,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l2,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l5,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_rent_l5,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_rent_l5,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l5,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l5,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_rent_l5,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_reuse_value,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_reuse_value,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_reuse_value,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_reuse_value,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_reuse_value,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_reuse_value,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,e10bft_subst,acc_window1000_mean,1,0.6407692550297898,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10263074497021019,0.7434,ARF,-0.10263074497021019
+insects_abrupt_balanced,e10bft_subst,acc_prequential,1,0.6451710566151984,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.015028943384801652,,,
+insects_abrupt_balanced,e10bft_subst,kappa,1,0.574205267938238,,,,,,,,,
+insects_abrupt_balanced,e10bft_subst,n_alarms,1,17.0,,,,,,,,,
+insects_abrupt_balanced,e10bft_subst,f1,1,0.5,,,,,,,,,
+insects_abrupt_balanced,e10bft_subst,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g050,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_decay_g050,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_decay_g050,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g050,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g050,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g050,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g080,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_decay_g080,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_decay_g080,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g080,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g080,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g080,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g095,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_decay_g095,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_decay_g095,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g095,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g095,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_decay_g095,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b2,acc_window1000_mean,1,0.6372646001705708,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.1061353998294291,0.7434,ARF,-0.1061353998294291
+insects_abrupt_balanced,ecpf_density_b2,acc_prequential,1,0.6415001513775356,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.018699848622464432,,,
+insects_abrupt_balanced,ecpf_density_b2,kappa,1,0.5698001816530427,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b2,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b2,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b2,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b4,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_density_b4,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_density_b4,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b4,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b4,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b4,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b8,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_density_b8,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_density_b8,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b8,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b8,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_density_b8,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f15,acc_window1000_mean,1,0.6314150126743551,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.11198498732564488,0.7434,ARF,-0.11198498732564488
+insects_abrupt_balanced,ecpf_entry_f15,acc_prequential,1,0.6356153496821072,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.02458465031789281,,,
+insects_abrupt_balanced,ecpf_entry_f15,kappa,1,0.5627384196185287,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f15,n_alarms,1,21.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f15,f1,1,0.4827586206896551,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f15,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f30,acc_window1000_mean,1,0.6314150126743551,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.11198498732564488,0.7434,ARF,-0.11198498732564488
+insects_abrupt_balanced,ecpf_entry_f30,acc_prequential,1,0.6356153496821072,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.02458465031789281,,,
+insects_abrupt_balanced,ecpf_entry_f30,kappa,1,0.5627384196185287,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f30,n_alarms,1,21.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f30,f1,1,0.4827586206896551,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f30,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f5,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_entry_f5,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_entry_f5,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f5,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f5,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_entry_f5,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b2,acc_window1000_mean,1,0.6348863455535562,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10851365444644379,0.7434,ARF,-0.10851365444644379
+insects_abrupt_balanced,ecpf_freq_b2,acc_prequential,1,0.6392484105358764,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020951589464123566,,,
+insects_abrupt_balanced,ecpf_freq_b2,kappa,1,0.5670980926430518,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b2,n_alarms,1,26.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b2,f1,1,0.411764705882353,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b2,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b4,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_freq_b4,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_freq_b4,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b4,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b4,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b4,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b8,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_freq_b8,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_freq_b8,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b8,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b8,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_freq_b8,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_paper,acc_window1000_mean,1,0.6384049839126236,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10499501608737638,0.7434,ARF,-0.10499501608737638
+insects_abrupt_balanced,ecpf_paper,acc_prequential,1,0.6426354828943385,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.017564517105661537,,,
+insects_abrupt_balanced,ecpf_paper,kappa,1,0.5711625794732061,,,,,,,,,
+insects_abrupt_balanced,ecpf_paper,n_alarms,1,26.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_paper,f1,1,0.4571428571428572,,,,,,,,,
+insects_abrupt_balanced,ecpf_paper,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l1,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_rent_l1,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_rent_l1,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l1,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l1,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l1,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l10,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_rent_l10,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_rent_l10,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l10,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l10,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l10,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l2,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_rent_l2,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_rent_l2,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l2,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l2,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l2,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l5,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_rent_l5,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_rent_l5,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l5,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l5,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_rent_l5,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_reuse_value,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_reuse_value,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_reuse_value,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_reuse_value,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_reuse_value,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_reuse_value,episode_recall,1,0.8,,,,,,,,,
+insects_abrupt_balanced,ecpf_subst,acc_window1000_mean,1,0.6351074702886453,,,0.7434,ARF,"Souza et al. 2020, Table 5",-0.10829252971135461,0.7434,ARF,-0.10829252971135461
+insects_abrupt_balanced,ecpf_subst,acc_prequential,1,0.6393430214956101,,,0.6602,NB + STEPD,"Souza et al. 2020, Table 6",-0.020856978504389945,,,
+insects_abrupt_balanced,ecpf_subst,kappa,1,0.567211625794732,,,,,,,,,
+insects_abrupt_balanced,ecpf_subst,n_alarms,1,22.0,,,,,,,,,
+insects_abrupt_balanced,ecpf_subst,f1,1,0.4666666666666667,,,,,,,,,
+insects_abrupt_balanced,ecpf_subst,episode_recall,1,0.8,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft,acc_window1000_mean,1,0.660253886234625,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08924611376537506,0.7495,ARF,-0.08924611376537506
+insects_incremental_abrupt_reoccurring_balanced,e10bft,acc_prequential,1,0.6621908834045958,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.025509116595404224,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft,kappa,1,0.594629060085515,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft,n_alarms,1,35.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft,f1,1,0.2926829268292683,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g050,acc_window1000_mean,1,0.6552280067057075,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.09427199329429259,0.7495,ARF,-0.09427199329429259
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g050,acc_prequential,1,0.6571650038756782,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.030534996124321756,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g050,kappa,1,0.5885980046508139,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g050,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g050,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g050,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g080,acc_window1000_mean,1,0.6552530110814733,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.09424698891852679,0.7495,ARF,-0.09424698891852679
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g080,acc_prequential,1,0.657190008251444,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.030509991748555954,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g080,kappa,1,0.5886280099017328,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g080,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g080,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g080,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g095,acc_window1000_mean,1,0.6646921629330473,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08480783706695272,0.7495,ARF,-0.08480783706695272
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g095,acc_prequential,1,0.666629160103018,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.021070839896981997,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g095,kappa,1,0.5999549921236216,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g095,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g095,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_decay_g095,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b2,acc_window1000_mean,1,0.6489769127642677,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.10052308723573233,0.7495,ARF,-0.10052308723573233
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b2,acc_prequential,1,0.6509139099342385,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.0367860900657615,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b2,kappa,1,0.5810966919210862,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b2,n_alarms,1,28.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b2,f1,1,0.3529411764705882,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b4,acc_window1000_mean,1,0.6552280067057075,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.09427199329429259,0.7495,ARF,-0.09427199329429259
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b4,acc_prequential,1,0.6571650038756782,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.030534996124321756,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b4,kappa,1,0.5885980046508139,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b4,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b4,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b4,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b8,acc_window1000_mean,1,0.6646921629330473,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08480783706695272,0.7495,ARF,-0.08480783706695272
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b8,acc_prequential,1,0.666629160103018,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.021070839896981997,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b8,kappa,1,0.5999549921236216,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b8,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b8,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_density_b8,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f15,acc_window1000_mean,1,0.6483267823510854,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.10117321764891463,0.7495,ARF,-0.10117321764891463
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f15,acc_prequential,1,0.6502637961643287,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.037436203835671256,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f15,kappa,1,0.5803165553971945,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f15,n_alarms,1,28.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f15,f1,1,0.3529411764705882,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f15,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f30,acc_window1000_mean,1,0.6483267823510854,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.10117321764891463,0.7495,ARF,-0.10117321764891463
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f30,acc_prequential,1,0.6502637961643287,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.037436203835671256,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f30,kappa,1,0.5803165553971945,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f30,n_alarms,1,28.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f30,f1,1,0.3529411764705882,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f30,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f5,acc_window1000_mean,1,0.660678960622643,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08882103937735708,0.7495,ARF,-0.08882103937735708
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f5,acc_prequential,1,0.6626159577926137,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.025084042207386248,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f5,kappa,1,0.5951391493511365,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f5,n_alarms,1,31.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f5,f1,1,0.3243243243243243,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_entry_f5,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b2,acc_window1000_mean,1,0.6468890473878268,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.10261095261217323,0.7495,ARF,-0.10261095261217323
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b2,acc_prequential,1,0.6488260445577976,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.0388739554422024,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b2,kappa,1,0.5785912534693571,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b2,n_alarms,1,36.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b2,f1,1,0.2857142857142857,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b4,acc_window1000_mean,1,0.6552280067057075,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.09427199329429259,0.7495,ARF,-0.09427199329429259
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b4,acc_prequential,1,0.6571650038756782,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.030534996124321756,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b4,kappa,1,0.5885980046508139,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b4,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b4,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b4,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b8,acc_window1000_mean,1,0.6646921629330473,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08480783706695272,0.7495,ARF,-0.08480783706695272
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b8,acc_prequential,1,0.666629160103018,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.021070839896981997,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b8,kappa,1,0.5999549921236216,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b8,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b8,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_freq_b8,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l1,acc_window1000_mean,1,0.6646921629330473,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08480783706695272,0.7495,ARF,-0.08480783706695272
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l1,acc_prequential,1,0.666629160103018,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.021070839896981997,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l1,kappa,1,0.5999549921236216,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l1,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l1,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l1,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l10,acc_window1000_mean,1,0.6617791531563363,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08772084684366377,0.7495,ARF,-0.08772084684366377
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l10,acc_prequential,1,0.6637161503263072,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.023983849673692825,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l10,kappa,1,0.5964593803915686,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l10,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l10,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l10,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l2,acc_window1000_mean,1,0.6649047001270562,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.0845952998729439,0.7495,ARF,-0.0845952998729439
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l2,acc_prequential,1,0.666841697297027,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.020858302702972953,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l2,kappa,1,0.6002100367564324,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l2,n_alarms,1,31.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l2,f1,1,0.3243243243243243,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l5,acc_window1000_mean,1,0.6552280067057075,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.09427199329429259,0.7495,ARF,-0.09427199329429259
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l5,acc_prequential,1,0.6571650038756782,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.030534996124321756,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l5,kappa,1,0.5885980046508139,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l5,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l5,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_rent_l5,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_reuse_value,acc_window1000_mean,1,0.6646921629330473,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08480783706695272,0.7495,ARF,-0.08480783706695272
+insects_incremental_abrupt_reoccurring_balanced,e10bft_reuse_value,acc_prequential,1,0.666629160103018,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.021070839896981997,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_reuse_value,kappa,1,0.5999549921236216,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_reuse_value,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_reuse_value,f1,1,0.3333333333333333,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_reuse_value,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_subst,acc_window1000_mean,1,0.6606914628105259,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08880853718947412,0.7495,ARF,-0.08880853718947412
+insects_incremental_abrupt_reoccurring_balanced,e10bft_subst,acc_prequential,1,0.6626284599804966,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.025071540019503402,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_subst,kappa,1,0.5951541519765959,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_subst,n_alarms,1,31.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_subst,f1,1,0.3243243243243243,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,e10bft_subst,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g050,acc_window1000_mean,1,0.6547528900285201,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.09474710997147995,0.7495,ARF,-0.09474710997147995
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g050,acc_prequential,1,0.6566899207361289,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.031010079263871115,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g050,kappa,1,0.5880279048833547,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g050,n_alarms,1,38.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g050,f1,1,0.2727272727272727,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g050,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g080,acc_window1000_mean,1,0.662541753079554,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08695824692044607,0.7495,ARF,-0.08695824692044607
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g080,acc_prequential,1,0.6644787837871627,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.023221216212837237,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g080,kappa,1,0.5973745405445953,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g080,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g080,f1,1,0.24,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g080,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g095,acc_window1000_mean,1,0.6649921819045984,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08450781809540164,0.7495,ARF,-0.08450781809540164
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g095,acc_prequential,1,0.6669292126122072,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.02077078738779281,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g095,kappa,1,0.6003150551346487,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g095,n_alarms,1,35.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g095,f1,1,0.2926829268292683,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_decay_g095,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b2,acc_window1000_mean,1,0.654765392216403,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.0947346077835971,0.7495,ARF,-0.0947346077835971
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b2,acc_prequential,1,0.6567024229240117,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.03099757707598827,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b2,kappa,1,0.588042907508814,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b2,n_alarms,1,42.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b2,f1,1,0.25,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b4,acc_window1000_mean,1,0.6634544127950042,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08604558720499589,0.7495,ARF,-0.08604558720499589
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b4,acc_prequential,1,0.6653914435026129,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.022308556497387055,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b4,kappa,1,0.5984697322031355,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b4,n_alarms,1,37.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b4,f1,1,0.2790697674418604,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b4,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b8,acc_window1000_mean,1,0.6649921819045984,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08450781809540164,0.7495,ARF,-0.08450781809540164
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b8,acc_prequential,1,0.6669292126122072,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.02077078738779281,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b8,kappa,1,0.6003150551346487,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b8,n_alarms,1,35.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b8,f1,1,0.2926829268292683,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_density_b8,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f15,acc_window1000_mean,1,0.6475799097569727,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.1019200902430274,0.7495,ARF,-0.1019200902430274
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f15,acc_prequential,1,0.649101092691221,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.03859890730877902,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f15,kappa,1,0.5789213112294652,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f15,n_alarms,1,29.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f15,f1,1,0.3428571428571428,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f15,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f30,acc_window1000_mean,1,0.6475799097569727,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.1019200902430274,0.7495,ARF,-0.1019200902430274
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f30,acc_prequential,1,0.649101092691221,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.03859890730877902,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f30,kappa,1,0.5789213112294652,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f30,n_alarms,1,29.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f30,f1,1,0.3428571428571428,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f30,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f5,acc_window1000_mean,1,0.6649921819045984,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08450781809540164,0.7495,ARF,-0.08450781809540164
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f5,acc_prequential,1,0.6669292126122072,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.02077078738779281,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f5,kappa,1,0.6003150551346487,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f5,n_alarms,1,35.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f5,f1,1,0.2926829268292683,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_entry_f5,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b2,acc_window1000_mean,1,0.6616427457532719,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08785725424672819,0.7495,ARF,-0.08785725424672819
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b2,acc_prequential,1,0.6631785562473432,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.024521443752656746,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b2,kappa,1,0.5958142674968119,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b2,n_alarms,1,43.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b2,f1,1,0.2448979591836734,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b4,acc_window1000_mean,1,0.6634544127950042,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08604558720499589,0.7495,ARF,-0.08604558720499589
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b4,acc_prequential,1,0.6653914435026129,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.022308556497387055,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b4,kappa,1,0.5984697322031355,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b4,n_alarms,1,37.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b4,f1,1,0.2790697674418604,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b4,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b8,acc_window1000_mean,1,0.6649921819045984,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08450781809540164,0.7495,ARF,-0.08450781809540164
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b8,acc_prequential,1,0.6669292126122072,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.02077078738779281,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b8,kappa,1,0.6003150551346487,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b8,n_alarms,1,35.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b8,f1,1,0.2926829268292683,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_freq_b8,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_paper,acc_window1000_mean,1,0.6459673400572751,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.10353265994272498,0.7495,ARF,-0.10353265994272498
+insects_incremental_abrupt_reoccurring_balanced,ecpf_paper,acc_prequential,1,0.6478883804665817,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.039811619533418274,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_paper,kappa,1,0.577466056559898,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_paper,n_alarms,1,35.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_paper,f1,1,0.2926829268292683,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_paper,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l1,acc_window1000_mean,1,0.6567532400897808,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.0927467599102193,0.7495,ARF,-0.0927467599102193
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l1,acc_prequential,1,0.6586902707973895,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.029009729202610468,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l1,kappa,1,0.5904283249568675,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l1,n_alarms,1,38.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l1,f1,1,0.2727272727272727,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l1,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l10,acc_window1000_mean,1,0.6569782794716726,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.09252172052832741,0.7495,ARF,-0.09252172052832741
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l10,acc_prequential,1,0.6589153101792814,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.02878468982071858,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l10,kappa,1,0.5906983722151377,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l10,n_alarms,1,35.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l10,f1,1,0.2926829268292683,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l10,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l2,acc_window1000_mean,1,0.6649921819045984,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08450781809540164,0.7495,ARF,-0.08450781809540164
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l2,acc_prequential,1,0.6669292126122072,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.02077078738779281,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l2,kappa,1,0.6003150551346487,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l2,n_alarms,1,35.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l2,f1,1,0.2926829268292683,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l5,acc_window1000_mean,1,0.6529662273625536,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.09653377263744645,0.7495,ARF,-0.09653377263744645
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l5,acc_prequential,1,0.6545020378566249,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.033197962143375115,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l5,kappa,1,0.5854024454279498,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l5,n_alarms,1,32.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l5,f1,1,0.3157894736842105,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_rent_l5,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_reuse_value,acc_window1000_mean,1,0.6649921819045984,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.08450781809540164,0.7495,ARF,-0.08450781809540164
+insects_incremental_abrupt_reoccurring_balanced,ecpf_reuse_value,acc_prequential,1,0.6669292126122072,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.02077078738779281,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_reuse_value,kappa,1,0.6003150551346487,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_reuse_value,n_alarms,1,35.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_reuse_value,f1,1,0.2926829268292683,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_reuse_value,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_subst,acc_window1000_mean,1,0.6643670725104545,,,0.7495,ARF,"Souza et al. 2020, Table 5",-0.0851329274895456,0.7495,ARF,-0.0851329274895456
+insects_incremental_abrupt_reoccurring_balanced,ecpf_subst,acc_prequential,1,0.6663041032180632,,,0.6877,NB + STEPD,"Souza et al. 2020, Table 6",-0.021395896781936763,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_subst,kappa,1,0.5995649238616759,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_subst,n_alarms,1,34.0,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_subst,f1,1,0.3,,,,,,,,,
+insects_incremental_abrupt_reoccurring_balanced,ecpf_subst,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft,acc_window1000_mean,1,0.6715803234462219,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09971967655377811,0.7713,ARF,-0.09971967655377811
+insects_incremental_reoccurring_balanced,e10bft,acc_prequential,1,0.6734303503113045,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.02476964968869555,,,
+insects_incremental_reoccurring_balanced,e10bft,kappa,1,0.6081164203735654,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g050,acc_window1000_mean,1,0.6790816361759495,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09221836382405046,0.7713,ARF,-0.09221836382405046
+insects_incremental_reoccurring_balanced,e10bft_decay_g050,acc_prequential,1,0.6809316630410321,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.0172683369589679,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g050,kappa,1,0.6171179956492386,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g050,n_alarms,1,31.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g050,f1,1,0.2285714285714286,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g050,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g080,acc_window1000_mean,1,0.6722429394040145,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09905706059598551,0.7713,ARF,-0.09905706059598551
+insects_incremental_reoccurring_balanced,e10bft_decay_g080,acc_prequential,1,0.6740929662690971,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.02410703373090295,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g080,kappa,1,0.6089115595229164,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g080,n_alarms,1,30.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g080,f1,1,0.2352941176470588,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g080,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g095,acc_window1000_mean,1,0.6735806735074826,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09771932649251736,0.7713,ARF,-0.09771932649251736
+insects_incremental_reoccurring_balanced,e10bft_decay_g095,acc_prequential,1,0.6754307003725653,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.02276929962743479,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g095,kappa,1,0.6105168404470783,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g095,n_alarms,1,27.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g095,f1,1,0.2580645161290322,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_decay_g095,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b2,acc_window1000_mean,1,0.6703926155973483,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.10090738440265168,0.7713,ARF,-0.10090738440265168
+insects_incremental_reoccurring_balanced,e10bft_density_b2,acc_prequential,1,0.6722426424624309,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.025957357537569115,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b2,kappa,1,0.6066911709549172,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b2,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b2,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b4,acc_window1000_mean,1,0.6750809360534281,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09621906394657187,0.7713,ARF,-0.09621906394657187
+insects_incremental_reoccurring_balanced,e10bft_density_b4,acc_prequential,1,0.6769309629185107,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.021269037081489306,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b4,kappa,1,0.6123171555022129,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b4,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b4,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b4,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b8,acc_window1000_mean,1,0.6750809360534281,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09621906394657187,0.7713,ARF,-0.09621906394657187
+insects_incremental_reoccurring_balanced,e10bft_density_b8,acc_prequential,1,0.6769309629185107,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.021269037081489306,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b8,kappa,1,0.6123171555022129,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b8,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b8,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_density_b8,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f15,acc_window1000_mean,1,0.6636039276521334,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.1076960723478666,0.7713,ARF,-0.1076960723478666
+insects_incremental_reoccurring_balanced,e10bft_entry_f15,acc_prequential,1,0.6654539544420274,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.03274604555797267,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f15,kappa,1,0.5985447453304329,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f15,n_alarms,1,27.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f15,f1,1,0.2580645161290322,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f15,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f30,acc_window1000_mean,1,0.6636039276521334,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.1076960723478666,0.7713,ARF,-0.1076960723478666
+insects_incremental_reoccurring_balanced,e10bft_entry_f30,acc_prequential,1,0.6654539544420274,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.03274604555797267,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f30,kappa,1,0.5985447453304329,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f30,n_alarms,1,27.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f30,f1,1,0.2580645161290322,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f30,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f5,acc_window1000_mean,1,0.6735806735074826,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09771932649251736,0.7713,ARF,-0.09771932649251736
+insects_incremental_reoccurring_balanced,e10bft_entry_f5,acc_prequential,1,0.6754307003725653,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.02276929962743479,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f5,kappa,1,0.6105168404470783,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f5,n_alarms,1,27.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f5,f1,1,0.2580645161290322,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_entry_f5,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b2,acc_window1000_mean,1,0.6703926155973483,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.10090738440265168,0.7713,ARF,-0.10090738440265168
+insects_incremental_reoccurring_balanced,e10bft_freq_b2,acc_prequential,1,0.6722426424624309,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.025957357537569115,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b2,kappa,1,0.6066911709549172,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b2,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b2,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b4,acc_window1000_mean,1,0.6750809360534281,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09621906394657187,0.7713,ARF,-0.09621906394657187
+insects_incremental_reoccurring_balanced,e10bft_freq_b4,acc_prequential,1,0.6769309629185107,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.021269037081489306,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b4,kappa,1,0.6123171555022129,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b4,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b4,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b4,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b8,acc_window1000_mean,1,0.6750809360534281,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09621906394657187,0.7713,ARF,-0.09621906394657187
+insects_incremental_reoccurring_balanced,e10bft_freq_b8,acc_prequential,1,0.6769309629185107,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.021269037081489306,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b8,kappa,1,0.6123171555022129,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b8,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b8,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_freq_b8,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l1,acc_window1000_mean,1,0.6762561417144188,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09504385828558115,0.7713,ARF,-0.09504385828558115
+insects_incremental_reoccurring_balanced,e10bft_rent_l1,acc_prequential,1,0.6781061685795015,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.020093831420498587,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l1,kappa,1,0.6137274022954018,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l1,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l1,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l1,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l10,acc_window1000_mean,1,0.6684172699118534,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.10288273008814663,0.7713,ARF,-0.10288273008814663
+insects_incremental_reoccurring_balanced,e10bft_rent_l10,acc_prequential,1,0.670267296776936,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.02793270322306407,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l10,kappa,1,0.6043207561323233,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l10,n_alarms,1,32.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l10,f1,1,0.2222222222222222,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l10,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l2,acc_window1000_mean,1,0.6750809360534281,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09621906394657187,0.7713,ARF,-0.09621906394657187
+insects_incremental_reoccurring_balanced,e10bft_rent_l2,acc_prequential,1,0.6769309629185107,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.021269037081489306,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l2,kappa,1,0.6123171555022129,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l2,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l2,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l5,acc_window1000_mean,1,0.6756310323202749,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.0956689676797251,0.7713,ARF,-0.0956689676797251
+insects_incremental_reoccurring_balanced,e10bft_rent_l5,acc_prequential,1,0.6774810591853574,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.02071894081464265,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l5,kappa,1,0.6129772710224289,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l5,n_alarms,1,31.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l5,f1,1,0.2285714285714286,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_rent_l5,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_reuse_value,acc_window1000_mean,1,0.6762561417144188,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09504385828558115,0.7713,ARF,-0.09504385828558115
+insects_incremental_reoccurring_balanced,e10bft_reuse_value,acc_prequential,1,0.6781061685795015,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.020093831420498587,,,
+insects_incremental_reoccurring_balanced,e10bft_reuse_value,kappa,1,0.6137274022954018,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_reuse_value,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_reuse_value,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_reuse_value,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_subst,acc_window1000_mean,1,0.6762561417144188,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09504385828558115,0.7713,ARF,-0.09504385828558115
+insects_incremental_reoccurring_balanced,e10bft_subst,acc_prequential,1,0.6781061685795015,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.020093831420498587,,,
+insects_incremental_reoccurring_balanced,e10bft_subst,kappa,1,0.6137274022954018,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_subst,n_alarms,1,26.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_subst,f1,1,0.2666666666666667,,,,,,,,,
+insects_incremental_reoccurring_balanced,e10bft_subst,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g050,acc_window1000_mean,1,0.6739549077166408,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09734509228335919,0.7713,ARF,-0.09734509228335919
+insects_incremental_reoccurring_balanced,ecpf_decay_g050,acc_prequential,1,0.6754181981846823,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.022781801815317748,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g050,kappa,1,0.6105018378216188,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g050,n_alarms,1,36.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g050,f1,1,0.1999999999999999,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g050,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g080,acc_window1000_mean,1,0.6714677724679722,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.0998322275320278,0.7713,ARF,-0.0998322275320278
+insects_incremental_reoccurring_balanced,ecpf_decay_g080,acc_prequential,1,0.6733178306203585,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.024882169379641494,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g080,kappa,1,0.6079813967444303,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g080,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g080,f1,1,0.2040816326530612,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g080,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g095,acc_window1000_mean,1,0.6734681225292329,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09783187747076705,0.7713,ARF,-0.09783187747076705
+insects_incremental_reoccurring_balanced,ecpf_decay_g095,acc_prequential,1,0.6753181806816193,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.022881819318380736,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g095,kappa,1,0.6103818168179432,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g095,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g095,f1,1,0.2040816326530612,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_decay_g095,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b2,acc_window1000_mean,1,0.6642165034959022,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.10708349650409776,0.7713,ARF,-0.10708349650409776
+insects_incremental_reoccurring_balanced,ecpf_density_b2,acc_prequential,1,0.6660665616482885,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.03213343835171156,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b2,kappa,1,0.5992798739779462,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b2,n_alarms,1,38.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b2,f1,1,0.1904761904761905,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b4,acc_window1000_mean,1,0.6695916441455159,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.10170835585448412,0.7713,ARF,-0.10170835585448412
+insects_incremental_reoccurring_balanced,ecpf_density_b4,acc_prequential,1,0.6710549346135574,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.02714506538644268,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b4,kappa,1,0.6052659215362689,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b4,n_alarms,1,41.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b4,f1,1,0.217391304347826,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b4,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b8,acc_window1000_mean,1,0.6734681225292329,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09783187747076705,0.7713,ARF,-0.09783187747076705
+insects_incremental_reoccurring_balanced,ecpf_density_b8,acc_prequential,1,0.6753181806816193,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.022881819318380736,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b8,kappa,1,0.6103818168179432,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b8,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b8,f1,1,0.2040816326530612,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_density_b8,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f15,acc_window1000_mean,1,0.6600157653687017,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.11128423463129833,0.7713,ARF,-0.11128423463129833
+insects_incremental_reoccurring_balanced,ecpf_entry_f15,acc_prequential,1,0.661865826519641,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.036334173480359055,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f15,kappa,1,0.5942389918235692,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f15,n_alarms,1,32.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f15,f1,1,0.2222222222222222,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f15,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f30,acc_window1000_mean,1,0.6600157653687017,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.11128423463129833,0.7713,ARF,-0.11128423463129833
+insects_incremental_reoccurring_balanced,ecpf_entry_f30,acc_prequential,1,0.661865826519641,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.036334173480359055,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f30,kappa,1,0.5942389918235692,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f30,n_alarms,1,32.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f30,f1,1,0.2222222222222222,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f30,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f5,acc_window1000_mean,1,0.6734681225292329,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09783187747076705,0.7713,ARF,-0.09783187747076705
+insects_incremental_reoccurring_balanced,ecpf_entry_f5,acc_prequential,1,0.6753181806816193,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.022881819318380736,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f5,kappa,1,0.6103818168179431,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f5,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f5,f1,1,0.2040816326530612,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_entry_f5,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b2,acc_window1000_mean,1,0.6642165034959022,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.10708349650409776,0.7713,ARF,-0.10708349650409776
+insects_incremental_reoccurring_balanced,ecpf_freq_b2,acc_prequential,1,0.6660665616482885,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.03213343835171156,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b2,kappa,1,0.5992798739779462,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b2,n_alarms,1,38.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b2,f1,1,0.1904761904761905,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b4,acc_window1000_mean,1,0.669691661648579,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.10160833835142102,0.7713,ARF,-0.10160833835142102
+insects_incremental_reoccurring_balanced,ecpf_freq_b4,acc_prequential,1,0.6711549521166205,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.02704504788337958,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b4,kappa,1,0.6053859425399446,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b4,n_alarms,1,41.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b4,f1,1,0.217391304347826,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b4,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b8,acc_window1000_mean,1,0.6734681225292329,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09783187747076705,0.7713,ARF,-0.09783187747076705
+insects_incremental_reoccurring_balanced,ecpf_freq_b8,acc_prequential,1,0.6753181806816193,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.022881819318380736,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b8,kappa,1,0.6103818168179432,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b8,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b8,f1,1,0.2040816326530612,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_freq_b8,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_paper,acc_window1000_mean,1,0.6760310710452232,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09526892895477679,0.7713,ARF,-0.09526892895477679
+insects_incremental_reoccurring_balanced,ecpf_paper,acc_prequential,1,0.6778811291976096,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.020318870802390476,,,
+insects_incremental_reoccurring_balanced,ecpf_paper,kappa,1,0.6134573550371315,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_paper,n_alarms,1,46.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_paper,f1,1,0.196078431372549,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_paper,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l1,acc_window1000_mean,1,0.6734681225292329,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09783187747076705,0.7713,ARF,-0.09783187747076705
+insects_incremental_reoccurring_balanced,ecpf_rent_l1,acc_prequential,1,0.6753181806816193,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.022881819318380736,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l1,kappa,1,0.6103818168179432,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l1,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l1,f1,1,0.2040816326530612,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l1,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l10,acc_window1000_mean,1,0.6718428381044587,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09945716189554132,0.7713,ARF,-0.09945716189554132
+insects_incremental_reoccurring_balanced,ecpf_rent_l10,acc_prequential,1,0.6736928962568449,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.024507103743155123,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l10,kappa,1,0.608431475508214,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l10,n_alarms,1,38.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l10,f1,1,0.2325581395348837,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l10,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l2,acc_window1000_mean,1,0.6734681225292329,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09783187747076705,0.7713,ARF,-0.09783187747076705
+insects_incremental_reoccurring_balanced,ecpf_rent_l2,acc_prequential,1,0.6753181806816193,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.022881819318380736,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l2,kappa,1,0.6103818168179432,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l2,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l2,f1,1,0.2040816326530612,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l2,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l5,acc_window1000_mean,1,0.6681413903511019,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.10315860964889811,0.7713,ARF,-0.10315860964889811
+insects_incremental_reoccurring_balanced,ecpf_rent_l5,acc_prequential,1,0.6696046808191434,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.02859531918085667,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l5,kappa,1,0.603525616982972,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l5,n_alarms,1,41.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l5,f1,1,0.1777777777777777,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_rent_l5,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_reuse_value,acc_window1000_mean,1,0.6734681225292329,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09783187747076705,0.7713,ARF,-0.09783187747076705
+insects_incremental_reoccurring_balanced,ecpf_reuse_value,acc_prequential,1,0.6753181806816193,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.022881819318380736,,,
+insects_incremental_reoccurring_balanced,ecpf_reuse_value,kappa,1,0.6103818168179432,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_reuse_value,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_reuse_value,f1,1,0.2040816326530612,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_reuse_value,episode_recall,1,1.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_subst,acc_window1000_mean,1,0.6734681225292329,,,0.7713,ARF,"Souza et al. 2020, Table 5",-0.09783187747076705,0.7713,ARF,-0.09783187747076705
+insects_incremental_reoccurring_balanced,ecpf_subst,acc_prequential,1,0.6753181806816193,,,0.6982,NB + SEED,"Souza et al. 2020, Table 6",-0.022881819318380736,,,
+insects_incremental_reoccurring_balanced,ecpf_subst,kappa,1,0.6103818168179432,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_subst,n_alarms,1,44.0,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_subst,f1,1,0.2040816326530612,,,,,,,,,
+insects_incremental_reoccurring_balanced,ecpf_subst,episode_recall,1,1.0,,,,,,,,,
