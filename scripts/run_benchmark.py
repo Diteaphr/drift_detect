@@ -488,7 +488,10 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
     meter.start()
     kind = preset["kind"]
     if kind == "pipeline":
-        out = run_pipeline(X, y, effective_pipeline_config(preset, task, seed), warm_start)
+        cfg_dict = effective_pipeline_config(preset, task, seed)
+        if job.get("pool_trace") and cfg_dict.get("use_ecpf"):
+            cfg_dict["ecpf_pool_trace"] = True
+        out = run_pipeline(X, y, cfg_dict, warm_start)
     elif kind == "baseline":
         if task not in preset.get("tasks", [task]):
             raise ValueError(f"preset {preset['name']} does not support task {task}")
@@ -506,7 +509,9 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
     cost["model_size_final_mb"] = None
     if job["model_size"]:
         t_size = time.perf_counter()
-        cost["model_size_final_mb"] = round(deep_sizeof(out["system"], exclude=(X, y, df)) / 2 ** 20, 2)
+        # Evicted experts kept only for the regret diagnostic are not part of the system.
+        ghosts = tuple(ecpf.ghost_models()) if (ecpf := getattr(out.get("system"), "_ecpf", None)) else ()
+        cost["model_size_final_mb"] = round(deep_sizeof(out["system"], exclude=(X, y, df, *ghosts)) / 2 ** 20, 2)
         cost["model_size_time_s"] = round(time.perf_counter() - t_size, 2)
     cost["workers"] = job["workers"]
 
@@ -551,6 +556,14 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False, default=_json_default))
     metrics = evaluate_record(rec, entry, manifest)
     (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2))
+    ecpf = getattr(out.get("system"), "_ecpf", None)
+    if job.get("pool_trace") and ecpf is not None and ecpf.pool_trace:
+        from src.metrics.pool_metrics import pool_metrics
+
+        trace = ecpf.pool_trace_dict()
+        (run_dir / "pool_trace.json").write_text(json.dumps(trace, default=_json_default))
+        pm = pool_metrics(trace, y, out["y_pred"], out["alarm_idx"], task)
+        (run_dir / "pool_metrics.json").write_text(json.dumps(pm, indent=2, default=_json_default))
     return summary_row(manifest, metrics, run_dir)
 
 
@@ -762,6 +775,7 @@ def run_preset(args: argparse.Namespace, entry: Dict[str, Any], preset: Dict[str
         "source": s, "dataset": args.dataset, "entry": entry, "preset": preset, "seed": seed,
         "max_steps": args.max_steps, "version_problems": version_problems, "git": git,
         "machine": args.machine, "workers": max(1, args.workers), "model_size": args.model_size,
+        "pool_trace": args.pool_trace,
         "run_dir": str(root / (s["stem"] + ("" if seed is None else f"__s{seed}"))),
     } for s in sources for seed in seeds]
     role = preset.get("role", preset["kind"])
@@ -832,6 +846,9 @@ def main() -> None:
     ap.add_argument("--model-size", action=argparse.BooleanOptionalAction, default=True,
                     help="measure the final system's object size after each run (can take a minute for 100-tree "
                          "forests on long streams; --no-model-size skips it)")
+    ap.add_argument("--pool-trace", action="store_true",
+                    help="ECPF presets: record the model-pool trace (memory timeline, evictions, regret, "
+                         "reuse values) and write pool_trace.json + pool_metrics.json per run")
     ap.add_argument("--reeval", metavar="DIR", help="recompute metrics.json under DIR from stored preds.npz")
     ap.add_argument("--list", action="store_true", help="list registered datasets and presets")
     ap.add_argument("--list-datasets", action="store_true",

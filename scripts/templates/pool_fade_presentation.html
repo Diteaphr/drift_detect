@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Model Pool 淘汰機制實驗</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~72ch) with full-width figures; a sticky dataset switcher drives every chart; each method section has the same anatomy (rule, verdict, numbers, observations). */
+:root {
+  --bg: #f5f6f7;
+  --surface: #fcfcfb;
+  --fg: #15191e;
+  --muted: #59626d;
+  --line: #dde1e6;
+  --accent: #1d5c8f;
+  --accent-soft: #e2ecf5;
+  --good: #0b7d0b; --good-soft: #e3f3e3;
+  --warn: #8a5a00; --warn-soft: #fbefd6;
+  --bad: #b42d2d; --bad-soft: #f8e3e3;
+  --pos: #0b7d0b; --neg: #b42d2d;
+  --main: #15191e;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --step--1: 0.8125rem; --step-0: 1rem; --step-1: 1.1875rem; --step-2: 1.5rem; --step-3: 2.125rem;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111417; --surface: #1a1a19; --fg: #eceef0; --muted: #a2aab4; --line: #2d3339;
+    --accent: #83b5e3; --accent-soft: #1c2b3a;
+    --good: #5fcf5f; --good-soft: #17301a; --warn: #f0b84a; --warn-soft: #33280f; --bad: #ef7d7d; --bad-soft: #3a1c1c;
+    --pos: #5fcf5f; --neg: #ef7d7d; --main: #eceef0;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111417; --surface: #1a1a19; --fg: #eceef0; --muted: #a2aab4; --line: #2d3339;
+  --accent: #83b5e3; --accent-soft: #1c2b3a;
+  --good: #5fcf5f; --good-soft: #17301a; --warn: #f0b84a; --warn-soft: #33280f; --bad: #ef7d7d; --bad-soft: #3a1c1c;
+  --pos: #5fcf5f; --neg: #ef7d7d; --main: #eceef0;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: var(--step-0); line-height: 1.7; }
+.wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+  display: grid; gap: 56px;
+}
+.prose { max-width: 72ch; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.3; margin: 0; }
+h1 { font-size: var(--step-3); } h2 { font-size: var(--step-2); } h3 { font-size: var(--step-1); }
+p { margin: 0; }
+ul { margin: 0; padding-left: 1.25em; display: grid; gap: 6px; }
+code, .mono { font-family: var(--font-data); font-size: 0.875em; }
+.eyebrow { font-size: var(--step--1); letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+.muted { color: var(--muted); }
+section { display: grid; gap: 18px; min-width: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+header { display: grid; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: var(--step--1); color: var(--muted); }
+.meta b { color: var(--fg); font-weight: 500; }
+
+.findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; }
+.finding { border-top: 2px solid var(--fg); padding-top: 12px; display: grid; gap: 6px; align-content: start; }
+.finding .big { font-family: var(--font-data); font-size: 1.375rem; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.3; }
+.finding p { color: var(--muted); font-size: 0.9375rem; }
+
+.glossary { display: grid; grid-template-columns: max-content 1fr; gap: 8px 20px; margin: 0; }
+.glossary dt { font-weight: 700; }
+.glossary dd { margin: 0; color: var(--muted); }
+@media (max-width: 560px) { .glossary { grid-template-columns: 1fr; gap: 2px; } .glossary dd { margin-bottom: 10px; } }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.controls .label { font-size: var(--step--1); color: var(--muted); margin-right: 2px; }
+.tab, .chip, .seg {
+  font: inherit; font-size: var(--step--1); cursor: pointer; border: 1px solid var(--line);
+  background: var(--surface); color: var(--fg); border-radius: 999px; padding: 5px 14px;
+}
+.tab[aria-pressed="true"], .seg[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 10px; }
+.chip[aria-pressed="false"] { opacity: 0.45; }
+.chip i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+select {
+  font: inherit; font-size: var(--step--1); font-family: var(--font-data); color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; max-width: 100%;
+}
+input[type="range"] { accent-color: var(--accent); width: 180px; max-width: 100%; }
+
+.ds-bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line);
+}
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.figure h3 { font-size: var(--step-0); font-family: var(--font-body); font-weight: 700; }
+.figure .cap { font-size: 0.875rem; color: var(--muted); max-width: 80ch; }
+.chart-box { position: relative; overflow-x: auto; }
+.chart-box svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.legend-shapes { display: flex; flex-wrap: wrap; gap: 16px; font-size: var(--step--1); color: var(--muted); align-items: center; }
+.tooltip {
+  position: absolute; pointer-events: none; background: var(--fg); color: var(--bg);
+  font-size: var(--step--1); line-height: 1.5; padding: 8px 10px; border-radius: 6px; max-width: 280px;
+  font-variant-numeric: tabular-nums; z-index: 3;
+}
+.tooltip b { font-family: var(--font-data); font-weight: 500; }
+
+.table-box { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th { font-weight: 500; color: var(--muted); font-size: var(--step--1); background: var(--surface); }
+thead tr.top th { border-bottom: 0; padding-bottom: 0; }
+th.group { text-align: center; color: var(--fg); border-left: 1px solid var(--line); }
+td.gl, th.gl { border-left: 1px solid var(--line); }
+td:first-child, th:first-child { text-align: left; }
+td.name { font-family: var(--font-data); font-size: 0.8125rem; }
+tr:last-child td { border-bottom: 0; }
+tr.main td { background: var(--accent-soft); }
+th.sorted, td.sorted { color: var(--fg); font-weight: 700; }
+.d { font-size: 0.75rem; margin-left: 6px; font-weight: 400; }
+.d.pos { color: var(--pos); } .d.neg { color: var(--neg); } .d.zero { color: var(--muted); }
+details > summary { cursor: pointer; color: var(--accent); font-size: 0.9375rem; }
+details[open] > summary { margin-bottom: 12px; }
+.linkbtn { font: inherit; font-size: 0.9375rem; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; justify-self: start; }
+
+.method { border-top: 1px solid var(--line); padding-top: 28px; display: grid; gap: 16px; }
+.method-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; align-self: center; }
+.badge { font-size: var(--step--1); font-weight: 700; padding: 2px 10px; border-radius: 999px; letter-spacing: 0.02em; }
+.badge.good { background: var(--good-soft); color: var(--good); }
+.badge.ok { background: var(--accent-soft); color: var(--accent); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.badge.bad { background: var(--bad-soft); color: var(--bad); }
+.rule { display: grid; gap: 4px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.rule .formula { font-family: var(--font-data); font-size: 0.875rem; }
+.obs h4 { margin: 0 0 6px; font-size: var(--step-0); }
+.rank-bar { display: inline-block; height: 8px; border-radius: 0 4px 4px 0; background: var(--accent); vertical-align: middle; }
+td.bar { text-align: left; min-width: 150px; }
+footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 4px; }
+@media (prefers-reduced-motion: no-preference) { .chip, .tab, .seg { transition: opacity .15s, background .15s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">實驗報告 · 2026-10-21 · branch feat/pool-fade-memory</p>
+  <h1>Model Pool 淘汰機制實驗</h1>
+  <p class="prose">把 model pool 的淘汰規則從「看正確率」改成同時考慮記憶體，比較 6 種新機制在 2 種骨幹上的表現。重點是 pool 記憶體的 <b>peak</b>：省下多少，又付出多少正確率。</p>
+  <div class="meta">
+    <span>真實資料集 <b>electricity、insects_abrupt_balanced、insects_incremental_abrupt_reoccurring_balanced、insects_incremental_reoccurring_balanced</b></span>
+    <span>合成資料集 <b>synthetic_binary 的 recurring 子集（10 條資料流，dev 用，不可比）</b></span>
+    <span>方法 <b>38 組 preset，共 532 runs</b></span>
+    <span>commit <b class="mono">ee3e39d</b></span>
+    <span>機器 <b>Apple M5 / 24 GB；真實資料一次只跑一個 run，合成資料 3 條並行（時間僅供參考）</b></span>
+  </div>
+</header>
+
+<section aria-labelledby="h-find">
+  <h2 id="h-find">重點</h2>
+  <div class="findings">
+    <div class="finding">
+      <span class="eyebrow">peak 記憶體</span>
+      <span class="big">−54% 到 −70%</span>
+      <p>e10bft_rent_l10 在 4 個真實資料集的 pool peak（相對主方法），合成資料 −27%。density_b2 為 −59% 到 −78%。</p>
+    </div>
+    <div class="finding">
+      <span class="eyebrow">平均記憶體</span>
+      <span class="big">−34% 到 −79%</span>
+      <p>e10bft_rent_l10 與 density_b2 在 5 個資料集的平均 pool 記憶體（相對主方法）。</p>
+    </div>
+    <div class="finding">
+      <span class="eyebrow">正確率</span>
+      <span class="big">±1.5 點內</span>
+      <p>38 組相對主方法介於 −1.43 到 +1.39 點。4 個可比資料集的 Friedman p = 0.32，主方法對每個方法的 Wilcoxon（Holm 校正）p 都是 1。</p>
+    </div>
+    <div class="finding">
+      <span class="eyebrow">原因</span>
+      <span class="big">重用價值 &lt; 0</span>
+      <p>4 個真實資料集上，重用舊 model 平均都輸給新 model。e10bft 骨幹上「完全不留 pool」最多也只掉 1.19 點。</p>
+    </div>
+    <div class="finding">
+      <span class="eyebrow">推薦</span>
+      <span class="big" style="font-size:1.0625rem">e10bft_rent_l10<br>e10bft_rent_l2</span>
+      <p>λ=10 在 5 個資料集上 peak 都下降、正確率變化在 ±0.41 點內；λ=2 正確率平均排名第 1（主方法第 18）。</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-setup">
+  <h2 id="h-setup">實驗設定與指標</h2>
+  <div class="prose" style="display:grid;gap:12px">
+    <p>每種機制都是一個獨立方法，各自掛在兩種骨幹上：<b>e10bft</b>（主方法的偵測流程，只換 pool 淘汰規則）與 <b>ecpf</b>（原版 ECPF + dual ADWIN）。參考組是主方法 <code>e10bft</code>、<code>ecpf_paper</code> 與 <code>ecpf_reuse_value</code>。</p>
+    <p>正確率與 pool 指標來自 benchmark runner 的 <code>runs.csv</code> 與每個 run 的 <code>pool_metrics.json</code>、<code>pool_trace.json</code>。頁面上的 Δ、排名與綜合分數是用這些數字在頁面裡換算的，定義如下。</p>
+    <p>合成資料集有 10 條 recurring 資料流（SEA 與 Hyperplane 產生器），表格與圖 1、3、4 用的是 10 條的平均，peak 是各條 peak 的平均。它是開發用資料集，不能和文獻比較，但可以合法用來挑參數。</p>
+  </div>
+  <dl class="glossary">
+    <dt>正確率</dt><dd>prequential accuracy，整段資料流逐筆先預測再學習。</dd>
+    <dt>peak KB</dt><dd>整段資料流中，pool 裡所有 model 大小總和的最大值（只算樹本身）。下限大約是一棵 leader 樹的大小。</dd>
+    <dt>平均 KB</dt><dd>同一個總和在整段資料流上的時間加權平均。</dd>
+    <dt>Δ</dt><dd>相對主方法 <code>e10bft</code> 的變化：正確率用百分點，記憶體用百分比。</dd>
+    <dt>綜合分數</dt><dd>同時權衡正確率與記憶體，0 到 1，越高越好。每個資料集內：正確率分 = (acc − 最低) ÷ (最高 − 最低)；記憶體分 = (ln 最大 KB − ln KB) ÷ (ln 最大 KB − ln 最小 KB)；綜合分數 = (1 − w) × 正確率分 + w × 記憶體分，再對所有資料集取平均。w 可以在圖 4 調整。這是直覺排序用的經驗分數，不是統計檢定。</dd>
+    <dt>恢復正確率</dt><dd>每次 drift 警報後 500 筆的正確率。</dd>
+    <dt>後悔率</dt><dd>drift 時，最近被丟掉的 model 比 pool 裡最好的還好的比例。</dd>
+    <dt>重用價值</dt><dd>重用的舊 model 在 drift 後 500 筆比新 model 多答對幾筆，負數代表重用反而較差。</dd>
+  </dl>
+</section>
+
+<section aria-labelledby="h-charts" style="gap:20px">
+  <h2 id="h-charts">圖表</h2>
+  <div class="ds-bar controls" id="ds-tabs" role="group" aria-label="資料集（套用到圖 1 到圖 3）"></div>
+
+  <div class="figure">
+    <h3>圖 1　正確率 vs pool 記憶體</h3>
+    <p class="cap">越靠左上越好。虛線是 Pareto front（沒有其他方法同時更準又更省）。點選機制可以隱藏或顯示，滑過點看數字。</p>
+    <div class="controls" role="group" aria-label="橫軸">
+      <span class="label">橫軸</span>
+      <button type="button" class="seg" id="x-peak" data-x="peak" aria-pressed="true">peak KB</button>
+      <button type="button" class="seg" id="x-mean" data-x="mean" aria-pressed="false">平均 KB</button>
+    </div>
+    <div class="controls" id="mech-chips" role="group" aria-label="機制"></div>
+    <div class="legend-shapes">
+      <span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="var(--muted)"/></svg> e10bft 骨幹</span>
+      <span><svg width="12" height="12" aria-hidden="true"><rect x="1" y="1" width="10" height="10" rx="2" fill="var(--muted)"/></svg> ecpf 骨幹</span>
+      <span><svg width="22" height="12" aria-hidden="true"><line x1="0" y1="6" x2="22" y2="6" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/></svg> Pareto front</span>
+    </div>
+    <div class="chart-box" id="box1">
+      <svg id="chart1" viewBox="0 0 900 460" role="img" aria-label="正確率對 pool 記憶體散佈圖"></svg>
+      <div class="tooltip" id="tip1" hidden></div>
+    </div>
+    <details>
+      <summary>顯示這個資料集的完整數據表</summary>
+      <div class="table-box"><table id="full-table"></table></div>
+    </details>
+  </div>
+
+  <div class="figure">
+    <h3>圖 2　pool 記憶體隨時間變化</h3>
+    <p class="cap">每次 drift 或 leader 交換時 pool 大小都會改變，peak 就出現在這些跳升點。主方法固定顯示，另外可選兩個方法比較；圓點標出各自的 peak。</p>
+    <div class="controls">
+      <span class="label">比較 A</span><select id="sel-a" aria-label="比較方法 A"></select>
+      <span class="label">比較 B</span><select id="sel-b" aria-label="比較方法 B"></select>
+    </div>
+    <div class="legend-shapes" id="legend2"></div>
+    <p class="cap" id="tl-note" hidden></p>
+    <div class="chart-box" id="box2">
+      <svg id="chart2" viewBox="0 0 900 400" role="img" aria-label="pool 記憶體時間序列"></svg>
+      <div class="tooltip" id="tip2" hidden></div>
+    </div>
+  </div>
+
+  <div class="figure">
+    <h3>圖 3　peak 記憶體變化（相對主方法）</h3>
+    <p class="cap">往左代表 peak 比主方法小。每列右側同時列出正確率變化，方便一起看取捨。依 peak 變化由小到大排序。</p>
+    <div class="controls" role="group" aria-label="骨幹">
+      <span class="label">骨幹</span>
+      <button type="button" class="seg" id="bb-e10bft" data-bb="e10bft" aria-pressed="true">e10bft</button>
+      <button type="button" class="seg" id="bb-ecpf" data-bb="ecpf" aria-pressed="false">ecpf</button>
+    </div>
+    <div class="chart-box" id="box3">
+      <svg id="chart3" viewBox="0 0 900 500" role="img" aria-label="peak 記憶體變化長條圖"></svg>
+    </div>
+  </div>
+
+  <div class="figure">
+    <h3>圖 4　綜合分數（同時權衡正確率與記憶體）</h3>
+    <p class="cap">所有資料集的平均綜合分數，越高越好。w 越大越重視省記憶體；w = 0 只看正確率，w = 1 只看記憶體。這張圖不受上方資料集切換影響。</p>
+    <div class="controls">
+      <span class="label">記憶體用</span>
+      <button type="button" class="seg" id="m-peak" data-m="peak" aria-pressed="true">peak KB</button>
+      <button type="button" class="seg" id="m-mean" data-m="mean" aria-pressed="false">平均 KB</button>
+      <span class="label" style="margin-left:12px">w</span>
+      <input type="range" id="w" min="0" max="1" step="0.05" value="0.5" aria-label="記憶體權重 w">
+      <span class="mono" id="w-val">0.50</span>
+    </div>
+    <p class="cap">怎麼讀：同一個資料集裡，38 組的正確率最多只差 0.9 到 1.9 個百分點，peak 記憶體卻差 2.9 到 9.2 倍，所以 w 一高分數就由記憶體主導。w = 0.5 用 peak 時，第一名是 entry_f15 / f30（等於不留 pool），主方法排第 36；w ≤ 0.25 時第一名是 e10bft_rent_l2，主方法排第 14 到 16。選哪個 w，取決於願意用多少正確率換記憶體。</p>
+    <div class="chart-box" id="box4">
+      <svg id="chart4" viewBox="0 0 900 800" role="img" aria-label="綜合分數長條圖"></svg>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-methods" style="gap:40px">
+  <div style="display:grid;gap:10px">
+    <h2 id="h-methods">各方法結果</h2>
+    <p class="prose muted">每個方法的表格列出各參數在兩種骨幹上的正確率、peak KB 與平均 KB，括號內是相對主方法 <code>e10bft</code> 的變化。藍底是主方法本身。</p>
+  </div>
+  <div id="methods" style="display:grid;gap:48px"></div>
+</section>
+
+<section aria-labelledby="h-rank">
+  <h2 id="h-rank">跨資料集排名</h2>
+  <p class="prose muted">5 個資料集（含合成資料）的平均排名，1 是最好：正確率越高排名越前，記憶體越小排名越前。綜合分數沿用圖 4 的 w 與記憶體設定。資料集仍少，排名只能當參考。</p>
+  <div class="controls" role="group" aria-label="排序依據">
+    <span class="label">排序依據</span>
+    <button type="button" class="seg" id="sort-score" data-s="score" aria-pressed="true">綜合分數</button>
+    <button type="button" class="seg" id="sort-acc" data-s="acc" aria-pressed="false">正確率</button>
+    <button type="button" class="seg" id="sort-peak" data-s="peak" aria-pressed="false">peak 記憶體</button>
+    <button type="button" class="seg" id="sort-mean" data-s="mean" aria-pressed="false">平均記憶體</button>
+  </div>
+  <div class="table-box"><table id="rank-table"></table></div>
+  <button type="button" class="linkbtn" id="rank-more">顯示全部 38 組</button>
+</section>
+
+<section aria-labelledby="h-limit">
+  <h2 id="h-limit">限制與下一步</h2>
+  <div class="prose" style="display:grid;gap:16px">
+    <div class="obs">
+      <h4>關於 peak 的觀察</h4>
+      <ul>
+        <li>peak 的下限大約是一棵 leader 樹：只留 leader 的 entry_f15（e10bft 骨幹）peak 是 electricity 244 KB、insects_abrupt 1,343 KB、insects_inc_abrupt_reoc 674 KB、insects_inc_reoc 1,110 KB、合成資料 342 KB。</li>
+        <li>insects_abrupt 上幾乎所有以重用價值為基礎的方法 peak 都是 2,687 KB（−59%）。這個資料集 drift 少，差別來自共同的重用價值規則，不是各記憶體機制本身。</li>
+        <li>兩個 recurring 的 INSECTS 資料集最能看出差別：rent_l10 的 peak 是 −67% 與 −70%，density_b2 是 −78% 與 −67%。</li>
+        <li>原版規則壓不住 peak：跨資料集 peak 平均排名，主方法第 35.8、ecpf_paper 第 34.8（共 38 組）。</li>
+        <li>合成資料是唯一重用價值為正的資料集（主方法平均 +1.16，71% 的重用是正的），但每條資料流平均只有 5.5 次 drift。多數方法的正確率與主方法完全相同；壓 peak 最多的方法（rent_l10 −27%、density_b2 −39%）掉 0.14 與 0.38 點。</li>
+      </ul>
+    </div>
+    <div class="obs">
+      <h4>這次結論的限制</h4>
+      <ul>
+        <li>rent_l2、rent_l10 原本是看 report 資料集挑的。這次加入的合成資料是 dev 資料集，可以當獨立檢查：rent_l10 在合成資料上 peak −27%、正確率 −0.14 點；rent_l2 幾乎沒有變化（peak −3%，正確率 0.00）。</li>
+        <li>4 個可比資料集的 Friedman p = 0.32；加入合成資料後 p = 0.006，但這只代表 38 組的排名不完全相同，主方法對每個方法的 Wilcoxon（Holm 校正）都不顯著，不能宣稱哪個方法較準或較差。</li>
+        <li>綜合分數的 0 到 1 是相對這 38 組的最好與最差，換一組方法比較時分數會變。</li>
+        <li>程序層級的 RSS 與 RAM-Hours 會包含為了算後悔率而保留的已淘汰 model，不能拿來比 pool 記憶體；請看 pool KB 與最終 model 大小。合成資料是 3 條並行跑的，執行時間只能當參考。</li>
+      </ul>
+    </div>
+    <div class="obs">
+      <h4>建議的下一步</h4>
+      <ul>
+        <li>從 pool 的 snapshot 拿掉沒用到的 sample buffer：每個存放的 model 多帶 1 MB（electricity，8 個特徵）到 3.7 MB（INSECTS，33 個特徵），拿掉不會改變任何預測。</li>
+        <li>若以 peak 為主要目標，可以直接用「peak KB 上限」當淘汰條件（目前的上限是相對 leader 大小）。</li>
+        <li>固定 e10bft_rent_l10 與 e10bft_rent_l2，到 airlines_full、covertype_full 等較長的資料流上驗證。</li>
+        <li>用 block bootstrap 做非劣性檢定，正式回答「哪些方法沒有比主方法差」，再在其中挑 peak 最小的。</li>
+        <li>入場費改成低於新 leader 寬限分數 15（例如 1、3、8）重測。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>來源：<code>outputs/benchmark_poolfade</code>；報告 <code>outputs/benchmark_poolfade/pool_fade_20261020_222312/report.md</code> 與 <code>reports/sota_poolfade_20261020_222312/report.md</code>。</span>
+  <span>產生方式：<code>scripts/run_benchmark.py --suite pool_fade --pool-trace</code>，再由 <code>scripts/report_pool_fade.py</code> 彙整。</span>
+</footer>
+
+</div>
+
+<script>
+const DATA = __DATA__;
+const TL = __TIMELINE__;
+const NLEN = __NLEN__;
+// Stream whose pool timeline figure 2 shows, for datasets with several streams.
+const TL_STREAM = __TL_STREAM__;
+// [registry name, short label, streams, comparable to literature]
+const DATASETS = __DATASETS__;
+// Fixed categorical order; color follows the mechanism, never its rank.
+const MECHS = [
+  { id: "ecpf", name: "原版 ECPF", color: "var(--s1)" },
+  { id: "reuse_value", name: "重用價值", color: "var(--s2)" },
+  { id: "density", name: "價值密度", color: "var(--s3)" },
+  { id: "rent", name: "記憶體租金", color: "var(--s4)" },
+  { id: "entry", name: "入場費", color: "var(--s5)" },
+  { id: "freq", name: "期望價值密度", color: "var(--s6)" },
+  { id: "decay", name: "時間衰減", color: "var(--s7)" },
+  { id: "subst", name: "替代品", color: "var(--s8)" },
+];
+const MECH = Object.fromEntries(MECHS.map(m => [m.id, m]));
+
+const METHOD_TEXT = {
+  ecpf: {
+    plain: "看「最近有沒有被用到」。主方法 e10bft 用的就是這個規則。",
+    formula: "leader 每次 drift +15 分；閒置 −1 分；分數 ≤ 0 就淘汰；pool 上限 10 個",
+    params: "無參數（presets：e10bft、ecpf_paper）",
+    badge: ["ok", "基準"],
+    obs: [
+      "peak 與平均記憶體幾乎都是最大的一群：跨資料集 peak 平均排名，主方法第 35.8、ecpf_paper 第 34.8（共 38 組）；ecpf_paper 在 insects_abrupt 比主方法還高 23%。",
+      "只看最近有沒有被用，不看效果也不看大小，所以留下很多其實幫不上忙的 model。",
+    ],
+  },
+  reuse_value: {
+    plain: "看「被重用時有沒有幫到忙」，是這次所有新機制的共同基礎。",
+    formula: "重用時 + (重用 model 答對數 − 新 model 答對數)；閒置每次 drift −1 分",
+    params: "無參數（presets：e10bft_reuse_value、ecpf_reuse_value）",
+    badge: ["ok", "參考組"],
+    obs: [
+      "e10bft 骨幹 peak：electricity −3%、insects_abrupt −59%、兩個 recurring INSECTS −20% 與 −18%、合成資料 −3%。對 peak 的效果不穩定。",
+      "正確率與主方法差在 ±0.5 點內，在兩個 recurring INSECTS 上都略高（+0.44、+0.47）。不看大小，所以大樹和小樹扣分一樣。",
+    ],
+  },
+  density: {
+    plain: "看「CP 值」：每 KB 記憶體換到多少重用價值，記憶體超過上限就丟 CP 值最低的。",
+    formula: "淘汰順序 = 分數 ÷ KB（分數 ≤ 0 最先）；pool 總 KB ≤ b × leader KB",
+    params: "b = 2、4、8",
+    badge: ["ok", "可行，看資料而定"],
+    obs: [
+      "b=2 是壓 peak 最強的可用設定：e10bft 骨幹 peak −39%（合成）到 −78%，electricity 正確率還 +0.77 點。",
+      "但在 insects_inc_abrupt_reoc 上掉 1.13 點，後悔率升到 0.50，代表丟掉了之後還用得到的 model；在 insects_inc_reoc 與合成資料上也略低（−0.12、−0.38）。",
+      "b=4 比較平衡：peak −21% 到 −62%，正確率變化 −0.50 到 +0.55 點。b=8 上限太寬，結果接近重用價值本身。",
+    ],
+  },
+  rent: {
+    plain: "看「付不付得起房租」：越大的 model 每次 drift 付越多，要常常幫上忙才留得住。",
+    formula: "閒置每次 drift 扣 λ × (這個 model 的 KB ÷ pool 平均 KB)",
+    params: "λ = 1、2、5、10（λ=1 時平均房租等於重用價值的固定扣分）",
+    badge: ["good", "推薦"],
+    obs: [
+      "e10bft_rent_l10：5 個資料集 peak 都下降（真實資料 −54% 到 −70%，合成 −27%），平均記憶體 −34% 到 −77%，正確率變化在 −0.32 到 +0.41 點之間，是最均衡的取捨；peak 的 Pareto front 上 5 次出現 4 次。",
+      "e10bft_rent_l2：跨資料集正確率平均排名第 1（7.7，主方法 18.0），4 個真實資料集 peak −37% 到 −59%；但在合成資料上幾乎沒有作用（peak −3%）。",
+      "λ 越大 peak 越小；λ=1 幾乎等同重用價值。ecpf 骨幹上 λ=10 的 peak 也有 −34% 到 −67%。",
+    ],
+  },
+  entry: {
+    plain: "存進 pool 時一次付「入場費」，越大付越多，之後照重用價值的規則走。",
+    formula: "第一次被存放時扣 λ × (KB ÷ 平均 KB)；之後閒置每次 drift −1 分",
+    params: "λ = 5、15、30",
+    badge: ["bad", "設計需修"],
+    obs: [
+      "f15、f30 的入場費 ≥ 新 leader 的寬限分數 15，model 一存進去就被淘汰，pool 永遠只有 leader 一個，兩組結果完全相同。peak −65% 到 −89%，就是「只留一棵樹」的下限。",
+      "它意外變成「完全不留 pool」的對照組：e10bft 骨幹在 4 個資料集掉 0.61 到 1.19 點（最多是 insects_inc_abrupt_reoc），electricity 反而 +0.07。pool 的價值確實存在，但不大。",
+      "f5 的結果和重用價值幾乎一樣。要重測，入場費要設在 15 以下。",
+    ],
+  },
+  freq: {
+    plain: "看「多常被用到 × 每次幫多少 ÷ 大小」，很少被重用的大 model 先丟。",
+    formula: "淘汰順序 = (重用次數 + 1) ÷ (存活 drift 數 + 2) × 分數 ÷ KB；pool 總 KB ≤ b × leader KB",
+    params: "b = 2、4、8",
+    badge: ["warn", "無額外效果"],
+    obs: [
+      "結果和價值密度幾乎一樣：e10bft 骨幹 b=4 的正確率在 5 個資料集上都與 density_b4 完全相同，b=2 的 peak 在 4 個資料集上與 density_b2 相同。",
+      "原因是重用次數很少、重用價值大多為負，頻率這一項分不出 model 的差別。",
+    ],
+  },
+  decay: {
+    plain: "看「最近的表現」：舊的功勞每次 drift 打折，慢慢淡掉。",
+    formula: "閒置分數每次 drift 先乘 γ，再扣 1 分",
+    params: "γ = 0.5、0.8、0.95",
+    badge: ["warn", "普通"],
+    obs: [
+      "γ=0.5 的 peak 在真實資料 −44% 到 −59%（合成只有 −4%），正確率平均排名第 3；但兩個 recurring INSECTS 方向相反：insects_inc_abrupt_reoc −0.50 點、insects_inc_reoc +0.75 點。",
+      "γ=0.95 幾乎等同重用價值。ecpf 骨幹 γ=0.5 在 electricity 比 ecpf_reuse_value 高 0.71 點，但其他資料集沒有一致的好處。",
+    ],
+  },
+  subst: {
+    plain: "看「丟掉它會損失多少」：重用價值改成跟「新 model 和 pool 裡第二好的 model 中較好的那個」比。",
+    formula: "重用價值 = 重用 model 答對數 − max(新 model 答對數, 第二好 model 答對數)",
+    params: "無參數",
+    badge: ["warn", "普通"],
+    obs: [
+      "electricity 的 peak 和主方法一樣（0%），insects_inc_abrupt_reoc −43%、insects_inc_reoc −18%、合成 −3%；壓 peak 的效果有限。",
+      "需要在 drift 後多跑一個 model，pool 操作時間最高（electricity 12.4 秒，主方法 9.2 秒），electricity 與 insects_inc_reoc 的總執行時間都多約 21% 到 22%。",
+    ],
+  },
+};
+
+const MAIN = "e10bft";
+const byKey = {};
+for (const r of DATA) byKey[r.dataset + "|" + r.preset] = r;
+const PRESETS = [...new Set(DATA.map(r => r.preset))];
+const mechOf = p => DATA.find(r => r.preset === p).mechanism;
+
+const state = { ds: DATASETS[0][0], x: "peak", hidden: new Set(), A: "e10bft_rent_l10", B: "e10bft_density_b2",
+  bb: "e10bft", w: 0.5, mem: "peak", sort: "score", all: false };
+try { const s = localStorage.getItem("poolfade.ds"); if (s && DATASETS.some(d => d[0] === s)) state.ds = s; } catch (e) {}
+
+const fmtPct = v => (v * 100).toFixed(2) + "%";
+const fmtKb = v => v == null ? "–" : Math.round(v).toLocaleString("en-US");
+const memOf = (r, k) => k === "peak" ? r.kb_peak : r.kb;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function dAcc(v, base) { return (v - base) * 100; }
+function dKb(v, base) { return (v - base) / base * 100; }
+function deltaSpan(d, kind) {
+  if (d == null || !isFinite(d)) return "";
+  const txt = kind === "acc" ? (d > 0 ? "+" : "") + d.toFixed(2) : (d > 0 ? "+" : "") + d.toFixed(0) + "%";
+  const good = kind === "acc" ? d > 0.005 : d < -0.5, bad = kind === "acc" ? d < -0.005 : d > 0.5;
+  return `<span class="d ${good ? "pos" : bad ? "neg" : "zero"}">(${txt})</span>`;
+}
+function niceTicks(lo, hi, n) {
+  const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+  const start = Math.ceil(lo / step - 1e-9) * step, out = [];
+  for (let v = start; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6));
+  return out;
+}
+function pareto(rows, key) {
+  return rows.filter(r => !rows.some(o => o.acc >= r.acc && memOf(o, key) <= memOf(r, key)
+    && (o.acc > r.acc || memOf(o, key) < memOf(r, key))));
+}
+function placeTip(tip, box, cx, cy) {
+  const pb = box.getBoundingClientRect();
+  let left = cx - pb.left + box.scrollLeft + 16, top = cy - pb.top + 12;
+  if (left + 280 > box.scrollLeft + pb.width) left = cx - pb.left + box.scrollLeft - 290;
+  tip.style.left = Math.max(0, left) + "px"; tip.style.top = Math.max(0, top) + "px";
+}
+
+/* ---------- figure 1: scatter ---------- */
+function drawChart1() {
+  const svg = document.getElementById("chart1"), key = state.x;
+  const rows = DATA.filter(r => r.dataset === state.ds);
+  const vis = rows.filter(r => !state.hidden.has(r.mechanism));
+  const W = 900, H = 460, m = { l: 64, r: 24, t: 20, b: 52 };
+  const xs = rows.map(r => memOf(r, key)), ys = rows.map(r => r.acc * 100);
+  const xMax = Math.max(...xs) * 1.06, xMin = 0;
+  const yPad = (Math.max(...ys) - Math.min(...ys)) * 0.12 || 0.5;
+  const yMin = Math.min(...ys) - yPad, yMax = Math.max(...ys) + yPad;
+  const X = v => m.l + (v - xMin) / (xMax - xMin) * (W - m.l - m.r);
+  const Y = v => H - m.b - (v - yMin) / (yMax - yMin) * (H - m.t - m.b);
+  let s = "";
+  for (const t of niceTicks(yMin, yMax, 6)) {
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)" stroke-width="1"/>`;
+    s += `<text x="${m.l - 10}" y="${Y(t) + 4}" text-anchor="end" font-size="12" fill="var(--muted)">${t.toFixed(1)}</text>`;
+  }
+  for (const t of niceTicks(xMin, xMax, 7)) {
+    s += `<line x1="${X(t)}" x2="${X(t)}" y1="${H - m.b}" y2="${H - m.b + 5}" stroke="var(--muted)" stroke-width="1"/>`;
+    s += `<text x="${X(t)}" y="${H - m.b + 20}" text-anchor="middle" font-size="12" fill="var(--muted)">${t.toLocaleString("en-US")}</text>`;
+  }
+  s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--muted)" stroke-width="1"/>`;
+  s += `<text x="${(m.l + W - m.r) / 2}" y="${H - 10}" text-anchor="middle" font-size="13" fill="var(--fg)">${key === "peak" ? "pool peak 記憶體（KB）" : "平均 pool 記憶體（KB，時間加權）"}</text>`;
+  s += `<text transform="translate(16 ${(m.t + H - m.b) / 2}) rotate(-90)" text-anchor="middle" font-size="13" fill="var(--fg)">正確率（%）</text>`;
+  const front = pareto(vis, key).sort((a, b) => memOf(a, key) - memOf(b, key));
+  if (front.length > 1) s += `<polyline points="${front.map(r => X(memOf(r, key)) + "," + Y(r.acc * 100)).join(" ")}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 5"/>`;
+  const main = byKey[state.ds + "|" + MAIN];
+  for (const r of vis) {
+    const cx = X(memOf(r, key)), cy = Y(r.acc * 100), c = MECH[r.mechanism].color;
+    const ring = r.preset === MAIN ? "var(--main)" : "var(--surface)";
+    const shape = r.backbone === "ecpf"
+      ? `<rect x="${cx - 6}" y="${cy - 6}" width="12" height="12" rx="2" fill="${c}" stroke="${ring}" stroke-width="2"/>`
+      : `<circle cx="${cx}" cy="${cy}" r="6.5" fill="${c}" stroke="${ring}" stroke-width="2"/>`;
+    s += `<g class="pt" tabindex="0" data-p="${esc(r.preset)}" aria-label="${esc(r.preset)}"><circle cx="${cx}" cy="${cy}" r="14" fill="transparent"/>${shape}</g>`;
+  }
+  if (!state.hidden.has(main.mechanism)) s += `<text x="${X(memOf(main, key)) - 12}" y="${Y(main.acc * 100) - 12}" text-anchor="end" font-size="12" fill="var(--fg)" font-weight="700">主方法 e10bft</text>`;
+  const labelled = [];
+  for (const r of front.filter(r => r.preset !== MAIN)) {
+    const lx = X(memOf(r, key)) + 10, ly = Y(r.acc * 100) + 16;
+    if (labelled.some(([x, y]) => Math.abs(x - lx) < 120 && Math.abs(y - ly) < 13)) continue;
+    labelled.push([lx, ly]);
+    s += `<text x="${lx}" y="${ly}" font-size="11" fill="var(--muted)">${esc(r.preset)}</text>`;
+  }
+  svg.innerHTML = s;
+  const tip = document.getElementById("tip1"), box = document.getElementById("box1");
+  svg.querySelectorAll(".pt").forEach(g => {
+    const r = byKey[state.ds + "|" + g.dataset.p];
+    const show = ev => {
+      tip.innerHTML = `<b>${esc(r.preset)}</b><br>${MECH[r.mechanism].name} · ${r.backbone} 骨幹<br>
+        正確率 ${fmtPct(r.acc)}（${dAcc(r.acc, main.acc) >= 0 ? "+" : ""}${dAcc(r.acc, main.acc).toFixed(2)} 點）<br>
+        peak ${fmtKb(r.kb_peak)} KB（${dKb(r.kb_peak, main.kb_peak).toFixed(0)}%）· 平均 ${fmtKb(r.kb)} KB<br>
+        平均 ${r.slots.toFixed(2)} 個 model · 恢復正確率 ${r.rec == null ? "–" : fmtPct(r.rec)} · 後悔率 ${r.regret == null ? "–" : r.regret.toFixed(2)}`;
+      tip.hidden = false;
+      const bb = g.getBoundingClientRect();
+      placeTip(tip, box, bb.left + bb.width / 2, bb.top);
+    };
+    g.addEventListener("mouseenter", show); g.addEventListener("focus", show);
+    g.addEventListener("mouseleave", () => tip.hidden = true); g.addEventListener("blur", () => tip.hidden = true);
+  });
+  drawFullTable();
+}
+
+function drawFullTable() {
+  const rows = DATA.filter(r => r.dataset === state.ds).sort((a, b) =>
+    MECHS.findIndex(m => m.id === a.mechanism) - MECHS.findIndex(m => m.id === b.mechanism) || a.backbone.localeCompare(b.backbone) || a.preset.localeCompare(b.preset, "en", { numeric: true }));
+  const main = byKey[state.ds + "|" + MAIN];
+  let h = `<thead><tr><th>preset</th><th>正確率</th><th>kappa_m</th><th>peak KB</th><th>平均 KB</th><th>model 數</th><th>恢復正確率</th><th>後悔率</th><th>淘汰（衰退/上限/記憶體/合併）</th><th>重用價值</th><th>最終 model MB</th><th>執行秒數</th></tr></thead><tbody>`;
+  for (const r of rows) {
+    const same = r.preset === MAIN;
+    h += `<tr class="${same ? "main" : ""}"><td class="name">${esc(r.preset)}</td>
+      <td>${fmtPct(r.acc)}${same ? "" : deltaSpan(dAcc(r.acc, main.acc), "acc")}</td><td>${r.kappa_m.toFixed(4)}</td>
+      <td>${fmtKb(r.kb_peak)}${same ? "" : deltaSpan(dKb(r.kb_peak, main.kb_peak), "kb")}</td>
+      <td>${fmtKb(r.kb)}${same ? "" : deltaSpan(dKb(r.kb, main.kb), "kb")}</td>
+      <td>${r.slots.toFixed(2)}</td><td>${r.rec == null ? "–" : fmtPct(r.rec)}</td><td>${r.regret == null ? "–" : r.regret.toFixed(3)}</td>
+      <td>${r.ev.join(" / ")}</td><td>${r.rv == null ? "–" : r.rv.toFixed(2)}</td><td>${r.model_mb == null ? "–" : r.model_mb.toFixed(2)}</td><td>${r.runtime.toFixed(1)}</td></tr>`;
+  }
+  document.getElementById("full-table").innerHTML = h + "</tbody>";
+}
+
+/* ---------- figure 2: pool memory over time ---------- */
+function drawChart2() {
+  const svg = document.getElementById("chart2"), N = NLEN[state.ds];
+  const lines = [
+    { p: MAIN, color: "var(--main)", dash: "", label: "主方法 e10bft" },
+    { p: state.A, color: MECH[mechOf(state.A)].color, dash: "", label: "A · " + state.A },
+    { p: state.B, color: MECH[mechOf(state.B)].color, dash: "7 4", label: "B · " + state.B },
+  ].filter((l, i, arr) => arr.findIndex(o => o.p === l.p) === i);
+  const series = lines.map(l => ({ ...l, pts: TL[state.ds + "|" + l.p] || [] }));
+  const W = 900, H = 400, m = { l: 70, r: 24, t: 24, b: 52 };
+  const yMax = Math.max(...series.flatMap(s => s.pts.map(p => p[2]))) * 1.1;
+  const X = v => m.l + v / N * (W - m.l - m.r), Y = v => H - m.b - v / yMax * (H - m.t - m.b);
+  let s = "";
+  for (const t of niceTicks(0, yMax, 6)) {
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)" stroke-width="1"/>`;
+    s += `<text x="${m.l - 10}" y="${Y(t) + 4}" text-anchor="end" font-size="12" fill="var(--muted)">${t.toLocaleString("en-US")}</text>`;
+  }
+  for (const t of niceTicks(0, N, 8)) {
+    s += `<line x1="${X(t)}" x2="${X(t)}" y1="${H - m.b}" y2="${H - m.b + 5}" stroke="var(--muted)" stroke-width="1"/>`;
+    s += `<text x="${X(t)}" y="${H - m.b + 20}" text-anchor="middle" font-size="12" fill="var(--muted)">${t.toLocaleString("en-US")}</text>`;
+  }
+  s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--muted)" stroke-width="1"/>`;
+  s += `<text x="${(m.l + W - m.r) / 2}" y="${H - 10}" text-anchor="middle" font-size="13" fill="var(--fg)">資料流位置（第幾筆）</text>`;
+  s += `<text transform="translate(16 ${(m.t + H - m.b) / 2}) rotate(-90)" text-anchor="middle" font-size="13" fill="var(--fg)">pool 記憶體（KB）</text>`;
+  const peaks = [];
+  for (const sr of series) {
+    if (!sr.pts.length) continue;
+    let d = `M${X(sr.pts[0][0]).toFixed(1)},${Y(sr.pts[0][2]).toFixed(1)}`;
+    for (let i = 1; i < sr.pts.length; i++) d += `H${X(sr.pts[i][0]).toFixed(1)}V${Y(sr.pts[i][2]).toFixed(1)}`;
+    d += `H${X(N).toFixed(1)}`;
+    s += `<path d="${d}" fill="none" stroke="${sr.color}" stroke-width="2" stroke-dasharray="${sr.dash}" stroke-linejoin="round"/>`;
+    const pk = sr.pts.reduce((a, b) => b[2] > a[2] ? b : a);
+    peaks.push({ sr, pk });
+  }
+  peaks.sort((a, b) => b.pk[2] - a.pk[2]);
+  const used = [];
+  for (const { sr, pk } of peaks) {
+    const cx = X(pk[0]), cy = Y(pk[2]);
+    s += `<circle cx="${cx}" cy="${cy}" r="5" fill="${sr.color}" stroke="var(--surface)" stroke-width="2"/>`;
+    let ly = cy - 10;
+    while (used.some(u => Math.abs(u - ly) < 15)) ly += 15;
+    used.push(ly);
+    const anchor = cx > W - 220 ? "end" : "start", lx = anchor === "end" ? cx - 8 : cx + 8;
+    s += `<text x="${lx}" y="${ly}" text-anchor="${anchor}" font-size="11" fill="var(--fg)">peak ${fmtKb(pk[2])} KB</text>`;
+  }
+  s += `<line id="xhair" x1="0" x2="0" y1="${m.t}" y2="${H - m.b}" stroke="var(--muted)" stroke-width="1" visibility="hidden"/>`;
+  s += `<rect id="hit2" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent"/>`;
+  svg.innerHTML = s;
+  const note = document.getElementById("tl-note"), stream = TL_STREAM[state.ds];
+  note.hidden = !stream;
+  if (stream) note.textContent = `這個資料集有 ${DATASETS.find(d => d[0] === state.ds)[2]} 條資料流，這張圖只畫其中一條：${stream}。其他圖表與表格是所有資料流的平均。`;
+  document.getElementById("legend2").innerHTML = series.map(sr =>
+    `<span><svg width="24" height="12" aria-hidden="true"><line x1="0" y1="6" x2="24" y2="6" stroke="${sr.color}" stroke-width="2" stroke-dasharray="${sr.dash}"/></svg> <span class="mono">${esc(sr.label)}</span></span>`).join("");
+  const tip = document.getElementById("tip2"), box = document.getElementById("box2"), hit = svg.querySelector("#hit2"), xh = svg.querySelector("#xhair");
+  const valueAt = (pts, t) => { let lo = 0, hi = pts.length - 1, ans = pts[0]; while (lo <= hi) { const mid = (lo + hi) >> 1; if (pts[mid][0] <= t) { ans = pts[mid]; lo = mid + 1; } else hi = mid - 1; } return ans; };
+  hit.addEventListener("pointermove", ev => {
+    const r = svg.getBoundingClientRect(), vx = (ev.clientX - r.left) / r.width * W;
+    const t = Math.max(0, Math.min(N, (vx - m.l) / (W - m.l - m.r) * N));
+    xh.setAttribute("x1", X(t)); xh.setAttribute("x2", X(t)); xh.setAttribute("visibility", "visible");
+    tip.innerHTML = `<b>第 ${Math.round(t).toLocaleString("en-US")} 筆</b><br>` + series.map(sr => {
+      if (!sr.pts.length) return "";
+      const v = valueAt(sr.pts, t);
+      return `<span class="mono">${esc(sr.p)}</span>：${fmtKb(v[2])} KB · ${v[1]} 個 model`;
+    }).join("<br>");
+    tip.hidden = false; placeTip(tip, box, ev.clientX, ev.clientY - 40);
+  });
+  hit.addEventListener("pointerleave", () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); });
+}
+
+/* ---------- figure 3: peak change bars ---------- */
+function drawChart3() {
+  const svg = document.getElementById("chart3"), main = byKey[state.ds + "|" + MAIN];
+  const rows = DATA.filter(r => r.dataset === state.ds && r.backbone === state.bb && r.preset !== MAIN)
+    .map(r => ({ r, d: dKb(r.kb_peak, main.kb_peak), a: dAcc(r.acc, main.acc) })).sort((x, y) => x.d - y.d || y.a - x.a);
+  const rowH = 24, m = { l: 170, r: 150, t: 34, b: 36 }, W = 900, H = m.t + m.b + rowH * rows.length;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const lo = Math.min(-100, ...rows.map(x => x.d)), hi = Math.max(20, ...rows.map(x => x.d));
+  const X = v => m.l + (v - lo) / (hi - lo) * (W - m.l - m.r);
+  let s = "";
+  for (const t of niceTicks(lo, hi, 7)) {
+    s += `<line x1="${X(t)}" x2="${X(t)}" y1="${m.t - 6}" y2="${H - m.b}" stroke="var(--line)" stroke-width="1"/>`;
+    s += `<text x="${X(t)}" y="${H - m.b + 18}" text-anchor="middle" font-size="12" fill="var(--muted)">${t > 0 ? "+" : ""}${t}%</text>`;
+  }
+  s += `<line x1="${X(0)}" x2="${X(0)}" y1="${m.t - 6}" y2="${H - m.b}" stroke="var(--fg)" stroke-width="1.5"/>`;
+  s += `<text x="${X(0)}" y="${m.t - 12}" text-anchor="middle" font-size="12" fill="var(--fg)">主方法 peak ${fmtKb(main.kb_peak)} KB</text>`;
+  s += `<text x="${W - m.r + 12}" y="${m.t - 12}" font-size="12" fill="var(--muted)">正確率變化</text>`;
+  rows.forEach((x, i) => {
+    const y = m.t + i * rowH, cy = y + rowH / 2, c = MECH[x.r.mechanism].color;
+    const x0 = X(Math.min(0, x.d)), x1 = X(Math.max(0, x.d)), w = Math.max(2, x1 - x0);
+    s += `<text x="${m.l - 10}" y="${cy + 4}" text-anchor="end" font-size="12" font-family="var(--font-data)" fill="var(--fg)">${esc(x.r.preset)}</text>`;
+    s += `<rect x="${x0}" y="${cy - 7}" width="${w}" height="14" rx="4" fill="${c}"><title>${esc(x.r.preset)}: peak ${fmtKb(x.r.kb_peak)} KB (${x.d.toFixed(0)}%), 正確率 ${x.a >= 0 ? "+" : ""}${x.a.toFixed(2)} 點</title></rect>`;
+    const tx = x.d < 0 ? x0 - 6 : x1 + 6;
+    s += `<text x="${tx}" y="${cy + 4}" text-anchor="${x.d < 0 ? "end" : "start"}" font-size="11" fill="var(--muted)">${x.d > 0 ? "+" : ""}${x.d.toFixed(0)}%</text>`;
+    const ac = x.a > 0.005 ? "var(--pos)" : x.a < -0.005 ? "var(--neg)" : "var(--muted)";
+    s += `<text x="${W - m.r + 12}" y="${cy + 4}" font-size="12" font-family="var(--font-data)" fill="${ac}">${x.a >= 0 ? "+" : ""}${x.a.toFixed(2)} 點</text>`;
+  });
+  svg.innerHTML = s;
+}
+
+/* ---------- scoring & ranks ---------- */
+function scores(w, key) {
+  const out = Object.fromEntries(PRESETS.map(p => [p, 0]));
+  for (const [ds] of DATASETS) {
+    const rows = DATA.filter(r => r.dataset === ds);
+    const aMin = Math.min(...rows.map(r => r.acc)), aMax = Math.max(...rows.map(r => r.acc));
+    const kMin = Math.log(Math.min(...rows.map(r => memOf(r, key)))), kMax = Math.log(Math.max(...rows.map(r => memOf(r, key))));
+    for (const r of rows) {
+      const A = aMax > aMin ? (r.acc - aMin) / (aMax - aMin) : 1;
+      const M = kMax > kMin ? (kMax - Math.log(memOf(r, key))) / (kMax - kMin) : 1;
+      out[r.preset] += ((1 - w) * A + w * M) / DATASETS.length;
+    }
+  }
+  return out;
+}
+function avgRanks(valueOf, higherBetter) {
+  const out = Object.fromEntries(PRESETS.map(p => [p, 0]));
+  for (const [ds] of DATASETS) {
+    const rows = DATA.filter(r => r.dataset === ds).map(r => ({ p: r.preset, v: valueOf(r) }));
+    rows.sort((a, b) => higherBetter ? b.v - a.v : a.v - b.v);
+    let i = 0;
+    while (i < rows.length) {
+      let j = i; while (j + 1 < rows.length && rows[j + 1].v === rows[i].v) j++;
+      const rk = (i + j) / 2 + 1;
+      for (let k = i; k <= j; k++) out[rows[k].p] += rk / DATASETS.length;
+      i = j + 1;
+    }
+  }
+  return out;
+}
+const RANK_ACC = avgRanks(r => r.acc, true);
+const RANK_PEAK = avgRanks(r => r.kb_peak, false);
+const RANK_MEAN = avgRanks(r => r.kb, false);
+function paretoCount(key) {
+  const out = Object.fromEntries(PRESETS.map(p => [p, 0]));
+  for (const [ds] of DATASETS) for (const r of pareto(DATA.filter(x => x.dataset === ds), key)) out[r.preset] += 1;
+  return out;
+}
+
+/* ---------- figure 4: combined score ---------- */
+function drawChart4() {
+  const svg = document.getElementById("chart4"), sc = scores(state.w, state.mem);
+  const rows = PRESETS.map(p => ({ p, v: sc[p], m: mechOf(p) })).sort((a, b) => b.v - a.v);
+  const rowH = 20, m = { l: 170, r: 60, t: 16, b: 34 }, W = 900, H = m.t + m.b + rowH * rows.length;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const X = v => m.l + v * (W - m.l - m.r);
+  let s = "";
+  for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+    s += `<line x1="${X(t)}" x2="${X(t)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--line)" stroke-width="1"/>`;
+    s += `<text x="${X(t)}" y="${H - m.b + 18}" text-anchor="middle" font-size="12" fill="var(--muted)">${t.toFixed(2)}</text>`;
+  }
+  rows.forEach((x, i) => {
+    const cy = m.t + i * rowH + rowH / 2, isMain = x.p === MAIN;
+    s += `<text x="${m.l - 10}" y="${cy + 4}" text-anchor="end" font-size="12" font-family="var(--font-data)" fill="var(--fg)" font-weight="${isMain ? 700 : 400}">${esc(x.p)}${isMain ? "（主方法）" : ""}</text>`;
+    s += `<rect x="${X(0)}" y="${cy - 6}" width="${Math.max(2, X(x.v) - X(0))}" height="12" rx="4" fill="${MECH[x.m].color}" stroke="${isMain ? "var(--main)" : "none"}" stroke-width="${isMain ? 2 : 0}"/>`;
+    s += `<text x="${X(x.v) + 6}" y="${cy + 4}" font-size="11" fill="var(--muted)">${x.v.toFixed(3)}</text>`;
+  });
+  svg.innerHTML = s;
+  document.getElementById("w-val").textContent = state.w.toFixed(2);
+}
+
+/* ---------- ranking table ---------- */
+function drawRanks() {
+  const sc = scores(state.w, state.mem), pc = paretoCount(state.mem);
+  const rows = PRESETS.map(p => ({ p, acc: RANK_ACC[p], peak: RANK_PEAK[p], mean: RANK_MEAN[p], score: sc[p], par: pc[p] }));
+  const by = state.sort;
+  rows.sort((a, b) => by === "score" ? b.score - a.score : a[by] - b[by]);
+  const refs = ["e10bft", "ecpf_paper", "ecpf_reuse_value", "e10bft_reuse_value"];
+  const shown = state.all ? rows : rows.filter((r, i) => i < 10 || refs.includes(r.p));
+  const cls = k => by === k ? "sorted" : "";
+  const barVal = r => by === "score" ? r.score : (39 - r[by]) / 38;
+  let h = `<thead><tr><th>#</th><th>preset</th><th class="${cls("score")}">綜合分數</th><th class="${cls("acc")}">正確率排名</th><th class="${cls("peak")}">peak 排名</th><th class="${cls("mean")}">平均記憶體排名</th><th>Pareto 次數（${state.mem === "peak" ? "peak" : "平均"}）</th><th aria-hidden="true"></th></tr></thead><tbody>`;
+  for (const r of shown) {
+    const pos = rows.indexOf(r) + 1;
+    h += `<tr class="${r.p === MAIN ? "main" : ""}"><td>${pos}</td><td class="name">${esc(r.p)}</td>
+      <td class="${cls("score")}">${r.score.toFixed(3)}</td><td class="${cls("acc")}">${r.acc.toFixed(2)}</td>
+      <td class="${cls("peak")}">${r.peak.toFixed(2)}</td><td class="${cls("mean")}">${r.mean.toFixed(2)}</td>
+      <td>${r.par} / ${DATASETS.length}</td><td class="bar"><span class="rank-bar" style="width:${Math.max(3, barVal(r) * 140)}px;background:${MECH[mechOf(r.p)].color}"></span></td></tr>`;
+  }
+  document.getElementById("rank-table").innerHTML = h + "</tbody>";
+  document.getElementById("rank-more").textContent = state.all ? "只顯示前 10 名與參考組" : "顯示全部 38 組";
+}
+
+/* ---------- method sections ---------- */
+function methodTable(mech) {
+  const presets = [...new Set(DATA.filter(r => r.mechanism === mech).map(r => r.preset))]
+    .sort((a, b) => (a.startsWith("e10bft") ? 0 : 1) - (b.startsWith("e10bft") ? 0 : 1) || a.localeCompare(b, "en", { numeric: true }));
+  let h = `<thead><tr class="top"><th></th>${DATASETS.map(d => `<th class="group" colspan="3">${d[1]}</th>`).join("")}</tr>
+    <tr><th>preset</th>${DATASETS.map(() => '<th class="gl">正確率</th><th>peak KB</th><th>平均 KB</th>').join("")}</tr></thead><tbody>`;
+  for (const p of presets) {
+    h += `<tr class="${p === MAIN ? "main" : ""}"><td class="name">${esc(p)}</td>`;
+    for (const [ds] of DATASETS) {
+      const r = byKey[ds + "|" + p], base = byKey[ds + "|" + MAIN], same = p === MAIN;
+      h += `<td class="gl">${fmtPct(r.acc)}${same ? "" : deltaSpan(dAcc(r.acc, base.acc), "acc")}</td>`;
+      h += `<td>${fmtKb(r.kb_peak)}${same ? "" : deltaSpan(dKb(r.kb_peak, base.kb_peak), "kb")}</td>`;
+      h += `<td>${fmtKb(r.kb)}${same ? "" : deltaSpan(dKb(r.kb, base.kb), "kb")}</td>`;
+    }
+    h += "</tr>";
+  }
+  return h + "</tbody>";
+}
+function buildMethods() {
+  document.getElementById("methods").innerHTML = MECHS.map((m, i) => {
+    const t = METHOD_TEXT[m.id];
+    return `<article class="method" id="m-${m.id}">
+      <div class="method-head">
+        <span class="swatch" style="background:${m.color}" aria-hidden="true"></span>
+        <h3>${i === 0 ? "" : "#" + i + " "}${m.name} <span class="mono muted" style="font-size:0.8125rem;font-weight:400">${m.id}</span></h3>
+        <span class="badge ${t.badge[0]}">${t.badge[1]}</span>
+      </div>
+      <p class="prose">${t.plain}</p>
+      <div class="rule prose"><span class="formula">${t.formula}</span><span class="muted" style="font-size:var(--step--1)">參數：${t.params}</span></div>
+      <div class="table-box"><table>${methodTable(m.id)}</table></div>
+      <div class="obs prose"><h4>觀察</h4><ul>${t.obs.map(o => `<li>${o}</li>`).join("")}</ul></div>
+    </article>`;
+  }).join("");
+}
+
+/* ---------- controls ---------- */
+function pressGroup(ids, active) { ids.forEach(id => { const el = document.getElementById(id); el.setAttribute("aria-pressed", String(id === active)); }); }
+function drawDataset() { drawChart1(); drawChart2(); drawChart3(); }
+function buildControls() {
+  const tabs = document.getElementById("ds-tabs");
+  tabs.innerHTML = '<span class="label">資料集</span>' + DATASETS.map(([id, label, , comparable]) =>
+    `<button type="button" class="tab" id="tab-${label}" data-ds="${id}" aria-pressed="${id === state.ds}">${label}${comparable ? "" : "（合成）"}</button>`).join("");
+  tabs.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+    state.ds = b.dataset.ds;
+    try { localStorage.setItem("poolfade.ds", state.ds); } catch (e) {}
+    tabs.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-pressed", String(t === b)));
+    drawDataset();
+  }));
+  const chips = document.getElementById("mech-chips");
+  chips.innerHTML = MECHS.map(m => `<button type="button" class="chip" id="chip-${m.id}" data-m="${m.id}" aria-pressed="true"><i style="background:${m.color}"></i>${m.name}</button>`).join("");
+  chips.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+    const id = b.dataset.m;
+    if (state.hidden.has(id)) state.hidden.delete(id); else state.hidden.add(id);
+    b.setAttribute("aria-pressed", String(!state.hidden.has(id)));
+    drawChart1();
+  }));
+  ["x-peak", "x-mean"].forEach(id => document.getElementById(id).addEventListener("click", e => {
+    state.x = e.currentTarget.dataset.x; pressGroup(["x-peak", "x-mean"], id); drawChart1();
+  }));
+  const opts = PRESETS.filter(p => p !== MAIN).sort((a, b) => a.localeCompare(b, "en", { numeric: true }))
+    .map(p => `<option value="${p}">${p}</option>`).join("");
+  const sa = document.getElementById("sel-a"), sb = document.getElementById("sel-b");
+  sa.innerHTML = opts; sb.innerHTML = opts; sa.value = state.A; sb.value = state.B;
+  sa.addEventListener("change", () => { state.A = sa.value; drawChart2(); });
+  sb.addEventListener("change", () => { state.B = sb.value; drawChart2(); });
+  ["bb-e10bft", "bb-ecpf"].forEach(id => document.getElementById(id).addEventListener("click", e => {
+    state.bb = e.currentTarget.dataset.bb; pressGroup(["bb-e10bft", "bb-ecpf"], id); drawChart3();
+  }));
+  ["m-peak", "m-mean"].forEach(id => document.getElementById(id).addEventListener("click", e => {
+    state.mem = e.currentTarget.dataset.m; pressGroup(["m-peak", "m-mean"], id); drawChart4(); drawRanks();
+  }));
+  document.getElementById("w").addEventListener("input", e => { state.w = +e.target.value; drawChart4(); drawRanks(); });
+  ["sort-score", "sort-acc", "sort-peak", "sort-mean"].forEach(id => document.getElementById(id).addEventListener("click", e => {
+    state.sort = e.currentTarget.dataset.s; pressGroup(["sort-score", "sort-acc", "sort-peak", "sort-mean"], id); drawRanks();
+  }));
+  document.getElementById("rank-more").addEventListener("click", () => { state.all = !state.all; drawRanks(); });
+}
+
+buildControls();
+drawDataset();
+drawChart4();
+drawRanks();
+buildMethods();
+</script>
+</body>
+</html>

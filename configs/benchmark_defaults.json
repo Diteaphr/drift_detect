@@ -17,6 +17,10 @@
     "main_only": {
       "presets": ["e10bft"],
       "description": "Only the main method."
+    },
+    "pool_fade": {
+      "presets": ["e10bft", "ecpf_paper", "ecpf_reuse_value", "e10bft_reuse_value", "e10bft_density_b2", "e10bft_density_b4", "e10bft_density_b8", "e10bft_rent_l1", "e10bft_rent_l2", "e10bft_rent_l5", "e10bft_rent_l10", "e10bft_entry_f5", "e10bft_entry_f15", "e10bft_entry_f30", "e10bft_freq_b2", "e10bft_freq_b4", "e10bft_freq_b8", "e10bft_decay_g050", "e10bft_decay_g080", "e10bft_decay_g095", "e10bft_subst", "ecpf_density_b2", "ecpf_density_b4", "ecpf_density_b8", "ecpf_rent_l1", "ecpf_rent_l2", "ecpf_rent_l5", "ecpf_rent_l10", "ecpf_entry_f5", "ecpf_entry_f15", "ecpf_entry_f30", "ecpf_freq_b2", "ecpf_freq_b4", "ecpf_freq_b8", "ecpf_decay_g050", "ecpf_decay_g080", "ecpf_decay_g095", "ecpf_subst"],
+      "description": "Memory-aware model-pool fade mechanisms (density, rent, entry, freq, decay, subst) on the e10bft and ecpf_reuse_value backbones, with e10bft, ecpf_paper and ecpf_reuse_value as references. Run with --pool-trace."
     }
   }
 }
