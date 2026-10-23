@@ -1,0 +1,28 @@
+{
+  "name": "ecpf_rent_l10",
+  "kind": "pipeline",
+  "role": "ablation",
+  "description": "ecpf_reuse_value with pool fade = memory rent: idle cost 10 x KB / mean KB per drift.",
+  "source": "scripts/make_pool_fade_presets.py",
+  "requires": {
+    "river": "0.21.2"
+  },
+  "warm_start": 200,
+  "seed_param": null,
+  "config": {
+    "model_type": "ht",
+    "use_ecpf": true,
+    "ecpf_signal_mode": "dual_adwin",
+    "detector_delta": 0.05,
+    "ecpf_swap_policy": "strict",
+    "ecpf_fade_policy": "rent",
+    "ecpf_fade_enabled": true,
+    "ecpf_max_pool_size": 10,
+    "ecpf_fade_lambda": 10.0
+  },
+  "task_overrides": {
+    "regression": {
+      "model_type": "htr"
+    }
+  }
+}

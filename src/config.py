@@ -183,6 +183,14 @@ class PipelineConfig:
     ecpf_fade_policy: str = "ecpf"
     ecpf_reuse_value_window: int = 500
     ecpf_reuse_idle_cost: float = 1.0
+    # Memory-aware fade policies ("density", "rent", "entry", "freq", "decay",
+    # "subst"; see src/ecpf.py). lambda scales the size-relative rent / entry
+    # fee, gamma is the per-drift decay, budget factor > 0 caps stored KB at
+    # factor x leader KB. ecpf_pool_trace records pool diagnostics only.
+    ecpf_fade_lambda: float = 1.0
+    ecpf_decay_gamma: float = 0.8
+    ecpf_memory_budget_factor: float = 0.0
+    ecpf_pool_trace: bool = False
 
     # Prescription 3 (regression). The online residual normalizer is a global
     # Welford mean/sd that never resets; when the residual scale changes across

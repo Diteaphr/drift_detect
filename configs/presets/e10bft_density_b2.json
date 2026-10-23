@@ -1,0 +1,38 @@
+{
+  "name": "e10bft_density_b2",
+  "kind": "pipeline",
+  "role": "ablation",
+  "description": "e10bft with pool fade = value per KB eviction, pool <= 2 x leader KB.",
+  "source": "scripts/make_pool_fade_presets.py",
+  "requires": {
+    "river": "0.21.2"
+  },
+  "warm_start": 200,
+  "seed_param": null,
+  "config": {
+    "model_type": "ht",
+    "use_ecpf": true,
+    "ecpf_signal_mode": "dual_adwin",
+    "ecpf_warning_signal": "error",
+    "ecpf_drift_signal": "error",
+    "ecpf_reference_signal": true,
+    "ecpf_reference_warmup": 500,
+    "ecpf_leader_guard": true,
+    "ecpf_detector_warning_timeout": 1000,
+    "ecpf_guard_frozen_scale": 500,
+    "detector_delta": 0.05,
+    "ecpf_learn_during_warning": false,
+    "ecpf_fade_enabled": true,
+    "ecpf_fade_policy": "density",
+    "ecpf_memory_budget_factor": 2.0
+  },
+  "task_overrides": {
+    "regression": {
+      "model_type": "htr",
+      "ecpf_normalizer_reset_on_drift": true,
+      "model_kwargs": {
+        "clip_predictions": true
+      }
+    }
+  }
+}

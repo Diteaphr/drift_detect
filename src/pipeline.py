@@ -401,6 +401,10 @@ class ConceptDriftPipeline:
             fade_policy=self.config.ecpf_fade_policy,
             reuse_value_window=self.config.ecpf_reuse_value_window,
             reuse_idle_cost=self.config.ecpf_reuse_idle_cost,
+            fade_lambda=self.config.ecpf_fade_lambda,
+            decay_gamma=self.config.ecpf_decay_gamma,
+            memory_budget_factor=self.config.ecpf_memory_budget_factor,
+            pool_trace=self.config.ecpf_pool_trace,
         )
 
     def _bind_task(self, y: np.ndarray, *, authoritative: bool = True) -> TaskSpec:
@@ -603,6 +607,8 @@ class ConceptDriftPipeline:
             index = self._step
         self._step += 1
         self._trace_index = index
+        if self._ecpf is not None:
+            self._ecpf.clock = index
 
         if self._lock_out > 0:
             self._lock_out -= 1
