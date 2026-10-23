@@ -278,10 +278,19 @@ def score_run(
     return row
 
 
-def add_post_accuracy(rows: list[dict]) -> None:
+def add_post_accuracy(
+    rows: list[dict],
+    datasets: tuple[str, ...] = T1_DATASETS,
+) -> None:
+    """Add accuracy in the 1,000 positions after each scored drift.
+
+    ``datasets`` defaults to the preregistered T1 scope so the DET4 verdict is
+    unchanged. Post-hoc reports may explicitly request the wider completed-run
+    scope while continuing to use this audited implementation.
+    """
     selected = [
         row for row in rows
-        if row["dataset"] in T1_DATASETS and row["gt"]
+        if row["dataset"] in datasets and row["gt"]
     ]
     source_maps: dict[str, dict[str, dict]] = {}
     mask_cache: dict[tuple[str, str], np.ndarray] = {}
@@ -294,7 +303,7 @@ def add_post_accuracy(rows: list[dict]) -> None:
             with np.load(path / "preds.npz") as record:
                 length = len(record["y_true"])
             positions = np.arange(length)
-            if dataset == "injected_paper_electricity":
+            if manifest["coordinates"] == "input":
                 if dataset not in source_maps:
                     source_maps[dataset] = {
                         source["stem"]: source for source in expected_sources(dataset)
@@ -319,7 +328,9 @@ def add_post_accuracy(rows: list[dict]) -> None:
             print(f"post-accuracy {index}/{len(selected)}", flush=True)
 
 
-def load_all() -> list[dict]:
+def load_all(
+    post_datasets: tuple[str, ...] = T1_DATASETS,
+) -> list[dict]:
     rows: list[dict] = []
     source_hashes: dict[Path, str] = {}
     for dataset in NON_REGRESSION:
@@ -340,7 +351,7 @@ def load_all() -> list[dict]:
     assert len(rows) == expected
     assert sum(row["reused"] for row in rows) == 1_025
     assert len(rows) - sum(row["reused"] for row in rows) == 29_431
-    add_post_accuracy(rows)
+    add_post_accuracy(rows, post_datasets)
     return rows
 
 
