@@ -484,6 +484,8 @@ def report_patterns(summary_rows: list[dict[str, Any]]) -> list[str]:
     output = [
         "嚴格以『同組所有可判讀子資料集同號』判定時，沒有任何 drift 型態或注入方式在任一指標上達到一致為正或一致為負；因此以下保留完整方向計數，不把多數方向寫成一致效果。",
         "",
+        "方向解讀：準確率、drift 後準確率與 X 的正值有利 Dual ADWIN；FP 的負值才有利 Dual ADWIN。描述性分布上，突變組的準確率與 drift 後準確率負向較多，漸變組則正向較多；incremental／recurring 的準確率正向較多但 X 負向較多。四種注入方式仍各自同時出現正負值：class_prior 正向較多，feature_permutation 的 X 負向較多，label_swap 的 drift 後準確率負向較多；這些都不是一致效果。",
+        "",
         "### Drift 型態均包含正負方向，不能推論普遍優勢",
         "",
     ]
