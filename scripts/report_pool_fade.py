@@ -64,13 +64,33 @@ def collect(root: Path, datasets: Optional[List[str]]) -> pd.DataFrame:
             continue
         df = pd.read_csv(runs)
         for _, r in df.iterrows():
-            row = {"dataset": dataset, "preset": r["preset"], **parse_preset(r["preset"])}
+            row = {"dataset": dataset, "stream": r.get("stream"), "preset": r["preset"], **parse_preset(r["preset"])}
             row.update({c: r.get(c) for c in METRIC_COLS})
             pm_path = REPO / r["run_dir"] / "pool_metrics.json"
             pm = json.loads(pm_path.read_text()) if pm_path.exists() else {}
             row.update({c: pm.get(c) for c in POOL_COLS})
             rows.append(row)
     return pd.DataFrame(rows)
+
+
+def aggregate_streams(runs: pd.DataFrame) -> pd.DataFrame:
+    """One row per dataset x preset: the mean over the dataset's streams.
+
+    Single-stream datasets pass through unchanged. ``pool_kb_peak`` becomes the
+    mean of the per-stream peaks; ``pool_kb_peak_max`` keeps the largest one.
+    """
+    keys = ["dataset", "preset", "backbone", "mechanism", "param"]
+    num = [c for c in METRIC_COLS + POOL_COLS
+           if c not in ("comparable", "smoke") and pd.api.types.is_numeric_dtype(runs[c])]
+    flags = runs.assign(
+        comparable=runs["comparable"].astype(str).str.lower().eq("true"),
+        smoke=runs["smoke"].astype(str).str.lower().eq("true"),
+    )
+    g = flags.groupby(keys, dropna=False)
+    out = g[num].mean().join(g["pool_kb_peak"].max().rename("pool_kb_peak_max"))
+    out = out.join(g["comparable"].all()).join(g["smoke"].any()).join(g.size().rename("n_streams"))
+    out["concurrent_runs"] = g["concurrent_runs"].max()
+    return out.reset_index()
 
 
 def pareto(df: pd.DataFrame) -> List[str]:
@@ -172,25 +192,31 @@ def main() -> None:
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
-    df = collect(REPO / args.root, args.datasets)
-    if df.empty:
+    runs = collect(REPO / args.root, args.datasets)
+    if runs.empty:
         raise SystemExit(f"no runs.csv under {args.root}")
-    df = add_efficiency(df)
+    df = add_efficiency(aggregate_streams(runs))
     out = REPO / (args.out or f"reports/pool_fade_{time.strftime('%Y%m%d_%H%M%S')}")
     out.mkdir(parents=True, exist_ok=True)
+    runs.to_csv(out / "pool_runs.csv", index=False)
     df.to_csv(out / "pool_summary.csv", index=False)
 
     md = [f"# Pool fade mechanisms — accuracy vs pool memory", "",
-          f"Source: `{args.root}`; benchmark metrics from `runs.csv`, pool diagnostics from `pool_metrics.json`.", ""]
-    smoke = df["smoke"].astype(str).str.lower().eq("true").any()
-    noncomp = df["comparable"].astype(str).str.lower().eq("false").any()
-    if smoke or noncomp:
-        md += ["**Warning:** some rows are smoke or non-comparable runs; numbers are reference only.", ""]
-    if df["concurrent_runs"].nunique(dropna=True) > 1:
+          f"Source: `{args.root}`; benchmark metrics from `runs.csv`, pool diagnostics from `pool_metrics.json`. "
+          "Multi-stream datasets are averaged over their streams (`pool_runs.csv` has one row per run).", ""]
+    if df["smoke"].any():
+        md += ["**Warning:** some rows include smoke runs; numbers are reference only.", ""]
+    noncomp = sorted(df.loc[~df["comparable"], "dataset"].unique())
+    if noncomp:
+        md += [f"**Not comparable to literature:** {', '.join(noncomp)} (registry `comparable: false` or "
+               "non-comparable runs); use them only against the presets re-run here.", ""]
+    if runs["concurrent_runs"].nunique(dropna=True) > 1:
         md += ["**Warning:** rows mix different `concurrent_runs`; times are indicative only.", ""]
     for ds, g in df.groupby("dataset"):
         g = g.sort_values(["backbone", "mechanism", "param"])
-        md += [f"## {ds}", "", f"![pareto](pareto_{ds}.png)", "",
+        n_streams = int(g["n_streams"].max())
+        md += [f"## {ds}", "", f"Streams: {n_streams}" + (" (values are means over streams; peak = mean of "
+               "per-stream peaks)" if n_streams > 1 else ""), "", f"![pareto](pareto_{ds}.png)", "",
                f"Pareto-optimal (accuracy up, pool KB down): {', '.join(pareto(g)) or 'none'}", "",
                "| preset | acc | kappa_m | pool KB mean | pool KB peak | slots | recovery acc | regret rate "
                "| evictions (fade/cap/budget/merge) | reuse value mean | Δacc pts vs reuse_value "
