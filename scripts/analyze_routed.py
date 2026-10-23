@@ -109,6 +109,7 @@ def score_run(path: Path, allow_smoke: bool = False) -> Dict[str, Any]:
         "correct": int(round(metrics["acc_prequential"] * metrics["n_scored"])),
         "acc": metrics["acc_prequential"], "post_correct": None, "post_count": None,
         "gt": len(scored_gt), "gt_intervals": gt, "alarms": len(alarms),
+        "frozen": metrics.get("warning_frozen_steps", 0),
         "warning_opened": sum(v for k, v in counts.items() if k.startswith("open:")),
         "warning_self_closed": counts["close:zone_exit"],
         "warning_timeout": counts["close:timeout"],
@@ -153,7 +154,8 @@ def load_baselines(datasets: List[str]) -> List[Dict]:
                    ("dataset", "stream", "n_scored", "correct", "gt", "alarms", "tp", "fp", "fn",
                     "hits", "C", "X", "post_correct", "post_count", "mdt", "warning_opened",
                     "warning_self_closed", "warning_timeout", "confirmations")}
-            row.update(arm=arm, group=group_of(row["dataset"], row["stream"]), source=f"{source}:{name}")
+            row.update(arm=arm, group=group_of(row["dataset"], row["stream"]), source=f"{source}:{name}",
+                       frozen=_none(r.get("frozen_steps", r.get("frozen"))) or 0)
             rows.append(row)
     return rows
 
@@ -268,7 +270,9 @@ def run_dev(args) -> None:
 
 
 def run_formal(args) -> None:
-    choice = json.loads((OUT / "dev_selection.json").read_text())["choice"]
+    selection = json.loads((OUT / "dev_selection.json").read_text())
+    # "final" holds the cooldowns after a preregistration amendment; "choice" the rule's own pick.
+    choice = selection.get("final", selection["choice"])
     presets = {short: f"s1route_{short}_c{c}" for short, c in choice.items()}
     rows = load_runs(list(presets.values()), list(FORMAL_DATASETS), args.root, args.allow_smoke)
     for r in rows:

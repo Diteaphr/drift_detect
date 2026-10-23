@@ -1,0 +1,132 @@
+{
+  "choice": {
+    "fw": 300,
+    "tr": 0,
+    "union": 300
+  },
+  "table": [
+    {
+      "policy": "fw",
+      "cooldown": 0,
+      "streams": 40,
+      "gt": 294,
+      "acc": 0.955447,
+      "post_acc": 0.9222414965986394,
+      "alarms": 325,
+      "fp": 172,
+      "X": 136.50967573846108,
+      "mdt": 538.3466666666667,
+      "chosen": false
+    },
+    {
+      "policy": "fw",
+      "cooldown": 100,
+      "streams": 40,
+      "gt": 294,
+      "acc": 0.955447,
+      "post_acc": 0.9222414965986394,
+      "alarms": 325,
+      "fp": 172,
+      "X": 136.50967573846108,
+      "mdt": 538.3466666666667,
+      "chosen": false
+    },
+    {
+      "policy": "fw",
+      "cooldown": 300,
+      "streams": 40,
+      "gt": 294,
+      "acc": 0.95544825,
+      "post_acc": 0.9222312925170068,
+      "alarms": 324,
+      "fp": 172,
+      "X": 136.50967573846108,
+      "mdt": 538.28,
+      "chosen": true
+    },
+    {
+      "policy": "tr",
+      "cooldown": 0,
+      "streams": 40,
+      "gt": 294,
+      "acc": 0.955621,
+      "post_acc": 0.920734693877551,
+      "alarms": 300,
+      "fp": 147,
+      "X": 140.25008470298567,
+      "mdt": 586.6447368421053,
+      "chosen": true
+    },
+    {
+      "policy": "tr",
+      "cooldown": 100,
+      "streams": 40,
+      "gt": 294,
+      "acc": 0.955621,
+      "post_acc": 0.920734693877551,
+      "alarms": 300,
+      "fp": 147,
+      "X": 140.25008470298567,
+      "mdt": 586.6447368421053,
+      "chosen": false
+    },
+    {
+      "policy": "tr",
+      "cooldown": 300,
+      "streams": 40,
+      "gt": 294,
+      "acc": 0.95561625,
+      "post_acc": 0.9207108843537415,
+      "alarms": 299,
+      "fp": 146,
+      "X": 140.33314802429027,
+      "mdt": 587.7368421052631,
+      "chosen": false
+    },
+    {
+      "policy": "union",
+      "cooldown": 0,
+      "streams": 40,
+      "gt": 294,
+      "acc": 0.9554385,
+      "post_acc": 0.9220442176870748,
+      "alarms": 322,
+      "fp": 170,
+      "X": 136.71028256951746,
+      "mdt": 538.9266666666666,
+      "chosen": false
+    },
+    {
+      "policy": "union",
+      "cooldown": 100,
+      "streams": 40,
+      "gt": 294,
+      "acc": 0.9554385,
+      "post_acc": 0.9220442176870748,
+      "alarms": 322,
+      "fp": 170,
+      "X": 136.71028256951746,
+      "mdt": 538.9266666666666,
+      "chosen": false
+    },
+    {
+      "policy": "union",
+      "cooldown": 300,
+      "streams": 40,
+      "gt": 294,
+      "acc": 0.95543975,
+      "post_acc": 0.9220340136054421,
+      "alarms": 321,
+      "fp": 170,
+      "X": 136.71028256951746,
+      "mdt": 538.86,
+      "chosen": true
+    }
+  ],
+  "final": {
+    "fw": 300,
+    "tr": 300,
+    "union": 300
+  },
+  "amendment": "修訂 1（docs/ECPF_ROUTED_預註冊.md）：使用者在正式結果產生前決定三個設計統一 C = 300。"
+}
