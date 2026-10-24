@@ -271,6 +271,11 @@ class PipelineConfig:
     # the ADWIN-family modes lacked one.
     ecpf_detector_warning_timeout: int = 0
 
+    # Keep training the leader (and its shadow) while a warning is open -- port
+    # of main's f34933e (docs/ECPF_I2_合成消融與警告期訓練_預註冊.md). Off here
+    # (main defaults to True) so every earlier run of this branch reproduces.
+    ecpf_learn_during_warning: bool = False
+
     # Standalone detector used when ecpf_signal_mode == "detector".
     ecpf_detector_type: str = "ddm"
     ecpf_detector_min_instances: int = 30

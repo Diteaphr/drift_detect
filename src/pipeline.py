@@ -554,6 +554,24 @@ class ConceptDriftPipeline:
     # ------------------------------------------------------------------
     # Per-sample step
     # ------------------------------------------------------------------
+    def _ecpf_warning_step(self, x_: np.ndarray, y_true: float, y_pred: float, index: int) -> None:
+        """Train the leader + shadow during an open warning window (I2; port of main's f34933e).
+
+        The warning-period early returns otherwise skip all training until the
+        confirmation or the timeout. Off by default so every earlier run reproduces.
+        """
+        if not self.config.ecpf_learn_during_warning or self._ecpf is None:
+            return
+        _pre_swaps = self._ecpf.leader_swaps
+        self._ecpf.on_stream_instance(self.prediction_model, x_, y_true, y_pred_leader=y_pred)
+        self.tracer.log_duel(
+            index, self._ecpf.curr_correct, self._ecpf.new_correct,
+            self._ecpf.total_inst,
+            swapped=self._ecpf.leader_swaps > _pre_swaps,
+            current_idx=self._ecpf.current_idx,
+            has_shadow=self._ecpf.new_model is not None,
+        )
+
     def step(
         self,
         x: np.ndarray,
@@ -709,6 +727,7 @@ class ConceptDriftPipeline:
                             max_len=self.buffer.max_len if hasattr(self.buffer, "max_len") else 3000
                         )
                         return y_pred, new_detections, True
+                    self._ecpf_warning_step(x_, y_true, y_pred, index)
                     return y_pred, [], False
             elif self.config.ecpf_signal_mode in ECPF_ADWIN_FAMILY_SIGNAL_MODES and self._ecpf_detector is not None:
                 proba_matrix, pred_matrix = self._uq_inputs(x_)
@@ -928,6 +947,7 @@ class ConceptDriftPipeline:
                     return y_pred, new_detections, True
 
                 if self._ecpf_warning_active:
+                    self._ecpf_warning_step(x_, y_true, y_pred, index)
                     return y_pred, [], False
             elif self.config.ecpf_signal_mode in {"meta_ecpf_dwm", "meta_ecpf_hcdt", "meta_ecpf_gddm", "meta_ecpf_hier_parallel"} and self.meta_detector is not None:
                 # Update meta detector continuously
@@ -1018,6 +1038,7 @@ class ConceptDriftPipeline:
                     return y_pred, new_detections, True
 
                 if self._ecpf_warning_active:
+                    self._ecpf_warning_step(x_, y_true, y_pred, index)
                     return y_pred, [], False
 
 
@@ -1098,6 +1119,7 @@ class ConceptDriftPipeline:
                     return y_pred, new_detections, True
 
                 if self._ecpf_warning_active:
+                    self._ecpf_warning_step(x_, y_true, y_pred, index)
                     return y_pred, [], False
 
         # ---- Online update for advanced models (true streaming) ----

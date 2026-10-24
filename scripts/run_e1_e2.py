@@ -59,6 +59,9 @@ ARMS = {"E1": {"ecpf_adwin_one_sided": True},
 ARMS.update({a + "C": ARMS[a] for a in ("baseT", "E2k500T", "E10bFT")})
 D5_ARMS = ["baseTC", "E2k500TC", "E10bFTC"]
 ARM_MODEL_KW = {a: {"clip_predictions": True} for a in D5_ARMS}   # model kwargs an arm adds (regression only)
+# I2 (docs/ECPF_I2_合成消融與警告期訓練_預註冊.md): the same three arms, training the leader during warnings too
+ARMS.update({a + "L": {**ARMS[a], "ecpf_learn_during_warning": True} for a in ("baseT", "E2k500T", "E10bFT")})
+L_ARMS = ["baseTL", "E2k500TL", "E10bFTL"]
 P3 = {"ecpf_normalizer_reset_on_drift": True}  # the regression baseline (htr-nr / hfr-nr) has it on
 REG_LEARNERS = [("htr/error", "htr", {}), ("hfr/error", "hfr", {})]
 CELLS = {**{f: (p, s, c, False) for f, (p, s, c) in RERUN.items()},
@@ -172,7 +175,11 @@ A3_ARMS = ["baseT", "E2k500T", "E10bFT"]
 I1 = {"I1-" + f[4:]: (p, s, c + [RERUN["B"][2][0]], r)   # I1 (docs/ECPF_I1_INSECTS消融_預註冊.md): A1's INSECTS + ht
       for f, (p, s, c, r) in A1.items() if f.startswith("INS-")}
 I1_ARMS = ["baseT", "E2k500T", "E10bFT"]
-ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12, **E13, **E14, **A3, **I1}
+_MC = "data/dataset_0921/synthetic_dataset/multi_classification/{d}/*_g0[0-9].csv"
+I2 = {"I2-" + os.path.basename(p)[:-4]: ([p], 0, [RERUN["MC-syn"][2][0], RERUN["B"][2][0]], False)   # one per stream
+      for d in ("sudden", "gradual", "incremental", "recurring") for p in sorted(glob.glob(_MC.format(d=d)))}
+I2_ARMS = I1_ARMS + L_ARMS
+ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12, **E13, **E14, **A3, **I1, **I2}
 
 
 def e13_arms(fam: str):
@@ -182,7 +189,7 @@ def e13_arms(fam: str):
 
 def scored_gt(fam: str, intervals):
     """A2 rule (prereg): GT intervals that start inside the warm-up are not scored."""
-    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 or fam in E12 or fam in E13 or fam in E14 or fam in I1 else intervals
+    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 or fam in E12 or fam in E13 or fam in E14 or fam in I1 or fam in I2 else intervals
 FP = ("echo", "orphan")
 MATCH = 500
 SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age",
@@ -320,7 +327,7 @@ def iter_runs(held: bool = False):
     for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in (I1 if held == "i1" else A3 if held == "a3" else E14 if held == "e14" else E13 if held == "e13" else E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
+    for fam, (_, _, configs, _) in (I2 if held == "i2" else I1 if held == "i1" else A3 if held == "a3" else E14 if held == "e14" else E13 if held == "e13" else E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -1625,24 +1632,38 @@ def warning_steps(sig: pd.DataFrame, conf_t, timeout: int = 1000) -> int:
     return n
 
 
-def analyze_i1() -> None:
-    """I1 readings (docs/ECPF_I1_INSECTS消融_預註冊.md): baseT -> E2k500T -> E10bFT on the five INSECTS streams.
-    C3 = E2k500T vs baseT (frozen reference + k=500), C4 = E10bFT vs E2k500T (leader guard). Seen data."""
-    missing = [(f, a) for f in I1 for a in I1_ARMS if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
+def complete_valid(label: str, fams, arms) -> bool:
+    """Every (family, arm) cell finished, and A0: no warning->confirmation age above 1001 steps."""
+    missing = [(f, a) for f in fams for a in arms if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
     if missing:
-        print("I1 INCOMPLETE: %d of %d cells missing -- no reading" % (len(missing), len(I1) * len(I1_ARMS)))
-        return
+        print("%s INCOMPLETE: %d of %d cells missing -- no reading" % (label, len(missing), len(fams) * len(arms)))
+        return False
     ages = []
-    for f in I1:
-        for a in I1_ARMS:
+    for f in fams:
+        for a in arms:
             try:
                 ages += pd.read_csv(os.path.join(OUT, f, a, "detections.csv"))["confirm_age"].tolist()
             except pd.errors.EmptyDataError:
                 pass
-    print("## A0 longest warning->confirmation age: %d -> %s" % (
-        max(ages, default=0), "VALID" if max(ages, default=0) <= 1001 else "INVALID"))
+    print("## %s A0 longest warning->confirmation age: %d -> %s" % (
+        label, max(ages, default=0), "VALID" if max(ages, default=0) <= 1001 else "INVALID"))
     if max(ages, default=0) > 1001:
-        print("I1 INVALID -- no reading")
+        print("%s INVALID -- no reading" % label)
+        return False
+    return True
+
+
+def guard_confirmations(x) -> int:
+    """Confirmations of one run whose drift the leader guard fired (0 for arms without a guard)."""
+    if "guard_drift" not in x.sig.columns:
+        return 0
+    return int(x.sig.set_index("t")["guard_drift"].reindex(x.conf_t).fillna(0).sum())
+
+
+def analyze_i1() -> None:
+    """I1 readings (docs/ECPF_I1_INSECTS消融_預註冊.md): baseT -> E2k500T -> E10bFT on the five INSECTS streams.
+    C3 = E2k500T vs baseT (frozen reference + k=500), C4 = E10bFT vs E2k500T (leader guard). Seen data."""
+    if not complete_valid("I1", I1, I1_ARMS):
         return
     df = rescore(show=False, held="i1")
     if df is None:
@@ -1662,8 +1683,7 @@ def analyze_i1() -> None:
         for f in I1:
             for a in I1_ARMS:
                 r, x = d3.loc[(lr, f, a)], runs.loc[(lr, f, a)]
-                guard = int(x.sig.set_index("t")["guard_drift"].reindex(x.conf_t).fillna(0).sum()) \
-                    if "guard_drift" in x.sig.columns else 0
+                guard = guard_confirmations(x)
                 age = int(x.sig["ref_age"].max()) if "ref_age" in x.sig.columns else 0
                 print("%-9s %-14s %-8s %4d %7d %7d %7d %7.1f %5d %6d %6.0f %7d %7d %8.4f" % (
                     lr, f, a, r["n_gt"], d1.loc[(lr, f, a), "tp"], r["tp"], r["fp"], r["xs"], len(x.conf_t), guard,
@@ -1735,6 +1755,144 @@ def analyze_i1() -> None:
             tail = s[s["t"] > last]
             print("%-9s abrupt %-8s last freeze t=%d, then %d steps: leader err %.3f, reference err %.3f" % (
                 lr, a, last, len(tail), tail["err"].mean(), tail["ref_err"].mean()))
+
+
+def check_i2() -> None:
+    """I2 gate G3: with learning during warnings on, ECPF trains on more steps than with it off."""
+    from src.config import PipelineConfig
+    from src.ecpf import ECPFMetaLearner
+    from src.pipeline import ConceptDriftPipeline
+    X, y, _ = load_stream(ALL["I1-incgrad"][0][0], 20000)
+    orig, calls = ECPFMetaLearner.on_stream_instance, {}
+    for arm in ("E10bFT", "E10bFTL"):
+        n = [0]
+
+        def counted(self, *args, _n=n, **kw):
+            _n[0] += 1
+            return orig(self, *args, **kw)
+        ECPFMetaLearner.on_stream_instance = counted
+        pipe = ConceptDriftPipeline(PipelineConfig(
+            model_type="ht", use_ecpf=True, ecpf_signal_mode="dual_adwin", ecpf_warning_signal="error",
+            ecpf_drift_signal="error", ecpf_detector_min_instances=30, **ARMS[arm]))
+        for _ in pipe.run_stream(X, y, warm_start_samples=WARM_START):
+            pass
+        calls[arm] = n[0]
+    ECPFMetaLearner.on_stream_instance = orig
+    ok = calls["E10bFTL"] > calls["E10bFT"]
+    print("G3 ECPF training calls over 20000 steps: off %d, on %d -> %s" % (
+        calls["E10bFT"], calls["E10bFTL"], "PASS" if ok else "FAIL"))
+
+
+def drift_type(fam: str) -> str:
+    """'I2-recurring_gradual_rbf4_100k_g01' -> 'recurring_gradual'."""
+    return fam[3:].split("_rbf4")[0]
+
+
+def run_scores(held: str):
+    """rescore() at 3000 steps with excess hits, and runs_table(), both indexed by (learner, family, arm)."""
+    df = rescore(exts=(3000,), show=False, held=held)
+    if df is None:
+        return None
+    df["xs"] = df["tp"] - np.array(chance_hits(df))
+    return df.set_index(["learner", "family", "arm"]), runs_table(held=held).set_index(["learner", "family", "arm"])
+
+
+def analyze_i2() -> None:
+    """I2 readings (docs/ECPF_I2_合成消融與警告期訓練_預註冊.md): part A = baseT -> E2k500T -> E10bFT on the 40
+    synthetic multiclass streams; part W = each arm with vs without training during warnings, on those streams and
+    on the five INSECTS streams. Both datasets are seen data."""
+    if not (complete_valid("I2", I2, I2_ARMS) & complete_valid("I1+L", I1, I1_ARMS + L_ARMS)):
+        return
+    syn = run_scores("i2")
+    ins = run_scores("i1")
+    if syn is None or ins is None:
+        print("RESCORE INVALID -- no reading")
+        return
+    d3, runs = syn
+    fams = list(I2)
+    types = sorted(set(map(drift_type, fams)), key=lambda t: (t.startswith("recurring"), t))
+
+    print("\n# Part A: three-arm ablation on the synthetic multiclass streams (40 streams, 3000-step windows)")
+    for lr, tag in (("hf10sqrt", "Main reading"), ("ht", "S1 single tree")):
+        fp = {a: int(sum(d3.loc[(lr, f, a), "fp"] for f in fams)) for a in I1_ARMS}
+        xs = {a: float(sum(d3.loc[(lr, f, a), "xs"] for f in fams)) for a in I1_ARMS}
+        acc = {a: float(np.mean([runs.loc[(lr, f, a)].quality for f in fams])) for a in I1_ARMS}
+        half = lambda a: (fp[a] <= 0.5 * fp["baseT"]) if fp["baseT"] >= 6 else None   # None: not evaluable
+        print("\n## %s (%s)" % (tag, lr))
+        print("%-22s %-8s %4s %5s %5s %8s %8s" % ("type", "arm", "N", "TP", "FP", "excess", "accuracy"))
+        for t in types:
+            ft = [f for f in fams if drift_type(f) == t]
+            for a in I1_ARMS:
+                r = d3.loc[[(lr, f, a) for f in ft]]
+                print("%-22s %-8s %4d %5d %5d %8.1f %8.4f" % (
+                    "%s (%d)" % (t, len(ft)), a, r["n_gt"].sum(), r["tp"].sum(), r["fp"].sum(), r["xs"].sum(),
+                    np.mean([runs.loc[(lr, f, a)].quality for f in ft])))
+        for a in I1_ARMS:
+            print("%-22s %-8s %4d %5d %5d %8.1f %8.4f" % ("all (40)", a, sum(d3.loc[(lr, f, a), "n_gt"] for f in fams),
+                                                         sum(d3.loc[(lr, f, a), "tp"] for f in fams), fp[a], xs[a],
+                                                         acc[a]))
+        r3a, r3b, r3c = half("E2k500T"), xs["E2k500T"] >= 0.9 * xs["baseT"], acc["E2k500T"] >= acc["baseT"] - 0.01
+        print("R3a FP E2k500T %d vs baseT %d (need <=%.1f): %s" % (fp["E2k500T"], fp["baseT"], 0.5 * fp["baseT"],
+                                                                   "not evaluable" if r3a is None else r3a))
+        print("R3b excess E2k500T %.1f vs baseT %.1f (need >=%.1f): %s" % (xs["E2k500T"], xs["baseT"],
+                                                                           0.9 * xs["baseT"], r3b))
+        print("R3c mean accuracy E2k500T %.4f vs baseT %.4f - 0.01: %s" % (acc["E2k500T"], acc["baseT"], r3c))
+        print("-> C3: %s%s" % ("frozen reference (with k=500) reproduced: FP halved, recall kept" if r3a and r3b
+                               else "NOT reproduced (R3a %s, R3b %s)" % (r3a, r3b),
+                               "" if r3c else "; accuracy cost"))
+        h4 = half("E10bFT")
+        r4c = h4 is not False and xs["E10bFT"] >= 0.9 * xs["E2k500T"]
+        r4e, r4d = xs["E10bFT"] > xs["E2k500T"], acc["E10bFT"] >= acc["E2k500T"] - 0.01
+        print("R4c FP E10bFT %d vs baseT %d (%s) | excess %.1f vs E2k500T %.1f (need >=%.1f): %s" % (
+            fp["E10bFT"], fp["baseT"], "not evaluable" if h4 is None else "need <=%.1f: %s" % (0.5 * fp["baseT"], h4),
+            xs["E10bFT"], xs["E2k500T"], 0.9 * xs["E2k500T"], r4c))
+        print("R4e excess E10bFT %.1f > E2k500T %.1f: %s" % (xs["E10bFT"], xs["E2k500T"], r4e))
+        print("R4d mean accuracy E10bFT %.4f vs E2k500T %.4f - 0.01: %s" % (acc["E10bFT"], acc["E2k500T"], r4d))
+        print("-> C4: %s" % ("leader guard raises recall and keeps the frozen reference's FP cut" if r4c and r4e
+                             else "NOT shown (R4c %s, R4e %s)" % (r4c, r4e)))
+        print("R-all E10bFT vs baseT: FP %s, excess %.1f vs %.1f (need >=%.1f): %s, accuracy %.4f vs %.4f: %s" % (
+            "not evaluable" if h4 is None else h4, xs["E10bFT"], xs["baseT"], 0.9 * xs["baseT"],
+            xs["E10bFT"] >= 0.9 * xs["baseT"], acc["E10bFT"], acc["baseT"], acc["E10bFT"] >= acc["baseT"] - 0.01))
+        hits = {}   # GT points by E2k500T's reference age at the GT start (descriptive, E12's stale-reference view)
+        for f in fams:
+            gt = scored_gt(f, load_stream(ALL[f][0][0], 0)[2])
+            age = runs.loc[(lr, f, "E2k500T")].sig.set_index("t")["ref_age"]
+            for s, _ in gt:
+                a_ = age.get(s, np.nan)
+                b = "<2k" if a_ < 2000 else "2-10k" if a_ < 10000 else ">=10k"
+                for a in I1_ARMS:
+                    hit = any(s <= c < s + 3000 for c in runs.loc[(lr, f, a)].conf_t)
+                    hits[(b, a)] = hits.get((b, a), 0) + hit
+                hits[(b, "N")] = hits.get((b, "N"), 0) + 1
+        print("GT points by E2k500T reference age (hit = confirmation within 3000 steps): " + "; ".join(
+            "%s N %d: %s" % (b, hits.get((b, "N"), 0), ", ".join("%s %d" % (a, hits.get((b, a), 0)) for a in I1_ARMS))
+            for b in ("<2k", "2-10k", ">=10k")))
+
+    print("\n# Part W: training during warnings (XL vs X, paired per stream and learner)")
+    for name, (dd, rr), fs in (("synthetic multiclass (40)", syn, fams), ("INSECTS (5)", ins, list(I1))):
+        gtf = [f for f in fs if dd.loc[("ht", f, "baseT"), "n_gt"] > 0]
+        for lr, tag in (("hf10sqrt", "Main reading"), ("ht", "S1 single tree")):
+            print("\n## %s, %s (%s; FP and excess over the %d streams with GT)" % (name, tag, lr, len(gtf)))
+            for x in I1_ARMS:
+                xl = x + "L"
+                dl = np.array([rr.loc[(lr, f, xl)].quality - rr.loc[(lr, f, x)].quality for f in fs])
+                pos, neg = int((dl > 0).sum()), int((dl < 0).sum())
+                wacc = ("raised" if dl.mean() >= 0.002 and pos > len(fs) / 2 else
+                        "lowered" if dl.mean() <= -0.002 and neg > len(fs) / 2 else "tied")
+                fp = {a: int(sum(dd.loc[(lr, f, a), "fp"] for f in gtf)) for a in (x, xl)}
+                xs = {a: float(sum(dd.loc[(lr, f, a), "xs"] for f in gtf)) for a in (x, xl)}
+                fp_ok, xs_ok = fp[xl] <= 1.1 * fp[x], xs[xl] >= 0.9 * xs[x]
+                ws = {a: sum(warning_steps(rr.loc[(lr, f, a)].sig, rr.loc[(lr, f, a)].conf_t) for f in fs) for a in (x, xl)}
+                gc = {a: sum(guard_confirmations(rr.loc[(lr, f, a)]) for f in fs) for a in (x, xl)}
+                cf = {a: sum(len(rr.loc[(lr, f, a)].conf_t) for f in fs) for a in (x, xl)}
+                print("W(%s): accuracy delta mean %+.4f, %d up / %d down of %d -> %s | FP %d -> %d (need <=%.1f: %s), "
+                      "excess %.1f -> %.1f (need >=%.1f: %s) -> detection %s" % (
+                          x, dl.mean(), pos, neg, len(fs), wacc, fp[x], fp[xl], 1.1 * fp[x], fp_ok, xs[x], xs[xl],
+                          0.9 * xs[x], xs_ok, "unaffected" if fp_ok and xs_ok else "AFFECTED"))
+                print("        confirmations %d -> %d, guard-fired %d -> %d, warning-open steps %d -> %d" % (
+                    cf[x], cf[xl], gc[x], gc[xl], ws[x], ws[xl]))
+                print("  -> %s" % ("L can be added to %s (seen data)" % x if wacc != "lowered" and fp_ok and xs_ok
+                                   else "L NOT adoptable on %s" % x))
 
 
 def analyze_a3() -> None:
@@ -1984,6 +2142,9 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-d5", action="store_true", help="D5 dev check (prediction-range guard)")
     ap.add_argument("--gate-i1", action="store_true", help="I1 gate G1: rerun A1's INS-abrupt E2k500, must be identical")
     ap.add_argument("--analyze-i1", action="store_true", help="I1 readings (INSECTS ablation, seen data)")
+    ap.add_argument("--gate-i2", choices=["g1", "g2", "g3"], help="I2 gates (G1 A1 INS-abrupt E2k500 identical, G2 I1 "
+                    "I1-incgrad E10bFT identical, G3 learning during warnings trains on more steps)")
+    ap.add_argument("--analyze-i2", action="store_true", help="I2 readings (synthetic ablation + learning in warnings)")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -2048,3 +2209,11 @@ if __name__ == "__main__":
         print("G1 %s" % ("PASS" if gate_rerun("INS-abrupt", "E2k500", "E2k500") else "FAIL"))
     if a.analyze_i1:
         analyze_i1()
+    if a.gate_i2 == "g1":
+        print("G1 %s" % ("PASS" if gate_rerun("INS-abrupt", "E2k500", "E2k500") else "FAIL"))
+    if a.gate_i2 == "g2":
+        print("G2 %s" % ("PASS" if gate_rerun("I1-incgrad", "E10bFT", "E10bFT") else "FAIL"))
+    if a.gate_i2 == "g3":
+        check_i2()
+    if a.analyze_i2:
+        analyze_i2()
