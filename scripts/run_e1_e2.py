@@ -169,7 +169,10 @@ _REALREG = "data/dataset_0921/real_dataset/regression/{d}/{d}.csv"
 A3 = {"REALreg-" + k: ([_REALREG.format(d=d)], 0, REG_LEARNERS, True)   # A3: real regression streams, no GT
       for k, d in (("bike", "bike_sharing"), ("metro", "metro_interstate_traffic"))}
 A3_ARMS = ["baseT", "E2k500T", "E10bFT"]
-ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12, **E13, **E14, **A3}
+I1 = {"I1-" + f[4:]: (p, s, c + [RERUN["B"][2][0]], r)   # I1 (docs/ECPF_I1_INSECTS消融_預註冊.md): A1's INSECTS + ht
+      for f, (p, s, c, r) in A1.items() if f.startswith("INS-")}
+I1_ARMS = ["baseT", "E2k500T", "E10bFT"]
+ALL = {**CELLS, **HELD, **A1, **A2, **E10, **E11, **E12, **E13, **E14, **A3, **I1}
 
 
 def e13_arms(fam: str):
@@ -179,7 +182,7 @@ def e13_arms(fam: str):
 
 def scored_gt(fam: str, intervals):
     """A2 rule (prereg): GT intervals that start inside the warm-up are not scored."""
-    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 or fam in E12 or fam in E13 or fam in E14 else intervals
+    return [iv for iv in intervals if iv[0] >= WARM_START] if fam in A2 or fam in E10 or fam in E11 or fam in E12 or fam in E13 or fam in E14 or fam in I1 else intervals
 FP = ("echo", "orphan")
 MATCH = 500
 SIG_COLS = ["t", "err", "raw", "is_warning", "is_drift", "ref_err", "ref_age", "ref_switch", "switch_warning_age",
@@ -317,7 +320,7 @@ def iter_runs(held: bool = False):
     for fam, d, cfgs in ([] if held else ARCHIVED):
         yield from runs_of(fam, "base", os.path.join(d, "detections_labelled.csv"), os.path.join(d, "signals"),
                            sorted(cfgs))
-    for fam, (_, _, configs, _) in (A3 if held == "a3" else E14 if held == "e14" else E13 if held == "e13" else E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
+    for fam, (_, _, configs, _) in (I1 if held == "i1" else A3 if held == "a3" else E14 if held == "e14" else E13 if held == "e13" else E12 if held == "e12" else E11 if held == "e11" else E10 if held == "e10" else A2 if held == "a2" else A1 if held == "a1" else HELD if held else CELLS).items():
         for arm in ARMS:
             d = os.path.join(OUT, fam, arm)
             if os.path.exists(os.path.join(d, "detections.csv")):  # cell finished
@@ -1606,6 +1609,134 @@ def analyze_e14() -> None:
         sum(len(x.conf_t) for x in r10.itertuples()), n_guard, max(int(x.sig["ref_age"].max()) for x in r10.itertuples())))
 
 
+def warning_steps(sig: pd.DataFrame, conf_t, timeout: int = 1000) -> int:
+    """Steps with a warning open (= training paused): rebuilt from the traced warning flags, closed by a
+    confirmation or by the timeout (pipeline order: timeout check, then a new warning may open)."""
+    conf, start, n = set(int(t) for t in conf_t), None, 0
+    for t, w in zip(sig["t"].astype(int), sig["is_warning"].astype(int)):
+        if start is not None and t - start > timeout:
+            start = None
+        if w and start is None:
+            start = t
+        if start is not None:
+            n += 1
+            if t in conf:
+                start = None
+    return n
+
+
+def analyze_i1() -> None:
+    """I1 readings (docs/ECPF_I1_INSECTS消融_預註冊.md): baseT -> E2k500T -> E10bFT on the five INSECTS streams.
+    C3 = E2k500T vs baseT (frozen reference + k=500), C4 = E10bFT vs E2k500T (leader guard). Seen data."""
+    missing = [(f, a) for f in I1 for a in I1_ARMS if not os.path.exists(os.path.join(OUT, f, a, "detections.csv"))]
+    if missing:
+        print("I1 INCOMPLETE: %d of %d cells missing -- no reading" % (len(missing), len(I1) * len(I1_ARMS)))
+        return
+    ages = []
+    for f in I1:
+        for a in I1_ARMS:
+            try:
+                ages += pd.read_csv(os.path.join(OUT, f, a, "detections.csv"))["confirm_age"].tolist()
+            except pd.errors.EmptyDataError:
+                pass
+    print("## A0 longest warning->confirmation age: %d -> %s" % (
+        max(ages, default=0), "VALID" if max(ages, default=0) <= 1001 else "INVALID"))
+    if max(ages, default=0) > 1001:
+        print("I1 INVALID -- no reading")
+        return
+    df = rescore(show=False, held="i1")
+    if df is None:
+        print("RESCORE INVALID -- no reading")
+        return
+    df["xs"] = df["tp"] - np.array(chance_hits(df))
+    d1, d3 = (df[df["ext"] == e].set_index(["learner", "family", "arm"]) for e in (1000, 3000))
+    runs = runs_table(held="i1").set_index(["learner", "family", "arm"])
+    gtf = [f for f in I1 if d3.loc[("ht", f, "baseT"), "n_gt"] > 0]   # streams with GT (not I1-inc)
+    ab = "I1-abrupt"
+
+    print("\n## S3 per stream (3000-step windows; I1-inc has no GT, its confirmations are not FPs)")
+    print("%-9s %-14s %-8s %4s %7s %7s %7s %7s %5s %6s %6s %7s %7s %8s" % (
+        "learner", "stream", "arm", "N", "TP@1k", "TP@3k", "FP@3k", "excess", "conf", "guard", "delay", "maxage",
+        "paused", "accuracy"))
+    for lr in ("hf10sqrt", "ht"):
+        for f in I1:
+            for a in I1_ARMS:
+                r, x = d3.loc[(lr, f, a)], runs.loc[(lr, f, a)]
+                guard = int(x.sig.set_index("t")["guard_drift"].reindex(x.conf_t).fillna(0).sum()) \
+                    if "guard_drift" in x.sig.columns else 0
+                age = int(x.sig["ref_age"].max()) if "ref_age" in x.sig.columns else 0
+                print("%-9s %-14s %-8s %4d %7d %7d %7d %7.1f %5d %6d %6.0f %7d %7d %8.4f" % (
+                    lr, f, a, r["n_gt"], d1.loc[(lr, f, a), "tp"], r["tp"], r["fp"], r["xs"], len(x.conf_t), guard,
+                    np.median(r["delays"]) if r["delays"] else np.nan, age, warning_steps(x.sig, x.conf_t),
+                    x.quality))
+
+    for lr, tag in (("hf10sqrt", "Main reading"), ("ht", "S1 single tree")):
+        fp = {a: int(sum(d3.loc[(lr, f, a), "fp"] for f in gtf)) for a in I1_ARMS}
+        xs = {a: float(sum(d3.loc[(lr, f, a), "xs"] for f in gtf)) for a in I1_ARMS}
+        q = {(f, a): runs.loc[(lr, f, a)].quality for f in I1 for a in I1_ARMS}
+        half = lambda a: (fp[a] <= 0.5 * fp["baseT"]) if fp["baseT"] >= 6 else None   # None: not evaluable
+        drop = lambda a, ref, fs: [f for f in fs if q[(f, a)] < q[(f, ref)] - 0.01]
+        print("\n## %s (%s; FP and excess pooled over the %d streams with GT)" % (tag, lr, len(gtf)))
+        print("FP@3000 %s | excess %s" % (fp, {a: round(v, 1) for a, v in xs.items()}))
+        r3a, r3b, r3c = half("E2k500T"), xs["E2k500T"] >= 0.9 * xs["baseT"], drop("E2k500T", "baseT", I1)
+        print("R3a FP E2k500T %d vs baseT %d (need <=%.1f): %s" % (fp["E2k500T"], fp["baseT"], 0.5 * fp["baseT"],
+                                                                   "not evaluable" if r3a is None else r3a))
+        print("R3b excess E2k500T %.1f vs baseT %.1f (need >=%.1f): %s" % (xs["E2k500T"], xs["baseT"],
+                                                                           0.9 * xs["baseT"], r3b))
+        print("R3c accuracy >= baseT - 0.01 on all five: %s" % ("yes" if not r3c else "NO: " + ", ".join(r3c)))
+        print("-> C3: %s%s" % ("frozen reference (with k=500) reproduced on INSECTS: FP halved, recall kept"
+                               if r3a and r3b else "NOT reproduced (R3a %s, R3b %s)" % (r3a, r3b),
+                               "; accuracy cost on " + ", ".join(r3c) if r3c else ""))
+        r4a = q[(ab, "E2k500T")] < q[(ab, "baseT")] - 0.01
+        r4b = (q[(ab, "E10bFT")] >= q[(ab, "baseT")] - 0.01) if r4a else None
+        print("R4a stale reference on abrupt: E2k500T %.4f vs baseT %.4f - 0.01: %s" % (
+            q[(ab, "E2k500T")], q[(ab, "baseT")], r4a if r4a else "False -> no stale reference this round"))
+        print("R4b E10bFT abrupt %.4f >= baseT - 0.01 (%.4f): %s" % (
+            q[(ab, "E10bFT")], q[(ab, "baseT")] - 0.01, "not evaluable" if r4b is None else
+            ("guard FIXED the stale reference" if r4b else "guard did NOT fix it")))
+        h4 = half("E10bFT")
+        r4c = h4 is not False and xs["E10bFT"] >= 0.9 * xs["E2k500T"]
+        print("R4c FP E10bFT %d vs baseT %d (%s) | excess %.1f vs E2k500T %.1f (need >=%.1f): %s" % (
+            fp["E10bFT"], fp["baseT"], "not evaluable" if h4 is None else "need <=%.1f: %s" % (0.5 * fp["baseT"], h4),
+            xs["E10bFT"], xs["E2k500T"], 0.9 * xs["E2k500T"], r4c))
+        r4d = drop("E10bFT", "E2k500T", [f for f in I1 if f != ab])
+        print("R4d accuracy E10bFT >= E2k500T - 0.01 on the other four: %s" % (
+            "yes" if not r4d else "NO: " + ", ".join(r4d)))
+        ra = drop("E10bFT", "baseT", I1)
+        print("R-all E10bFT vs baseT: FP %s, excess %.1f vs %.1f (need >=%.1f): %s, accuracy %s" % (
+            "not evaluable" if h4 is None else h4, xs["E10bFT"], xs["baseT"], 0.9 * xs["baseT"],
+            xs["E10bFT"] >= 0.9 * xs["baseT"], "ok on all five" if not ra else "drops on " + ", ".join(ra)))
+
+    print("\n## S2 timeout effect vs A1 (no timeout, hf10sqrt): accuracy / FP@3000 / confirmations")
+    a1 = rescore(exts=(3000,), show=False, held="a1")
+    a1r = runs_table(held="a1")
+    for f in I1:
+        old = "INS-" + f[3:]
+        for o, n in (("base", "baseT"), ("E2k500", "E2k500T")):
+            ro = a1r[(a1r["family"] == old) & (a1r["arm"] == o)].iloc[0]
+            fo = int(a1[(a1["family"] == old) & (a1["arm"] == o)]["fp"].sum())
+            print("%-14s %-6s %.4f / %3d / %3d   %-7s %.4f / %3d / %3d" % (
+                f, o, ro.quality, fo, len(ro.conf_t), n, runs.loc[("hf10sqrt", f, n)].quality,
+                d3.loc[("hf10sqrt", f, n), "fp"], len(runs.loc[("hf10sqrt", f, n)].conf_t)))
+
+    print("\n## S4 reference age at each GT point (descriptive; hit = a confirmation within 3000 steps)")
+    for lr in ("hf10sqrt", "ht"):
+        for f in gtf:
+            gt = scored_gt(f, load_stream(ALL[f][0][0], 0)[2])
+            for a in ("E2k500T", "E10bFT"):
+                x = runs.loc[(lr, f, a)]
+                age = x.sig.set_index("t")["ref_age"]
+                cells = ["%d:%s%d" % (s, "hit " if any(s <= c < s + 3000 for c in x.conf_t) else "MISS ",
+                                      int(age.get(s, -1))) for s, _ in gt]
+                print("%-9s %-14s %-8s %s" % (lr, f, a, "  ".join(cells)))
+        for a in ("E2k500T", "E10bFT"):
+            s = runs.loc[(lr, ab, a)].sig
+            last = int(s.loc[s["ref_age"] <= 1, "t"].iloc[-1])   # last freeze: switch (age 0) or confirmation (age 1)
+            tail = s[s["t"] > last]
+            print("%-9s abrupt %-8s last freeze t=%d, then %d steps: leader err %.3f, reference err %.3f" % (
+                lr, a, last, len(tail), tail["err"].mean(), tail["ref_err"].mean()))
+
+
 def analyze_a3() -> None:
     """A3 verdict (docs/ECPF_A3_真實迴歸資料_預註冊.md): the main method on real regression streams without GT --
     MAE guard (Q1), number of confirmations (Q2), share of confirmations preceded by a real residual rise (Q3)."""
@@ -1851,6 +1982,8 @@ if __name__ == "__main__":
     ap.add_argument("--analyze-a3", action="store_true", help="A3 verdict (real regression streams without GT)")
     ap.add_argument("--gate-d5", choices=["g2", "g3"], help="D5 gates (G2 flag-off rerun of an E13 cell, G3 self-check)")
     ap.add_argument("--analyze-d5", action="store_true", help="D5 dev check (prediction-range guard)")
+    ap.add_argument("--gate-i1", action="store_true", help="I1 gate G1: rerun A1's INS-abrupt E2k500, must be identical")
+    ap.add_argument("--analyze-i1", action="store_true", help="I1 readings (INSECTS ablation, seen data)")
     a = ap.parse_args()
     self_check()
     if a.check:
@@ -1911,3 +2044,7 @@ if __name__ == "__main__":
         check_d5()
     if a.analyze_d5:
         analyze_d5()
+    if a.gate_i1:
+        print("G1 %s" % ("PASS" if gate_rerun("INS-abrupt", "E2k500", "E2k500") else "FAIL"))
+    if a.analyze_i1:
+        analyze_i1()
