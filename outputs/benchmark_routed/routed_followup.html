@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>分流確認追加實驗</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: same system as routed_presentation.html; a scope switch (original 45 streams / injected 800 streams) drives the comparison charts. */
+:root {
+  --bg: #f5f6f7; --surface: #fcfcfb; --fg: #15191e; --muted: #59626d; --line: #dde1e6;
+  --accent: #1d5c8f; --accent-soft: #e2ecf5;
+  --good: #0b7d0b; --good-soft: #e3f3e3; --bad: #b42d2d; --bad-soft: #f8e3e3;
+  --div-pos: #2a78d6; --div-neg: #eb6834; --div-mid: #eef0f2;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #6250d6; --s7: #008300; --s8: #e34948; --s9: #6b7f99;
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --step--1: 0.8125rem; --step-0: 1rem; --step-1: 1.1875rem; --step-2: 1.5rem; --step-3: 2.125rem;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111417; --surface: #1a1a19; --fg: #eceef0; --muted: #a2aab4; --line: #2d3339;
+    --accent: #83b5e3; --accent-soft: #1c2b3a;
+    --good: #5fcf5f; --good-soft: #17301a; --bad: #ef7d7d; --bad-soft: #3a1c1c;
+    --div-pos: #3987e5; --div-neg: #d95926; --div-mid: #25292e;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #9085e9; --s7: #008300; --s8: #e66767; --s9: #8a9bb3;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111417; --surface: #1a1a19; --fg: #eceef0; --muted: #a2aab4; --line: #2d3339;
+  --accent: #83b5e3; --accent-soft: #1c2b3a;
+  --good: #5fcf5f; --good-soft: #17301a; --bad: #ef7d7d; --bad-soft: #3a1c1c;
+  --div-pos: #3987e5; --div-neg: #d95926; --div-mid: #25292e;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #9085e9; --s7: #008300; --s8: #e66767; --s9: #8a9bb3;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: var(--step-0); line-height: 1.7; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 72px; display: grid; gap: 56px; }
+.prose { max-width: 72ch; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.3; margin: 0; }
+h1 { font-size: var(--step-3); } h2 { font-size: var(--step-2); } h3 { font-size: var(--step-1); }
+p { margin: 0; }
+ul, ol { margin: 0; padding-left: 1.25em; display: grid; gap: 6px; }
+code, .mono { font-family: var(--font-data); font-size: 0.875em; }
+.eyebrow { font-size: var(--step--1); letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+.muted { color: var(--muted); }
+section { display: grid; gap: 18px; min-width: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+header { display: grid; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: var(--step--1); color: var(--muted); }
+.meta b { color: var(--fg); font-weight: 500; }
+.findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.finding { border-top: 2px solid var(--fg); padding-top: 12px; display: grid; gap: 6px; align-content: start; }
+.finding .big { font-family: var(--font-data); font-size: 1.25rem; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.3; }
+.finding p { color: var(--muted); font-size: 0.9375rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.controls .label { font-size: var(--step--1); color: var(--muted); margin-right: 2px; }
+.seg { font: inherit; font-size: var(--step--1); cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 5px 14px; }
+.seg[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.scope-bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); }
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.figure h3 { font-size: var(--step-0); font-family: var(--font-body); font-weight: 700; }
+.figure .cap { font-size: 0.875rem; color: var(--muted); max-width: 80ch; }
+.chart-box { position: relative; overflow-x: auto; }
+.chart-box svg { display: block; width: 100%; min-width: 600px; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: var(--step--1); color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+.table-box { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th { font-weight: 500; color: var(--muted); font-size: var(--step--1); background: var(--surface); }
+td:first-child, th:first-child { text-align: left; }
+td.name { font-family: var(--font-data); font-size: 0.8125rem; }
+tr:last-child td { border-bottom: 0; }
+.glossary { display: grid; grid-template-columns: max-content 1fr; gap: 8px 20px; margin: 0; }
+.glossary dt { font-weight: 700; }
+.glossary dd { margin: 0; color: var(--muted); }
+@media (max-width: 560px) { .glossary { grid-template-columns: 1fr; gap: 2px; } .glossary dd { margin-bottom: 10px; } }
+.obs h4 { margin: 0 0 6px; font-size: var(--step-0); }
+footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">追加實驗（探索性） · 2026-10-24 · branch feat/routed-detectors</p>
+  <h1>分流確認追加實驗</h1>
+  <p class="prose">正式實驗後的兩個追加問題：設計 1 改在 warning 後第 300 步才判斷類型，分類器會不會變準、結果會不會變好？三個設計放到 injected 資料集（800 條）上，結論還成立嗎？</p>
+  <div class="meta">
+    <span>預註冊 <b>修訂 2（探索性，不影響 H1–H3）</b></span>
+    <span>原資料 <b>5 個 INSECTS + synthetic_multiclass，45 條</b></span>
+    <span>injected <b>injected_paper_electricity + injected_paper_gas_sensor_drift，各 400 條</b></span>
+    <span>可重現性閘門 <b>injected 32/32 與 DET4 完全相同</b></span>
+  </div>
+</header>
+
+<section aria-labelledby="h-find">
+  <h2 id="h-find">重點</h2>
+  <div class="findings">
+    <div class="finding"><span class="eyebrow">第 300 步判斷</span><span class="big">沒有改善</span>
+      <p>原資料上，第 300 步對第 100 步的正確率 +0.04 點 [−0.33, +0.45]，沒有差別。</p></div>
+    <div class="finding"><span class="eyebrow">injected 上</span><span class="big">差距都很小</span>
+      <p>三個設計和兩個單一 detector 的正確率都在 72.5% 到 72.7% 之間；最低的是 HDDM-A→ADWIN（71.8%）。</p></div>
+    <div class="finding"><span class="eyebrow">injected 最好</span><span class="big">設計 2、聯集</span>
+      <p>比只用 HDDM-A 高 0.08 點、比只用 ADWIN 高 0.14 點，差距小但顯著。</p></div>
+    <div class="finding"><span class="eyebrow">設計 1 在 injected</span><span class="big">比設計 2 差</span>
+      <p>正確率 −0.12 點（顯著）；62% 的 warning 等到 timeout 都沒確認，少抓到約 97 個 drift。</p></div>
+    <div class="finding"><span class="eyebrow">分類器</span><span class="big">sudden 判對 12%</span>
+      <p>injected 上在第 300 步判斷時，真的是 sudden 的只判對 12%；換時間點救不了。</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-setup">
+  <h2 id="h-setup">這次做了什麼</h2>
+  <dl class="glossary">
+    <dt>為什麼是探索性</dt><dd>第 300 步是看過正式結果與離線測試之後才選的（離線測試顯示 drift 後約 +400 步最準，warning 通常在 drift 後約 90 步開啟）。所以這裡的結果只能描述，不能改寫預註冊的 H1–H3。</dd>
+    <dt>新組別</dt><dd><code>s1route_tr_d300_c300</code>：設計 1 改在 warning 開啟後第 300 步判斷，其餘設定不變（冷卻期 300）。</dd>
+    <dt>injected 資料集</dt><dd>每個資料集 400 條：abrupt 與 gradual 各半，各有 4 種注入方式（class_prior、feature_filtering、feature_permutation、label_swap）。abrupt 當作 sudden、gradual 當作非 sudden 來評估分類器。</dd>
+    <dt>基線</dt><dd>DET4 S1 的 2×2 四格（兩個 injected 資料集各 400 條都有）；e10bft lw0 只有 injected_paper_electricity 的 160 條，所以它在 injected 上的合併數值不能和其他組直接比。</dd>
+    <dt>統計方法</dt><dd>同正式實驗：分層（合成、INSECTS、injected）配對 bootstrap 10,000 次，seed 20261012，95% 區間。</dd>
+  </dl>
+</section>
+
+<section aria-labelledby="h-res" style="gap:20px">
+  <h2 id="h-res">結果</h2>
+  <div class="scope-bar controls" role="group" aria-label="資料範圍">
+    <span class="label">資料範圍</span>
+    <button type="button" class="seg" id="sc-original" data-s="original" aria-pressed="true">原資料 45 條</button>
+    <button type="button" class="seg" id="sc-injected" data-s="injected" aria-pressed="false">injected 800 條</button>
+  </div>
+
+  <div class="figure">
+    <h3>圖 1　配對比較</h3>
+    <p class="cap">每一列是「前者 − 後者」的差值與 95% 信賴區間；區間完全在 0 的一側才算顯著。藍色是顯著較好、橘色是顯著較差、灰色是不顯著。</p>
+    <div class="controls" role="group" aria-label="指標">
+      <span class="label">指標</span>
+      <button type="button" class="seg" id="f-acc" data-m="acc" aria-pressed="true">正確率</button>
+      <button type="button" class="seg" id="f-post" data-m="post_acc" aria-pressed="false">drift 後正確率</button>
+      <button type="button" class="seg" id="f-fp" data-m="fp" aria-pressed="false">FP（越少越好）</button>
+      <button type="button" class="seg" id="f-x" data-m="X" aria-pressed="false">X（越多越好）</button>
+    </div>
+    <div class="chart-box"><svg id="forest" viewBox="0 0 900 520" role="img" aria-label="配對比較森林圖"></svg></div>
+  </div>
+
+  <div class="figure">
+    <h3>圖 2　各組合併數值</h3>
+    <p class="cap" id="pooled-cap"></p>
+    <div class="controls" role="group" aria-label="指標">
+      <span class="label">指標</span>
+      <button type="button" class="seg" id="p-acc" data-m="acc" aria-pressed="true">正確率</button>
+      <button type="button" class="seg" id="p-post" data-m="post_acc" aria-pressed="false">drift 後正確率</button>
+      <button type="button" class="seg" id="p-fp" data-m="fp" aria-pressed="false">FP</button>
+      <button type="button" class="seg" id="p-x" data-m="X" aria-pressed="false">X</button>
+      <button type="button" class="seg" id="p-mdt" data-m="mdt" aria-pressed="false">平均延遲</button>
+    </div>
+    <div class="chart-box"><svg id="pooled" viewBox="0 0 900 340" role="img" aria-label="各組合併數值長條圖"></svg></div>
+  </div>
+
+  <div class="figure">
+    <h3>圖 3　各資料組</h3>
+    <p class="cap">點估計。底色表示相對「只用 HDDM-A」：藍色較好、橘色較差、灰色接近（正確率差距小於 0.1 點、FP 與 X 差距小於 1）。injected 每組 50 條。</p>
+    <div class="controls" role="group" aria-label="指標">
+      <span class="label">指標</span>
+      <button type="button" class="seg" id="g-acc" data-m="acc" aria-pressed="true">正確率</button>
+      <button type="button" class="seg" id="g-x" data-m="X" aria-pressed="false">X</button>
+      <button type="button" class="seg" id="g-fp" data-m="fp" aria-pressed="false">FP</button>
+    </div>
+    <div class="table-box"><table id="group-table"></table></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-route" style="gap:20px">
+  <h2 id="h-route">分流與分類器診斷</h2>
+  <div class="figure">
+    <h3>圖 4　分類器判斷「是不是 sudden」</h3>
+    <p class="cap">只看落在真實 drift 附近的 warning 事件。藍色：真的是 sudden 時判對的比例；橘色：不是 sudden 時判對的比例。各時間點是 warning 開啟後的步數；第 300 步版本在第 300 步做決定。</p>
+    <div class="controls" role="group" aria-label="版本">
+      <span class="label">版本</span>
+      <button type="button" class="seg" id="c-o100" data-c="original:tr" aria-pressed="false">原資料・第 100 步</button>
+      <button type="button" class="seg" id="c-o300" data-c="original:tr300" aria-pressed="true">原資料・第 300 步</button>
+      <button type="button" class="seg" id="c-i300" data-c="injected:tr300" aria-pressed="false">injected・第 300 步</button>
+    </div>
+    <div class="legend"><span><i class="swatch" style="background:var(--div-pos)"></i>sudden 判對</span><span><i class="swatch" style="background:var(--div-neg)"></i>非 sudden 判對</span></div>
+    <div class="chart-box"><svg id="clf" viewBox="0 0 900 280" role="img" aria-label="分類器各時間點的判對率"></svg></div>
+  </div>
+  <div class="figure">
+    <h3>圖 5　warning 事件的結局</h3>
+    <p class="cap">三個設計的 warning 事件最後怎麼結束（跟著上方的資料範圍切換）。</p>
+    <div class="table-box"><table id="route-table"></table></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-concl">
+  <h2 id="h-concl">結論與下一步</h2>
+  <div class="prose" style="display:grid;gap:16px">
+    <div class="obs">
+      <h4>結論</h4>
+      <ul>
+        <li>把判斷延到第 300 步，分類器沒有變準，正確率也沒有變好：原資料上與第 100 步版本沒有差別，injected 上 sudden 仍只判對 12%。問題在分類器本身，不在判斷的時間點。</li>
+        <li>設計 1 在原資料上的優勢（比只用 HDDM-A 高約 0.6 點）沒有延續到 injected：injected 上它與只用 HDDM-A、只用 ADWIN 都持平，且比設計 2 低 0.12 點。原因之一是它的 warning 有 62% 等到 timeout 都沒確認，漏掉較多 drift。</li>
+        <li>injected 上最好的是設計 2 與聯集，但領先幅度只有 0.08 到 0.14 點，誤報也比只用 HDDM-A 多約 235 次。</li>
+        <li>DET4 的混搭格（HDDM-A warning + ADWIN 確認）在兩種資料上都是最差，與正式實驗一致。</li>
+      </ul>
+    </div>
+    <div class="obs">
+      <h4>建議</h4>
+      <ol>
+        <li>目前的分類器不建議用來分流。若要保留這個方向，需要用我們 pipeline 的誤差重新訓練成二分類模型。</li>
+        <li>若以正確率為主要目標、又不想用分類器，設計 2（誰先發誰確認）在兩種資料上都不輸只用 HDDM-A，是最簡單的選項；代價是誤報較多。</li>
+        <li>冷卻期的效果還沒和分流分開：設計都有 300 步冷卻期、DET4 基線沒有。可補跑「只用 HDDM-A + 冷卻期 300」釐清。</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>來源：<code>outputs/routed/followup_verdict_data.json</code>（<code>python3 scripts/analyze_routed.py followup</code>）；原始 run 在 <code>outputs/benchmark_routed/</code>；injected 閘門見 <code>outputs/routed/gate_injected.md</code>。</span>
+  <span>正式實驗（預註冊 H1–H3）見同資料夾的 <code>routed_presentation.html</code>；預註冊與修訂見 <code>docs/ECPF_ROUTED_預註冊.md</code>。</span>
+</footer>
+
+</div>
+
+<script>
+const F = {"presets":{"tr300":"s1route_tr_d300_c300","tr":"s1route_tr_c300","fw":"s1route_fw_c300","union":"s1route_union_c300"},"smoke":false,"original":{"arms":["tr300","tr","fw","union","hddma","adwin","hddma_adwin","adwin_hddma","e10bft_lw0"],"comparisons":{"tr300_vs_tr":{"acc":{"point":0.0004389858565044813,"ci":[-0.003273917632802534,0.004520364682495242],"n":45},"post_acc":{"point":-0.001636682138427492,"ci":[-0.006846437480722739,0.003851570259549615],"n":44},"fp":{"point":11.0,"ci":[-5.0,29.0],"n":44},"X":{"point":-7.836936757163483,"ci":[-16.192842515063038,-0.38761141839305957],"n":44},"detection":"持平","accuracy":"持平","streams":45},"tr300_vs_fw":{"acc":{"point":0.005825353960001722,"ci":[0.0015507545375513549,0.010494239762115252],"n":45},"post_acc":{"point":-0.011284156149705238,"ci":[-0.0199644597122926,-0.0026047014552047637],"n":44},"fp":{"point":-46.0,"ci":[-70.0,-21.0],"n":44},"X":{"point":-14.392433655587613,"ci":[-24.732201754813364,-5.701003344552685],"n":44},"detection":"持平","accuracy":"優於","streams":45},"tr300_vs_union":{"acc":{"point":0.005995824860246524,"ci":[0.0019382430118576128,0.010433857991006759],"n":45},"post_acc":{"point":-0.011415218586571463,"ci":[-0.02017276332764804,-0.002362369512619567],"n":44},"fp":{"point":-40.0,"ci":[-64.0,-16.0],"n":44},"X":{"point":-12.82965837251958,"ci":[-23.148088208553066,-4.066232660241033],"n":44},"detection":"持平","accuracy":"優於","streams":45},"tr300_vs_hddma":{"acc":{"point":0.006235927999798774,"ci":[0.0015984385273920933,0.011033955158175837],"n":45},"post_acc":{"point":-0.009417315585561359,"ci":[-0.01936363636363636,0.0007846041121892516],"n":44},"fp":{"point":12.0,"ci":[-17.0,41.0],"n":44},"X":{"point":-5.826107323869834,"ci":[-18.383828063468606,7.510041005730187],"n":44},"detection":"持平","accuracy":"優於","streams":45},"tr300_vs_adwin":{"acc":{"point":0.00042850608804689827,"ci":[-0.0029234025654547744,0.004016928247406181],"n":45},"post_acc":{"point":0.0005498229058780169,"ci":[-0.0050127549382212285,0.005815310898678291],"n":44},"fp":{"point":0.0,"ci":[-21.0,22.0],"n":44},"X":{"point":6.114839267886586,"ci":[-3.724519685464071,15.134541946881503],"n":44},"detection":"持平","accuracy":"持平","streams":45},"tr300_vs_hddma_adwin":{"acc":{"point":0.017367305171789083,"ci":[0.012223286425835658,0.022595284141338597],"n":45},"post_acc":{"point":0.030112394031224843,"ci":[0.016491723082296603,0.044117424235450536],"n":44},"fp":{"point":99.0,"ci":[75.0,125.0],"n":44},"X":{"point":173.70024390757385,"ci":[150.41134606584689,197.90336903821031],"n":44},"detection":"持平","accuracy":"優於","streams":45},"tr300_vs_adwin_hddma":{"acc":{"point":0.0037082078478095637,"ci":[-0.0001157308183001554,0.00772317453237481],"n":45},"post_acc":{"point":0.006393289603232488,"ci":[-0.0012616146855004117,0.013592073237409855],"n":44},"fp":{"point":37.0,"ci":[18.0,57.0],"n":44},"X":{"point":33.860516376324085,"ci":[17.614079968546896,52.09817358536816],"n":44},"detection":"持平","accuracy":"持平","streams":45},"tr300_vs_e10bft_lw0":{"acc":{"point":0.004589905700714603,"ci":[0.0011772805316758977,0.008507147389768193],"n":45},"post_acc":{"point":0.006476402368074452,"ci":[0.0007578128064212236,0.0120641707867028],"n":44},"fp":{"point":2.0,"ci":[-21.0,25.0],"n":44},"X":{"point":-3.989374986711663,"ci":[-11.699482793596886,3.7178346204686106],"n":44},"detection":"持平","accuracy":"優於","streams":45}},"pooled":{"tr300":{"streams":45,"gt":313,"acc":0.6317069353710351,"post_acc":0.5101845103379493,"alarms":440,"fp":138,"X":281.3799740731837,"mdt":523.6551724137931},"tr":{"streams":45,"gt":313,"acc":0.6312679495145306,"post_acc":0.5118211924763768,"alarms":446,"fp":127,"X":289.2169108303472,"mdt":507.87205387205387},"fw":{"streams":45,"gt":313,"acc":0.6258815814110333,"post_acc":0.5214686664876546,"alarms":525,"fp":184,"X":295.7724077287713,"mdt":384.5746753246753},"union":{"streams":45,"gt":313,"acc":0.6257111105107885,"post_acc":0.5215997289245208,"alarms":513,"fp":178,"X":294.2096324457032,"mdt":377.32026143790847},"hddma":{"streams":45,"gt":313,"acc":0.6254710073712363,"post_acc":0.5196018259235107,"alarms":460,"fp":126.0,"X":287.20608139705354,"mdt":376.25762711864405},"adwin":{"streams":45,"gt":313,"acc":0.6312784292829882,"post_acc":0.5096346874320713,"alarms":433,"fp":138.0,"X":275.2651348052971,"mdt":532.565371024735},"hddma_adwin":{"streams":45,"gt":313,"acc":0.614339630199246,"post_acc":0.4800721163067245,"alarms":157,"fp":39.0,"X":107.67973016560978,"mdt":498.8181818181818},"adwin_hddma":{"streams":45,"gt":313,"acc":0.6279987275232255,"post_acc":0.5037912207347168,"alarms":365,"fp":101.0,"X":247.51945769685955,"mdt":525.7637795275591},"e10bft_lw0":{"streams":45,"gt":313,"acc":0.6271170296703205,"post_acc":0.5037081079698749,"alarms":442,"fp":136.0,"X":285.3693490598954,"mdt":null}},"by_group":{"insects_abrupt_balanced":{"tr300":{"streams":1,"gt":5,"acc":0.6423327278231911,"post_acc":0.5445318972659486,"alarms":12,"fp":8,"X":2.2289874478214786,"mdt":38.666666666666664},"tr":{"streams":1,"gt":5,"acc":0.6517559794126552,"post_acc":0.5445318972659486,"alarms":12,"fp":8,"X":2.2289874478214786,"mdt":38.666666666666664},"fw":{"streams":1,"gt":5,"acc":0.6476309415682713,"post_acc":0.554059652029826,"alarms":15,"fp":11,"X":1.9715615090811736,"mdt":20.666666666666668},"union":{"streams":1,"gt":5,"acc":0.6476309415682713,"post_acc":0.554059652029826,"alarms":15,"fp":11,"X":1.9715615090811736,"mdt":20.666666666666668},"hddma":{"streams":1,"gt":5,"acc":0.6456819557977597,"post_acc":0.5213338856669428,"alarms":11,"fp":6.0,"X":3.4098091897096805,"mdt":12.75},"adwin":{"streams":1,"gt":5,"acc":0.6469308204662428,"post_acc":0.5573736536868269,"alarms":14,"fp":9.0,"X":3.1413763120213285,"mdt":83.25},"hddma_adwin":{"streams":1,"gt":5,"acc":0.6036936118679987,"post_acc":0.4884009942004971,"alarms":5,"fp":1.0,"X":3.896415942490818,"mdt":107.5},"adwin_hddma":{"streams":1,"gt":5,"acc":0.634896306388132,"post_acc":0.5159486329743165,"alarms":15,"fp":9.0,"X":3.1413763120213285,"mdt":119.5},"e10bft_lw0":{"streams":1,"gt":5,"acc":0.646855131698456,"post_acc":0.5573736536868269,"alarms":14,"fp":9.0,"X":3.1413763120213285,"mdt":null}},"insects_incremental_abrupt_reoccurring_balanced":{"tr300":{"streams":1,"gt":2,"acc":0.6488010401820319,"post_acc":0.5325,"alarms":25,"fp":20,"X":1.5461496921221494,"mdt":55.5},"tr":{"streams":1,"gt":2,"acc":0.6546145575475708,"post_acc":0.5425,"alarms":25,"fp":20,"X":1.5461496921221494,"mdt":70.5},"fw":{"streams":1,"gt":2,"acc":0.6584277248518491,"post_acc":0.5895,"alarms":30,"fp":25,"X":1.4497960893383421,"mdt":3.0},"union":{"streams":1,"gt":2,"acc":0.6584277248518491,"post_acc":0.5895,"alarms":30,"fp":25,"X":1.4497960893383421,"mdt":3.0},"hddma":{"streams":1,"gt":2,"acc":0.648163428600005,"post_acc":0.559,"alarms":19,"fp":14.0,"X":1.670263826359061,"mdt":3.0},"adwin":{"streams":1,"gt":2,"acc":0.652739229365139,"post_acc":0.5755,"alarms":31,"fp":25.0,"X":1.449796089338342,"mdt":33.0},"hddma_adwin":{"streams":1,"gt":2,"acc":0.6321981346735679,"post_acc":0.577,"alarms":16,"fp":10.0,"X":1.7584934984936107,"mdt":53.5},"adwin_hddma":{"streams":1,"gt":2,"acc":0.6344360263046033,"post_acc":0.576,"alarms":22,"fp":16.0,"X":1.6278231848087752,"mdt":39.0},"e10bft_lw0":{"streams":1,"gt":2,"acc":0.6621908834045958,"post_acc":0.584,"alarms":35,"fp":29.0,"X":1.3770548288595,"mdt":null}},"insects_incremental_balanced":{"tr300":{"streams":1,"gt":0,"acc":0.5633308779683609,"post_acc":null,"alarms":7,"fp":0,"X":0,"mdt":null},"tr":{"streams":1,"gt":0,"acc":0.5616647374513312,"post_acc":null,"alarms":7,"fp":0,"X":0,"mdt":null},"fw":{"streams":1,"gt":0,"acc":0.5596302921884317,"post_acc":null,"alarms":10,"fp":0,"X":0,"mdt":null},"union":{"streams":1,"gt":0,"acc":0.5596302921884317,"post_acc":null,"alarms":10,"fp":0,"X":0,"mdt":null},"hddma":{"streams":1,"gt":0,"acc":0.5644182538847382,"post_acc":null,"alarms":8,"fp":0,"X":0,"mdt":null},"adwin":{"streams":1,"gt":0,"acc":0.5671191553544495,"post_acc":null,"alarms":5,"fp":0,"X":0,"mdt":null},"hddma_adwin":{"streams":1,"gt":0,"acc":0.5518958925251675,"post_acc":null,"alarms":3,"fp":0,"X":0,"mdt":null},"adwin_hddma":{"streams":1,"gt":0,"acc":0.538864919849872,"post_acc":null,"alarms":2,"fp":0,"X":0,"mdt":null},"e10bft_lw0":{"streams":1,"gt":0,"acc":0.5658914728682171,"post_acc":null,"alarms":5,"fp":0,"X":0,"mdt":null}},"insects_incremental_gradual_balanced":{"tr300":{"streams":1,"gt":1,"acc":0.65175983436853,"post_acc":0.544,"alarms":8,"fp":8,"X":-0.2945699531185294,"mdt":null},"tr":{"streams":1,"gt":1,"acc":0.6584679089026915,"post_acc":0.581,"alarms":8,"fp":7,"X":0.7368807472392824,"mdt":219.0},"fw":{"streams":1,"gt":1,"acc":0.662360248447205,"post_acc":0.571,"alarms":7,"fp":6,"X":0.7697336370237704,"mdt":86.0},"union":{"streams":1,"gt":1,"acc":0.662360248447205,"post_acc":0.571,"alarms":7,"fp":6,"X":0.7697336370237704,"mdt":86.0},"hddma":{"streams":1,"gt":1,"acc":0.6615320910973085,"post_acc":0.57,"alarms":8,"fp":7.0,"X":0.7368807472392824,"mdt":703.0},"adwin":{"streams":1,"gt":1,"acc":0.6721325051759834,"post_acc":0.566,"alarms":14,"fp":14.0,"X":-0.4570067643480768,"mdt":null},"hddma_adwin":{"streams":1,"gt":1,"acc":0.6384265010351967,"post_acc":0.573,"alarms":3,"fp":2.0,"X":0.9164599452988256,"mdt":123.0},"adwin_hddma":{"streams":1,"gt":1,"acc":0.6545341614906832,"post_acc":0.569,"alarms":10,"fp":9.0,"X":0.6753216893066705,"mdt":91.0},"e10bft_lw0":{"streams":1,"gt":1,"acc":0.6643064182194617,"post_acc":0.561,"alarms":13,"fp":12.0,"X":0.5924898719658415,"mdt":null}},"insects_incremental_reoccurring_balanced":{"tr300":{"streams":1,"gt":2,"acc":0.6776060810641862,"post_acc":0.519,"alarms":21,"fp":20,"X":0.5461496921221494,"mdt":29.0},"tr":{"streams":1,"gt":2,"acc":0.6778436226339609,"post_acc":0.61,"alarms":25,"fp":22,"X":1.5068627340794296,"mdt":132.5},"fw":{"streams":1,"gt":2,"acc":0.6795939289375641,"post_acc":0.6445,"alarms":24,"fp":21,"X":1.5263798191692821,"mdt":3.0},"union":{"streams":1,"gt":2,"acc":0.6795939289375641,"post_acc":0.6445,"alarms":24,"fp":21,"X":1.5263798191692821,"mdt":3.0},"hddma":{"streams":1,"gt":2,"acc":0.6776810941914835,"post_acc":0.6665,"alarms":27,"fp":23.0,"X":1.4875952045756908,"mdt":3.0},"adwin":{"streams":1,"gt":2,"acc":0.6799689945740505,"post_acc":0.6365,"alarms":30,"fp":26.0,"X":1.4312582435916972,"mdt":26.5},"hddma_adwin":{"streams":1,"gt":2,"acc":0.5858275198159678,"post_acc":0.251,"alarms":9,"fp":7.0,"X":0.8277110419095579,"mdt":230.0},"adwin_hddma":{"streams":1,"gt":2,"acc":0.6488010401820319,"post_acc":0.64,"alarms":20,"fp":16.0,"X":1.6278231848087752,"mdt":25.0},"e10bft_lw0":{"streams":1,"gt":2,"acc":0.6734303503113045,"post_acc":0.637,"alarms":26,"fp":22.0,"X":1.5068627340794296,"mdt":null}},"synthetic_multiclass:gradual":{"tr300":{"streams":10,"gt":79,"acc":0.609537,"post_acc":0.4939620253164557,"alarms":94,"fp":24,"X":68.0021865446345,"mdt":620.3857142857142},"tr":{"streams":10,"gt":79,"acc":0.60863,"post_acc":0.4923924050632911,"alarms":92,"fp":16,"X":71.55743418785181,"mdt":627.6849315068494},"fw":{"streams":10,"gt":79,"acc":0.602963,"post_acc":0.4929240506329114,"alarms":112,"fp":31,"X":74.21362568717376,"mdt":505.24675324675326},"union":{"streams":10,"gt":79,"acc":0.604932,"post_acc":0.49437974683544306,"alarms":110,"fp":31,"X":73.18310000648461,"mdt":504.85526315789474},"hddma":{"streams":10,"gt":79,"acc":0.609619,"post_acc":0.49443037974683546,"alarms":108,"fp":24.0,"X":71.75169674919857,"mdt":515.1216216216217},"adwin":{"streams":10,"gt":79,"acc":0.609423,"post_acc":0.4913164556962025,"alarms":88,"fp":21.0,"X":65.12924640362995,"mdt":679.1940298507462},"hddma_adwin":{"streams":10,"gt":79,"acc":0.598296,"post_acc":0.4927215189873418,"alarms":30,"fp":6.0,"X":23.37303562710079,"mdt":664.875},"adwin_hddma":{"streams":10,"gt":79,"acc":0.608562,"post_acc":0.48955696202531646,"alarms":84,"fp":21.0,"X":61.12793249549316,"mdt":643.5555555555555},"e10bft_lw0":{"streams":10,"gt":79,"acc":0.606934,"post_acc":0.4861645569620253,"alarms":87,"fp":14.0,"X":70.84450969291049,"mdt":null}},"synthetic_multiclass:incremental":{"tr300":{"streams":10,"gt":76,"acc":0.621842,"post_acc":0.5071710526315789,"alarms":96,"fp":27,"X":66.88041889147001,"mdt":662.1014492753624},"tr":{"streams":10,"gt":76,"acc":0.625731,"post_acc":0.5075263157894737,"alarms":100,"fp":24,"X":69.10864148890597,"mdt":633.2394366197183},"fw":{"streams":10,"gt":76,"acc":0.619626,"post_acc":0.5098421052631579,"alarms":119,"fp":37,"X":72.15463245028855,"mdt":514.64},"union":{"streams":10,"gt":76,"acc":0.620665,"post_acc":0.5100263157894737,"alarms":116,"fp":35,"X":72.34445445564367,"mdt":502.88},"hddma":{"streams":10,"gt":76,"acc":0.615262,"post_acc":0.5004342105263158,"alarms":103,"fp":25.0,"X":71.2743075435214,"mdt":501.3972602739726},"adwin":{"streams":10,"gt":76,"acc":0.624765,"post_acc":0.5085657894736842,"alarms":85,"fp":19.0,"X":64.5927999429178,"mdt":705.8636363636364},"hddma_adwin":{"streams":10,"gt":76,"acc":0.609745,"post_acc":0.4993684210526316,"alarms":29,"fp":6.0,"X":22.435365709748492,"mdt":702.0434782608696},"adwin_hddma":{"streams":10,"gt":76,"acc":0.625471,"post_acc":0.5075657894736842,"alarms":73,"fp":15.0,"X":56.69301391866931,"mdt":681.6034482758621},"e10bft_lw0":{"streams":10,"gt":76,"acc":0.618909,"post_acc":0.49942105263157893,"alarms":94,"fp":25.0,"X":66.96282658124949,"mdt":null}},"synthetic_multiclass:recurring_gradual":{"tr300":{"streams":5,"gt":31,"acc":0.669852,"post_acc":0.5350322580645162,"alarms":39,"fp":9,"X":28.328340738253175,"mdt":693.2413793103449},"tr":{"streams":5,"gt":31,"acc":0.654952,"post_acc":0.511483870967742,"alarms":38,"fp":7,"X":28.475583941278806,"mdt":669.3103448275862},"fw":{"streams":5,"gt":31,"acc":0.667914,"post_acc":0.5311290322580645,"alarms":54,"fp":17,"X":29.72381715880324,"mdt":529.4516129032259},"union":{"streams":5,"gt":31,"acc":0.657818,"post_acc":0.517,"alarms":47,"fp":11,"X":30.195160345508828,"mdt":568.516129032258},"hddma":{"streams":5,"gt":31,"acc":0.643904,"post_acc":0.5004838709677419,"alarms":40,"fp":10.0,"X":23.297140877981374,"mdt":518.3333333333334},"adwin":{"streams":5,"gt":31,"acc":0.664224,"post_acc":0.5275161290322581,"alarms":34,"fp":6.0,"X":27.561409641113777,"mdt":685.9642857142857},"hddma_adwin":{"streams":5,"gt":31,"acc":0.652292,"post_acc":0.527258064516129,"alarms":15,"fp":5.0,"X":9.669614184719821,"mdt":730.8},"adwin_hddma":{"streams":5,"gt":31,"acc":0.65897,"post_acc":0.5247741935483871,"alarms":30,"fp":2.0,"X":27.826466482729032,"mdt":710.5},"e10bft_lw0":{"streams":5,"gt":31,"acc":0.652896,"post_acc":0.5155483870967742,"alarms":40,"fp":11.0,"X":28.185442533885595,"mdt":null}},"synthetic_multiclass:recurring_incremental":{"tr300":{"streams":2,"gt":17,"acc":0.637325,"post_acc":0.5268235294117647,"alarms":25,"fp":9,"X":15.175826496692348,"mdt":732.125},"tr":{"streams":2,"gt":17,"acc":0.656235,"post_acc":0.5424705882352941,"alarms":25,"fp":9,"X":15.175826496692348,"mdt":682.8125},"fw":{"streams":2,"gt":17,"acc":0.598705,"post_acc":0.4923529411764706,"alarms":25,"fp":8,"X":16.270251916193516,"mdt":575.5294117647059},"union":{"streams":2,"gt":17,"acc":0.59701,"post_acc":0.49470588235294116,"alarms":27,"fp":11,"X":14.990070363118438,"mdt":516.25},"hddma":{"streams":2,"gt":17,"acc":0.61125,"post_acc":0.5174705882352941,"alarms":20,"fp":4.0,"X":14.631123792176133,"mdt":570.0},"adwin":{"streams":2,"gt":17,"acc":0.6485,"post_acc":0.5233529411764706,"alarms":20,"fp":6.0,"X":13.462254853295788,"mdt":702.9285714285714},"hddma_adwin":{"streams":2,"gt":17,"acc":0.626395,"post_acc":0.5524117647058824,"alarms":4,"fp":0.0,"X":4.0,"mdt":761.25},"adwin_hddma":{"streams":2,"gt":17,"acc":0.62653,"post_acc":0.54,"alarms":16,"fp":9.0,"X":6.158939301998785,"mdt":698.1428571428571},"e10bft_lw0":{"streams":2,"gt":17,"acc":0.630835,"post_acc":0.5058823529411764,"alarms":19,"fp":5.0,"X":13.534593105439372,"mdt":null}},"synthetic_multiclass:recurring_sudden":{"tr300":{"streams":3,"gt":24,"acc":0.68475,"post_acc":0.5612916666666666,"alarms":27,"fp":3,"X":23.774606323742706,"mdt":340.375},"tr":{"streams":3,"gt":24,"acc":0.6761966666666667,"post_acc":0.577625,"alarms":28,"fp":4,"X":23.641339895038517,"mdt":313.7083333333333},"fw":{"streams":3,"gt":24,"acc":0.6649633333333334,"post_acc":0.597125,"alarms":26,"fp":2,"X":23.80263421584787,"mdt":164.91666666666666},"union":{"streams":3,"gt":24,"acc":0.6649233333333333,"post_acc":0.5980416666666667,"alarms":26,"fp":2,"X":23.80263421584787,"mdt":160.08333333333334},"hddma":{"streams":3,"gt":24,"acc":0.67536,"post_acc":0.607125,"alarms":25,"fp":1.0,"X":23.901317107923937,"mdt":162.83333333333334},"adwin":{"streams":3,"gt":24,"acc":0.6667166666666666,"post_acc":0.5587083333333334,"alarms":24,"fp":0.0,"X":24.0,"mdt":280.25},"hddma_adwin":{"streams":3,"gt":24,"acc":0.64448,"post_acc":0.51125,"alarms":10,"fp":1.0,"X":8.901317107923935,"mdt":352.1111111111111},"adwin_hddma":{"streams":3,"gt":24,"acc":0.6833533333333334,"post_acc":0.5708333333333333,"alarms":20,"fp":1.0,"X":18.901317107923937,"mdt":310.5263157894737},"e10bft_lw0":{"streams":3,"gt":24,"acc":0.67489,"post_acc":0.5655,"alarms":25,"fp":1.0,"X":23.901317107923937,"mdt":null}},"synthetic_multiclass:sudden":{"tr300":{"streams":10,"gt":76,"acc":0.625447,"post_acc":0.4966184210526316,"alarms":86,"fp":10,"X":75.19187819944366,"mdt":296.11842105263156},"tr":{"streams":10,"gt":76,"acc":0.625765,"post_acc":0.5024342105263158,"alarms":86,"fp":10,"X":75.23920419931733,"mdt":282.2631578947368},"fw":{"streams":10,"gt":76,"acc":0.622598,"post_acc":0.5336973684210526,"alarms":103,"fp":26,"X":73.88997524585179,"mdt":139.89473684210526},"union":{"streams":10,"gt":76,"acc":0.624257,"post_acc":0.5374868421052632,"alarms":101,"fp":25,"X":73.97674200448726,"mdt":124.85526315789474},"hddma":{"streams":10,"gt":76,"acc":0.625744,"post_acc":0.5398947368421053,"alarms":91,"fp":12.0,"X":75.04594635836834,"mdt":139.6184210526316},"adwin":{"streams":10,"gt":76,"acc":0.625332,"post_acc":0.49503947368421053,"alarms":88,"fp":12.0,"X":74.95400008373647,"mdt":294.69736842105266},"hddma_adwin":{"streams":10,"gt":76,"acc":0.608942,"post_acc":0.40407894736842104,"alarms":33,"fp":1.0,"X":31.901317107923933,"mdt":261.0625},"adwin_hddma":{"streams":10,"gt":76,"acc":0.620063,"post_acc":0.4698684210526316,"alarms":73,"fp":3.0,"X":69.73944401909979,"mdt":315.5571428571429},"e10bft_lw0":{"streams":10,"gt":76,"acc":0.622583,"post_acc":0.4916184210526316,"alarms":84,"fp":8.0,"X":75.32287629156033,"mdt":null}}},"routing":{"fw":{"episodes":3168,"end_reasons":{"zone_exit":1867,"timeout":74,"confirmed":424,"cooldown":762,"reset":41},"opener_share":{"hddma":3040,"adwin":128},"confirmed_by":{"hddma":365,"adwin":59},"ignored_drifts":23,"cooldown_blocked":774,"episodes_at_gt_drift":1623,"opener_matches_type":0.3111521873074553,"classifier_sudden_vs_not":{"100":{"n":46,"accuracy":0.6956521739130435,"sudden_recall":0.2222222222222222,"non_sudden_recall":0.8108108108108109},"200":{"n":20,"accuracy":0.7,"sudden_recall":0.0,"non_sudden_recall":0.9333333333333333},"300":{"n":15,"accuracy":0.8666666666666667,"sudden_recall":0.0,"non_sudden_recall":1.0},"confirm":{"n":274,"accuracy":0.635036496350365,"sudden_recall":0.1566265060240964,"non_sudden_recall":0.8429319371727748}}},"tr":{"episodes":1228,"end_reasons":{"timeout":394,"confirmed":218,"reset":184,"cooldown":431,"stream_end":1},"opener_share":{"hddma":1108,"adwin":120},"confirmed_by":{"adwin":169,"hddma":49},"ignored_drifts":80,"cooldown_blocked":434,"episodes_at_gt_drift":635,"opener_matches_type":0.1889763779527559,"classifier_sudden_vs_not":{"100":{"n":290,"accuracy":0.6827586206896552,"sudden_recall":0.1686746987951807,"non_sudden_recall":0.8888888888888888},"200":{"n":179,"accuracy":0.7094972067039106,"sudden_recall":0.0975609756097561,"non_sudden_recall":0.8913043478260869},"300":{"n":130,"accuracy":0.7538461538461538,"sudden_recall":0.07692307692307693,"non_sudden_recall":0.9230769230769231},"confirm":{"n":137,"accuracy":0.583941605839416,"sudden_recall":0.42857142857142855,"non_sudden_recall":0.6704545454545454}}},"tr300":{"episodes":1168,"end_reasons":{"timeout":394,"confirmed":159,"reset":237,"cooldown":371,"stream_end":7},"opener_share":{"hddma":1038,"adwin":130},"confirmed_by":{"adwin":143,"hddma":16},"ignored_drifts":30,"cooldown_blocked":380,"episodes_at_gt_drift":581,"opener_matches_type":0.24096385542168675,"classifier_sudden_vs_not":{"100":{"n":285,"accuracy":0.6350877192982456,"sudden_recall":0.1411764705882353,"non_sudden_recall":0.845},"200":{"n":213,"accuracy":0.6619718309859155,"sudden_recall":0.08928571428571429,"non_sudden_recall":0.8662420382165605},"300":{"n":158,"accuracy":0.7911392405063291,"sudden_recall":0.1935483870967742,"non_sudden_recall":0.937007874015748},"confirm":{"n":85,"accuracy":0.7647058823529411,"sudden_recall":0.5,"non_sudden_recall":0.8461538461538461}}},"union":{"episodes":2830,"end_reasons":{"zone_exit":1724,"timeout":73,"confirmed":422,"cooldown":578,"reset":31,"stream_end":2},"opener_share":{"hddma":2709,"adwin":121},"confirmed_by":{"hddma":361,"adwin":61},"ignored_drifts":0,"cooldown_blocked":592,"episodes_at_gt_drift":1377,"opener_matches_type":0.22004357298474944,"classifier_sudden_vs_not":{"100":{"n":36,"accuracy":0.8055555555555556,"sudden_recall":0.2,"non_sudden_recall":0.9032258064516129},"200":{"n":13,"accuracy":0.7692307692307693,"sudden_recall":0.0,"non_sudden_recall":0.9090909090909091},"300":{"n":10,"accuracy":0.8,"sudden_recall":0.0,"non_sudden_recall":0.8888888888888888},"confirm":{"n":273,"accuracy":0.5970695970695971,"sudden_recall":0.10344827586206896,"non_sudden_recall":0.8279569892473119}}}}},"injected":{"arms":["tr300","fw","union","hddma","adwin","hddma_adwin","adwin_hddma","e10bft_lw0"],"comparisons":{"fw_vs_hddma":{"acc":{"point":0.0007836259391511557,"ci":[0.0002762450542199979,0.001341502655703591],"n":800},"post_acc":{"point":0.0011533116923302389,"ci":[-0.00043577142525532406,0.0028598895234892116],"n":800},"fp":{"point":235.0,"ci":[196.0,274.0],"n":800},"X":{"point":10.621874979139715,"ci":[-2.4912862305482526,24.231958721452006],"n":800},"detection":"持平","accuracy":"優於","streams":800},"tr300_vs_fw":{"acc":{"point":-0.0012031237893482816,"ci":[-0.0015879108850008566,-0.0008504133216174826],"n":800},"post_acc":{"point":-0.015962115117384656,"ci":[-0.018969087621872435,-0.013195092592269501],"n":800},"fp":{"point":-156.0,"ci":[-199.0,-114.0],"n":800},"X":{"point":-97.05818550572556,"ci":[-118.06841320878475,-76.63903550708542],"n":800},"detection":"持平","accuracy":"不如","streams":800},"fw_vs_union":{"acc":{"point":-5.199903714148135e-05,"ci":[-0.00011041183085647998,1.4328469943344886e-05],"n":800},"post_acc":{"point":-0.0008396671711232706,"ci":[-0.0016606864611243388,-0.00022874509138298143],"n":800},"fp":{"point":-2.0,"ci":[-11.0,7.0],"n":800},"X":{"point":-5.055946762504809,"ci":[-10.22341006641447,-0.8404137875280735],"n":800},"detection":"持平","accuracy":"持平","streams":800},"tr300_vs_hddma":{"acc":{"point":-0.0004194978501971258,"ci":[-0.0009908608790351436,0.00017531462765454347],"n":800},"post_acc":{"point":-0.014808803425054418,"ci":[-0.017761508717784032,-0.012058455769607193],"n":800},"fp":{"point":79.0,"ci":[35.0,123.0],"n":800},"X":{"point":-86.43631052658583,"ci":[-107.59527611796554,-66.03081553018878],"n":800},"detection":"不如","accuracy":"持平","streams":800},"union_vs_hddma":{"acc":{"point":0.0008356249762926371,"ci":[0.00033163934100355894,0.0013902591826091043],"n":800},"post_acc":{"point":0.0019929788634535095,"ci":[0.0006094016606038505,0.0035440387999197322],"n":800},"fp":{"point":237.0,"ci":[198.97500000000002,276.0],"n":800},"X":{"point":15.677821741644523,"ci":[2.8270430236150155,28.98878683218194],"n":800},"detection":"持平","accuracy":"優於","streams":800},"tr300_vs_adwin":{"acc":{"point":0.00020161424426656804,"ci":[-0.00012811659300616395,0.0005468418007750969],"n":800},"post_acc":{"point":0.0002405076821810903,"ci":[-0.0009232466581498511,0.001414746416565579],"n":800},"fp":{"point":46.0,"ci":[18.0,74.0],"n":800},"X":{"point":-13.048130241134125,"ci":[-25.68773447668258,-0.8152188488591938],"n":800},"detection":"不如","accuracy":"持平","streams":800},"fw_vs_adwin":{"acc":{"point":0.0014047380336148496,"ci":[0.0009726428610175253,0.0018698687469583363],"n":800},"post_acc":{"point":0.016202622799565747,"ci":[0.013365154246602543,0.019168383198426904],"n":800},"fp":{"point":202.0,"ci":[160.0,244.0],"n":800},"X":{"point":84.01005526459144,"ci":[64.1194994859014,104.61301543460483],"n":800},"detection":"持平","accuracy":"優於","streams":800},"union_vs_adwin":{"acc":{"point":0.001456737070756331,"ci":[0.0010180239614362957,0.0019348637875473945],"n":800},"post_acc":{"point":0.017042289970689017,"ci":[0.01411966398131675,0.02011165792006901],"n":800},"fp":{"point":204.0,"ci":[162.0,246.02499999999964],"n":800},"X":{"point":89.06600202709623,"ci":[68.82717368853416,110.00806767749496],"n":800},"detection":"持平","accuracy":"優於","streams":800},"tr300_vs_hddma_adwin":{"acc":{"point":0.007359054744694116,"ci":[0.0060315002955674355,0.008746222239902119],"n":800},"post_acc":{"point":0.017457200884393176,"ci":[0.013278675334068965,0.02200538156626077],"n":800},"fp":{"point":401.0,"ci":[364.0,439.0],"n":800},"X":{"point":116.44916311779056,"ci":[95.09293707135576,138.8448248016207],"n":800},"detection":"持平","accuracy":"優於","streams":800},"fw_vs_hddma_adwin":{"acc":{"point":0.008562178534042397,"ci":[0.007180475997624625,0.010025020824268416],"n":800},"post_acc":{"point":0.03341931600177783,"ci":[0.027264761319147325,0.04006607994340337],"n":800},"fp":{"point":557.0,"ci":[506.0,606.0],"n":800},"X":{"point":213.50734862351612,"ci":[186.97052572477736,240.36021169100306],"n":800},"detection":"持平","accuracy":"優於","streams":800},"tr300_vs_adwin_hddma":{"acc":{"point":0.0026349175017522652,"ci":[0.0018612065581329912,0.0034647143039878564],"n":800},"post_acc":{"point":0.005417751998604836,"ci":[0.0037310881021387133,0.007215737545362513],"n":800},"fp":{"point":259.0,"ci":[223.0,296.0],"n":800},"X":{"point":42.31182288458042,"ci":[25.823597253313814,59.182130970272596],"n":800},"detection":"持平","accuracy":"優於","streams":800},"hddma_adwin_vs_hddma":{"acc":{"point":-0.0077785525948912415,"ci":[-0.00920818655794095,-0.006432745713459517],"n":800},"post_acc":{"point":-0.03226600430944759,"ci":[-0.03892749375568917,-0.0259660050348045],"n":800},"fp":{"point":-322.0,"ci":[-362.0,-283.0],"n":800},"X":{"point":-202.88547364437642,"ci":[-228.80952863847162,-177.67149742110743],"n":800},"detection":"持平","accuracy":"不如","streams":800},"adwin_hddma_vs_adwin":{"acc":{"point":-0.002433303257485697,"ci":[-0.003238677703635004,-0.0016893495530854287],"n":800},"post_acc":{"point":-0.005177244316423746,"ci":[-0.006937810887449852,-0.0035589897903922476],"n":800},"fp":{"point":-213.0,"ci":[-247.0,-179.0],"n":800},"X":{"point":-55.35995312571454,"ci":[-72.52737920021434,-39.17313368452234],"n":800},"detection":"持平","accuracy":"不如","streams":800},"tr300_vs_e10bft_lw0":{"acc":{"point":0.0007901767347249233,"ci":[-0.00037651142531783526,0.0019787299354711487],"n":160},"post_acc":{"point":0.0025850956839525985,"ci":[-0.001039274353383468,0.006407241044144523],"n":160},"fp":{"point":5.0,"ci":[-10.0,21.0],"n":160},"X":{"point":-0.14505495754032127,"ci":[-5.2330382199155085,4.936761656392278],"n":160},"detection":"持平","accuracy":"持平","streams":160}},"pooled":{"tr300":{"streams":800,"gt":800,"acc":0.7257021128417757,"post_acc":0.6321090414010768,"alarms":700,"fp":509,"X":161.26593409753994,"mdt":530.1204188481676},"fw":{"streams":800,"gt":800,"acc":0.7269052366311239,"post_acc":0.6480711565184615,"alarms":963,"fp":665,"X":258.32411960326675,"mdt":413.42033898305084},"union":{"streams":800,"gt":800,"acc":0.7269572356682654,"post_acc":0.6489108236895847,"alarms":971,"fp":667,"X":263.38006636577154,"mdt":411.4433333333333},"hddma":{"streams":800,"gt":800,"acc":0.7261216106919728,"post_acc":0.6469178448261312,"alarms":705,"fp":430.0,"X":247.7022446241255,"mdt":406.46153846153845},"adwin":{"streams":800,"gt":800,"acc":0.7255004985975091,"post_acc":0.6318685337188957,"alarms":665,"fp":463.0,"X":174.3140643386736,"mdt":543.3333333333334},"hddma_adwin":{"streams":800,"gt":800,"acc":0.7183430580970815,"post_acc":0.6146518405166836,"alarms":161,"fp":108.0,"X":44.816770979750565,"mdt":513.4528301886793},"adwin_hddma":{"streams":800,"gt":800,"acc":0.7230671953400234,"post_acc":0.626691289402472,"alarms":387,"fp":250.0,"X":118.95411121296016,"mdt":542.1897810218978},"e10bft_lw0":{"streams":160,"gt":160,"acc":0.7765035871375119,"post_acc":0.7327648483646614,"alarms":147,"fp":110.0,"X":32.73127188355756,"mdt":null}},"by_group":{"injected_paper_electricity:abrupt/class_prior":{"tr300":{"streams":50,"gt":50,"acc":0.7680478644759902,"post_acc":0.7727829732344405,"alarms":51,"fp":48,"X":1.5731063236780332,"mdt":689.3333333333334},"fw":{"streams":50,"gt":50,"acc":0.7683350432138041,"post_acc":0.77378265075782,"alarms":76,"fp":62,"X":12.17227773157081,"mdt":509.07142857142856},"union":{"streams":50,"gt":50,"acc":0.7683588902114671,"post_acc":0.77378265075782,"alarms":77,"fp":63,"X":12.143277425937574,"mdt":509.07142857142856},"hddma":{"streams":50,"gt":50,"acc":0.7681285383617011,"post_acc":0.772234762979684,"alarms":45,"fp":32.0,"X":12.049622292716318,"mdt":548.2307692307693},"adwin":{"streams":50,"gt":50,"acc":0.7677398830380872,"post_acc":0.772944211544663,"alarms":49,"fp":44.0,"X":3.689134260898048,"mdt":735.6},"hddma_adwin":{"streams":50,"gt":50,"acc":0.7675719392885882,"post_acc":0.7718155433731054,"alarms":2,"fp":2.0,"X":-0.059787908253116,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.7676363769205712,"post_acc":0.772234762979684,"alarms":6,"fp":5.0,"X":0.8514238778605306,"mdt":386.0},"e10bft_lw0":{"streams":20,"gt":20,"acc":0.7686816182157029,"post_acc":0.7779659649971772,"alarms":22,"fp":18.0,"X":3.4645630565148537,"mdt":null}},"injected_paper_electricity:abrupt/feature_filtering":{"tr300":{"streams":50,"gt":50,"acc":0.7578670821557918,"post_acc":0.773857998289136,"alarms":20,"fp":20,"X":-0.5934375547516224,"mdt":null},"fw":{"streams":50,"gt":50,"acc":0.7577526085479153,"post_acc":0.7742686056458512,"alarms":32,"fp":31,"X":0.08040989533620066,"mdt":448.0},"union":{"streams":50,"gt":50,"acc":0.7577526085479153,"post_acc":0.7742686056458512,"alarms":32,"fp":31,"X":0.08040989533620066,"mdt":448.0},"hddma":{"streams":50,"gt":50,"acc":0.7577697018920778,"post_acc":0.7739606501283148,"alarms":12,"fp":11.0,"X":0.6711665046078619,"mdt":448.0},"adwin":{"streams":50,"gt":50,"acc":0.7578318595072144,"post_acc":0.7743370402053037,"alarms":9,"fp":9.0,"X":-0.26904558713902194,"mdt":null},"hddma_adwin":{"streams":50,"gt":50,"acc":0.7577396590447618,"post_acc":0.7743370402053037,"alarms":1,"fp":1.0,"X":-0.029893954126558,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.7577857592759881,"post_acc":0.7742343883661249,"alarms":2,"fp":2.0,"X":-0.059787908253116,"mdt":null},"e10bft_lw0":{"streams":20,"gt":20,"acc":0.7578858857623344,"post_acc":0.7777495769881557,"alarms":5,"fp":5.0,"X":-0.14946977063279,"mdt":null}},"injected_paper_electricity:abrupt/feature_permutation":{"tr300":{"streams":50,"gt":50,"acc":0.7507662429378531,"post_acc":0.64726,"alarms":60,"fp":19,"X":40.437350047868264,"mdt":521.1463414634146},"fw":{"streams":50,"gt":50,"acc":0.751524540960452,"post_acc":0.68182,"alarms":80,"fp":35,"X":42.97570792279454,"mdt":280.29545454545456},"union":{"streams":50,"gt":50,"acc":0.7516454802259886,"post_acc":0.68628,"alarms":81,"fp":34,"X":44.00470822842779,"mdt":261.26666666666665},"hddma":{"streams":50,"gt":50,"acc":0.7508964512711864,"post_acc":0.68028,"alarms":67,"fp":24.0,"X":41.28880064041586,"mdt":299.8809523809524},"adwin":{"streams":50,"gt":50,"acc":0.7507379943502824,"post_acc":0.64494,"alarms":56,"fp":16.0,"X":39.52348403096172,"mdt":571.725},"hddma_adwin":{"streams":50,"gt":50,"acc":0.7457366701977401,"post_acc":0.6078,"alarms":10,"fp":3.0,"X":6.911211786113647,"mdt":574.0},"adwin_hddma":{"streams":50,"gt":50,"acc":0.7498508121468926,"post_acc":0.63164,"alarms":40,"fp":17.0,"X":22.493590076835158,"mdt":554.6521739130435},"e10bft_lw0":{"streams":20,"gt":20,"acc":0.7502284163135593,"post_acc":0.6381,"alarms":24,"fp":7.0,"X":16.790742321114095,"mdt":null}},"injected_paper_electricity:abrupt/label_swap":{"tr300":{"streams":50,"gt":50,"acc":0.8383787959039548,"post_acc":0.75336,"alarms":50,"fp":18,"X":31.462802474215287,"mdt":408.65625},"fw":{"streams":50,"gt":50,"acc":0.843327595338983,"post_acc":0.85486,"alarms":62,"fp":21,"X":39.374014260328934,"mdt":230.35},"union":{"streams":50,"gt":50,"acc":0.8435001765536723,"post_acc":0.86082,"alarms":62,"fp":21,"X":39.374014260328934,"mdt":219.525},"hddma":{"streams":50,"gt":50,"acc":0.8401324152542373,"post_acc":0.84714,"alarms":50,"fp":14.0,"X":35.58327193921483,"mdt":210.13888888888889},"adwin":{"streams":50,"gt":50,"acc":0.8372938735875706,"post_acc":0.7577,"alarms":50,"fp":17.0,"X":31.492696428341844,"mdt":379.03125},"hddma_adwin":{"streams":50,"gt":50,"acc":0.806847634180791,"post_acc":0.61222,"alarms":7,"fp":0.0,"X":7.0,"mdt":374.0},"adwin_hddma":{"streams":50,"gt":50,"acc":0.8270387535310735,"post_acc":0.7204,"alarms":27,"fp":2.0,"X":24.940212091746886,"mdt":403.16},"e10bft_lw0":{"streams":20,"gt":20,"acc":0.8400324417372881,"post_acc":0.7406,"alarms":22,"fp":8.0,"X":12.761742015480856,"mdt":null}},"injected_paper_electricity:gradual/class_prior":{"tr300":{"streams":50,"gt":50,"acc":0.769100947295875,"post_acc":0.7628730093562955,"alarms":53,"fp":53,"X":-1.57460286465518,"mdt":null},"fw":{"streams":50,"gt":50,"acc":0.7693461921728846,"post_acc":0.7623544156096718,"alarms":70,"fp":67,"X":0.013164031713317065,"mdt":74.5},"union":{"streams":50,"gt":50,"acc":0.7693967426475335,"post_acc":0.7623544156096718,"alarms":71,"fp":68,"X":-0.01583627391992018,"mdt":74.5},"hddma":{"streams":50,"gt":50,"acc":0.7686019490461226,"post_acc":0.7631755223751594,"alarms":32,"fp":32.0,"X":-0.9512713557769971,"mdt":null},"adwin":{"streams":50,"gt":50,"acc":0.7692320782301127,"post_acc":0.7625921044102076,"alarms":52,"fp":52.0,"X":-1.5473631413215152,"mdt":null},"hddma_adwin":{"streams":50,"gt":50,"acc":0.7684252726347258,"post_acc":0.7634348192484712,"alarms":1,"fp":1.0,"X":-0.029893954126558,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.7685058530943146,"post_acc":0.7632835627390393,"alarms":8,"fp":8.0,"X":-0.23825798451914337,"mdt":null},"e10bft_lw0":{"streams":20,"gt":20,"acc":0.7688631172460139,"post_acc":0.7641127945220251,"alarms":20,"fp":20.0,"X":-0.5960917855445188,"mdt":null}},"injected_paper_electricity:gradual/feature_filtering":{"tr300":{"streams":50,"gt":50,"acc":0.7579845837039174,"post_acc":0.7616659066727466,"alarms":17,"fp":17,"X":-0.504649340865269,"mdt":null},"fw":{"streams":50,"gt":50,"acc":0.7578378524554699,"post_acc":0.7607321998566868,"alarms":33,"fp":32,"X":0.052276523509219686,"mdt":165.0},"union":{"streams":50,"gt":50,"acc":0.7577867719525972,"post_acc":0.7608841986406966,"alarms":35,"fp":34,"X":-0.00661773625057574,"mdt":165.0},"hddma":{"streams":50,"gt":50,"acc":0.7578253327243736,"post_acc":0.7603413458406618,"alarms":18,"fp":17.0,"X":0.4944570106414114,"mdt":165.0},"adwin":{"streams":50,"gt":50,"acc":0.7580331602605707,"post_acc":0.7613401949927258,"alarms":12,"fp":12.0,"X":-0.35694015253205474,"mdt":null},"hddma_adwin":{"streams":50,"gt":50,"acc":0.7579415158289464,"post_acc":0.761188196208716,"alarms":1,"fp":1.0,"X":-0.029893954126558,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.7579114684743156,"post_acc":0.7612533385447202,"alarms":0,"fp":0.0,"X":0.0,"mdt":null},"e10bft_lw0":{"streams":20,"gt":20,"acc":0.758735641871705,"post_acc":0.7612871716952464,"alarms":3,"fp":3.0,"X":-0.089681862379674,"mdt":null}},"injected_paper_electricity:gradual/feature_permutation":{"tr300":{"streams":50,"gt":50,"acc":0.7461974752824859,"post_acc":0.72482,"alarms":71,"fp":69,"X":-0.043102711940645064,"mdt":745.0},"fw":{"streams":50,"gt":50,"acc":0.7462632415254238,"post_acc":0.7245,"alarms":110,"fp":96,"X":11.192019269604371,"mdt":758.0},"union":{"streams":50,"gt":50,"acc":0.7460045903954802,"post_acc":0.72446,"alarms":111,"fp":96,"X":12.192860287331191,"mdt":755.4},"hddma":{"streams":50,"gt":50,"acc":0.7467593573446327,"post_acc":0.72354,"alarms":80,"fp":70.0,"X":6.933889344173331,"mdt":720.1111111111111},"adwin":{"streams":50,"gt":50,"acc":0.7460138594632768,"post_acc":0.72404,"alarms":64,"fp":62.0,"X":0.16081979067240426,"mdt":833.0},"hddma_adwin":{"streams":50,"gt":50,"acc":0.7458686440677966,"post_acc":0.72376,"alarms":15,"fp":15.0,"X":-0.4475156634050493,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.7467041843220339,"post_acc":0.72496,"alarms":39,"fp":38.0,"X":-0.13239566283592158,"mdt":943.0},"e10bft_lw0":{"streams":20,"gt":20,"acc":0.7461621645480226,"post_acc":0.72995,"alarms":23,"fp":23.0,"X":-0.6830927024442311,"mdt":null}},"injected_paper_electricity:gradual/label_swap":{"tr300":{"streams":50,"gt":50,"acc":0.8162566207627119,"post_acc":0.71214,"alarms":58,"fp":56,"X":0.3348750538459543,"mdt":886.5},"fw":{"streams":50,"gt":50,"acc":0.8182313735875706,"post_acc":0.71366,"alarms":88,"fp":73,"X":12.847885763958214,"mdt":775.2666666666667},"union":{"streams":50,"gt":50,"acc":0.8184414724576271,"post_acc":0.7135,"alarms":90,"fp":74,"X":13.818885458324974,"mdt":780.25},"hddma":{"streams":50,"gt":50,"acc":0.8142845162429379,"post_acc":0.71298,"alarms":64,"fp":48.0,"X":14.57754785145757,"mdt":742.375},"adwin":{"streams":50,"gt":50,"acc":0.8148786193502825,"post_acc":0.71312,"alarms":69,"fp":67.0,"X":0.019392856479499926,"mdt":777.5},"hddma_adwin":{"streams":50,"gt":50,"acc":0.7914344985875706,"post_acc":0.71302,"alarms":15,"fp":15.0,"X":-0.44840931189836986,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.8041587217514125,"post_acc":0.71286,"alarms":29,"fp":28.0,"X":0.16386293294969628,"mdt":814.0},"e10bft_lw0":{"streams":20,"gt":20,"acc":0.8147885769774011,"post_acc":0.71245,"alarms":28,"fp":26.0,"X":1.232560611448954,"mdt":null}},"injected_paper_gas_sensor_drift:abrupt/class_prior":{"tr300":{"streams":50,"gt":50,"acc":0.5684790172398732,"post_acc":0.5734157298246414,"alarms":7,"fp":6,"X":0.39579605196340295,"mdt":554.0},"fw":{"streams":50,"gt":50,"acc":0.568819416621732,"post_acc":0.57357535402367,"alarms":21,"fp":18,"X":1.207669400935932,"mdt":577.3333333333334},"union":{"streams":50,"gt":50,"acc":0.5689218376746806,"post_acc":0.57357535402367,"alarms":22,"fp":19,"X":1.1069687429298325,"mdt":577.3333333333334},"hddma":{"streams":50,"gt":50,"acc":0.5687350698722448,"post_acc":0.5738261920507148,"alarms":14,"fp":13.0,"X":-0.29896793155643203,"mdt":969.0},"adwin":{"streams":50,"gt":50,"acc":0.5685302277663474,"post_acc":0.5728456433995394,"alarms":3,"fp":3.0,"X":-0.30210197401829847,"mdt":null},"hddma_adwin":{"streams":50,"gt":50,"acc":0.5684579305525014,"post_acc":0.5728684468565435,"alarms":0,"fp":0.0,"X":0.0,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.5685874630606423,"post_acc":0.5734841401956536,"alarms":2,"fp":2.0,"X":-0.201401316012199,"mdt":null},"e10bft_lw0":{"streams":0,"gt":0,"acc":null,"post_acc":null,"alarms":0,"fp":0,"X":0,"mdt":null}},"injected_paper_gas_sensor_drift:abrupt/feature_filtering":{"tr300":{"streams":50,"gt":50,"acc":0.5724850479195521,"post_acc":0.5503863618258583,"alarms":44,"fp":30,"X":11.028662205070683,"mdt":654.3571428571429},"fw":{"streams":50,"gt":50,"acc":0.574899249185142,"post_acc":0.5705010754401338,"alarms":55,"fp":29,"X":23.149644108122494,"mdt":466.8076923076923},"union":{"streams":50,"gt":50,"acc":0.5749877641129242,"post_acc":0.5718553333864415,"alarms":55,"fp":28,"X":24.250344766128592,"mdt":458.81481481481484},"hddma":{"streams":50,"gt":50,"acc":0.5751856210103198,"post_acc":0.5743646936987175,"alarms":38,"fp":18.0,"X":18.247210723666736,"mdt":394.25},"adwin":{"streams":50,"gt":50,"acc":0.5730057239653299,"post_acc":0.5485142993706683,"alarms":44,"fp":29.0,"X":12.110102785391705,"mdt":689.5333333333333},"hddma_adwin":{"streams":50,"gt":50,"acc":0.5644614300541156,"post_acc":0.5459252768262567,"alarms":12,"fp":7.0,"X":4.295095393957304,"mdt":463.2},"adwin_hddma":{"streams":50,"gt":50,"acc":0.571367330007949,"post_acc":0.5490719349956186,"alarms":23,"fp":14.0,"X":7.590190787914607,"mdt":564.6666666666666},"e10bft_lw0":{"streams":0,"gt":0,"acc":null,"post_acc":null,"alarms":0,"fp":0,"X":0,"mdt":null}},"injected_paper_gas_sensor_drift:abrupt/feature_permutation":{"tr300":{"streams":50,"gt":50,"acc":0.5619496764917326,"post_acc":0.48782,"alarms":56,"fp":6,"X":49.3957960519634,"mdt":356.42},"fw":{"streams":50,"gt":50,"acc":0.5644356578001438,"post_acc":0.53464,"alarms":66,"fp":17,"X":47.328651303987755,"mdt":91.59183673469387},"union":{"streams":50,"gt":50,"acc":0.5644644140905823,"post_acc":0.53482,"alarms":65,"fp":16,"X":47.41921133947099,"mdt":90.28571428571429},"hddma":{"streams":50,"gt":50,"acc":0.5644572250179727,"post_acc":0.53434,"alarms":60,"fp":10.0,"X":49.013274664984735,"mdt":93.28},"adwin":{"streams":50,"gt":50,"acc":0.5621351545650611,"post_acc":0.48888,"alarms":55,"fp":5.0,"X":49.4964967099695,"mdt":302.42},"hddma_adwin":{"streams":50,"gt":50,"acc":0.5593414809489576,"post_acc":0.44234,"alarms":25,"fp":5.0,"X":19.496496709969506,"mdt":407.35},"adwin_hddma":{"streams":50,"gt":50,"acc":0.5608195542774982,"post_acc":0.46722,"alarms":49,"fp":8.0,"X":40.1943947359512,"mdt":434.780487804878},"e10bft_lw0":{"streams":0,"gt":0,"acc":null,"post_acc":null,"alarms":0,"fp":0,"X":0,"mdt":null}},"injected_paper_gas_sensor_drift:abrupt/label_swap":{"tr300":{"streams":50,"gt":50,"acc":0.560588066139468,"post_acc":0.50638,"alarms":52,"fp":37,"X":11.294356898820052,"mdt":706.6},"fw":{"streams":50,"gt":50,"acc":0.5632192667145938,"post_acc":0.5254,"alarms":64,"fp":31,"X":29.968524037156026,"mdt":473.8484848484849},"union":{"streams":50,"gt":50,"acc":0.5635010783608915,"post_acc":0.5256,"alarms":62,"fp":29,"X":30.14052465296028,"mdt":470.8484848484849},"hddma":{"streams":50,"gt":50,"acc":0.5626355140186916,"post_acc":0.52396,"alarms":59,"fp":26.0,"X":30.432486004455715,"mdt":481.1212121212121},"adwin":{"streams":50,"gt":50,"acc":0.5594248741912293,"post_acc":0.50494,"alarms":48,"fp":32.0,"X":12.79786018885055,"mdt":716.4375},"hddma_adwin":{"streams":50,"gt":50,"acc":0.5502127965492452,"post_acc":0.50098,"alarms":14,"fp":10.0,"X":2.992993419939005,"mdt":706.5},"adwin_hddma":{"streams":50,"gt":50,"acc":0.5576779295470884,"post_acc":0.50482,"alarms":38,"fp":26.0,"X":9.391923514364276,"mdt":727.0833333333334},"e10bft_lw0":{"streams":0,"gt":0,"acc":null,"post_acc":null,"alarms":0,"fp":0,"X":0,"mdt":null}},"injected_paper_gas_sensor_drift:gradual/class_prior":{"tr300":{"streams":50,"gt":50,"acc":0.5685997993473572,"post_acc":0.5700354980162873,"alarms":7,"fp":6,"X":0.39579605196340295,"mdt":566.0},"fw":{"streams":50,"gt":50,"acc":0.5685670032244552,"post_acc":0.5699728544581332,"alarms":16,"fp":14,"X":0.5901907879146072,"mdt":781.5},"union":{"streams":50,"gt":50,"acc":0.5685953271487796,"post_acc":0.5699728544581332,"alarms":17,"fp":15,"X":0.4894901299085077,"mdt":781.5},"hddma":{"streams":50,"gt":50,"acc":0.5684596704585941,"post_acc":0.5697013990394655,"alarms":9,"fp":8.0,"X":0.19439473595120393,"mdt":997.0},"adwin":{"streams":50,"gt":50,"acc":0.5685610402930185,"post_acc":0.5699728544581332,"alarms":7,"fp":6.0,"X":0.39579605196340295,"mdt":566.0},"hddma_adwin":{"streams":50,"gt":50,"acc":0.5684686148557493,"post_acc":0.5697013990394655,"alarms":2,"fp":2.0,"X":-0.201401316012199,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.5685729661558919,"post_acc":0.5700354980162873,"alarms":5,"fp":4.0,"X":0.597197367975602,"mdt":566.0},"e10bft_lw0":{"streams":0,"gt":0,"acc":null,"post_acc":null,"alarms":0,"fp":0,"X":0,"mdt":null}},"injected_paper_gas_sensor_drift:gradual/feature_filtering":{"tr300":{"streams":50,"gt":50,"acc":0.5674709741205393,"post_acc":0.565969215969216,"alarms":43,"fp":42,"X":-3.219287013733317,"mdt":962.0},"fw":{"streams":50,"gt":50,"acc":0.5709814688631475,"post_acc":0.5662818662818663,"alarms":54,"fp":51,"X":-2.0454891229659644,"mdt":962.3333333333334},"union":{"streams":50,"gt":50,"acc":0.5709881491576149,"post_acc":0.5662818662818663,"alarms":55,"fp":52,"X":-2.136049158449202,"mdt":962.3333333333334},"hddma":{"streams":50,"gt":50,"acc":0.5705071679559635,"post_acc":0.5662818662818663,"alarms":38,"fp":37.0,"X":-2.685361856134235,"mdt":924.0},"adwin":{"streams":50,"gt":50,"acc":0.5682609189413069,"post_acc":0.5660894660894661,"alarms":42,"fp":40.0,"X":-2.017885697721116,"mdt":966.0},"hddma_adwin":{"streams":50,"gt":50,"acc":0.561794393896883,"post_acc":0.5661856661856662,"alarms":9,"fp":9.0,"X":-0.9063059220548955,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.5679636458375085,"post_acc":0.5661616161616162,"alarms":28,"fp":27.0,"X":-1.7189177661646857,"mdt":962.0},"e10bft_lw0":{"streams":0,"gt":0,"acc":null,"post_acc":null,"alarms":0,"fp":0,"X":0,"mdt":null}},"injected_paper_gas_sensor_drift:gradual/feature_permutation":{"tr300":{"streams":50,"gt":50,"acc":0.5559424874191229,"post_acc":0.47806,"alarms":63,"fp":34,"X":25.665400895777072,"mdt":752.2413793103449},"fw":{"streams":50,"gt":50,"acc":0.5571617541337167,"post_acc":0.49122,"alarms":71,"fp":24,"X":44.62374669794506,"mdt":677.3191489361702},"union":{"streams":50,"gt":50,"acc":0.5572005751258088,"post_acc":0.49174,"alarms":71,"fp":23,"X":45.724447355951156,"mdt":680.3125},"hddma":{"streams":50,"gt":50,"acc":0.5563810208483105,"post_acc":0.48734,"alarms":60,"fp":11.0,"X":47.91257400697862,"mdt":681.4081632653061},"adwin":{"streams":50,"gt":50,"acc":0.5552336448598131,"post_acc":0.4744,"alarms":59,"fp":23.0,"X":33.71328556606765,"mdt":774.6666666666666},"hddma_adwin":{"streams":50,"gt":50,"acc":0.5540891445003594,"post_acc":0.46516,"alarms":26,"fp":16.0,"X":8.388789471902413,"mdt":728.8},"adwin_hddma":{"streams":50,"gt":50,"acc":0.5551991373112869,"post_acc":0.47218,"alarms":51,"fp":29.0,"X":19.089821540345977,"mdt":733.6363636363636},"e10bft_lw0":{"streams":0,"gt":0,"acc":null,"post_acc":null,"alarms":0,"fp":0,"X":0,"mdt":null}},"injected_paper_gas_sensor_drift:gradual/label_swap":{"tr300":{"streams":50,"gt":50,"acc":0.5520129403306974,"post_acc":0.54354,"alarms":48,"fp":48,"X":-4.782928471678468,"mdt":null},"fw":{"streams":50,"gt":50,"acc":0.5528339324227175,"post_acc":0.5443,"alarms":65,"fp":64,"X":-5.206573008644913,"mdt":4.0},"union":{"streams":50,"gt":50,"acc":0.5530797987059669,"post_acc":0.5443,"alarms":65,"fp":64,"X":-5.206573008644913,"mdt":4.0},"hddma":{"streams":50,"gt":50,"acc":0.5558691588785046,"post_acc":0.54326,"alarms":59,"fp":59.0,"X":-5.76084995166965,"mdt":null},"adwin":{"streams":50,"gt":50,"acc":0.555294033069734,"post_acc":0.54352,"alarms":46,"fp":46.0,"X":-4.591667778189131,"mdt":null},"hddma_adwin":{"streams":50,"gt":50,"acc":0.5478936017253774,"post_acc":0.54296,"alarms":21,"fp":21.0,"X":-2.1147138181280885,"mdt":null},"adwin_hddma":{"streams":50,"gt":50,"acc":0.5539166067577282,"post_acc":0.54282,"alarms":40,"fp":40.0,"X":-4.007745075198258,"mdt":null},"e10bft_lw0":{"streams":0,"gt":0,"acc":null,"post_acc":null,"alarms":0,"fp":0,"X":0,"mdt":null}}},"routing":{"fw":{"episodes":6617,"end_reasons":{"timeout":329,"confirmed":1032,"zone_exit":4786,"cooldown":410,"reset":45,"stream_end":15},"opener_share":{"adwin":631,"hddma":5986},"confirmed_by":{"adwin":300,"hddma":732},"ignored_drifts":49,"cooldown_blocked":425,"episodes_at_gt_drift":1822,"opener_matches_type":0.38748627881448955,"classifier_sudden_vs_not":{"100":{"n":150,"accuracy":0.74,"sudden_recall":0.23076923076923078,"non_sudden_recall":0.918918918918919},"200":{"n":72,"accuracy":0.6111111111111112,"sudden_recall":0.045454545454545456,"non_sudden_recall":0.86},"300":{"n":50,"accuracy":0.66,"sudden_recall":0.07142857142857142,"non_sudden_recall":0.8888888888888888},"confirm":{"n":507,"accuracy":0.5641025641025641,"sudden_recall":0.11818181818181818,"non_sudden_recall":0.9059233449477352}}},"tr300":{"episodes":2806,"end_reasons":{"timeout":1741,"confirmed":537,"cooldown":266,"reset":189,"stream_end":73},"opener_share":{"adwin":639,"hddma":2167},"confirmed_by":{"adwin":466,"hddma":71},"ignored_drifts":91,"cooldown_blocked":266,"episodes_at_gt_drift":696,"opener_matches_type":0.49712643678160917,"classifier_sudden_vs_not":{"100":{"n":589,"accuracy":0.599320882852292,"sudden_recall":0.1452991452991453,"non_sudden_recall":0.8985915492957747},"200":{"n":550,"accuracy":0.5818181818181818,"sudden_recall":0.08056872037914692,"non_sudden_recall":0.8938053097345132},"300":{"n":511,"accuracy":0.5792563600782779,"sudden_recall":0.11702127659574468,"non_sudden_recall":0.848297213622291},"confirm":{"n":294,"accuracy":0.5952380952380952,"sudden_recall":0.22131147540983606,"non_sudden_recall":0.8604651162790697}}},"union":{"episodes":6468,"end_reasons":{"timeout":306,"confirmed":1051,"zone_exit":4703,"cooldown":357,"reset":36,"stream_end":15},"opener_share":{"adwin":617,"hddma":5851},"confirmed_by":{"adwin":292,"hddma":759},"ignored_drifts":0,"cooldown_blocked":372,"episodes_at_gt_drift":1840,"opener_matches_type":0.38206521739130433,"classifier_sudden_vs_not":{"100":{"n":144,"accuracy":0.7430555555555556,"sudden_recall":0.17647058823529413,"non_sudden_recall":0.9181818181818182},"200":{"n":63,"accuracy":0.6349206349206349,"sudden_recall":0.0,"non_sudden_recall":0.851063829787234},"300":{"n":43,"accuracy":0.6744186046511628,"sudden_recall":0.08333333333333333,"non_sudden_recall":0.9032258064516129},"confirm":{"n":521,"accuracy":0.5527831094049904,"sudden_recall":0.10087719298245613,"non_sudden_recall":0.9044368600682594}}}}}};
+
+const ARMS = [
+  { id: "tr300", short: "設計 1（第 300 步）", color: "var(--s9)" },
+  { id: "tr", short: "設計 1（第 100 步）", color: "var(--s1)" },
+  { id: "fw", short: "設計 2", color: "var(--s2)" },
+  { id: "union", short: "聯集", color: "var(--s3)" },
+  { id: "hddma", short: "只用 HDDM-A", color: "var(--s4)" },
+  { id: "adwin", short: "只用 ADWIN", color: "var(--s5)" },
+  { id: "hddma_adwin", short: "HDDM-A→ADWIN", color: "var(--s7)" },
+  { id: "adwin_hddma", short: "ADWIN→HDDM-A", color: "var(--s8)" },
+  { id: "e10bft_lw0", short: "e10bft lw0", color: "var(--s6)" },
+];
+const ARM = Object.fromEntries(ARMS.map(a => [a.id, a]));
+const METRIC = {
+  acc: { label: "Δ正確率（百分點）", scale: 100, nd: 2, better: 1 },
+  post_acc: { label: "Δdrift 後正確率（百分點）", scale: 100, nd: 2, better: 1 },
+  fp: { label: "ΔFP（次）", scale: 1, nd: 0, better: -1 },
+  X: { label: "ΔX", scale: 1, nd: 1, better: 1 },
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const compLabel = k => { const [a, b] = k.split("_vs_"); return `${ARM[a].short} − ${ARM[b].short}`; };
+function niceTicks(lo, hi, n) {
+  const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+  const out = []; for (let v = Math.ceil(lo / step - 1e-9) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6));
+  return out;
+}
+function press(ids, active) { ids.forEach(id => document.getElementById(id).setAttribute("aria-pressed", String(id === active))); }
+let scope = "original", forestMetric = "acc", pooledMetric = "acc", groupMetric = "acc", clfKey = "original:tr300";
+
+function drawForest() {
+  const svg = document.getElementById("forest"), m = METRIC[forestMetric], comps = F[scope].comparisons;
+  const rows = Object.keys(comps).map(k => ({ k, d: comps[k][forestMetric], n: comps[k].streams }));
+  const vals = rows.flatMap(r => r.d.point === null ? [] : (r.d.ci ? r.d.ci : [r.d.point]).map(v => v * m.scale));
+  let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals); const pad = (hi - lo) * 0.08 || 1; lo -= pad; hi += pad;
+  const rowH = 34, mg = { l: 250, r: 150, t: 30, b: 44 }, W = 900, H = mg.t + mg.b + rowH * rows.length;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const X = v => mg.l + (v - lo) / (hi - lo) * (W - mg.l - mg.r);
+  let s = "";
+  for (const t of niceTicks(lo, hi, 7)) {
+    s += `<line x1="${X(t)}" x2="${X(t)}" y1="${mg.t - 8}" y2="${H - mg.b}" stroke="var(--line)"/>`;
+    s += `<text x="${X(t)}" y="${H - mg.b + 18}" text-anchor="middle" font-size="12" fill="var(--muted)">${t > 0 ? "+" : ""}${+t.toFixed(3)}</text>`;
+  }
+  s += `<line x1="${X(0)}" x2="${X(0)}" y1="${mg.t - 8}" y2="${H - mg.b}" stroke="var(--fg)" stroke-width="1.5"/>`;
+  s += `<text x="${(mg.l + W - mg.r) / 2}" y="${H - 8}" text-anchor="middle" font-size="13" fill="var(--fg)">${esc(m.label)}${m.better > 0 ? "　右邊較好" : "　左邊較好"}</text>`;
+  s += `<text x="${W - mg.r + 14}" y="${mg.t - 12}" font-size="12" fill="var(--muted)">判定</text>`;
+  rows.forEach((r, i) => {
+    const y = mg.t + i * rowH + rowH / 2;
+    s += `<text x="${mg.l - 12}" y="${y + 4}" text-anchor="end" font-size="13" fill="var(--fg)">${esc(compLabel(r.k))}${r.n < 400 && scope === "injected" ? `（${r.n} 條）` : ""}</text>`;
+    if (r.d.point === null) { s += `<text x="${X(0) + 8}" y="${y + 4}" font-size="12" fill="var(--muted)">無資料</text>`; return; }
+    const p = r.d.point * m.scale, sig = r.d.ci && (r.d.ci[0] > 0 || r.d.ci[1] < 0);
+    const good = sig && p * m.better > 0, bad = sig && p * m.better < 0;
+    const col = good ? "var(--div-pos)" : bad ? "var(--div-neg)" : "var(--muted)";
+    if (r.d.ci) s += `<line x1="${X(r.d.ci[0] * m.scale)}" x2="${X(r.d.ci[1] * m.scale)}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="3" stroke-linecap="round"/>`;
+    s += `<circle cx="${X(p)}" cy="${y}" r="6" fill="${col}" stroke="var(--surface)" stroke-width="2"/>`;
+    s += `<text x="${W - mg.r + 14}" y="${y + 4}" font-size="12" fill="${col === "var(--muted)" ? "var(--muted)" : "var(--fg)"}">${sig ? (good ? "顯著較好" : "顯著較差") : "不顯著"}　${p > 0 ? "+" : ""}${p.toFixed(m.nd)}</text>`;
+  });
+  svg.innerHTML = s;
+}
+
+function drawPooled() {
+  const svg = document.getElementById("pooled"), key = pooledMetric, P = F[scope].pooled;
+  const pct = key === "acc" || key === "post_acc";
+  const rows = F[scope].arms.map(id => ({ a: ARM[id], v: P[id][key], partial: scope === "injected" && P[id].streams < 800 }));
+  const vals = rows.filter(r => r.v !== null && !r.partial).map(r => r.v);
+  let lo = pct ? Math.max(0, Math.min(...vals) - (Math.max(...vals) - Math.min(...vals)) * 0.6) : 0;
+  const hi = Math.max(...rows.filter(r => r.v !== null).map(r => r.v)) * (pct ? 1.002 : 1.08);
+  const rowH = 32, mg = { l: 190, r: 120, t: 12, b: 40 }, W = 900, H = mg.t + mg.b + rowH * rows.length;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const X = v => mg.l + (Math.max(lo, v) - lo) / (hi - lo) * (W - mg.l - mg.r);
+  let s = "";
+  for (const t of niceTicks(lo, hi, 6)) {
+    s += `<line x1="${X(t)}" x2="${X(t)}" y1="${mg.t}" y2="${H - mg.b}" stroke="var(--line)"/>`;
+    s += `<text x="${X(t)}" y="${H - mg.b + 18}" text-anchor="middle" font-size="12" fill="var(--muted)">${pct ? (t * 100).toFixed(1) + "%" : +t.toFixed(2)}</text>`;
+  }
+  rows.forEach((r, i) => {
+    const y = mg.t + i * rowH + rowH / 2;
+    s += `<text x="${mg.l - 12}" y="${y + 4}" text-anchor="end" font-size="13" fill="var(--fg)">${esc(r.a.short)}</text>`;
+    if (r.v === null) { s += `<text x="${mg.l + 6}" y="${y + 4}" font-size="12" fill="var(--muted)">無資料</text>`; return; }
+    s += `<rect x="${X(lo)}" y="${y - 9}" width="${Math.max(2, X(r.v) - X(lo))}" height="18" rx="4" fill="${r.a.color}" opacity="${r.partial ? 0.45 : 1}"/>`;
+    s += `<text x="${X(r.v) + 8}" y="${y + 4}" font-size="12" font-family="var(--font-data)" fill="var(--fg)">${pct ? (r.v * 100).toFixed(2) + "%" : key === "fp" ? r.v : r.v.toFixed(1)}${r.partial ? "（只有 160 條）" : ""}</text>`;
+  });
+  s += `<text x="${(mg.l + W - mg.r) / 2}" y="${H - 6}" text-anchor="middle" font-size="13" fill="var(--fg)">${pct ? "橫軸不從 0 開始" : ""}</text>`;
+  svg.innerHTML = s;
+  document.getElementById("pooled-cap").textContent = scope === "original"
+    ? "原資料 45 條的合併數值。設計 1 有第 100 步與第 300 步兩個版本。e10bft lw0 在 warning 期間不學習，只作參考。"
+    : "injected 800 條的合併數值。e10bft lw0 只有 injected_paper_electricity 的 160 條（半透明），合併數值不能和其他組直接比。";
+}
+
+const GLABEL = g => g.includes(":") ? g.replace("injected_paper_", "").replace("_sensor_drift", "").replace("synthetic_multiclass:", "synthetic · ").replace(":", " · ") : g.replace("insects_", "INSECTS · ").replace("_balanced", "");
+function drawGroups() {
+  const key = groupMetric, better = key === "fp" ? -1 : 1, thr = key === "acc" ? 0.001 : 1, G = F[scope].by_group, arms = F[scope].arms;
+  let h = `<thead><tr><th>資料組</th>${arms.map(a => `<th>${esc(ARM[a].short)}</th>`).join("")}</tr></thead><tbody>`;
+  for (const g of Object.keys(G)) {
+    const base = G[g].hddma[key];
+    h += `<tr><td class="name">${esc(GLABEL(g))}</td>`;
+    for (const a of arms) {
+      const v = G[g][a] ? G[g][a][key] : null;
+      if (v === null || v === undefined) { h += `<td class="muted">—</td>`; continue; }
+      let bg = "transparent";
+      if (a !== "hddma" && base !== null && base !== undefined) {
+        const d = (v - base) * better;
+        bg = Math.abs(v - base) < thr ? "var(--div-mid)" : d > 0 ? "color-mix(in srgb, var(--div-pos) 22%, transparent)" : "color-mix(in srgb, var(--div-neg) 22%, transparent)";
+      }
+      h += `<td style="background:${bg}">${key === "acc" ? (v * 100).toFixed(2) + "%" : key === "fp" ? v : v.toFixed(2)}</td>`;
+    }
+    h += "</tr>";
+  }
+  document.getElementById("group-table").innerHTML = h + "</tbody>";
+}
+
+function drawClf() {
+  const [sc, arm] = clfKey.split(":"), c = F[sc].routing[arm].classifier_sudden_vs_not;
+  const pts = ["100", "200", "300", "confirm"].filter(k => c[k]);
+  const svg = document.getElementById("clf"), W = 900, H = 280, mg = { l: 60, r: 20, t: 20, b: 56 };
+  const Y = v => H - mg.b - v * (H - mg.t - mg.b), band = (W - mg.l - mg.r) / pts.length, bw = Math.min(56, band / 3);
+  let s = "";
+  for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+    s += `<line x1="${mg.l}" x2="${W - mg.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)"/>`;
+    s += `<text x="${mg.l - 8}" y="${Y(t) + 4}" text-anchor="end" font-size="12" fill="var(--muted)">${t * 100}%</text>`;
+  }
+  pts.forEach((k, i) => {
+    const cx = mg.l + band * i + band / 2, d = c[k];
+    [["sudden_recall", -1, "var(--div-pos)"], ["non_sudden_recall", 1, "var(--div-neg)"]].forEach(([f, side, col]) => {
+      const v = d[f]; if (v === null) return;
+      const x = cx + side * (bw / 2 + 3) - bw / 2;
+      s += `<rect x="${x}" y="${Y(v)}" width="${bw}" height="${Y(0) - Y(v)}" rx="4" fill="${col}"/>`;
+      s += `<text x="${x + bw / 2}" y="${Y(v) - 6}" text-anchor="middle" font-size="12" font-family="var(--font-data)" fill="var(--fg)">${Math.round(v * 100)}%</text>`;
+    });
+    s += `<text x="${cx}" y="${H - mg.b + 20}" text-anchor="middle" font-size="13" fill="var(--fg)">${k === "confirm" ? "確認當下" : "第 " + k + " 步"}</text>`;
+    s += `<text x="${cx}" y="${H - mg.b + 38}" text-anchor="middle" font-size="11" fill="var(--muted)">n = ${d.n}，整體 ${Math.round(d.accuracy * 100)}%</text>`;
+  });
+  svg.innerHTML = s;
+}
+
+function drawRoute() {
+  const R = F[scope].routing, arms = ["tr300", "tr", "fw", "union"].filter(a => R[a]);
+  const pctOf = (d, k) => d.episodes ? Math.round((d.end_reasons[k] || 0) / d.episodes * 100) + "%" : "—";
+  const rows = [["warning 事件數", d => d.episodes], ["成功確認", d => `${d.end_reasons.confirmed || 0}（${pctOf(d, "confirmed")}）`],
+    ["timeout 解除", d => `${d.end_reasons.timeout || 0}（${pctOf(d, "timeout")}）`],
+    ["離開 warning 區結束", d => `${d.end_reasons.zone_exit || 0}（${pctOf(d, "zone_exit")}）`],
+    ["被冷卻期擋掉", d => d.cooldown_blocked],
+    ["HDDM-A 先發的比例", d => { const h = d.opener_share.hddma || 0, a = d.opener_share.adwin || 0; return h + a ? Math.round(h / (h + a) * 100) + "%" : "—"; }],
+    ["確認者（HDDM-A / ADWIN）", d => `${d.confirmed_by.hddma || 0} / ${d.confirmed_by.adwin || 0}`],
+    ["先發者與真實類型相符", d => d.opener_matches_type === null ? "—" : Math.round(d.opener_matches_type * 100) + "%"]];
+  let h = `<thead><tr><th>項目</th>${arms.map(a => `<th>${esc(ARM[a].short)}</th>`).join("")}</tr></thead><tbody>`;
+  for (const [lab, f] of rows) h += `<tr><td>${lab}</td>${arms.map(a => `<td>${f(R[a])}</td>`).join("")}</tr>`;
+  document.getElementById("route-table").innerHTML = h + "</tbody>";
+}
+
+function drawScope() { drawForest(); drawPooled(); drawGroups(); drawRoute(); }
+const groups = [["sc-original", "sc-injected"], ["f-acc", "f-post", "f-fp", "f-x"], ["p-acc", "p-post", "p-fp", "p-x", "p-mdt"],
+  ["g-acc", "g-x", "g-fp"], ["c-o100", "c-o300", "c-i300"]];
+groups.forEach((ids, gi) => ids.forEach(id => document.getElementById(id).addEventListener("click", e => {
+  press(ids, id);
+  const ds = e.currentTarget.dataset;
+  if (gi === 0) { scope = ds.s; drawScope(); }
+  else if (gi === 1) { forestMetric = ds.m; drawForest(); }
+  else if (gi === 2) { pooledMetric = ds.m; drawPooled(); }
+  else if (gi === 3) { groupMetric = ds.m; drawGroups(); }
+  else { clfKey = ds.c; drawClf(); }
+})));
+drawScope(); drawClf();
+</script>
+</body>
+</html>
