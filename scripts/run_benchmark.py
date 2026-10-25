@@ -566,6 +566,8 @@ def run_one(job: Dict[str, Any]) -> Dict[str, Any]:
         config = effective_pipeline_config(preset, task, seed)
         if job.get("record_warning_events"):
             config["ecpf_record_warning_events"] = True
+        if config.get("ecpf_route_classifier"):
+            config["ecpf_route_classifier_key"] = f"{job['dataset']}|{job['source']['stem']}"
         if job.get("pool_trace") and config.get("use_ecpf"):
             config["ecpf_pool_trace"] = True
         if config.get("ecpf_signal_mode") == "oracle_input_60":

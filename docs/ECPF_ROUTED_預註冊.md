@@ -81,3 +81,19 @@ H1–H3 的判定維持原本 45 條、第 100 步的正式結果，不受本修
 3. 新資料：`injected_paper_electricity` 與 `injected_paper_gas_sensor_drift`（各 400 條、abrupt／gradual 各半），執行 `s1route_tr_d300_c300`、`s1route_fw_c300`、`s1route_union_c300`。基線沿用 DET4 S1 的 2×2 四格（兩個資料集各 400 條都有）與 DET3 e10bft lw0（只有 `injected_paper_electricity` 前 20 個 trial 的 160 條）。
 4. 先以固定分流在兩個 injected 資料集各 8 條（每格 trial 1）跑可重現性閘門，必須與 DET4 完全相同才繼續。
 5. 統計方法與判定規則同上；分層加入 injected 一層。injected 資料集的 abrupt 視為 sudden、gradual 視為非 sudden，用於分類器診斷。
+
+**修訂 3（2026-10-24，探索性，事後補記）：設計 1 換成簡單基準分類器，以及理想分流上限。**
+
+1. `s1route_trsimple_d300_c300`：與 `s1route_tr_d300_c300` 相同，分類器換成 `scripts/typeclf_retrain.py` 的簡單基準（6 個特徵 + 邏輯斯迴歸，切法 B 交叉訓練，`outputs/typeclf/simple_route_model.json`）。分析：`python3 scripts/analyze_routed.py simpleclf`。
+2. 理想分流：依真實類型逐條取 DET4 對角格（sudden → HDDM-A，其他 → ADWIN），不需新 run。分析：`python3 scripts/analyze_routed.py oracle`。
+3. 兩者都是看過前面結果之後才做的，只作描述。
+
+**修訂 4（2026-10-24，探索性，執行前寫定）：冷卻期對照組，以及「HDDM-A 發出 drift 時才判斷」的設計 1。**
+
+1. 第 0 步 `s1route_fixed_hddma_c300`：只用 HDDM-A 對，加上與三個設計相同的 300 步冷卻期，用來把冷卻期的效果和分流的效果分開。
+2. 第 1 步 `s1route_gate_simple_c300`（分流規則 `hddma_gate`）：ADWIN 發出 drift 就確認；HDDM-A 發出 drift 時當場用簡單基準分類，判成 sudden 就確認，否則這次 warning 之後只接受 ADWIN 確認。冷卻期 300，其餘同 S1。分類器沿用修訂 3 的模型與交叉訓練；沒有任何參數依結果調整，所以不另做 dev 選擇。
+3. 資料：原本 45 條與兩個 injected 資料集（800 條），先冒煙測試再跑完整。
+4. 統計方法同上。事先寫定的成功標準（全部只作描述，不改變 H1–H3）：
+   - 第 1 步的整體 accuracy 不顯著低於只用 ADWIN 與只用 HDDM-A 中較好的那一個（原資料、injected 分開看）；
+   - 第 1 步的 drift 後 accuracy 不顯著低於 `s1route_fixed_hddma_c300`；
+   - 第 1 步相對 `s1route_trsimple_d300_c300` 的 drift 後 accuracy 顯著較高（確認「不必等 300 步」確實救回 HDDM-A 的速度）。

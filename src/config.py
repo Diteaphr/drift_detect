@@ -255,11 +255,18 @@ class PipelineConfig:
     # Routed confirmation (detectors/meta_ecpf/routed.py): ADWIN and HDDM-A pairs
     # warn in parallel and this policy picks whose drift confirms --
     # "first_warner", "type_classifier" (Type-LDD after ecpf_route_decision_delay
-    # steps: sudden -> HDDM-A, otherwise ADWIN), "union", or "fixed_adwin" /
+    # steps: sudden -> HDDM-A, otherwise ADWIN), "union", "hddma_gate" (ADWIN confirms
+    # at once; an HDDM-A drift is classified on the spot and confirms only if sudden), or "fixed_adwin" /
     # "fixed_hddma" (one pair passed through; reproduces the DET4 diagonals).
     # "" keeps the single detector configured above.
     ecpf_route_policy: str = ""
     ecpf_route_decision_delay: int = 100
+    # Classifier for "type_classifier" routing: "" = Type-LDD; otherwise the path of a
+    # simple-baseline model file (src/drift_type_classifier_simple.py, written by
+    # scripts/typeclf_retrain.py export). run_benchmark.py fills the stream key so each
+    # stream gets the cross-fitted model that never saw it.
+    ecpf_route_classifier: str = ""
+    ecpf_route_classifier_key: str = ""
     # Steps after a confirmation during which warnings and confirmations are
     # ignored (detectors still update). 0 = off.
     ecpf_confirm_cooldown: int = 0

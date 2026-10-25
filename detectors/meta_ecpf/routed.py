@@ -10,6 +10,9 @@ the dual ADWIN of ``ECPFWarningDriftDetector`` and the HDDM-A/HDDM-A
 * ``type_classifier``: after ``decision_delay`` steps of the episode the
   drift-type classifier runs; ``sudden`` -> HDDM-A confirms, otherwise ADWIN.
 * ``union``: either pair's drift confirms.
+* ``hddma_gate``: an ADWIN drift confirms at once; an HDDM-A drift runs the
+  classifier at that step -- ``sudden`` confirms at once, otherwise HDDM-A is
+  vetoed for the rest of the episode and only ADWIN can confirm.
 * ``fixed_adwin`` / ``fixed_hddma``: pass one pair's output through unchanged
   (reproduces the DET4 diagonals; used as the reproducibility gate).
 
@@ -22,7 +25,8 @@ an episode opened by HDDM-A ends when HDDM-A leaves its warning zone without a
 confirmation (the pipeline then drops the buffer); an ADWIN episode lasts until
 confirmation or the pipeline's warning timeout. ``type_classifier`` episodes
 never end on a zone exit, so the decision always gets its ``decision_delay``
-steps. The pipeline's warning timeout
+steps; a ``hddma_gate`` episode stops ending on a zone exit once HDDM-A is
+vetoed, so it can wait for ADWIN. The pipeline's warning timeout
 calls :meth:`reset_warning`; its post-confirmation cooldown calls
 :meth:`discard_episode`.
 """
@@ -33,7 +37,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .adwin_family import ECPFAdwinFamilyDetector
 
-POLICIES = ("first_warner", "type_classifier", "union", "fixed_adwin", "fixed_hddma")
+POLICIES = ("first_warner", "type_classifier", "union", "hddma_gate", "fixed_adwin", "fixed_hddma")
+NEEDS_CLASSIFIER = ("type_classifier", "hddma_gate")
 PAIRS = ("adwin", "hddma")
 # Classifications recorded for analysis only (steps after the episode opened).
 OBSERVE_AT = (100, 200, 300)
@@ -57,8 +62,8 @@ class RoutedConfirmDetector:
     ) -> None:
         if policy not in POLICIES:
             raise ValueError(f"ecpf_route_policy must be one of {POLICIES}, got {policy!r}")
-        if policy == "type_classifier" and classify_fn is None:
-            raise ValueError("type_classifier routing needs a classify_fn")
+        if policy in NEEDS_CLASSIFIER and classify_fn is None:
+            raise ValueError(f"{policy} routing needs a classify_fn")
         self.policy = policy
         self.decision_delay = max(1, int(decision_delay))
         self.classify_fn = classify_fn
@@ -158,6 +163,9 @@ class RoutedConfirmDetector:
             ep["decision_t"], ep["decision_type"] = int(self.clock), kind
             ep["confirmer"] = "hddma" if kind == "sudden" else "adwin"
 
+        if self.policy == "hddma_gate":
+            return self._gate_step(ep, da, dh, wh)
+
         confirmer = ep["confirmer"]
         emit = False
         if confirmer == "any":
@@ -184,13 +192,41 @@ class RoutedConfirmDetector:
         return True, False
 
     # -- helpers ------------------------------------------------------------------
+    def _gate_step(self, ep: Dict[str, Any], da: bool, dh: bool, wh: bool) -> Tuple[bool, bool]:
+        """``hddma_gate``: ADWIN confirms at once; an HDDM-A drift is classified on the spot."""
+        by = None
+        if dh and ep["confirmer"] is None:
+            kind = self.classify_fn()
+            ep["decision_t"], ep["decision_type"] = int(self.clock), kind
+            ep["confirmer"] = "hddma" if kind == "sudden" else "adwin"
+            if kind == "sudden":
+                by = "hddma"
+        elif dh:
+            ep["ignored_drifts"] += 1
+        if by is None and ep["first_drift_t"]["adwin"] is not None:
+            by = "adwin"
+        self.stats = {"route_policy": self.policy, "route_opener": ep["opener"],
+                      "route_confirmer": ep["confirmer"], "route_type": ep["decision_type"]}
+        if by is not None:
+            ep["confirmer"] = by
+            ep["observed_types"]["confirm"] = ep["decision_type"] if by == "hddma" else self.classify_fn()
+            self._end_episode("confirmed")
+            for pair in self.pairs.values():
+                pair.reset()
+            return True, True
+        if self._zone_applies() and not wh:
+            self._end_episode("zone_exit")
+            return False, False
+        return True, False
+
     def _zone_applies(self) -> bool:
         """An HDDM-A episode ends when HDDM-A leaves its zone -- except under
         ``type_classifier``, which must keep the episode for ``decision_delay``
         steps (HDDM-A's zone usually closes within a few steps, often right after
         its own drift), so its episodes end only by confirmation or timeout."""
         return (self._ep is not None and self._ep["opener"] == "hddma"
-                and self.policy != "type_classifier")
+                and self.policy != "type_classifier"
+                and not (self.policy == "hddma_gate" and self._ep["confirmer"] == "adwin"))
 
     def _fixed_pair(self) -> Optional[str]:
         return {"fixed_adwin": "adwin", "fixed_hddma": "hddma"}.get(self.policy)

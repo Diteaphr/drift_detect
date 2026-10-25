@@ -26,18 +26,21 @@ DESCRIPTIONS = {
     "first_warner": "the pair (ADWIN or HDDM-A) that warned first confirms",
     "type_classifier": "Type-LDD after 100 warning steps: sudden -> HDDM-A confirms, otherwise ADWIN",
     "union": "either pair's drift confirms",
+    "hddma_gate": ("ADWIN's drift confirms at once; an HDDM-A drift runs Type-LDD on the spot and "
+                   "confirms only if sudden, otherwise only ADWIN may confirm"),
     "fixed_adwin": "ADWIN pair only (reproduces det4_s1_wadwin_cadwin)",
     "fixed_hddma": "HDDM-A pair only (reproduces det4_s1_whddma_chddma)",
 }
 
 
-def write(name: str, policy: str, cooldown: int, base: dict, delay: int = 100) -> None:
+def write(name: str, policy: str, cooldown: int, base: dict, delay: int = 100, classifier: str = "") -> None:
     preset = json.loads(json.dumps(base))
     preset.update({
         "name": name,
         "role": "ablation",
         "description": (f"{TEMPLATE} with routed confirmation: "
                         f"{DESCRIPTIONS[policy].replace('after 100 warning steps', f'after {delay} warning steps')}"
+                        f"{'' if not (cooldown and policy.startswith('fixed_')) else ' -- with the cooldown, not a DET4 replica'}"
                         f"; cooldown {cooldown}."),
         "source": "scripts/make_routed_presets.py",
     })
@@ -46,6 +49,9 @@ def write(name: str, policy: str, cooldown: int, base: dict, delay: int = 100) -
         "ecpf_route_decision_delay": delay,
         "ecpf_confirm_cooldown": cooldown,
     })
+    if classifier:
+        preset["description"] = preset["description"].replace("Type-LDD", "the simple baseline (cross-fitted)")
+        preset["config"]["ecpf_route_classifier"] = classifier
     (PRESETS / f"{name}.json").write_text(json.dumps(preset, indent=2) + "\n")
 
 
@@ -65,6 +71,19 @@ def main() -> None:
     # about 400 steps after the drift starts, where the offline Type-LDD test peaked.
     write("s1route_tr_d300_c300", "type_classifier", 300, base, delay=300)
     names.append("s1route_tr_d300_c300")
+    # Exploratory: the same, with the simple baseline of scripts/typeclf_retrain.py
+    # (6 features + logistic regression, cross-fitted on split B) instead of Type-LDD.
+    write("s1route_trsimple_d300_c300", "type_classifier", 300, base, delay=300,
+          classifier="outputs/typeclf/simple_route_model.json")
+    names.append("s1route_trsimple_d300_c300")
+    # Step 0: the single-detector diagonals with the designs' cooldown, to separate
+    # the cooldown's effect from the routing's.
+    write("s1route_fixed_hddma_c300", "fixed_hddma", 300, base)
+    names.append("s1route_fixed_hddma_c300")
+    # Step 1: design 1 decided when HDDM-A's drift fires (simple baseline classifier).
+    write("s1route_gate_simple_c300", "hddma_gate", 300, base,
+          classifier="outputs/typeclf/simple_route_model.json")
+    names.append("s1route_gate_simple_c300")
     print(f"{len(names)} presets: {', '.join(names)}")
 
 

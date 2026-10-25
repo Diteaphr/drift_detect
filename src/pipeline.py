@@ -1341,10 +1341,15 @@ class ConceptDriftPipeline:
         return {"ref_switch": 1, "switch_warning_age": age}
 
     def _classify_type_now(self) -> str:
-        """Type-LDD label of the leader's error history up to now (routed confirmation)."""
+        """Type-LDD (or simple-baseline) label of the leader's error history up to now (routed confirmation)."""
         errors_flat = self.buffer.get_errors()
         if len(errors_flat) == 0:
             return DriftType.SUDDEN.value
+        if self.config.ecpf_route_classifier:
+            from .drift_type_classifier_simple import load_simple_classifier
+
+            clf = load_simple_classifier(self.config.ecpf_route_classifier, self.config.ecpf_route_classifier_key)
+            return clf.predict_errors(errors_flat).value
         return classify_drift_type(errors_flat, len(errors_flat) - 1).value
 
     def _handle_ecpf_drift(

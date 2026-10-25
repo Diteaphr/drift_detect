@@ -13,6 +13,9 @@ never re-run: ``det4_s1_wadwin_cadwin`` (ADWIN only), ``det4_s1_whddma_chddma``
   python3 scripts/analyze_routed.py dev     # cooldown selection on synthetic_binary
   python3 scripts/analyze_routed.py formal  # pre-registered comparisons -> outputs/routed/
   python3 scripts/analyze_routed.py followup  # exploratory: decision at 300 steps, injected datasets
+  python3 scripts/analyze_routed.py simpleclf # exploratory: design 1 with the simple-baseline classifier
+  python3 scripts/analyze_routed.py oracle    # exploratory: routing by the true drift type (upper bound)
+  python3 scripts/analyze_routed.py step01    # exploratory: cooldown control + design 1 decided at HDDM-A's drift
 """
 
 from __future__ import annotations
@@ -64,6 +67,11 @@ ARM_LABEL = {
     "hddma_adwin": "HDDM-A warning + ADWIN 確認（DET4 S1）",
     "adwin_hddma": "ADWIN warning + HDDM-A 確認（DET4 S1）",
     "tr300": "設計 1（第 300 步判斷）",
+    "trs300": "設計 1・簡單基準（第 300 步判斷）",
+    "oracle": "理想分流（真實類型：sudden → HDDM-A，其他 → ADWIN）",
+    "anti": "反向分流（真實類型：sudden → ADWIN，其他 → HDDM-A）",
+    "gate": "設計 1b（HDDM-A 發出 drift 時判斷，簡單基準）",
+    "hddma_c300": "只用 HDDM-A + 冷卻期 300",
 }
 INJECTED_DATASETS = ("injected_paper_electricity", "injected_paper_gas_sensor_drift")
 FOLLOWUP_PRESETS = {"tr300": "s1route_tr_d300_c300", "tr": "s1route_tr_c300",
@@ -383,33 +391,108 @@ FOLLOWUP_ARMS = {"original": ["tr300", "tr", "fw", "union", "hddma", "adwin", "h
                  "injected": ["tr300", "fw", "union", "hddma", "adwin", "hddma_adwin", "adwin_hddma", "e10bft_lw0"]}
 
 
+SIMPLECLF_PRESETS = dict(FOLLOWUP_PRESETS, trs300="s1route_trsimple_d300_c300")
+SIMPLECLF_PAIRS = [("trs300", "tr300"), ("trs300", "fw"), ("trs300", "union"), ("trs300", "hddma"),
+                   ("trs300", "adwin"), ("trs300", "hddma_adwin"), ("trs300", "adwin_hddma")]
+SIMPLECLF_ARMS = ["trs300", "tr300", "fw", "union", "hddma", "adwin", "hddma_adwin", "adwin_hddma"]
+
+
 def run_followup(args) -> None:
     """Exploratory follow-up (preregistration amendment 2): decision at 300 warning steps,
     and all designs on injected_paper_electricity / injected_paper_gas_sensor_drift."""
+    _followup_like(args, FOLLOWUP_PRESETS, FOLLOWUP_ARMS, FOLLOWUP_PAIRS, "followup")
+
+
+def run_simpleclf(args) -> None:
+    """Exploratory: design 1 with the simple-baseline classifier (scripts/typeclf_retrain.py
+    export, cross-fitted on split B) against design 1 with Type-LDD, design 2, union and DET4."""
+    _followup_like(args, SIMPLECLF_PRESETS, {"original": SIMPLECLF_ARMS, "injected": SIMPLECLF_ARMS},
+                   {"original": SIMPLECLF_PAIRS, "injected": SIMPLECLF_PAIRS}, "simpleclf")
+
+
+# Oracle routing: each stream has one drift type, so routing by the true type with no
+# decision delay is the DET4 diagonal of that type's detector, taken stream by stream.
+ORACLE_ARMS = ["oracle", "anti", "trs300", "tr300", "fw", "union", "hddma", "adwin"]
+ORACLE_PAIRS = [("oracle", "hddma"), ("oracle", "adwin"), ("oracle", "fw"), ("oracle", "union"),
+                ("oracle", "trs300"), ("oracle", "tr300"), ("oracle", "anti")]
+INSECTS_TYPE = {"insects_abrupt_balanced": "sudden", "insects_incremental_balanced": "incremental",
+                "insects_incremental_gradual_balanced": "gradual",
+                "insects_incremental_reoccurring_balanced": "incremental"}  # abrupt+incremental mix: no oracle
+
+
+def stream_type(row: Dict) -> Optional[str]:
+    return INSECTS_TYPE.get(row["dataset"]) if row["dataset"] in INSECTS else true_type(row["group"])
+
+
+def oracle_rows(rows: List[Dict], keep_untyped: bool = False) -> List[Dict]:
+    """Add the oracle and reversed-oracle arms; keep only streams with a known type
+    unless ``keep_untyped`` (then the other arms keep every stream)."""
+    lookup = lookup_of(rows)
+    out = []
+    for r in rows:
+        if r["arm"] != "hddma" or stream_type(r) is None:
+            continue
+        sudden = stream_type(r) in SUDDEN_TYPES
+        for arm, pick in (("oracle", "hddma" if sudden else "adwin"), ("anti", "adwin" if sudden else "hddma")):
+            out.append(dict(lookup[(r["dataset"], r["stream"], pick)], arm=arm, routed_to=pick))
+    typed = {(r["dataset"], r["stream"]) for r in out}
+    return [r for r in rows if keep_untyped or (r["dataset"], r["stream"]) in typed] + out
+
+
+def run_oracle(args) -> None:
+    """Exploratory upper bound of type routing: the true type picks the confirming detector."""
+    _followup_like(args, SIMPLECLF_PRESETS, {"original": ORACLE_ARMS, "injected": ORACLE_ARMS},
+                   {"original": ORACLE_PAIRS, "injected": ORACLE_PAIRS}, "oracle", extend=oracle_rows)
+
+
+# Amendment 4: step 0 (HDDM-A with the designs' cooldown) and step 1 (hddma_gate).
+STEP01_PRESETS = dict(SIMPLECLF_PRESETS, gate="s1route_gate_simple_c300", hddma_c300="s1route_fixed_hddma_c300")
+STEP01_ARMS = ["gate", "hddma_c300", "trs300", "fw", "union", "hddma", "adwin", "oracle"]
+STEP01_PAIRS = [
+    # preregistered criteria for step 1
+    ("gate", "hddma"), ("gate", "adwin"), ("gate", "hddma_c300"), ("gate", "trs300"),
+    # descriptive
+    ("gate", "fw"), ("gate", "union"), ("gate", "oracle"),
+    # step 0: the cooldown alone, and the routing net of the cooldown
+    ("hddma_c300", "hddma"), ("fw", "hddma_c300"), ("union", "hddma_c300"),
+]
+
+
+def run_step01(args) -> None:
+    """Exploratory (amendment 4): cooldown control and design 1 decided at HDDM-A's drift."""
+    _followup_like(args, STEP01_PRESETS, {"original": STEP01_ARMS, "injected": STEP01_ARMS},
+                   {"original": STEP01_PAIRS, "injected": STEP01_PAIRS}, "step01",
+                   extend=lambda rows: oracle_rows(rows, keep_untyped=True))
+
+
+def _followup_like(args, all_presets: Dict[str, str], arms_of: Dict[str, List[str]],
+                   pairs_of: Dict[str, List[tuple]], name: str, extend=None) -> None:
     scopes = {"original": list(FORMAL_DATASETS), "injected": list(INJECTED_DATASETS)}
-    data: Dict[str, Any] = {"presets": FOLLOWUP_PRESETS, "smoke": args.allow_smoke}
+    data: Dict[str, Any] = {"presets": all_presets, "smoke": args.allow_smoke}
     for scope, datasets in scopes.items():
-        presets = {a: p for a, p in FOLLOWUP_PRESETS.items() if a in FOLLOWUP_ARMS[scope]}
+        presets = {a: p for a, p in all_presets.items() if a in arms_of[scope]}
         rows = load_runs(list(presets.values()), datasets, args.root, args.allow_smoke)
         for r in rows:
             r["arm"] = next(k for k, v in presets.items() if v == r["arm"])
         rows += load_baselines(datasets)
+        if extend is not None:
+            rows = extend(rows)
         lookup = lookup_of(rows)
-        arms = [a for a in FOLLOWUP_ARMS[scope] if any(r["arm"] == a for r in rows)]
+        arms = [a for a in arms_of[scope] if any(r["arm"] == a for r in rows)]
         groups = sorted({r["group"] for r in rows})
         data[scope] = {
             "arms": arms,
-            "comparisons": {f"{a}_vs_{b}": compare(lookup, a, b) for a, b in FOLLOWUP_PAIRS[scope]},
+            "comparisons": {f"{a}_vs_{b}": compare(lookup, a, b) for a, b in pairs_of[scope]},
             "pooled": {a: summary([r for r in rows if r["arm"] == a]) for a in arms},
             "by_group": {g: {a: summary([r for r in rows if r["arm"] == a and r["group"] == g]) for a in arms}
                          for g in groups},
             "routing": routing_diagnostics(rows),
         }
         pd.DataFrame([{k: v for k, v in r.items() if k not in ("routing", "gt_intervals")} for r in rows]).to_csv(
-            OUT / f"followup_{scope}_run_scores.csv", index=False)
+            OUT / f"{name}_{scope}_run_scores.csv", index=False)
         print(scope, {a: round(s["acc"], 4) for a, s in data[scope]["pooled"].items() if s["acc"] is not None})
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "followup_verdict_data.json").write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str))
+    (OUT / f"{name}_verdict_data.json").write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str))
 
 
 def _f(v: Any, nd: int = 4) -> str:
@@ -465,13 +548,13 @@ def write_report(data: Dict, groups: List[str], arms: List[str]) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("mode", choices=["gate", "dev", "formal", "followup"])
+    ap.add_argument("mode", choices=["gate", "dev", "formal", "followup", "simpleclf", "oracle", "step01"])
     ap.add_argument("--root", type=Path, default=ROOT)
     ap.add_argument("--allow-smoke", action="store_true", help="formal: accept truncated runs (smoke check)")
     ap.add_argument("--datasets", nargs="+", default=None, help="gate: datasets to check (default: formal set)")
     ap.add_argument("--gate-name", default=None, help="gate: report file name under outputs/routed/")
     args = ap.parse_args()
-    {"gate": run_gate, "dev": run_dev, "formal": run_formal, "followup": run_followup}[args.mode](args)
+    {"gate": run_gate, "dev": run_dev, "formal": run_formal, "followup": run_followup, "simpleclf": run_simpleclf, "oracle": run_oracle, "step01": run_step01}[args.mode](args)
 
 
 if __name__ == "__main__":
